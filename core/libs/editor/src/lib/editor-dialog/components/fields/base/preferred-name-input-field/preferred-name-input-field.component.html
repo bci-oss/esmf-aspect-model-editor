@@ -14,6 +14,8 @@
 <mat-form-field
   *ngFor="let locale of metaModelElement?.getAllLocalesPreferredNames()"
   [floatLabel]="getControl('preferredName' + locale)?.disabled ? 'always' : 'auto'"
+  [matTooltip]="isInherited(locale) ?  'This was extended from ' + elementExtends.extendedElement.name : ''"
+  [matTooltipPosition]="'left'"
   appearance="fill"
 >
   <mat-label for="preferredName">Preferred name({{ locale }})</mat-label>

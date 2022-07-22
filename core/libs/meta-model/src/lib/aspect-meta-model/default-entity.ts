@@ -11,32 +11,33 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Base, BaseMetaModelElement} from './base';
+import {BaseMetaModelElement} from './base';
 import {HasProperties} from './has-properties';
 import {Type} from './type';
-import {CanRefine} from './can-refine';
 import {OverWrittenProperty} from './overwritten-property';
 import {AspectModelVisitor} from '@ame/mx-graph';
+import {CanExtendsWithProperties} from './can-extend';
+import {DefaultAbstractEntity} from './default-abstract-entity';
 
-export interface Entity extends BaseMetaModelElement, HasProperties, Type, CanRefine {}
+export interface Entity extends BaseMetaModelElement, HasProperties, Type {}
 
-export class DefaultEntity extends Base implements Entity {
-  static createInstance() {
-    return new DefaultEntity(null, null, 'Entity', new Array<OverWrittenProperty>());
-  }
+export class DefaultEntity extends CanExtendsWithProperties implements Entity {
+  public extendedElement: DefaultAbstractEntity | DefaultEntity;
 
-  get className() {
+  public get className() {
     return 'DefaultEntity';
   }
 
-  constructor(
-    metaModelVersion: string,
-    aspectModelUrn: string,
-    name: string,
-    public properties: Array<OverWrittenProperty> = [],
-    public refines?: string
-  ) {
+  public get allProperties(): OverWrittenProperty[] {
+    return [...(this.extendedProperties || []), ...this.properties];
+  }
+
+  constructor(metaModelVersion: string, aspectModelUrn: string, name: string, public properties: OverWrittenProperty[] = []) {
     super(metaModelVersion, aspectModelUrn, name);
+  }
+
+  public static createInstance(): DefaultEntity {
+    return new DefaultEntity(null, null, 'Entity', []);
   }
 
   isComplex(): boolean {
@@ -51,10 +52,6 @@ export class DefaultEntity extends Base implements Entity {
     return this.aspectModelUrn;
   }
 
-  getRefines(): string {
-    return this.refines;
-  }
-
   accept<T, U>(visitor: AspectModelVisitor<T, U>, context: U): T {
     return visitor.visitEntity(this, context);
   }
@@ -65,6 +62,10 @@ export class DefaultEntity extends Base implements Entity {
       if (index >= 0) {
         this.properties.splice(index, 1);
       }
+    }
+
+    if (['DefaultAbstractEntity', 'DefaultEntity'].includes(baseMetalModelElement.className)) {
+      this.extendedElement = null;
     }
   }
 }

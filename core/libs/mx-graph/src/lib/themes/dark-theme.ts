@@ -16,9 +16,11 @@ import {ThemeColors} from '../models';
 export const darkColors: ThemeColors = {
   aspect: '#3C486E',
   property: '#97A89E',
+  abstractProperty: '#97A89E',
   operation: '#995FAB',
   event: '#8DA5BF',
   characteristic: '#99B719',
+  abstractEntity: '#55539F',
   entity: '#55539F',
   constraint: '#19787A',
   trait: '#19787A',

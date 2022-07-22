@@ -12,6 +12,7 @@
  */
 import {
   BaseMetaModelElement,
+  DefaultAbstractProperty,
   DefaultAspect,
   DefaultCharacteristic,
   DefaultConstraint,
@@ -116,7 +117,9 @@ export class RdfModelUtil {
       modelElement.className === 'DefaultCharacteristic' ||
       modelElement.className === 'DefaultConstraint' ||
       modelElement.className === 'DefaultEntity' ||
+      modelElement.className === 'DefaultAbstractEntity' ||
       modelElement.className === 'DefaultEvent' ||
+      modelElement instanceof DefaultAbstractProperty ||
       modelElement instanceof DefaultProperty ||
       modelElement instanceof DefaultOperation ||
       modelElement instanceof DefaultEvent ||
@@ -245,8 +248,8 @@ export class RdfModelUtil {
     }
 
     const externalRdfModel = metaModelElementInstantiator.getRdfModelByElement(DataFactory.namedNode(elementType));
-    quads = externalRdfModel.store.getQuads(DataFactory.namedNode(elementType), null, metaModelElementInstantiator.bamm.Entity(), null);
+    quads = externalRdfModel?.store.getQuads(DataFactory.namedNode(elementType), null, metaModelElementInstantiator.bamm.Entity(), null);
 
-    return !!quads.length;
+    return !!quads?.length;
   }
 }

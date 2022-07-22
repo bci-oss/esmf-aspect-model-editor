@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Base, DefaultAspect, DefaultEntity, OverWrittenPropertyKeys} from '@ame/meta-model';
+import {Base, DefaultAspect, DefaultEntity, DefaultProperty, OverWrittenPropertyKeys} from '@ame/meta-model';
 import {LanguageSettingsService} from '@ame/settings-dialog';
 import {mxgraph} from 'mxgraph-factory';
 import {MxGraphHelper, MxGraphVisitorHelper} from '../../helpers';
@@ -50,6 +50,10 @@ export abstract class BaseRenderService {
     const modelElement = MxGraphHelper.getModelElement<DefaultAspect | DefaultEntity>(cell);
     this.graph.getOutgoingEdges(cell)?.forEach((e: mxgraph.mxCell) => {
       const property = MxGraphHelper.getModelElement(e.target);
+      if (!(property instanceof DefaultProperty)) {
+        return;
+      }
+
       const keys: OverWrittenPropertyKeys = modelElement.properties.find(
         ({property: prop}) => prop.aspectModelUrn === property.aspectModelUrn
       ).keys;
@@ -70,5 +74,19 @@ export abstract class BaseRenderService {
     return this.mxGraphService
       ?.getAllCells()
       ?.find(cell => MxGraphHelper.getModelElement(cell)?.aspectModelUrn === modelElement?.aspectModelUrn);
+  }
+
+  protected renderParents(cell: mxgraph.mxCell) {
+    const parents = this.mxGraphService.resolveParents(cell);
+
+    for (const parent of parents) {
+      const parentMetaModel = MxGraphHelper.getModelElement(parent);
+      parent['configuration'].fields = MxGraphVisitorHelper.getElementProperties(parentMetaModel, this.languageSettingsService);
+      parent['configuration'].baseProperties = MxGraphVisitorHelper.getModelInfo(
+        parentMetaModel,
+        MxGraphHelper.getModelElement(this.mxGraphService.mxGraphShapeSelectorService.getAspectCell())
+      );
+      this.graph.labelChanged(parent, MxGraphHelper.createPropertiesLabel(parent));
+    }
   }
 }

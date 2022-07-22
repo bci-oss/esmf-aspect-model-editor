@@ -13,7 +13,7 @@
 
 import {Component, OnInit} from '@angular/core';
 import {FormControl} from '@angular/forms';
-import {BaseMetaModelElement, DefaultCharacteristic} from '@ame/meta-model';
+import {BaseMetaModelElement, CanExtend, DefaultCharacteristic} from '@ame/meta-model';
 import {EditorModelService} from '../../../../editor-model.service';
 import {InputFieldComponent} from '../../input-field.component';
 
@@ -35,7 +35,26 @@ export class DescriptionInputFieldComponent extends InputFieldComponent<BaseMeta
     if (this.metaModelElement instanceof DefaultCharacteristic && this.metaModelElement.isPredefined()) {
       return this.metaModelElement?.[key] || '';
     }
+
+    if (this.metaModelElement instanceof CanExtend) {
+      return (
+        this.previousData?.[key] ||
+        this.metaModelElement?.getDescription(locale) ||
+        this.metaModelElement.extendedDescription?.get(locale) ||
+        ''
+      );
+    }
+
     return this.previousData?.[key] || this.metaModelElement?.getDescription(locale) || '';
+  }
+
+  isInherited(locale: string): boolean {
+    const control = this.parentForm.get('description' + locale);
+    return (
+      this.metaModelElement instanceof CanExtend &&
+      this.metaModelElement.extendedDescription?.get(locale) &&
+      control.value === this.metaModelElement.extendedDescription?.get(locale)
+    );
   }
 
   private setDescriptionControls() {

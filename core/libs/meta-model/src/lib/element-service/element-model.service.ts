@@ -14,7 +14,14 @@
 import {Injectable, Injector} from '@angular/core';
 import {NamespacesCacheService} from '@ame/cache';
 import {mxgraph} from 'mxgraph-factory';
-import {MxAttributeName, MxGraphCharacteristicHelper, MxGraphHelper, MxGraphService, MxGraphShapeOverlayService} from '@ame/mx-graph';
+import {
+  MxAttributeName,
+  MxGraphCharacteristicHelper,
+  MxGraphHelper,
+  MxGraphService,
+  MxGraphShapeOverlayService,
+  MxGraphVisitorHelper,
+} from '@ame/mx-graph';
 import {
   AspectModelService,
   BaseMetaModelElement,
@@ -32,11 +39,13 @@ import {
   PropertyModelService,
   TraitModelService,
   UnitModelService,
+  AbstractPropertyModelService,
 } from '@ame/meta-model';
 import {EntityValueService} from '@ame/editor';
-import {DefaultStructuredValue} from '../aspect-meta-model';
+import {DefaultAbstractEntity, DefaultAbstractProperty, DefaultStructuredValue} from '../aspect-meta-model';
 import {LanguageSettingsService} from '@ame/settings-dialog';
 import {ShapeConnectorService} from '@ame/connection';
+import {AbstractEntityModelService} from './abstract-entity-model.service';
 
 @Injectable({providedIn: 'root'})
 export class ElementModelService {
@@ -83,6 +92,23 @@ export class ElementModelService {
     const targetModelElement = MxGraphHelper.getModelElement(edge.target);
 
     if (sourceModelElement.isExternalReference()) {
+      return;
+    }
+
+    if (
+      (sourceModelElement instanceof DefaultEntity && targetModelElement instanceof DefaultAbstractEntity) ||
+      (sourceModelElement instanceof DefaultProperty && targetModelElement instanceof DefaultAbstractProperty) ||
+      (sourceModelElement instanceof DefaultEntity && targetModelElement instanceof DefaultEntity) ||
+      (sourceModelElement instanceof DefaultProperty && targetModelElement instanceof DefaultProperty)
+    ) {
+      sourceModelElement.extendedElement = null;
+      edge.source['configuration'].fields = MxGraphVisitorHelper.getElementProperties(
+        MxGraphHelper.getModelElement(edge.source),
+        this.languageSettingsService
+      );
+      this.mxGraphService.graph.labelChanged(edge.source, MxGraphHelper.createPropertiesLabel(edge.source));
+      this.removeConnectionBetweenElements(edge, sourceModelElement, targetModelElement);
+      this.mxGraphService.removeCells([edge]);
       return;
     }
 
@@ -161,16 +187,18 @@ export class ElementModelService {
   private getElementModelService(modelElement: BaseMetaModelElement): BaseModelService {
     // Order is important
     const elementServices: any[] = [
+      AbstractEntityModelService,
+      AbstractPropertyModelService,
       AspectModelService,
-      UnitModelService,
       TraitModelService,
-      ConstraintModelService,
       CharacteristicModelService,
-      EntityValueModelService,
+      ConstraintModelService,
       EntityModelService,
-      PropertyModelService,
-      OperationModelService,
+      EntityValueModelService,
       EventModelService,
+      OperationModelService,
+      PropertyModelService,
+      UnitModelService,
     ];
 
     // choose the applicable model service

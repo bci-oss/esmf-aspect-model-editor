@@ -24,3 +24,5 @@ export * from './trait-render.service';
 export * from './constraint-render.service';
 export * from './entity-value-render.service';
 export * from './event-render.service';
+export * from './abstract-entity-render.service';
+export * from './abstract-property-render.service';

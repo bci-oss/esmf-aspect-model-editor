@@ -13,6 +13,8 @@
 
 import {
   BaseMetaModelElement,
+  DefaultAbstractEntity,
+  DefaultAbstractProperty,
   DefaultAspect,
   DefaultCharacteristic,
   DefaultConstraint,
@@ -30,6 +32,8 @@ export interface AspectModelVisitor<T, U> {
 
   visitProperty(property: DefaultProperty, context: U): T;
 
+  visitAbstractProperty(property: DefaultAbstractProperty, context: U): T;
+
   visitAspect(aspect: DefaultAspect, context: U): T;
 
   visitEvent(property: DefaultEvent, context: U): T;
@@ -45,6 +49,8 @@ export interface AspectModelVisitor<T, U> {
   visitQuantityKind(quantityKind: DefaultQuantityKind, context: U): T;
 
   visitEntity(entity: DefaultEntity, context: U): T;
+
+  visitAbstractEntity(abstractEntity: DefaultAbstractEntity, context: U);
 
   visitEntityValue(entityValue: DefaultEntityValue, context: U): T;
 }

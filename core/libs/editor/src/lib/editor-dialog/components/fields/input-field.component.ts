@@ -14,10 +14,12 @@
 import {Directive, Input, OnChanges, OnDestroy, SimpleChanges} from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
 import {EditorModelService} from '../../editor-model.service';
-import {Observable, startWith, Subscription} from 'rxjs';
+import {Observable, of, startWith, Subscription} from 'rxjs';
 import {map, tap} from 'rxjs/operators';
 import {
   BaseMetaModelElement,
+  CanExtend,
+  DefaultAbstractEntity,
   DefaultCharacteristic,
   DefaultConstraint,
   DefaultEntity,
@@ -52,6 +54,10 @@ export abstract class InputFieldComponent<T extends BaseMetaModelElement> implem
 
   get currentCachedFile() {
     return this.namespacesCacheService.getCurrentCachedFile();
+  }
+
+  get elementExtends() {
+    return this.metaModelElement as  any as CanExtend;
   }
 
   protected constructor(
@@ -135,11 +141,66 @@ export abstract class InputFieldComponent<T extends BaseMetaModelElement> implem
     this.parentForm.setControl('changedMetaModel', new FormControl());
   }
 
+  initFilteredEntities(control: FormControl, disabled = false) {
+    return disabled
+      ? of([])
+      : control?.valueChanges.pipe(
+          startWith(''),
+          map((value: string) => {
+            const entities = this.currentCachedFile.getCachedEntities()?.map(entity => ({
+              name: entity.name,
+              description: entity.getDescription('en') || '',
+              urn: entity.getUrn(),
+              complex: true,
+              entity,
+            }));
+
+            return [...entities, ...this.searchExtEntity(value)]?.filter(type => this.inSearchList(type, value));
+          }),
+          startWith([])
+        );
+  }
+
+  initFilteredAbstractEntities(control: FormControl, disabled = false) {
+    return disabled
+      ? of([])
+      : control?.valueChanges.pipe(
+          startWith(''),
+          map((value: string) => {
+            const entities = this.currentCachedFile.getCachedAbstractEntities()?.map(abstractEntity => ({
+              name: abstractEntity.name,
+              description: abstractEntity.getDescription('en') || '',
+              urn: abstractEntity.getUrn(),
+              complex: true,
+              entity: abstractEntity,
+            }));
+
+            return [...entities, ...this.searchExtAbstractEntity(value)]?.filter(type => this.inSearchList(type, value));
+          }),
+          startWith([])
+        );
+  }
+
   initFilteredPropertyTypes(control: FormControl): Observable<Array<FilteredType>> {
     return control?.valueChanges.pipe(
       startWith(''),
       map((value: string) => {
         const properties: Array<FilteredType> = this.currentCachedFile.getCachedProperties()?.map(property => ({
+          name: property.name,
+          description: property.getDescription('en') || '',
+          urn: property.aspectModelUrn,
+        }));
+        return [...properties, ...this.searchExtProperty(value)]?.filter(type => this.inSearchList(type, value));
+      }),
+      startWith([])
+    );
+  }
+
+  initFilteredAbstractPropertyTypes(control: FormControl): Observable<Array<FilteredType>> {
+    return control?.valueChanges.pipe(
+      startWith(''),
+      map((value: string) => {
+        const properties: Array<FilteredType> = this.currentCachedFile.getCachedAbstractProperties()?.map(property => ({
           name: property.name,
           description: property.getDescription('en') || '',
           urn: property.aspectModelUrn,
@@ -254,6 +315,24 @@ export abstract class InputFieldComponent<T extends BaseMetaModelElement> implem
       ?.map((cell: mxgraph.mxCell) => {
         const modelElement = MxGraphHelper.getModelElement(cell);
         if (modelElement.isExternalReference() && modelElement instanceof DefaultEntity) {
+          return {
+            name: modelElement.name,
+            description: modelElement.getDescription('en') || '',
+            urn: modelElement.aspectModelUrn,
+            namespace: modelElement.aspectModelUrn.split('#')[0],
+            complex: true,
+          };
+        }
+        return null;
+      })
+      .filter(cell => cell);
+  }
+
+  searchExtAbstractEntity(value: string): FilteredType[] {
+    return this.searchExtElement(value)
+      ?.map((cell: mxgraph.mxCell) => {
+        const modelElement = MxGraphHelper.getModelElement(cell);
+        if (modelElement.isExternalReference() && modelElement instanceof DefaultAbstractEntity) {
           return {
             name: modelElement.name,
             description: modelElement.getDescription('en') || '',

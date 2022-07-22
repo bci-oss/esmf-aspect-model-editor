@@ -19,6 +19,8 @@ import {MxGraphService, MxGraphShapeOverlayService} from '../services';
 import {
   Base,
   BaseMetaModelElement,
+  DefaultAbstractEntity,
+  DefaultAbstractProperty,
   DefaultAspect,
   DefaultCharacteristic,
   DefaultConstraint,
@@ -109,12 +111,25 @@ export class MxGraphSetupVisitor extends DefaultAspectModelVisitor<mxCell, mxCel
     return cell;
   }
 
-  visitQuantityKind(quantityKind: DefaultQuantityKind, context: mxCell): mxCell {
+  visitQuantityKind(_quantityKind: DefaultQuantityKind, _context: mxCell): mxCell {
     // The information is directly shown on the unit, mainly to reduce the amount of shapes
   }
 
   visitProperty(property: DefaultProperty, context: mxgraph.mxCell): mxgraph.mxCell {
     const cell = this.getOrCreateMxCell(property, MxGraphVisitorHelper.getPropertyProperties(property, this.languageSettingsService));
+    this.connectIsolatedElement(context, cell);
+
+    if (!this.currentCachedFile.getIsolatedElement(property.aspectModelUrn)) {
+      this.assignToParent(cell, context, property);
+    }
+    return cell;
+  }
+
+  visitAbstractProperty(property: DefaultAbstractProperty, context: mxgraph.mxCell): mxgraph.mxCell {
+    const cell = this.getOrCreateMxCell(
+      property,
+      MxGraphVisitorHelper.getAbstractPropertyProperties(property, this.languageSettingsService)
+    );
     this.connectIsolatedElement(context, cell);
 
     if (!this.currentCachedFile.getIsolatedElement(property.aspectModelUrn)) {
@@ -130,13 +145,41 @@ export class MxGraphSetupVisitor extends DefaultAspectModelVisitor<mxCell, mxCel
     );
     this.connectIsolatedElement(context, cell);
 
+    const parentCell = MxGraphHelper.getModelElement(context);
+    if (parentCell instanceof DefaultAbstractProperty) {
+      return cell;
+    }
+
     if (!this.currentCachedFile.getIsolatedElement(characteristic.aspectModelUrn)) {
       this.assignToParent(cell, context, characteristic);
     }
     return cell;
   }
 
-  visitAspect(aspect: DefaultAspect, context: mxCell): mxCell {
+  visitAbstractEntity(_abstractEntity: DefaultAbstractEntity, context: mxCell) {
+    if (this.shapes.get(_abstractEntity.name)) {
+      const cellTmp = this.shapes.get(_abstractEntity.name);
+      // Todo It may be that characteristics are not connected.
+      if (!this.currentCachedFile.getIsolatedElement(_abstractEntity.aspectModelUrn)) {
+        this.mxGraphService.assignToParent(cellTmp, context);
+      }
+      return;
+    }
+
+    const cell = this.getOrCreateMxCell(
+      _abstractEntity,
+      MxGraphVisitorHelper.getAbstractEntityProperties(_abstractEntity, this.languageSettingsService)
+    );
+
+    this.connectIsolatedElement(context, cell);
+
+    if (!this.currentCachedFile.getIsolatedElement(_abstractEntity.aspectModelUrn)) {
+      this.assignToParent(cell, context, _abstractEntity);
+    }
+    return cell;
+  }
+
+  visitAspect(aspect: DefaultAspect, _context: mxCell): mxCell {
     // English is our default at the moment.
     this.languageSettingsService.setLanguageCodes(['en']);
     return this.createMxCell(aspect, MxGraphVisitorHelper.getAspectProperties(aspect, this.languageSettingsService));

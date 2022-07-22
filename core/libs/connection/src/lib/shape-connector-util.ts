@@ -13,6 +13,8 @@
 
 import {
   BaseMetaModelElement,
+  DefaultAbstractEntity,
+  DefaultAbstractProperty,
   DefaultAspect,
   DefaultCharacteristic,
   DefaultCollection,
@@ -35,6 +37,22 @@ import {ModelInfo} from '@ame/mx-graph';
 export class ShapeConnectorUtil {
   static isEntityPropertyConnection(parentModel: BaseMetaModelElement, childModel: BaseMetaModelElement): boolean {
     return parentModel instanceof DefaultEntity && childModel instanceof DefaultProperty;
+  }
+
+  static isEntityEntityConnection(parentModel: BaseMetaModelElement, childModel: BaseMetaModelElement): boolean {
+    return parentModel instanceof DefaultEntity && childModel instanceof DefaultEntity;
+  }
+
+  static isEntityAbstractEntityConnection(parentModel: BaseMetaModelElement, childModel: BaseMetaModelElement): boolean {
+    return parentModel instanceof DefaultEntity && childModel instanceof DefaultAbstractEntity;
+  }
+
+  static isAbstractEntityAbstractEntityConnection(parentModel: BaseMetaModelElement, childModel: BaseMetaModelElement): boolean {
+    return parentModel instanceof DefaultAbstractEntity && childModel instanceof DefaultAbstractEntity;
+  }
+
+  static isAbstractEntityPropertyConnection(parentModel: BaseMetaModelElement, childModel: BaseMetaModelElement): boolean {
+    return parentModel instanceof DefaultAbstractEntity && childModel instanceof DefaultProperty;
   }
 
   static isCharacteristicEntityConnection(parentModel: BaseMetaModelElement, childModel: BaseMetaModelElement): boolean {
@@ -61,6 +79,22 @@ export class ShapeConnectorUtil {
 
   static isAspectPropertyConnection(parentModel: BaseMetaModelElement, childModel: BaseMetaModelElement): boolean {
     return parentModel instanceof DefaultAspect && (childModel instanceof DefaultProperty || childModel instanceof DefaultOperation);
+  }
+
+  static isPropertyPropertyConnection(parentModel: BaseMetaModelElement, childModel: BaseMetaModelElement): boolean {
+    return parentModel instanceof DefaultProperty && childModel instanceof DefaultProperty;
+  }
+
+  static isPropertyAbstractPropertyConnection(parentModel: BaseMetaModelElement, childModel: BaseMetaModelElement): boolean {
+    return parentModel instanceof DefaultProperty && childModel instanceof DefaultAbstractProperty;
+  }
+
+  static isAbstractEntityAbstractPropertyConnection(parentModel: BaseMetaModelElement, childModel: BaseMetaModelElement): boolean {
+    return parentModel instanceof DefaultAbstractEntity && childModel instanceof DefaultAbstractProperty;
+  }
+
+  static isAbstractPropertyAbstractPropertyConnection(parentModel: BaseMetaModelElement, childModel: BaseMetaModelElement): boolean {
+    return parentModel instanceof DefaultAbstractProperty && childModel instanceof DefaultAbstractProperty;
   }
 
   static isAspectEventConnection(parentModel: BaseMetaModelElement, childModel: BaseMetaModelElement): boolean {

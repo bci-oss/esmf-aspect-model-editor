@@ -61,6 +61,7 @@ import {
   Base,
   BaseMetaModelElement,
   DefaultAbstractEntity,
+  DefaultAbstractProperty,
   DefaultAspect,
   DefaultCharacteristic,
   DefaultConstraint,
@@ -355,6 +356,9 @@ export class EditorService {
         )
         .subscribe(() => localStorage.removeItem(ValidateStatus.validating));
     } catch (error) {
+      console.groupCollapsed('editor.service', error);
+      console.groupEnd();
+
       throwError(() => error);
     }
   }
@@ -404,6 +408,9 @@ export class EditorService {
           break;
         case 'abstractentity':
           newInstance = DefaultAbstractEntity.createInstance();
+          break;
+        case 'abstractproperty':
+          newInstance = DefaultAbstractProperty.createInstance();
           break;
         default:
           return;
@@ -711,6 +718,9 @@ export class EditorService {
       }),
       catchError(error => {
         // TODO Should be refined
+        console.groupCollapsed('editor-service -> saveModel', error);
+        console.groupEnd();
+
         this.logService.logError('Error on saving aspect model', error);
         return of(this.notificationsService.error('Error on saving the aspect model'));
       })

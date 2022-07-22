@@ -79,11 +79,6 @@ abstract class InheritanceConnector {
   ) {}
 
   public connect(parentMetaModel: BaseMetaModelElement, childMetaModel: BaseMetaModelElement, parentCell: mxCell, childCell: mxCell) {
-    if (typeof parentMetaModel['isPredefined'] === 'function' && parentMetaModel['isPredefined']()) {
-      this.notificationsService.warning("A predefined element can't have a child");
-      return;
-    }
-
     (parentMetaModel as any).extendedElement = childMetaModel;
     this.checkAndRemoveExtendElement(parentCell);
     this.mxGraphService.assignToParent(childCell, parentCell);

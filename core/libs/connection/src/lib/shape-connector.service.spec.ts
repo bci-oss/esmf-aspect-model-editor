@@ -14,6 +14,7 @@
 import {describe, expect} from '@jest/globals';
 import {
   AbstractEntityAbstractEntityConnectionHandler,
+  AbstractEntityAbstractPropertyConnectionHandler,
   AbstractEntityConnectionHandler,
   AbstractEntityPropertyConnectionHandler,
   AbstractEntityAbstractPropertyConnectionHandler,

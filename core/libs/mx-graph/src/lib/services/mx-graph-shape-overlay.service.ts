@@ -208,7 +208,7 @@ export class MxGraphShapeOverlayService {
         return;
       }
 
-      if (modelElement instanceof DefaultAspect || modelElement instanceof DefaultEntity || modelElement instanceof DefaultAbstractEntity) {
+      if (modelElement instanceof DefaultAspect || modelElement instanceof DefaultEntity) {
         overlayTooltip += 'Property';
       } else if (modelElement instanceof DefaultProperty) {
         overlayTooltip += 'Characteristic';

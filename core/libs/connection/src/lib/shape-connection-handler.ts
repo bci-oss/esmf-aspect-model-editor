@@ -79,10 +79,6 @@ abstract class InheritanceConnector {
   ) {}
 
   public connect(parentMetaModel: BaseMetaModelElement, childMetaModel: BaseMetaModelElement, parentCell: mxCell, childCell: mxCell) {
-    if ((childMetaModel as any).extendedElement === parentMetaModel) {
-      this.notificationsService.info(`${childMetaModel.name} already extends ${parentMetaModel.name}. Please remove the connection to create a new one.`, null, null, 5000);
-      return;
-    }
     (parentMetaModel as any).extendedElement = childMetaModel;
     this.checkAndRemoveExtendElement(parentCell);
     this.mxGraphService.assignToParent(childCell, parentCell);

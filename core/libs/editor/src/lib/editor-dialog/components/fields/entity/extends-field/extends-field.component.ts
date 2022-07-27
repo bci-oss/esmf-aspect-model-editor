@@ -1,5 +1,5 @@
 import {NamespacesCacheService} from '@ame/cache';
-import {DefaultEntity, DefaultAbstractEntity} from '@ame/meta-model';
+import {DefaultAbstractEntity, DefaultEntity} from '@ame/meta-model';
 import {MxGraphService} from '@ame/mx-graph';
 import {RdfService} from '@ame/rdf/services';
 import {NotificationsService, SearchService} from '@ame/shared';
@@ -89,7 +89,7 @@ export class ExtendsFieldComponent extends InputFieldComponent<DefaultEntity> im
     this.extendsControl = this.parentForm.get('extends') as FormControl;
 
     this.filteredAbstractEntities$ = combineLatest([
-      this.metaModelElement instanceof DefaultEntity ? this.initFilteredEntities(this.extendsValueControl) : of([]),
+      this.metaModelElement instanceof DefaultEntity ? this.initFilteredEntities(this.extendsValueControl, false, this.metaModelElement) : of([]),
       this.initFilteredAbstractEntities(this.extendsValueControl),
     ]).pipe(map(([a, b]) => [...a, ...b].filter(e => e.name !== this.metaModelElement.name)));
   }

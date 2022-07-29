@@ -30,6 +30,7 @@ import {
   DefaultOperation,
   DefaultProperty,
   DefaultTrait,
+  DefaultUnit,
 } from '@ame/meta-model';
 import {BrowserService} from '@ame/shared';
 import {ShapeConnectorService} from '@ame/connection';
@@ -43,8 +44,7 @@ export class MxGraphShapeOverlayService {
     private mxGraphShapeSelectorService: MxGraphShapeSelectorService,
     private mxGraphAttributeService: MxGraphAttributeService,
     private injector: Injector
-  ) {
-  }
+  ) {}
 
   public removeOverlay(cell: mxgraph.mxCell, overlay: mxgraph.mxCellOverlay): void {
     this.mxGraphAttributeService.graph.removeCellOverlay(cell, overlay);
@@ -165,11 +165,7 @@ export class MxGraphShapeOverlayService {
       let overlayTooltip = 'Add ';
       let modelInfo = ModelInfo.IS_CHARACTERISTIC;
 
-      if (modelElement instanceof DefaultConstraint) {
-        return;
-      }
-
-      if (modelElement instanceof DefaultEntityValue) {
+      if (modelElement instanceof DefaultConstraint || modelElement instanceof DefaultEntityValue || modelElement instanceof DefaultUnit) {
         return;
       }
 

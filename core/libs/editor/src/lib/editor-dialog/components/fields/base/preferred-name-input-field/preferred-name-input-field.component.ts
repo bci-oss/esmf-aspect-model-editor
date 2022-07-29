@@ -63,10 +63,6 @@ export class PreferredNameInputFieldComponent extends InputFieldComponent<BaseMe
 
       if (previousDisabled && !isNowPredefined) {
         control?.patchValue(this.getCurrentValue(key, locale));
-      } else if (!previousDisabled && !isNowPredefined) {
-        if (this.parentForm.get(key)?.value) {
-          return;
-        }
       }
 
       this.removePreferredNameControl(locale);

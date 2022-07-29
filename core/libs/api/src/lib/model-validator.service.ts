@@ -15,7 +15,7 @@ import {Injectable} from '@angular/core';
 import {MxGraphService} from '@ame/mx-graph';
 import {RdfModel} from '@ame/rdf/utils';
 import {ConfigurationService, Settings} from '@ame/settings-dialog';
-import {SemanticError, SyntacticError, ProcessingError, NotificationsService} from '@ame/shared';
+import {NotificationsService, ProcessingError, SemanticError, SyntacticError} from '@ame/shared';
 
 @Injectable({
   providedIn: 'root',
@@ -31,6 +31,7 @@ export class ModelValidatorService {
     this.settings = this.configurationService.getSettings();
     this.notificationsService.clearNotifications();
   }
+
   /*
    * This method will return true if at least one error is critical, otherwise false.
    * In this category are included structural errors.
@@ -71,8 +72,7 @@ export class ModelValidatorService {
       `Error on element ${error.focusNode ? error.focusNode.split('#')[1] + ': ' + error.resultMessage : error.resultMessage}`,
       null,
       error.focusNode,
-      5000,
-      !this.settings.showValidationPopupNotifications
+      5000
     );
     this.mxGraphService.showValidationErrorOnShape(error.focusNode);
   }

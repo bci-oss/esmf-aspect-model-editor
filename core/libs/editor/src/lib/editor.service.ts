@@ -612,8 +612,6 @@ export class EditorService {
       delayWhen(() => timer(this.settings.validationTimerSeconds * 1000)),
       switchMap(() => this.validate().pipe(first())),
       tap(() => {
-        this.notificationsService.info('Validation completed successfully', 'The model is valid');
-        this.logService.logInfo('Validated successfully');
         localStorage.removeItem(ValidateStatus.validating);
         this.refreshValidateModel();
       }),

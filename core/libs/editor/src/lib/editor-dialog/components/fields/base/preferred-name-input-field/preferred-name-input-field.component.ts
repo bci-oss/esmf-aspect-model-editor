@@ -33,7 +33,7 @@ export class PreferredNameInputFieldComponent extends InputFieldComponent<BaseMe
 
   getCurrentValue(key: string, locale: string) {
     if (this.metaModelElement instanceof DefaultCharacteristic && this.metaModelElement.isPredefined()) {
-      return this.metaModelElement?.[key] || '';
+      return this.metaModelElement?.getPreferredName(locale) || '';
     }
 
     if (this.metaModelElement instanceof DefaultEntity || this.metaModelElement instanceof DefaultAbstractEntity) {

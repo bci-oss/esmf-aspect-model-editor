@@ -57,18 +57,12 @@ export class MxGraphShapeOverlayService {
    */
   public addTopShapeOverlay(cell: mxgraph.mxCell): void {
     if (cell.style?.includes('characteristic') && !(MxGraphHelper.getModelElement(cell) instanceof DefaultEither)) {
-      const haveParentTrait = this.mxGraphAttributeService.graph
-        .getIncomingEdges(cell)
-        .some(edge => MxGraphHelper.getModelElement(edge.source) instanceof DefaultTrait);
-
-      if (!haveParentTrait) {
-        const overlay = this.createIconShapeOverlay('add-outline-frame', 'Add Trait');
-        overlay.align = mxConstants.ALIGN_CENTER;
-        overlay.verticalAlign = mxConstants.ALIGN_TOP;
-        overlay.offset.x += cell.geometry.width / 8;
-        overlay.addListener(mxEvent.CLICK, () => this.addShapeAction(cell, ModelInfo.IS_CHARACTERISTIC));
-        this.mxGraphAttributeService.graph.addCellOverlay(cell, overlay);
-      }
+      const overlay = this.createIconShapeOverlay('add-outline-frame', 'Add Trait');
+      overlay.align = mxConstants.ALIGN_CENTER;
+      overlay.verticalAlign = mxConstants.ALIGN_TOP;
+      overlay.offset.x += cell.geometry.width / 8;
+      overlay.addListener(mxEvent.CLICK, () => this.addShapeAction(cell, ModelInfo.IS_CHARACTERISTIC));
+      this.mxGraphAttributeService.graph.addCellOverlay(cell, overlay);
     }
   }
 

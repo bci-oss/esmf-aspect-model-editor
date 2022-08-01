@@ -89,7 +89,11 @@ export class EditorToolbarComponent implements AfterViewInit, OnInit, OnDestroy 
   }
 
   onOpenSettings() {
-    this.matDialog.open(SettingDialogComponent).afterClosed();
+    this.matDialog
+      .open(SettingDialogComponent, {
+        panelClass: 'settings-dialog-container',
+      })
+      .afterClosed();
   }
 
   onShowHelpDialog() {
@@ -130,7 +134,10 @@ export class EditorToolbarComponent implements AfterViewInit, OnInit, OnDestroy 
           if (!rdfAspectModel) {
             return of(null);
           }
-          this.loadingScreenService.open({...this.loadingScreenOptions, closeButtonAction: () => this.loadingScreen$.unsubscribe()});
+          this.loadingScreenService.open({
+            ...this.loadingScreenOptions,
+            closeButtonAction: () => this.loadingScreen$.unsubscribe(),
+          });
           this.closeEditDialog.emit();
           return this.editorService.loadNewAspectModel(rdfAspectModel).pipe(
             first(),

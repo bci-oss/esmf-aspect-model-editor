@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright (c) 2022 Robert Bosch Manufacturing Solutions GmbH
  *
  * See the AUTHORS file(s) distributed with this work for
@@ -11,4 +11,25 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-export * from './example-value-input-field/example-value-input-field.component';
+:host {
+  margin-top: 25px;
+  display: block;
+}
+
+.properties-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.04);
+  padding: 10px 15px;
+}
+
+p {
+  display: flex;
+  align-items: center;
+  margin: 0;
+
+  mat-icon {
+    margin-right: 10px;
+  }
+}

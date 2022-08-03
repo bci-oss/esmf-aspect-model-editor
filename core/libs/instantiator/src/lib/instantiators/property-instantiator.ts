@@ -56,6 +56,9 @@ export class PropertyInstantiator {
     property.fileName = this.metaModelElementInstantiator.fileName;
 
     this.metaModelElementInstantiator.initBaseProperties(quads, property, this.rdfModel);
+    if (listElement.blankNode) {
+      property.aspectModelUrn = listElement.quad.value;
+    }
     // resolving element to not enter in infinite loop
     this.currentCachedFile.resolveElement(property, this.isIsolated);
 

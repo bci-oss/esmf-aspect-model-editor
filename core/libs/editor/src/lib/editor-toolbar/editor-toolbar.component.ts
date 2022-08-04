@@ -194,6 +194,8 @@ export class EditorToolbarComponent implements AfterViewInit, OnInit, OnDestroy 
             first(),
             map((namespaces: string[]) => {
               const rdfModel = this.modelService.getLoadedAspectModel().rdfModel;
+              const serializeModel = this.rdfService.serializeModel(rdfModel);
+
               if (namespaces.some(namespace => namespace === rdfModel.getAbsoluteAspectModelFileName())) {
                 this.confirmDialogService
                   .open({
@@ -205,10 +207,12 @@ export class EditorToolbarComponent implements AfterViewInit, OnInit, OnDestroy 
                   })
                   .subscribe(confirmed => {
                     if (confirmed) {
+                      this.editorService.updateLastSavedRdf(false, serializeModel, new Date());
                       this.editorService.saveModel().subscribe();
                     }
                   });
               } else {
+                this.editorService.updateLastSavedRdf(false, serializeModel, new Date());
                 this.editorService.saveModel().subscribe();
               }
             })

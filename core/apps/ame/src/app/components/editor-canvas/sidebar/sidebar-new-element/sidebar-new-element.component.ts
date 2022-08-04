@@ -30,7 +30,8 @@ export class SidebarNewElementComponent implements OnInit {
       new ElementModel(null, 'Property', 'property', 'Named Value'),
       new ElementModel(null, 'Operation', 'operation', 'Represents triggerable actions'),
       new ElementModel(null, 'Characteristic', 'characteristic', 'Characterizes a Property'),
-      new ElementModel(null, 'AbstractEntity', 'abstractEntity', 'The abstraction of a logical encapsulation'),
+      // TODO reactivate for feature usage
+      // new ElementModel(null, 'AbstractEntity', 'abstractEntity', 'The abstraction of a logical encapsulation'),
       new ElementModel(null, 'Entity', 'entity', 'The logical encapsulation of multiple values'),
       new ElementModel(null, 'Constraint', 'constraint', 'A limitation applied to a Characteristic'),
       new ElementModel(null, 'Trait', 'trait', 'Bundles Constraints'),

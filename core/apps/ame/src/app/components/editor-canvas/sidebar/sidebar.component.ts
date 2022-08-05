@@ -47,6 +47,7 @@ export class EditorCanvasSidebarComponent implements AfterViewInit, OnInit, OnDe
 
   private loadModelSubscription: Subscription;
   private refreshNamespacesSubscription: Subscription;
+  private refreshSideBarSubscription: Subscription;
 
   constructor(
     private editorService: EditorService,
@@ -75,11 +76,16 @@ export class EditorCanvasSidebarComponent implements AfterViewInit, OnInit, OnDe
       this.sidebarService.resetNamespaces();
       this.initNamespaces();
     });
+
+    this.refreshSideBarSubscription = this.editorService.onRefreshSideBar$.subscribe(() => {
+      this.view = 'default';
+    });
   }
 
   public ngOnDestroy() {
     this.loadModelSubscription.unsubscribe();
     this.refreshNamespacesSubscription.unsubscribe();
+    this.refreshSideBarSubscription.unsubscribe();
   }
 
   public onSelectNamespace(namespace: string) {
@@ -137,11 +143,10 @@ export class EditorCanvasSidebarComponent implements AfterViewInit, OnInit, OnDe
 
     this.confirmDialogService
       .open({
-        phrases: [
-          `You are about to load ${namespaceFileName} Model.`,
-          'Do you want to save the current aspect model in the workspace first?',
-        ],
-        title: 'Save current Aspect model',
+        phrases: [`You are about to load ${namespaceFileName}.`, 'Do you want to save the current Aspect Model in the workspace first?'],
+        title: 'Save current Aspect Model',
+        closeButtonText: 'Don´t save',
+        okButtonText: 'Save',
       })
       .subscribe(confirmed => {
         if (confirmed) {

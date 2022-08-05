@@ -18,15 +18,17 @@ The latest auto-saved version is restored after the restart of the application.
 * *Auto-validation*: automatically validates the current model in a predefined period.
 The validation information is displayed in the xref::validation-and-notifications.adoc[Notifications dialog].
 
+* *Auto-Formatting*: automatically format the current model if you change something.
+
 * *Use "hierarchical" layout*: aligns all elements below the root Aspect.
 
 * *Display 'entity value &ndash; entity' relationship*: displays all relationship connections from Entity instances to their related Entities.
 
 * *Display disambiguation labels*: displays labels on the relationship connections between the elements for easier identification of the relationship (e.g., for Operations: Properties are labeled with input or output).
 
-* *Display highly saturated colors*: changes the color scheme of the elements from light to full saturation.
-+
-image::settings-saturated-colors.png[Lower versus full saturation,width=80%]
+//* *Display highly saturated colors*: changes the color scheme of the elements from light to full saturation.
+//+
+//image::settings-saturated-colors.png[Lower versus full saturation,width=80%]
 
 [[language-settings]]
 == Language settings

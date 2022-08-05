@@ -314,6 +314,7 @@ export class TraitConnectionHandler implements ShapeSingleConnector<DefaultTrait
     const child = this.mxGraphService.renderModelElement(metaModelElement);
     trait.update(defaultElement);
     this.mxGraphService.assignToParent(child, source);
+    this.mxGraphService.moveCells([child], source.getGeometry().x + 30, source.getGeometry().y + 60);
     this.mxGraphService.formatCell(child);
     this.mxGraphService.formatShapes();
   }
@@ -441,7 +442,12 @@ export class CharacteristicConnectionHandler implements ShapeSingleConnector<Cha
         this.mxGraphService.assignToParent(source, traitShape);
       }
       this.addConstraint(defaultTrait, traitShape);
-      this.mxGraphService.moveCells([traitShape], source.getGeometry().x, source.getGeometry().y);
+
+      const traitWithProperty = traitShape.edges?.some(edge => MxGraphHelper.getModelElement(edge.source) instanceof DefaultProperty);
+
+      if (!traitWithProperty) {
+        this.mxGraphService.moveCells([traitShape], source.getGeometry().x, source.getGeometry().y);
+      }
       this.mxGraphService.formatCell(traitShape);
     }
 

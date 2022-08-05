@@ -204,6 +204,7 @@ export class EditorToolbarComponent implements AfterViewInit, OnInit, OnDestroy 
                       'Are you sure you want to overwrite it?',
                     ],
                     title: 'Update Aspect model',
+                    okButtonText: 'Overwrite',
                   })
                   .subscribe(confirmed => {
                     if (confirmed) {

@@ -98,11 +98,11 @@ export class EditorService {
   private saveModel$ = new BehaviorSubject(this.settings.autoSaveEnabled);
   private saveLatestModelSubscription$: Subscription;
   private lastSavedRDF$ = new BehaviorSubject<Partial<ILastSavedModel>>({});
-
   public loadModel$ = new BehaviorSubject(null);
   public delayedBindings: Array<any> = [];
 
   public onRefreshNamespaces: Subject<void> = new Subject();
+  public onRefreshSideBar$: Subject<void> = new Subject();
 
   public get savedRdf$() {
     return this.lastSavedRDF$.asObservable();
@@ -226,6 +226,7 @@ export class EditorService {
   }
 
   loadNewAspectModel(rdfAspectModel: string, isDefault?: boolean) {
+    this.refreshSidebar();
     this.removeLastSavedRdf();
     this.notificationsService.info('Loading model', null, null, 5000);
     return this.rdfService.loadModel(rdfAspectModel).pipe(
@@ -775,6 +776,10 @@ export class EditorService {
 
   refreshSidebarNamespaces() {
     this.onRefreshNamespaces.next();
+  }
+
+  refreshSidebar() {
+    this.onRefreshSideBar$.next();
   }
 
   private saveCompleteError(error) {

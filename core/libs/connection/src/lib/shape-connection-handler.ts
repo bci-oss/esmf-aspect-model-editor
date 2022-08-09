@@ -119,7 +119,12 @@ class EntityInheritanceConnector extends InheritanceConnector {
     super(mxGraphService, mxGraphAttributeService, languageSettingsService);
   }
 
-  connectWithAbstract(parentMetaModel: DefaultEntity, childMetaModel: DefaultAbstractEntity | DefaultEntity, parent: mxgraph.mxCell, child: mxgraph.mxCell) {
+  connectWithAbstract(
+    parentMetaModel: DefaultEntity,
+    childMetaModel: DefaultAbstractEntity | DefaultEntity,
+    parent: mxgraph.mxCell,
+    child: mxgraph.mxCell
+  ) {
     const abstractProperties = (childMetaModel as DefaultAbstractEntity).allProperties
       .map(({property}) => property)
       .filter(property => property instanceof DefaultAbstractProperty);
@@ -127,7 +132,8 @@ class EntityInheritanceConnector extends InheritanceConnector {
     const newProperties = abstractProperties.map(abstractProperty => {
       const property = DefaultProperty.createInstance();
       property.metaModelVersion = abstractProperty.metaModelVersion;
-      property.aspectModelUrn = `[${abstractProperty.aspectModelUrn}]`;
+      const [namespace, name] = abstractProperty.aspectModelUrn.split('#');
+      property.aspectModelUrn = `${namespace}#[${name}]`;
       property.extendedElement = abstractProperty;
       return property;
     });
@@ -171,6 +177,7 @@ class PropertyInheritanceConnector extends InheritanceConnector {
       (childMetaModel instanceof DefaultAbstractProperty || childMetaModel instanceof DefaultProperty)
     ) {
       parentMetaModel.name = `[${childMetaModel.name}]`;
+      parentCell.setId(`[${childMetaModel.name}]`);
     }
 
     super.connect(parentMetaModel, childMetaModel, parentCell, childCell);
@@ -364,7 +371,8 @@ export class AbstractEntityConnectionHandler implements ShapeSingleConnector<Ent
     const entities = this.mxGraphService.graph.getIncomingEdges(source).map(edge => edge.source);
     if (entities.length) {
       const newProperty = DefaultProperty.createInstance();
-      newProperty.aspectModelUrn = `[${abstractProperty.aspectModelUrn}]`;
+      const [namespace, name] = abstractProperty.aspectModelUrn.split('#');
+      newProperty.aspectModelUrn = `${namespace}#[${name}]`;
       newProperty.metaModelVersion = abstractProperty.metaModelVersion;
       const newPropertyCell = this.mxGraphService.renderModelElement(newProperty);
       this.propertyAbstractPropertyConnector.connect(newProperty, abstractProperty, newPropertyCell, abstractPropertyCell);

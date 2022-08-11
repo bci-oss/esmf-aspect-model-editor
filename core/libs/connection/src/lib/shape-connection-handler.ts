@@ -75,19 +75,15 @@ abstract class InheritanceConnector {
     protected mxGraphService: MxGraphService,
     protected mxGraphAttributeService: MxGraphAttributeService,
     protected languageSettingsService: LanguageSettingsService,
-    protected notificationsService?: NotificationsService
+    protected notificationsService: NotificationsService
   ) {}
 
   public connect(parentMetaModel: BaseMetaModelElement, childMetaModel: BaseMetaModelElement, parentCell: mxCell, childCell: mxCell) {
-    if ((childMetaModel as any).extendedElement === parentMetaModel) {
-      this.notificationsService.info(
-        `${childMetaModel.name} already extends ${parentMetaModel.name}. Please remove the connection to create a new one.`,
-        null,
-        null,
-        5000
-      );
+    if (typeof parentMetaModel['isPredefined'] === 'function' && parentMetaModel['isPredefined']()) {
+      this.notificationsService.warning("A predefined element can't have a child");
       return;
     }
+
     (parentMetaModel as any).extendedElement = childMetaModel;
     this.checkAndRemoveExtendElement(parentCell);
     this.mxGraphService.assignToParent(childCell, parentCell);
@@ -123,10 +119,11 @@ class EntityInheritanceConnector extends InheritanceConnector {
     protected mxGraphService: MxGraphService,
     protected mxGraphAttributeService: MxGraphAttributeService,
     protected languageSettingsService: LanguageSettingsService,
+    protected notificationsService: NotificationsService,
     protected propertyAbstractPropertyConnector?: PropertyAbstractPropertyConnectionHandler,
     protected entityPropertyConnector?: EntityPropertyConnectionHandler
   ) {
-    super(mxGraphService, mxGraphAttributeService, languageSettingsService);
+    super(mxGraphService, mxGraphAttributeService, languageSettingsService, notificationsService);
   }
 
   connectWithAbstract(
@@ -176,9 +173,10 @@ class PropertyInheritanceConnector extends InheritanceConnector {
   constructor(
     protected mxGraphService: MxGraphService,
     protected mxGraphAttributeService: MxGraphAttributeService,
-    protected languageSettingsService: LanguageSettingsService
+    protected languageSettingsService: LanguageSettingsService,
+    protected notificationsService: NotificationsService
   ) {
-    super(mxGraphService, mxGraphAttributeService, languageSettingsService);
+    super(mxGraphService, mxGraphAttributeService, languageSettingsService, notificationsService);
   }
 
   public connect(parentMetaModel: BaseMetaModelElement, childMetaModel: BaseMetaModelElement, parentCell: mxCell, childCell: mxCell) {
@@ -905,13 +903,27 @@ export class PropertyPropertyConnectionHandler
     protected languageSettingsService: LanguageSettingsService,
     private notificationService: NotificationsService
   ) {
-    super(mxGraphService, mxGraphAttributeService, languageSettingsService);
+    super(mxGraphService, mxGraphAttributeService, languageSettingsService, notificationService);
   }
 
   public connect(parentMetaModel: DefaultProperty, childMetaModel: DefaultProperty, parentCell: mxCell, childCell: mxCell) {
+    if (parentMetaModel.isPredefined()) {
+      this.notificationsService.warning("A predefined element can't have a child");
+      return;
+    }
+
     if (this.isRecursive(parentMetaModel, childCell)) {
       this.notificationService.warning('Recursive elements', 'Can not connect elements due to circular connection', null, 5000);
     } else {
+      if (childMetaModel.extendedElement) {
+        this.notificationService.warning(
+          'Illegal operation',
+          'Can not extend a Property which already extends another element',
+          null,
+          5000
+        );
+        return;
+      }
       super.connect(parentMetaModel, childMetaModel, parentCell, childCell);
     }
   }
@@ -930,7 +942,7 @@ export class PropertyAbstractPropertyConnectionHandler
     protected languageSettingsService: LanguageSettingsService,
     private notificationService: NotificationsService
   ) {
-    super(mxGraphService, mxGraphAttributeService, languageSettingsService);
+    super(mxGraphService, mxGraphAttributeService, languageSettingsService, notificationService);
   }
 
   public connect(parentMetaModel: DefaultProperty, childMetaModel: DefaultAbstractProperty, parentCell: mxCell, childCell: mxCell) {
@@ -955,7 +967,7 @@ export class AbstractPropertyAbstractPropertyConnectionHandler
     protected languageSettingsService: LanguageSettingsService,
     private notificationService: NotificationsService
   ) {
-    super(mxGraphService, mxGraphAttributeService, languageSettingsService);
+    super(mxGraphService, mxGraphAttributeService, languageSettingsService, notificationService);
   }
 
   public connect(parentMetaModel: DefaultAbstractProperty, childMetaModel: DefaultAbstractProperty, parentCell: mxCell, childCell: mxCell) {
@@ -1013,7 +1025,14 @@ export class EntityEntityConnectionHandler extends EntityInheritanceConnector im
     protected entityPropertyConnector: EntityPropertyConnectionHandler,
     private notificationService: NotificationsService
   ) {
-    super(mxGraphService, mxGraphAttributeService, languageSettingsService, propertyAbstractPropertyConnector, entityPropertyConnector);
+    super(
+      mxGraphService,
+      mxGraphAttributeService,
+      languageSettingsService,
+      notificationService,
+      propertyAbstractPropertyConnector,
+      entityPropertyConnector
+    );
   }
 
   public connect(parentMetaModel: DefaultEntity, childMetaModel: DefaultEntity, parentCell: mxCell, childCell: mxCell) {
@@ -1040,7 +1059,7 @@ export class AbstractEntityAbstractEntityConnectionHandler
     protected languageSettingsService: LanguageSettingsService,
     private notificationService: NotificationsService
   ) {
-    super(mxGraphService, mxGraphAttributeService, languageSettingsService);
+    super(mxGraphService, mxGraphAttributeService, languageSettingsService, notificationService);
   }
 
   public connect(parentMetaModel: DefaultAbstractEntity, childMetaModel: DefaultAbstractEntity, parentCell: mxCell, childCell: mxCell) {
@@ -1067,7 +1086,14 @@ export class EntityAbstractEntityConnectionHandler
     protected entityPropertyConnector: EntityPropertyConnectionHandler,
     private notificationService: NotificationsService
   ) {
-    super(mxGraphService, mxGraphAttributeService, languageSettingsService, propertyAbstractPropertyConnector, entityPropertyConnector);
+    super(
+      mxGraphService,
+      mxGraphAttributeService,
+      languageSettingsService,
+      notificationService,
+      propertyAbstractPropertyConnector,
+      entityPropertyConnector
+    );
   }
 
   public connect(parentMetaModel: DefaultEntity, childMetaModel: DefaultAbstractEntity, parent: mxCell, child: mxCell) {

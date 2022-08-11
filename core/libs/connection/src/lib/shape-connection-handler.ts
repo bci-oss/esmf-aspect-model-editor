@@ -74,7 +74,8 @@ abstract class InheritanceConnector {
   constructor(
     protected mxGraphService: MxGraphService,
     protected mxGraphAttributeService: MxGraphAttributeService,
-    protected languageSettingsService: LanguageSettingsService
+    protected languageSettingsService: LanguageSettingsService,
+    protected notificationsService: NotificationsService
   ) {}
 
   public connect(parentMetaModel: BaseMetaModelElement, childMetaModel: BaseMetaModelElement, parentCell: mxCell, childCell: mxCell) {

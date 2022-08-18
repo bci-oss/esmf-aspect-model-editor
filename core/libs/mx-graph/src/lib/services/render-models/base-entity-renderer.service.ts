@@ -20,7 +20,7 @@ import {DefaultAbstractEntity, DefaultAbstractProperty, DefaultEntity, DefaultPr
 import {mxgraph} from 'mxgraph-factory';
 import {MxGraphShapeOverlayService} from '../mx-graph-shape-overlay.service';
 import {MxGraphService} from '../mx-graph.service';
-import {MxGraphHelper} from '../../helpers';
+import {MxGraphHelper, MxGraphVisitorHelper} from '../../helpers';
 import {MxGraphSetupVisitor} from '../../visitors';
 
 @Injectable({
@@ -38,7 +38,7 @@ export class BaseEntityRendererService {
 
   public handleExtendsElement(cell: mxgraph.mxCell) {
     const metaModelElement = MxGraphHelper.getModelElement<DefaultEntity>(cell);
-    if (!metaModelElement.extendedElement) {
+    if (!metaModelElement.extendedElement || this.hasTimeSeries(cell)) {
       return;
     }
 
@@ -61,6 +61,8 @@ export class BaseEntityRendererService {
     const resolvedCell = this.mxGraphService.resolveCellByModelElement(cachedEntity);
     const entityCell = resolvedCell ? resolvedCell : this.mxGraphService.renderModelElement(extendsElement);
     this.shapeConnectorService.connectShapes(metaModelElement, extendsElement, cell, entityCell);
+
+    this.updateCell(cell);
   }
 
   private createPropertyForValueAbstractProperty(timeSeriesEntity: DefaultAbstractEntity, parentCell: mxgraph.mxCell) {
@@ -85,5 +87,27 @@ export class BaseEntityRendererService {
 
     const parentModel = MxGraphHelper.getModelElement(parentCell);
     this.shapeConnectorService.connectShapes(parentModel, valueProperty, parentCell, valuePropertyCell);
+  }
+
+  private hasTimeSeries(cell: mxgraph.mxCell): boolean {
+    const modelElement = MxGraphHelper.getModelElement<DefaultEntity>(cell);
+    const outgoingEdges = this.mxGraphService.graph.getOutgoingEdges(cell);
+    return (outgoingEdges || []).some(edge => {
+      const targetElement = MxGraphHelper.getModelElement(edge.target);
+      return (
+        targetElement instanceof DefaultAbstractEntity &&
+        targetElement.name === 'TimeSeriesEntity' &&
+        modelElement.extendedElement instanceof DefaultAbstractEntity &&
+        modelElement.name === 'TimeSeriesEntity'
+      );
+    });
+  }
+
+  private updateCell(cell: mxgraph.mxCell) {
+    cell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(
+      MxGraphHelper.getModelElement(cell),
+      this.languageSettingsService
+    );
+    this.mxGraphService.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabel(cell));
   }
 }

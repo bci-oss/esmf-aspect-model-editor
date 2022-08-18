@@ -49,6 +49,7 @@ export class PropertyModelService extends BaseModelService {
     metaModelElement.exampleValue = form.exampleValue;
 
     super.update(cell, form);
+    this.updatePropertiesNames(cell);
     this.propertyRenderer.update({cell});
   }
 
@@ -72,6 +73,27 @@ export class PropertyModelService extends BaseModelService {
     });
   }
 
+  private updatePropertiesNames(cell: mxgraph.mxCell) {
+    const parents =
+      this.mxGraphService.resolveParents(cell)?.filter(e => MxGraphHelper.getModelElement(e) instanceof DefaultProperty) || [];
+    const modelElement = MxGraphHelper.getModelElement(cell);
+
+    for (const parentCell of parents) {
+      const parent = MxGraphHelper.getModelElement(parentCell);
+      parent.name = `[${modelElement.name}]`;
+      parent.aspectModelUrn = `${parent.aspectModelUrn.split('#')[0]}#${parent.name}`;
+      this.updateCell(parentCell);
+    }
+  }
+
+  private updateCell(cell: mxgraph.mxCell) {
+    cell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(
+      MxGraphHelper.getModelElement(cell),
+      this.languageSettingsService
+    );
+    this.mxGraphService.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabel(cell));
+  }
+
   private updateExtends(cell: mxgraph.mxCell, isDeleting = true) {
     const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell);
     for (const edge of incomingEdges) {
@@ -82,11 +104,7 @@ export class PropertyModelService extends BaseModelService {
       }
 
       element.extendedElement = null;
-      edge.source['configuration'].fields = MxGraphVisitorHelper.getElementProperties(
-        MxGraphHelper.getModelElement(edge.source),
-        this.languageSettingsService
-      );
-      this.mxGraphService.graph.labelChanged(edge.source, MxGraphHelper.createPropertiesLabel(edge.source));
+      this.updateCell(edge.source);
     }
   }
 }

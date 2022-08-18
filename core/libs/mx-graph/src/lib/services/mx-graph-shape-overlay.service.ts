@@ -32,6 +32,7 @@ import {
   DefaultProperty,
   DefaultTrait,
   OverWrittenProperty,
+  DefaultUnit,
 } from '@ame/meta-model';
 import {BrowserService} from '@ame/shared';
 import {ShapeConnectorService} from '@ame/connection';

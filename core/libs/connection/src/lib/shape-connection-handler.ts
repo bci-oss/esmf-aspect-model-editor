@@ -719,6 +719,11 @@ export class PropertyCharacteristicConnectionHandler implements ShapeMultiConnec
         outEdge.target.geometry.translate(ExpandedModelShape.expandedElementWidth, 0);
       }
 
+      const targetModel = MxGraphHelper.getModelElement(outEdge.target);
+      if (targetModel instanceof DefaultProperty || targetModel instanceof DefaultAbstractProperty) {
+        return;
+      }
+
       this.mxGraphService.removeCells([parent.removeEdge(outEdge, true)]);
     });
 

@@ -30,6 +30,7 @@ export class SidebarNewElementComponent implements OnInit {
       new ElementModel(null, 'AbstractProperty', 'abstractProperty', 'Abstract named value'),
       new ElementModel(null, 'Property', 'property', 'Named Value'),
       new ElementModel(null, 'Characteristic', 'characteristic', 'The meaning of a Property in the context of the Aspect'),
+      new ElementModel(null, 'AbstractEntity', 'abstractEntity', 'The abstraction of a logical encapsulation of multiple values'),
       new ElementModel(null, 'Entity', 'entity', 'The logical encapsulation of multiple values'),
       new ElementModel(null, 'Unit', 'unit', 'A definition of a physical unit'),
       new ElementModel(null, 'Constraint', 'constraint', 'A limitation applied to a Characteristic'),

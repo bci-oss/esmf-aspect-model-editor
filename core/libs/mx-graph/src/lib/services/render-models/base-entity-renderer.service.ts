@@ -34,6 +34,7 @@ export class BaseEntityRendererService {
     private namespacesCacheService: NamespacesCacheService,
     private shapeConnectorService: ShapeConnectorService,
     private mxGraphShapeOverlayService: MxGraphShapeOverlayService,
+    private notificationService: NotificationsService,
     private rdfService: RdfService
   ) {}
 

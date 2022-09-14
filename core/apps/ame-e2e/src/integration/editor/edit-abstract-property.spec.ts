@@ -50,7 +50,7 @@ describe('Create and Edit Abstract Property', () => {
     });
 
     it('should edit property1', () => {
-      cy.dbClickShape('property1')
+      cy.dbClickShape('[abstractProperty1]')
         .then(() => cy.get(FIELD_name).should('be.disabled'))
         .then(() => cy.get(FIELD_descriptionen).should('be.disabled'))
         .then(() => cy.get(FIELD_preferredNameen).should('be.disabled'))
@@ -171,14 +171,13 @@ describe('Create and Edit Abstract Property', () => {
 
     it('should export', () => {
       cy.then(() => cy.getUpdatedRDF()).then(rdf => {
-        console.log(rdf);
         expect(rdf).to.contain(`[ bamm:extends :abstractProperty1 ]`);
         expect(rdf).to.contain(`[ bamm:extends :abstractProperty2 ]`);
         expect(rdf).to.contain(
-          `:abstractProperty1 a bamm:AbstractProperty;\n    bamm:name "abstractProperty1";\n    bamm:preferredName "Preferred Name 1"@en;\n    bamm:description "Description 1"@en;\n    bamm:see <http://test1.com>.`
+          `:abstractProperty1 a bamm:AbstractProperty;\n    bamm:preferredName "Preferred Name 1"@en;\n    bamm:description "Description 1"@en;\n    bamm:see <http://test1.com>.`
         );
         expect(rdf).to.contain(
-          `:abstractProperty2 a bamm:AbstractProperty;\n    bamm:name "abstractProperty2";\n    bamm:preferredName "Preferred Name 2"@en;\n    bamm:description "Description 2"@en;\n    bamm:see <http://test2.com>.`
+          `:abstractProperty2 a bamm:AbstractProperty;\n    bamm:preferredName "Preferred Name 2"@en;\n    bamm:description "Description 2"@en;\n    bamm:see <http://test2.com>.`
         );
       });
     });

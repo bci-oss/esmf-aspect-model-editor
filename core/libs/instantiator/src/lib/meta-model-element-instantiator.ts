@@ -13,7 +13,6 @@
 
 import {NamedNode, Quad, Quad_Object, Quad_Subject, Util} from 'n3';
 import {
-  Base,
   BaseMetaModelElement,
   Characteristic,
   Constraint,
@@ -51,6 +50,7 @@ import {
   LocaleConstraintInstantiator,
   MeasurementCharacteristicInstantiator,
   OperationInstantiator,
+  PredefinedPropertyInstantiator,
   PropertyInstantiator,
   QuantifiableCharacteristicInstantiator,
   RangeConstraintInstantiator,
@@ -66,6 +66,7 @@ import {
 import {CachedFile, NamespacesCacheService} from '@ame/cache';
 import {InstantiatorListElement, RdfModel, RdfModelUtil} from '@ame/rdf/utils';
 import {NotificationsService} from '@ame/shared';
+import {PredefinedEntityInstantiator} from './instantiators/bamme-predefined-entity-instantiator';
 
 export class MetaModelElementInstantiator {
   private characteristicInstantiator: CharacteristicInstantiator;
@@ -122,7 +123,13 @@ export class MetaModelElementInstantiator {
   getProperty(element: InstantiatorListElement, callback: Function) {
     const propertyInstantiator = new PropertyInstantiator(this);
     const abstractPropertyInstantiator = new AbstractPropertyInstantiator(this);
+    const predefinedPropertyInstantiator = new PredefinedPropertyInstantiator(this);
+    const isPredefined = !!predefinedPropertyInstantiator.propertyInstances[element.quad.value];
     let quads: Quad[];
+
+    if (isPredefined) {
+      return callback({property: predefinedPropertyInstantiator.propertyInstances[element.quad.value](), keys: {}});
+    }
 
     if (Util.isBlankNode(element.quad)) {
       const firstQuad = this.rdfModel.store.getQuads(element.quad, null, null, null).find(e => this.bamm.isRdfFirst(e.predicate.value));
@@ -309,6 +316,11 @@ export class MetaModelElementInstantiator {
       quad = this.rdfModel.resolveBlankNodes(quad.object.value).shift();
     }
 
+    if (quad.object.value === this.bamme.TimeSeriesEntity) {
+      const predefinedEntityInstantiator = new PredefinedEntityInstantiator(this);
+      return callback(predefinedEntityInstantiator.entityInstances[this.bamme.TimeSeriesEntity]());
+    }
+
     const typeQuad = quad ? RdfModelUtil.getEffectiveType(quad, this.rdfModel) : null;
     if (!typeQuad) {
       return callback(null);
@@ -393,9 +405,7 @@ export class MetaModelElementInstantiator {
     let typeQuad: Quad;
 
     quads.forEach(quad => {
-      if (this.bamm.isNameProperty(quad.predicate.value)) {
-        metaModelElement.name = quad.object.value;
-      } else if (this.bamm.isDescriptionProperty(quad.predicate.value)) {
+      if (this.bamm.isDescriptionProperty(quad.predicate.value)) {
         this.addDescription(quad, metaModelElement);
       } else if (this.bamm.isPreferredNameProperty(quad.predicate.value)) {
         this.addPreferredName(quad, metaModelElement);
@@ -406,18 +416,16 @@ export class MetaModelElementInstantiator {
       }
     });
 
-    if (!metaModelElement.name) {
-      this.setUniqueElementName(metaModelElement);
-    }
-
     if (typeQuad && !Util.isBlankNode(typeQuad.subject)) {
-      (<Base>metaModelElement).aspectModelUrn = `${typeQuad.subject.value}`;
+      [, metaModelElement.name] = typeQuad.subject.value.split('#');
+      metaModelElement.aspectModelUrn = typeQuad.subject.value;
     } else {
-      (<Base>metaModelElement).aspectModelUrn = `${this.rdfModel.getAspectModelUrn()}${metaModelElement.name}`;
+      this.setUniqueElementName(metaModelElement);
+      metaModelElement.aspectModelUrn = `${this.rdfModel.getAspectModelUrn()}${metaModelElement.name}`;
     }
 
-    if (!(<Base>metaModelElement).metaModelVersion) {
-      (<Base>metaModelElement).metaModelVersion = rdfModel.BAMM().version;
+    if (!metaModelElement.metaModelVersion) {
+      metaModelElement.metaModelVersion = rdfModel.BAMM().version;
     }
   }
 

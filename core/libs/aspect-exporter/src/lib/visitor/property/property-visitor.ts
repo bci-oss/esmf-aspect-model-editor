@@ -32,7 +32,7 @@ export class PropertyVisitor extends BaseVisitor<DefaultProperty> {
 
   visit(cell: mxgraph.mxCell): DefaultProperty {
     const property: DefaultProperty = MxGraphHelper.getModelElement<DefaultProperty>(cell);
-    if (property.extendedElement) {
+    if (property.extendedElement || property.isPredefined()) {
       return null;
     }
 
@@ -55,7 +55,6 @@ export class PropertyVisitor extends BaseVisitor<DefaultProperty> {
         value: property.getDescription(language),
       })),
       see: property.getSeeReferences() || [],
-      name: property.name,
     });
   }
 

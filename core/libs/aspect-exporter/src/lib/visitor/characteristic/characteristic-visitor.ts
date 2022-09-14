@@ -239,7 +239,6 @@ export class CharacteristicVisitor extends BaseVisitor<DefaultCharacteristic> {
   // base functions
   private updateProperties(characteristic: DefaultCharacteristic) {
     this.rdfNodeService.update(characteristic, {
-      name: characteristic.name,
       preferredName: characteristic.getAllLocalesPreferredNames()?.map(language => ({
         language,
         value: characteristic.getPreferredName(language),
@@ -306,18 +305,20 @@ export class CharacteristicVisitor extends BaseVisitor<DefaultCharacteristic> {
         continue;
       }
 
-      if (characteristic.dataType?.isComplex() && parent instanceof DefaultProperty) {
+      if (characteristic.dataType?.isComplex() && parent instanceof DefaultProperty && !parent.isPredefined()) {
         // remove exampleValue for complex datatype
 
         parent.exampleValue = null;
         this.rdfNodeService.update(parent, {exampleValue: null});
       }
 
-      this.removeOldAndAddNewReference(
-        DataFactory.namedNode(parent.aspectModelUrn),
-        parent instanceof DefaultCollection ? this.bammc.ElementCharacteristicProperty() : this.bamm.CharacteristicProperty(),
-        DataFactory.namedNode(characteristic.aspectModelUrn)
-      );
+      parent instanceof DefaultProperty &&
+        !parent.isPredefined() &&
+        this.removeOldAndAddNewReference(
+          DataFactory.namedNode(parent.aspectModelUrn),
+          parent instanceof DefaultCollection ? this.bammc.ElementCharacteristicProperty() : this.bamm.CharacteristicProperty(),
+          DataFactory.namedNode(characteristic.aspectModelUrn)
+        );
     }
 
     return characteristic.aspectModelUrn;

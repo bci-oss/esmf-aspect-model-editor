@@ -11,16 +11,18 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {APP_CONFIG, AppConfig} from '@ame/shared';
+import {Component, Inject, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
 import {NamespacesCacheService} from '@ame/cache';
 import {NamespaceModel} from '@ame/shared';
+import {RdfService} from '@ame/rdf/services';
 
 @Component({
   selector: 'ame-sidebar-namespaces',
   templateUrl: './sidebar-namespaces.component.html',
   styleUrls: ['./sidebar-namespaces.component.scss'],
 })
-export class SidebarNamespacesComponent {
+export class SidebarNamespacesComponent implements OnChanges {
   @Input()
   public namespaces: NamespaceModel[] = [];
 
@@ -33,14 +35,42 @@ export class SidebarNamespacesComponent {
   @Output()
   public loadNamespaceFile = new EventEmitter<string>();
 
-  constructor(public namespaceService: NamespacesCacheService) {}
-
   public get hasCurrentFile(): boolean {
     return this.namespaces.some(namespace => namespace.files.some(file => this.isCurrentFile(namespace.name, file)));
   }
 
+  public get isWorkspaceOutdated(): boolean {
+    return this.namespaces.some(namespace => namespace.outdated);
+  }
+
   private selectedNamespace: string = null;
   private selectedNamespaceFile: string = null;
+
+  constructor(
+    public namespaceService: NamespacesCacheService,
+    private rdfService: RdfService,
+    @Inject(APP_CONFIG) public config: AppConfig
+  ) {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.namespaces) {
+      this.mergeRdfWithNamespaces();
+      console.log(this.namespaces);
+      console.log(this.rdfService);
+    }
+  }
+
+  public getTooltip(namespace: NamespaceModel, file: string) {
+    if (this.isCurrentFile(namespace.name, file)) {
+      return 'Currently loaded file';
+    }
+
+    if (namespace.getFileStatus(file)?.outdated) {
+      return `Outdated file. Migrate to BAMM ${this.config.currentBammVersion}`;
+    }
+
+    return null;
+  }
 
   public isSelectedNamespace(name: string): boolean {
     return this.selectedNamespace === name;
@@ -78,5 +108,38 @@ export class SidebarNamespacesComponent {
 
   public onLoadAspectModel(namespace: NamespaceModel, namespaceFile: string) {
     this.loadNamespaceFile.emit(`${namespace.name}:${namespaceFile}`);
+  }
+
+  private mergeRdfWithNamespaces() {
+    for (const namespace of this.namespaces) {
+      for (const file of namespace.files) {
+        const [namespaceValue] = namespace.name.split(':');
+        const bamm = this.rdfService.externalRdfModels
+          .find(rdf => rdf.aspectModelFileName === file && rdf.getPrefixes()['']?.split(':')?.[2]?.endsWith(namespaceValue))
+          ?.BAMM();
+        if (bamm) {
+          namespace.setFileStatus(file, bamm.version, this.isOutdated(bamm.version));
+        }
+      }
+    }
+  }
+
+  private isOutdated(fileVersion: string) {
+    const [b1, b2, b3] = this.config.currentBammVersion.split('.').map(x => Number(x));
+    const [f1, f2, f3] = fileVersion.split('.').map(x => Number(x));
+
+    if (b1 > f1) {
+      return true;
+    }
+
+    if (b2 > f2) {
+      return true;
+    }
+
+    if (b3 > f3) {
+      return true;
+    }
+
+    return false;
   }
 }

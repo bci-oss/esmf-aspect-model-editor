@@ -18,6 +18,7 @@ import {MxGraphHelper, MxGraphVisitorHelper, PropertyInformation} from '../helpe
 import {mxCellOverlay, mxConstants, mxEvent, mxImage} from '../providers';
 import {
   BaseMetaModelElement,
+  DefaultAbstractProperty,
   DefaultAbstractEntity,
   DefaultAspect,
   DefaultCharacteristic,
@@ -30,6 +31,7 @@ import {
   DefaultOperation,
   DefaultProperty,
   DefaultTrait,
+  OverWrittenProperty,
   DefaultUnit,
 } from '@ame/meta-model';
 import {BrowserService} from '@ame/shared';
@@ -81,7 +83,7 @@ export class MxGraphShapeOverlayService {
       return;
     }
 
-    if (baseMetaModelElement instanceof DefaultProperty) {
+    if (baseMetaModelElement instanceof DefaultProperty && baseMetaModelElement.characteristic) {
       this.removeOverlay(cell, MxGraphHelper.getNewShapeOverlayButton(cell));
     } else if (baseMetaModelElement instanceof DefaultCharacteristic && !(baseMetaModelElement instanceof DefaultEither)) {
       this.removeCharacteristicOverlays(cell);
@@ -145,7 +147,7 @@ export class MxGraphShapeOverlayService {
 
   hasEntityValueDescendantsAsEntity(metaModel: DefaultEntityValue) {
     const entityProperties = metaModel.entity?.properties || [];
-    return entityProperties.some(({property}) => property?.characteristic?.dataType instanceof DefaultEntity);
+    return entityProperties.some(({property}: OverWrittenProperty<any>) => property?.characteristic?.dataType instanceof DefaultEntity);
   }
 
   /**
@@ -159,7 +161,11 @@ export class MxGraphShapeOverlayService {
       let overlayTooltip = 'Add ';
       let modelInfo = ModelInfo.IS_CHARACTERISTIC;
 
-      if (modelElement instanceof DefaultConstraint || modelElement instanceof DefaultEntityValue || modelElement instanceof DefaultUnit) {
+      if ([DefaultConstraint, DefaultEntityValue, DefaultAbstractProperty, DefaultUnit].some(c => modelElement instanceof c)) {
+        return;
+      }
+
+      if (modelElement?.['isPredefined']?.()) {
         return;
       }
 
@@ -207,8 +213,10 @@ export class MxGraphShapeOverlayService {
         return;
       }
 
-      if (modelElement instanceof DefaultAspect || modelElement instanceof DefaultEntity || modelElement instanceof DefaultAbstractEntity) {
+      if (modelElement instanceof DefaultAspect || modelElement instanceof DefaultEntity) {
         overlayTooltip += 'Property';
+      } else if (modelElement instanceof DefaultAbstractEntity) {
+        overlayTooltip += 'Abstract Property';
       } else if (modelElement instanceof DefaultProperty) {
         overlayTooltip += 'Characteristic';
       } else if (modelElement instanceof DefaultTrait) {

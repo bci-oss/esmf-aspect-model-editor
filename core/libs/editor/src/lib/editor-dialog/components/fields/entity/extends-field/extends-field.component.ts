@@ -1,5 +1,6 @@
 import {NamespacesCacheService} from '@ame/cache';
-import {DefaultAbstractEntity, DefaultEntity} from '@ame/meta-model';
+import {MetaModelElementInstantiator, PredefinedEntityInstantiator} from '@ame/instantiator';
+import {DefaultEntity, DefaultAbstractEntity} from '@ame/meta-model';
 import {MxGraphService} from '@ame/mx-graph';
 import {RdfService} from '@ame/rdf/services';
 import {NotificationsService, SearchService} from '@ame/shared';
@@ -11,15 +12,22 @@ import {EditorDialogValidators} from '../../../../validators';
 import {InputFieldComponent} from '../../input-field.component';
 
 @Component({
-  selector: 'ame-extends-field',
+  selector: 'ame-entity-extends-field',
   templateUrl: './extends-field.component.html',
   styleUrls: ['./extends-field.component.scss'],
 })
-export class ExtendsFieldComponent extends InputFieldComponent<DefaultEntity> implements OnInit, OnDestroy {
+export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEntity> implements OnInit, OnDestroy {
   public filteredAbstractEntities$: Observable<any[]>;
-
   public extendsValueControl: FormControl;
   public extendsControl: FormControl;
+  public predefinedEntities: {
+    name: string;
+    entity: DefaultAbstractEntity;
+    urn: string;
+    description: string;
+    complex: boolean;
+    namespace?: string;
+  }[];
 
   constructor(
     private notificationsService: NotificationsService,
@@ -35,6 +43,19 @@ export class ExtendsFieldComponent extends InputFieldComponent<DefaultEntity> im
 
   ngOnInit(): void {
     this.subscription = this.getMetaModelData().subscribe(() => this.setExtendsControl());
+    const predefinedEntities = new PredefinedEntityInstantiator(new MetaModelElementInstantiator(this.rdfService.currentRdfModel, null))
+      .entityInstances;
+    this.predefinedEntities = Object.values(predefinedEntities).map(value => {
+      const entity = value();
+
+      return {
+        name: entity.name,
+        description: entity.getDescription('en') || '',
+        urn: entity.getUrn(),
+        complex: false,
+        entity,
+      };
+    });
   }
 
   ngOnDestroy() {
@@ -56,7 +77,7 @@ export class ExtendsFieldComponent extends InputFieldComponent<DefaultEntity> im
       new FormControl(
         {
           value,
-          disabled: !!value || this.metaModelElement.isExternalReference(),
+          disabled: !!value || this.metaModelElement.isExternalReference() || this.metaModelElement.isPredefined(),
         },
         {
           validators: [
@@ -89,7 +110,7 @@ export class ExtendsFieldComponent extends InputFieldComponent<DefaultEntity> im
     this.extendsControl = this.parentForm.get('extends') as FormControl;
 
     this.filteredAbstractEntities$ = combineLatest([
-      this.metaModelElement instanceof DefaultEntity ? this.initFilteredEntities(this.extendsValueControl, false, this.metaModelElement) : of([]),
+      this.metaModelElement instanceof DefaultEntity ? this.initFilteredEntities(this.extendsValueControl) : of([]),
       this.initFilteredAbstractEntities(this.extendsValueControl),
     ]).pipe(map(([a, b]) => [...a, ...b].filter(e => e.name !== this.metaModelElement.name)));
   }
@@ -109,6 +130,10 @@ export class ExtendsFieldComponent extends InputFieldComponent<DefaultEntity> im
 
     if (!foundEntity) {
       foundEntity = this.namespacesCacheService.findElementOnExtReference<DefaultEntity>(newValue.urn);
+    }
+
+    if (!foundEntity) {
+      foundEntity = newValue.entity;
     }
 
     this.parentForm.setControl('extends', new FormControl(foundEntity));
@@ -131,7 +156,7 @@ export class ExtendsFieldComponent extends InputFieldComponent<DefaultEntity> im
       return;
     }
 
-    const newAbstractEntity = new DefaultAbstractEntity(this.metaModelElement.metaModelVersion, urn, entityName, null);
+    const newAbstractEntity = new DefaultAbstractEntity(this.metaModelElement.metaModelVersion, urn, entityName, []);
     this.parentForm.setControl('extends', new FormControl(newAbstractEntity));
 
     this.extendsValueControl.patchValue(entityName);

@@ -190,7 +190,8 @@ mat-icon {
 
 .entity,
 .entityValue,
-.abstractentity {
+.abstractentity,
+.abstract-entity {
   background-color: $entity-color;
 }
 
@@ -198,7 +199,9 @@ mat-icon {
   background-color: $unit-color;
 }
 
-.property {
+.property,
+.abstractproperty,
+.abstract-property {
   background-color: $property-color;
 }
 

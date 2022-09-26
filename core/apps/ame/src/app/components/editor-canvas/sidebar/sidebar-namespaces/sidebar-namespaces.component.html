@@ -17,6 +17,7 @@
     <p *ngIf="!hasCurrentFile" class="description">To see your current Aspect Model save to namespace</p>
     <button
       *ngIf="isWorkspaceOutdated"
+      (click)="migrateWorkspace()"
       class="migrate-button"
       color="primary"
       mat-stroked-button

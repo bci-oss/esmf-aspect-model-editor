@@ -1,0 +1,14 @@
+:host {
+  min-width: 450px;
+  display: block;
+}
+
+.loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  mat-spinner {
+    margin: 4rem 0;
+  }
+}

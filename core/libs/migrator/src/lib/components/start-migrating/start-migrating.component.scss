@@ -1,0 +1,23 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-width: 350px;
+  max-width: 700px;
+  min-height: 250px;
+}
+
+mat-dialog-content {
+  flex-grow: 1;
+}
+
+button:disabled {
+  line-height: 36px;
+  height: 36px;
+  min-width: 80px;
+}
+
+button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

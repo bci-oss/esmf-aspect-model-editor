@@ -16,6 +16,7 @@ import {Component, Inject, EventEmitter, Input, OnChanges, Output, SimpleChanges
 import {NamespacesCacheService} from '@ame/cache';
 import {NamespaceModel} from '@ame/shared';
 import {RdfService} from '@ame/rdf/services';
+import {ExporterHelper, MigratorService} from '@ame/migrator';
 
 @Component({
   selector: 'ame-sidebar-namespaces',
@@ -35,6 +36,9 @@ export class SidebarNamespacesComponent implements OnChanges {
   @Output()
   public loadNamespaceFile = new EventEmitter<string>();
 
+  @Output()
+  public refresh = new EventEmitter<string>();
+
   public get hasCurrentFile(): boolean {
     return this.namespaces.some(namespace => namespace.files.some(file => this.isCurrentFile(namespace.name, file)));
   }
@@ -49,15 +53,18 @@ export class SidebarNamespacesComponent implements OnChanges {
   constructor(
     public namespaceService: NamespacesCacheService,
     private rdfService: RdfService,
+    private migratorService: MigratorService,
     @Inject(APP_CONFIG) public config: AppConfig
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.namespaces) {
       this.mergeRdfWithNamespaces();
-      console.log(this.namespaces);
-      console.log(this.rdfService);
     }
+  }
+
+  public migrateWorkspace() {
+    this.migratorService.startMigrating().subscribe(() => this.refresh.emit());
   }
 
   public getTooltip(namespace: NamespaceModel, file: string) {
@@ -118,28 +125,9 @@ export class SidebarNamespacesComponent implements OnChanges {
           .find(rdf => rdf.aspectModelFileName === file && rdf.getPrefixes()['']?.split(':')?.[2]?.endsWith(namespaceValue))
           ?.BAMM();
         if (bamm) {
-          namespace.setFileStatus(file, bamm.version, this.isOutdated(bamm.version));
+          namespace.setFileStatus(file, bamm.version, ExporterHelper.isVersionOutdated(bamm.version, this.config.currentBammVersion));
         }
       }
     }
-  }
-
-  private isOutdated(fileVersion: string) {
-    const [b1, b2, b3] = this.config.currentBammVersion.split('.').map(x => Number(x));
-    const [f1, f2, f3] = fileVersion.split('.').map(x => Number(x));
-
-    if (b1 > f1) {
-      return true;
-    }
-
-    if (b2 > f2) {
-      return true;
-    }
-
-    if (b3 > f3) {
-      return true;
-    }
-
-    return false;
   }
 }

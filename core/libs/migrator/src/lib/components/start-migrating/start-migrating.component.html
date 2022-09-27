@@ -19,9 +19,11 @@
     <br />
     Click the Migrate button to proceed with the migration.
   </p>
-  <mat-checkbox [checked]="increaseVersion" (change)="changeVersionCheck($event)"
-    >Do you want to increase the version of namespaces in the workspace?</mat-checkbox
-  >
+  <mat-checkbox [checked]="increaseVersion" (change)="changeVersionCheck($event)"> Auto-increase namespace versions. </mat-checkbox>
+  <p class="version-description">
+    If selected, a new major version of all migrated namespaces will be created to indicate the BAMM version upgrade. Otherwise the existing
+    namespaces will be overwritten (previous content will remain in a backup).
+  </p>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

@@ -12,7 +12,7 @@
  */
 
 import {Inject, Injectable} from '@angular/core';
-import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
+import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {catchError, map, mergeMap, tap, timeout} from 'rxjs/operators';
 import {forkJoin, Observable, of, throwError} from 'rxjs';
 import {
@@ -78,12 +78,12 @@ export class ModelApiService {
   }
 
   saveModel(rdfContent: string, aspectUrn?: string): Observable<string> {
-    const headers = aspectUrn ? new HttpHeaders({'ame-model-urn': aspectUrn}) : null;
-
-    return this.http.post<string>(`${this.serviceUrl}${this.api.models}`, rdfContent, {headers}).pipe(
-      timeout(this.requestTimeout),
-      catchError(res => throwError(() => res))
-    );
+    return this.http
+      .post<string>(`${this.serviceUrl}${this.api.models}`, rdfContent, {headers: new HttpHeaderBuilder().withUrn(aspectUrn).build()})
+      .pipe(
+        timeout(this.requestTimeout),
+        catchError(res => throwError(() => res))
+      );
   }
 
   uploadZip(file: File): Observable<any> {

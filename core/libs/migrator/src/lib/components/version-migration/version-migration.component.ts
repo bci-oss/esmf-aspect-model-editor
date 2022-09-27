@@ -1,3 +1,15 @@
+/*
+ * Copyright (c) 2022 Robert Bosch Manufacturing Solutions GmbH
+ *
+ * See the AUTHORS file(s) distributed with this work for
+ * additional information regarding authorship.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ */
 import {MigratorApiService, ModelApiService} from '@ame/api';
 import {DataFactory} from 'n3';
 import {map, of, switchMap, tap} from 'rxjs';
@@ -8,7 +20,7 @@ import {Component, Inject, OnInit} from '@angular/core';
 import {APP_CONFIG, AppConfig} from '@ame/shared';
 import {Router} from '@angular/router';
 
-export const defaultNamespaces = bammVersion => [
+export const defaultNamespaces = (bammVersion: string) => [
   `urn:bamm:io.openmanufacturing:meta-model:${bammVersion}#`,
   `urn:bamm:io.openmanufacturing:characteristic:${bammVersion}#`,
   `urn:bamm:io.openmanufacturing:entity:${bammVersion}#`,

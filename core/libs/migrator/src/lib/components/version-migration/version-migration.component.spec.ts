@@ -1,6 +1,18 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+/*
+ * Copyright (c) 2022 Robert Bosch Manufacturing Solutions GmbH
+ *
+ * See the AUTHORS file(s) distributed with this work for
+ * additional information regarding authorship.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ */
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 
-import { VersionMigrationComponent } from './version-migration.component';
+import {VersionMigrationComponent} from './version-migration.component';
 
 describe('VersionMigrationComponent', () => {
   let component: VersionMigrationComponent;
@@ -8,9 +20,8 @@ describe('VersionMigrationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ VersionMigrationComponent ]
-    })
-    .compileComponents();
+      declarations: [VersionMigrationComponent],
+    }).compileComponents();
   });
 
   beforeEach(() => {

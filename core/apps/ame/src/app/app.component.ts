@@ -63,7 +63,7 @@ export class AppComponent implements OnInit {
     this.migratorService
       .startMigrating()
       .pipe(tap(() => this.startApplication()))
-      .subscribe();
+      .subscribe(() => this.editorService.refreshSidebarNamespaces());
   }
 
   private startApplication() {

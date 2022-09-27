@@ -121,6 +121,10 @@ class EntityInheritanceConnector extends InheritanceConnector {
     parent: mxgraph.mxCell,
     child: mxgraph.mxCell
   ) {
+    if (parentMetaModel.extendedElement?.aspectModelUrn === childMetaModel.aspectModelUrn) {
+      return;
+    }
+
     const abstractProperties = childMetaModel.allProperties
       .map(({property}) => property)
       .filter(
@@ -745,9 +749,15 @@ export class CharacteristicEntityConnectionHandler implements ShapeMultiConnecto
   ) {}
 
   public connect(parentMetaModel: DefaultCharacteristic, childMetaModel: DefaultEntity, parent: mxCell, child: mxCell) {
+    const toRemove = [];
     this.mxGraphAttributeService.graph.getOutgoingEdges(parent).forEach(outEdge => {
       const childTargetMetaModel = MxGraphHelper.getModelElement(child.target);
       const outEdgeTargetMetaModel = MxGraphHelper.getModelElement(outEdge.target);
+
+      if (MxGraphHelper.getModelElement(outEdge.target) instanceof DefaultEntity) {
+        toRemove.push(outEdge);
+      }
+
       if (
         outEdge !== child &&
         !(childTargetMetaModel instanceof DefaultCharacteristic) &&
@@ -760,6 +770,7 @@ export class CharacteristicEntityConnectionHandler implements ShapeMultiConnecto
         }
       }
     });
+
     parentMetaModel.dataType = childMetaModel;
     this.mxGraphShapeOverlayService.removeOverlay(parent, MxGraphHelper.getNewShapeOverlayButton(parent));
     // add icon when you simply connect an enumeration with an entity.
@@ -775,9 +786,11 @@ export class CharacteristicEntityConnectionHandler implements ShapeMultiConnecto
 
     this.mxGraphService.assignToParent(child, parent);
     this.mxGraphService.formatShapes();
+
     if (parentMetaModel.dataType) {
-      this.mxGraphService.graph.labelChanged(parent, MxGraphHelper.createPropertiesLabel(parent));
+      MxGraphHelper.updateLabel(parent, this.mxGraphAttributeService.graph, this.languageSettingsService);
     }
+
     if (parentMetaModel.dataType?.isComplex()) {
       const selectedParentIncomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(parent);
       selectedParentIncomingEdges.forEach(edge => {
@@ -791,10 +804,12 @@ export class CharacteristicEntityConnectionHandler implements ShapeMultiConnecto
             edgeSourceMetaModelElement,
             this.languageSettingsService
           );
-          this.mxGraphAttributeService.graph.labelChanged(edgeSource, MxGraphHelper.createPropertiesLabel(edgeSource));
+          MxGraphHelper.updateLabel(edgeSource, this.mxGraphAttributeService.graph, this.languageSettingsService);
         }
       });
     }
+
+    toRemove.length && this.mxGraphService.removeCells(toRemove);
   }
 }
 

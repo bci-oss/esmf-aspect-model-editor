@@ -29,7 +29,6 @@ import {mxgraph} from 'mxgraph-factory';
 import {
   BehaviorSubject,
   catchError,
-  combineLatest,
   delayWhen,
   first,
   forkJoin,
@@ -233,7 +232,7 @@ export class EditorService {
 
     return this.rdfService.loadModel(rdfAspectModel).pipe(
       switchMap(loadedRdfModel =>
-        combineLatest([this.loadExternalModels(loadedRdfModel), this.loadCurrentModel(loadedRdfModel, rdfAspectModel)])
+        this.loadExternalModels(loadedRdfModel).pipe(switchMap(() => this.loadCurrentModel(loadedRdfModel, rdfAspectModel)))
       ),
       tap(() => {
         if (!isDefault) {
@@ -241,22 +240,6 @@ export class EditorService {
         }
       })
     );
-
-    // return this.rdfService.loadModel(rdfAspectModel).pipe(
-    //   switchMap(rdfModel =>
-    //     this.validateCurrentModel(rdfModel).pipe(
-    //       tap(() => {
-    //         this.loadModel$.next(null);
-    //         localStorage.removeItem(ValidateStatus.validating);
-    //         if (!isDefault) {
-    //           this.notificationsService.info('Aspect Model loaded', null, null, 2000);
-    //         }
-    //       }),
-    //       switchMap(validationResOfLoadedRdfModel => this.loadExternalModels(rdfModel).pipe(map(() => validationResOfLoadedRdfModel))),
-    //       switchMap(validationResOfLoadedRdfModel => this.loadCurrentModel(rdfModel, rdfAspectModel, validationResOfLoadedRdfModel))
-    //     )
-    //   )
-    // );
   }
 
   loadExternalAspectModel(extRefAbsoluteAspectModelFileName: string): CachedFile {
@@ -269,30 +252,6 @@ export class EditorService {
       findCacheFile = this.namespaceCacheService.addFile(extRdfModel.getAspectModelUrn(), fileName);
     }
     return this.instantiatorService.instantiateFile(extRdfModel, findCacheFile, fileName);
-  }
-
-  private validateCurrentModel(rdfModel: RdfModel) {
-    const serializedModel = this.rdfService.serializeModel(rdfModel);
-
-    return this.modelApiService.getValidationErrors(serializedModel).pipe(
-      tap((validationResults: Array<SemanticError | SyntacticError | ProcessingError>) => {
-        if (this.modelValidatorService.checkForCriticalErrors(validationResults, rdfModel)) {
-          throwError(null);
-        }
-      }),
-      catchError(error => {
-        if (error.status === 0) {
-          this.notificationsService.error({title: 'Aspect Model Editor Service is Down', timeout: 5000});
-          return of(error);
-        }
-
-        this.notificationsService.error({
-          title: 'The model is invalid. Reverting to previous Aspect Model',
-          message: 'The introduced BAMM model is invalid',
-        });
-        return of(error);
-      })
-    );
   }
 
   public loadExternalModels(loadedRdfModel?: RdfModel) {

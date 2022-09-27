@@ -12,8 +12,8 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BaseMetaModelElement, DefaultEntityValue, DefaultTrait} from '@ame/meta-model';
-import {ExpandedEllipseShape, ExpandedModelShape, ExpandedRoundBorderShape} from '@ame/shared';
+import {BaseMetaModelElement, DefaultTrait, DefaultEntityValue} from '@ame/meta-model';
+import {ExpandedEllipseShape, ExpandedRoundBorderShape, ExpandedModelShape} from '@ame/shared';
 import {mxgraph} from 'mxgraph-factory';
 import {mxGeometry} from '../providers';
 import {MxGraphAttributeService} from './mx-graph-attribute.service';

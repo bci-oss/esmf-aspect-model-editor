@@ -26,6 +26,8 @@ import {
   Base,
   BaseMetaModelElement,
   Characteristic,
+  DefaultAbstractEntity,
+  DefaultAbstractProperty,
   DefaultAspect,
   DefaultCharacteristic,
   DefaultCollection,
@@ -42,21 +44,19 @@ import {
   DefaultTrait,
   DefaultUnit,
   Entity,
+  Event,
   ModelElementNamingService,
   Operation,
+  OverWrittenProperty,
   Property,
   StructuredValue,
-  Event,
-  DefaultAbstractEntity,
-  DefaultAbstractProperty,
-  OverWrittenProperty,
 } from '@ame/meta-model';
 import {EntityValueService} from '@ame/editor';
 import {ExpandedModelShape, NotificationsService} from '@ame/shared';
 import {NamespacesCacheService} from '@ame/cache';
 import {RdfModelUtil} from '@ame/rdf/utils';
-import mxCell = mxgraph.mxCell;
 import {LanguageSettingsService} from '@ame/settings-dialog';
+import mxCell = mxgraph.mxCell;
 
 export interface ShapeSingleConnector<T> {
   connect(metaModel: T, source: mxCell, modelInfo?: ModelInfo): void;
@@ -80,7 +80,7 @@ abstract class InheritanceConnector {
 
   public connect(parentMetaModel: BaseMetaModelElement, childMetaModel: BaseMetaModelElement, parentCell: mxCell, childCell: mxCell) {
     if (typeof parentMetaModel['isPredefined'] === 'function' && parentMetaModel['isPredefined']()) {
-      this.notificationsService.warning("A predefined element can't have a child");
+      this.notificationsService.warning({title: "A predefined element can't have a child"});
       return;
     }
 
@@ -98,17 +98,6 @@ abstract class InheritanceConnector {
         this.mxGraphService.removeCells([parentCell.removeEdge(outEdge, true)]);
       }
     });
-  }
-
-  public isRecursive(parentMetaModel: BaseMetaModelElement, childCell: mxCell): boolean {
-    const nextGeneration = this.mxGraphService.graph.getOutgoingEdges(childCell)?.map(edge => edge.target) || [];
-
-    for (const cell of nextGeneration) {
-      const model = MxGraphHelper.getModelElement(cell);
-      return model.aspectModelUrn === parentMetaModel.aspectModelUrn || this.isRecursive(parentMetaModel, cell);
-    }
-
-    return false;
   }
 
   abstract isInheritedElement(element: BaseMetaModelElement): boolean;
@@ -132,9 +121,17 @@ class EntityInheritanceConnector extends InheritanceConnector {
     parent: mxgraph.mxCell,
     child: mxgraph.mxCell
   ) {
-    const abstractProperties = (childMetaModel as DefaultAbstractEntity).allProperties
+    if (parentMetaModel.extendedElement?.aspectModelUrn === childMetaModel.aspectModelUrn) {
+      return;
+    }
+
+    const abstractProperties = childMetaModel.allProperties
       .map(({property}) => property)
-      .filter(property => property instanceof DefaultAbstractProperty);
+      .filter(
+        abstractProperty =>
+          abstractProperty instanceof DefaultAbstractProperty &&
+          !childMetaModel.allProperties.some(({property: p}) => p.extendedElement?.aspectModelUrn === abstractProperty.aspectModelUrn)
+      );
 
     const newProperties = abstractProperties.map(abstractProperty => {
       const property = DefaultProperty.createInstance();
@@ -145,7 +142,13 @@ class EntityInheritanceConnector extends InheritanceConnector {
       return property;
     });
 
-    parentMetaModel.properties = [...parentMetaModel.properties, ...newProperties.map(property => ({property, keys: {}}))];
+    parentMetaModel.properties = [
+      ...parentMetaModel.properties,
+      ...newProperties.map(property => ({
+        property,
+        keys: {},
+      })),
+    ];
 
     for (let i = 0; i < newProperties.length; i++) {
       const propertyCell = this.mxGraphService.renderModelElement(newProperties[i]);
@@ -185,6 +188,9 @@ class PropertyInheritanceConnector extends InheritanceConnector {
       (childMetaModel instanceof DefaultAbstractProperty || childMetaModel instanceof DefaultProperty)
     ) {
       parentMetaModel.name = `[${childMetaModel.name}]`;
+      parentMetaModel.preferredNames.clear();
+      parentMetaModel.descriptions.clear();
+      parentMetaModel.exampleValue = '';
       parentCell.setId(`[${childMetaModel.name}]`);
     }
 
@@ -233,7 +239,7 @@ export class OperationConnectionHandler implements ShapeSingleConnector<Operatio
     const overWrittenProperty = {property: defaultProperty, keys: {}};
     if (ModelInfo.IS_OPERATION_OUTPUT === modelInfo) {
       if (operation.output) {
-        this.notificationsService.warning('Operation output is already defined');
+        this.notificationsService.warning({title: 'Operation output is already defined'});
         return;
       }
       operation.output = overWrittenProperty;
@@ -310,13 +316,13 @@ export class EitherConnectionHandler implements ShapeSingleConnector<DefaultEith
 
     if (ModelInfo.IS_EITHER_LEFT === modelInfo) {
       if (either.left) {
-        this.notificationsService.warning('Either left is already defined');
+        this.notificationsService.warning({title: 'Either left is already defined'});
         return;
       }
       either.left = defaultCharacteristic;
     } else if (ModelInfo.IS_EITHER_RIGHT === modelInfo) {
       if (either.right) {
-        this.notificationsService.warning('Either right is already defined');
+        this.notificationsService.warning({title: 'Either right is already defined'});
         return;
       }
       either.right = defaultCharacteristic;
@@ -376,7 +382,11 @@ export class AbstractEntityConnectionHandler implements ShapeSingleConnector<Ent
     this.mxGraphService.assignToParent(abstractPropertyCell, source);
     this.mxGraphService.formatCell(source);
 
-    const entities = this.mxGraphService.graph.getIncomingEdges(source).map(edge => edge.source);
+    const entities = this.mxGraphService.graph
+      .getIncomingEdges(source)
+      .map(edge => edge.source)
+      .filter(cell => MxGraphHelper.getModelElement(cell) instanceof DefaultEntity);
+
     if (entities.length) {
       const newProperty = DefaultProperty.createInstance();
       const [namespace, name] = abstractProperty.aspectModelUrn.split('#');
@@ -745,9 +755,15 @@ export class CharacteristicEntityConnectionHandler implements ShapeMultiConnecto
   ) {}
 
   public connect(parentMetaModel: DefaultCharacteristic, childMetaModel: DefaultEntity, parent: mxCell, child: mxCell) {
+    const toRemove = [];
     this.mxGraphAttributeService.graph.getOutgoingEdges(parent).forEach(outEdge => {
       const childTargetMetaModel = MxGraphHelper.getModelElement(child.target);
       const outEdgeTargetMetaModel = MxGraphHelper.getModelElement(outEdge.target);
+
+      if (MxGraphHelper.getModelElement(outEdge.target) instanceof DefaultEntity) {
+        toRemove.push(outEdge);
+      }
+
       if (
         outEdge !== child &&
         !(childTargetMetaModel instanceof DefaultCharacteristic) &&
@@ -760,6 +776,7 @@ export class CharacteristicEntityConnectionHandler implements ShapeMultiConnecto
         }
       }
     });
+
     parentMetaModel.dataType = childMetaModel;
     this.mxGraphShapeOverlayService.removeOverlay(parent, MxGraphHelper.getNewShapeOverlayButton(parent));
     // add icon when you simply connect an enumeration with an entity.
@@ -775,9 +792,11 @@ export class CharacteristicEntityConnectionHandler implements ShapeMultiConnecto
 
     this.mxGraphService.assignToParent(child, parent);
     this.mxGraphService.formatShapes();
+
     if (parentMetaModel.dataType) {
-      this.mxGraphService.graph.labelChanged(parent, MxGraphHelper.createPropertiesLabel(parent));
+      MxGraphHelper.updateLabel(parent, this.mxGraphAttributeService.graph, this.languageSettingsService);
     }
+
     if (parentMetaModel.dataType?.isComplex()) {
       const selectedParentIncomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(parent);
       selectedParentIncomingEdges.forEach(edge => {
@@ -791,10 +810,12 @@ export class CharacteristicEntityConnectionHandler implements ShapeMultiConnecto
             edgeSourceMetaModelElement,
             this.languageSettingsService
           );
-          this.mxGraphAttributeService.graph.labelChanged(edgeSource, MxGraphHelper.createPropertiesLabel(edgeSource));
+          MxGraphHelper.updateLabel(edgeSource, this.mxGraphAttributeService.graph, this.languageSettingsService);
         }
       });
     }
+
+    toRemove.length && this.mxGraphService.removeCells(toRemove);
   }
 }
 
@@ -913,20 +934,22 @@ export class PropertyPropertyConnectionHandler
 
   public connect(parentMetaModel: DefaultProperty, childMetaModel: DefaultProperty, parentCell: mxCell, childCell: mxCell) {
     if (parentMetaModel.isPredefined()) {
-      this.notificationsService.warning("A predefined element can't have a child");
+      this.notificationsService.warning({title: "A predefined element can't have a child"});
       return;
     }
 
-    if (this.isRecursive(parentMetaModel, childCell)) {
-      this.notificationService.warning('Recursive elements', 'Can not connect elements due to circular connection', null, 5000);
-    } else {
+    if (MxGraphHelper.isEntityCycleInheritance(childCell, parentMetaModel, this.mxGraphService.graph)) {
+      this.notificationService.warning({
+        title: 'Recursive elements',
+        message: 'Can not connect elements due to circular connection',
+        timeout: 5000,
+      });    } else {
       if (childMetaModel.extendedElement) {
-        this.notificationService.warning(
-          'Illegal operation',
-          'Can not extend a Property which already extends another element',
-          null,
-          5000
-        );
+        this.notificationService.warning({
+          title: 'Illegal operation',
+          message: 'Can not extend a Property which already extends another element',
+          timeout: 5000,
+        });
         return;
       }
       super.connect(parentMetaModel, childMetaModel, parentCell, childCell);
@@ -951,9 +974,12 @@ export class PropertyAbstractPropertyConnectionHandler
   }
 
   public connect(parentMetaModel: DefaultProperty, childMetaModel: DefaultAbstractProperty, parentCell: mxCell, childCell: mxCell) {
-    if (this.isRecursive(parentMetaModel, childCell)) {
-      this.notificationService.warning('Recursive elements', 'Can not connect elements due to circular connection', null, 5000);
-    } else {
+    if (MxGraphHelper.isEntityCycleInheritance(childCell, parentMetaModel, this.mxGraphService.graph)) {
+      this.notificationService.warning({
+        title: 'Recursive elements',
+        message: 'Can not connect elements due to circular connection',
+        timeout: 5000,
+      });    } else {
       super.connect(parentMetaModel, childMetaModel, parentCell, childCell);
     }
   }
@@ -976,9 +1002,12 @@ export class AbstractPropertyAbstractPropertyConnectionHandler
   }
 
   public connect(parentMetaModel: DefaultAbstractProperty, childMetaModel: DefaultAbstractProperty, parentCell: mxCell, childCell: mxCell) {
-    if (this.isRecursive(parentMetaModel, childCell)) {
-      this.notificationService.warning('Recursive elements', 'Can not connect elements due to circular connection', null, 5000);
-    } else {
+    if (MxGraphHelper.isEntityCycleInheritance(childCell, parentMetaModel, this.mxGraphService.graph)) {
+      this.notificationService.warning({
+        title: 'Recursive elements',
+        message: 'Can not connect elements due to circular connection',
+        timeout: 5000,
+      });    } else {
       super.connect(parentMetaModel, childMetaModel, parentCell, childCell);
     }
   }
@@ -990,7 +1019,12 @@ export class AbstractPropertyAbstractPropertyConnectionHandler
 export class AbstractEntityAbstractPropertyConnectionHandler
   implements ShapeMultiConnector<DefaultAbstractEntity, DefaultAbstractProperty>
 {
-  constructor(private mxGraphService: MxGraphService, private entityValueService: EntityValueService) {}
+  constructor(
+    private mxGraphService: MxGraphService,
+    private entityValueService: EntityValueService,
+    private propertyAbstractPropertyConnector: PropertyAbstractPropertyConnectionHandler,
+    private entityPropertyConnector: EntityPropertyConnectionHandler
+  ) {}
 
   public connect(parentMetaModel: DefaultAbstractEntity, childMetaModel: DefaultAbstractProperty, parentCell: mxCell, childCell: mxCell) {
     if (!parentMetaModel.properties.find(({property}) => property.aspectModelUrn === childMetaModel.aspectModelUrn)) {
@@ -998,7 +1032,40 @@ export class AbstractEntityAbstractPropertyConnectionHandler
       parentMetaModel.properties.push(overWrittenProperty as any);
       this.entityValueService.onNewProperty(overWrittenProperty as any, parentMetaModel);
     }
+
+    const grandParents = this.mxGraphService.graph
+      .getIncomingEdges(parentCell)
+      .map(edge => edge.source)
+      .filter(cell => MxGraphHelper.getModelElement(cell) instanceof DefaultEntity);
+
+    for (const grandParent of grandParents) {
+      const grandParentModel = MxGraphHelper.getModelElement<DefaultEntity>(grandParent);
+      const alreadyExtended = grandParentModel.properties.some(
+        ({property}) => property.extendedElement?.aspectModelUrn === childMetaModel.aspectModelUrn
+      );
+
+      if (alreadyExtended) {
+        continue;
+      }
+
+      // creates the property which will extend the abstract property
+      const property = DefaultProperty.createInstance();
+      property.metaModelVersion = childMetaModel.metaModelVersion;
+      const [namespace, name] = childMetaModel.aspectModelUrn.split('#');
+      property.aspectModelUrn = `${namespace}#[${name}]`;
+      property.extendedElement = childMetaModel;
+
+      // adding property to its parent (entity)
+      grandParentModel.properties.push({property, keys: {}});
+      const propertyCell = this.mxGraphService.renderModelElement(property);
+
+      // connecting the elements
+      this.entityPropertyConnector.connect(grandParentModel, property, grandParent, propertyCell);
+      this.propertyAbstractPropertyConnector.connect(property, childMetaModel, propertyCell, childCell);
+    }
+
     this.mxGraphService.assignToParent(childCell, parentCell);
+    this.mxGraphService.formatShapes();
   }
 }
 
@@ -1041,9 +1108,12 @@ export class EntityEntityConnectionHandler extends EntityInheritanceConnector im
   }
 
   public connect(parentMetaModel: DefaultEntity, childMetaModel: DefaultEntity, parentCell: mxCell, childCell: mxCell) {
-    if (this.isRecursive(parentMetaModel, childCell)) {
-      this.notificationService.warning('Recursive elements', 'Can not connect elements due to circular connection', null, 5000);
-      return;
+    if (MxGraphHelper.isEntityCycleInheritance(childCell, parentMetaModel, this.mxGraphService.graph)) {
+      this.notificationService.warning({
+        title: 'Recursive elements',
+        message: 'Can not connect elements due to circular connection',
+        timeout: 5000,
+      });      return;
     }
 
     super.connectWithAbstract(parentMetaModel, childMetaModel, parentCell, childCell);
@@ -1068,9 +1138,12 @@ export class AbstractEntityAbstractEntityConnectionHandler
   }
 
   public connect(parentMetaModel: DefaultAbstractEntity, childMetaModel: DefaultAbstractEntity, parentCell: mxCell, childCell: mxCell) {
-    if (this.isRecursive(parentMetaModel, childCell)) {
-      this.notificationService.warning('Recursive elements', 'Can not connect elements due to circular connection', null, 5000);
-    } else {
+    if (MxGraphHelper.isEntityCycleInheritance(childCell, parentMetaModel, this.mxGraphService.graph)) {
+      this.notificationService.warning({
+        title: 'Recursive elements',
+        message: 'Can not connect elements due to circular connection',
+        timeout: 5000,
+      });    } else {
       super.connect(parentMetaModel, childMetaModel, parentCell, childCell);
     }
   }
@@ -1102,9 +1175,12 @@ export class EntityAbstractEntityConnectionHandler
   }
 
   public connect(parentMetaModel: DefaultEntity, childMetaModel: DefaultAbstractEntity, parent: mxCell, child: mxCell) {
-    if (this.isRecursive(parentMetaModel, child)) {
-      this.notificationService.warning('Recursive elements', 'Can not connect elements due to circular connection', null, 5000);
-      return;
+    if (MxGraphHelper.isEntityCycleInheritance(child, parentMetaModel, this.mxGraphService.graph)) {
+      this.notificationService.warning({
+        title: 'Recursive elements',
+        message: 'Can not connect elements due to circular connection',
+        timeout: 5000,
+      });      return;
     }
 
     super.connectWithAbstract(parentMetaModel, childMetaModel, parent, child);

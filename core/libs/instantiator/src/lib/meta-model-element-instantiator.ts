@@ -316,9 +316,9 @@ export class MetaModelElementInstantiator {
       quad = this.rdfModel.resolveBlankNodes(quad.object.value).shift();
     }
 
-    if (quad.object.value === this.bamme.TimeSeriesEntity) {
-      const predefinedEntityInstantiator = new PredefinedEntityInstantiator(this);
-      return callback(predefinedEntityInstantiator.entityInstances[this.bamme.TimeSeriesEntity]());
+    const predefinedEntityInstantiator = new PredefinedEntityInstantiator(this);
+    if (predefinedEntityInstantiator.entityInstances[quad.object.value]) {
+      return callback(predefinedEntityInstantiator.entityInstances[quad.object.value]());
     }
 
     const typeQuad = quad ? RdfModelUtil.getEffectiveType(quad, this.rdfModel) : null;
@@ -460,14 +460,15 @@ export class MetaModelElementInstantiator {
     }
 
     if (!skipSetExternal && !externalReference) {
-      this.notificationsService.error(
-        'Error when loading the Aspect model. The Aspect model contains an external reference that is not included in the' +
+      const message = `The following URN cannot be loaded: ${quad.value}`;
+      this.notificationsService.error({
+        title:
+          'Error when loading the Aspect model. The Aspect model contains an external reference that is not included in the' +
           ' namespace file structure or is invalid. Please also check the file structure of your local model folder with ' +
           'the defined standard in the documentation',
-        `The following URN cannot be loaded: ${quad.value}`,
-        null,
-        5000
-      );
+        message: message,
+        timeout: 5000,
+      });
       return {externalRdfModel: null, externalReference: null};
     }
 

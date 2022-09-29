@@ -42,13 +42,16 @@ export class PropertyModelService extends BaseModelService {
 
   update(cell: mxgraph.mxCell, form: {[key: string]: any}) {
     const metaModelElement: DefaultProperty = MxGraphHelper.getModelElement(cell);
+    if (metaModelElement.extendedElement) {
+      return;
+    }
+
+    metaModelElement.exampleValue = form.exampleValue;
+    super.update(cell, form);
 
     metaModelElement.extendedElement = [DefaultProperty, DefaultAbstractProperty].some(c => form?.extends instanceof c)
       ? form.extends
       : null;
-    metaModelElement.exampleValue = form.exampleValue;
-
-    super.update(cell, form);
     this.updatePropertiesNames(cell);
     this.propertyRenderer.update({cell});
   }
@@ -99,11 +102,11 @@ export class PropertyModelService extends BaseModelService {
     for (const edge of incomingEdges) {
       const element = MxGraphHelper.getModelElement<CanExtend>(edge.source);
       if (element instanceof DefaultProperty && isDeleting) {
+        element.extendedElement = null;
         this.mxGraphService.graph.removeCells([edge.source]);
         continue;
       }
 
-      element.extendedElement = null;
       this.updateCell(edge.source);
     }
   }

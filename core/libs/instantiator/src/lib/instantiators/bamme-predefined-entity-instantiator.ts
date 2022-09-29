@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {DefaultAbstractEntity} from '@ame/meta-model';
+import {DefaultAbstractEntity, DefaultEntity} from '@ame/meta-model';
 import {MetaModelElementInstantiator} from '../meta-model-element-instantiator';
 import {PredefinedPropertyInstantiator} from './bamme-predefined-property-instantiator';
 
@@ -20,6 +20,8 @@ export class PredefinedEntityInstantiator {
 
   constructor(private metaModelElementInstantiator: MetaModelElementInstantiator) {
     this.entityInstances[this.metaModelElementInstantiator.bamme.TimeSeriesEntity] = this.createTimeSeriesEntity.bind(this);
+    this.entityInstances[this.metaModelElementInstantiator.bamme.Point3d] = this.createPoint3D.bind(this);
+    this.entityInstances[this.metaModelElementInstantiator.bamme.FileResource] = this.createFileResource.bind(this);
   }
 
   private createTimeSeriesEntity() {
@@ -43,9 +45,50 @@ export class PredefinedEntityInstantiator {
     timeSeriesEntity.addPreferredName('en', 'Time Series Entity');
     timeSeriesEntity.addDescription(
       'en',
-      'The Time Series Entity is used with the Time Series Characteristic. It wraps the two Properties timestamp and value to represent a value at a point in time.'
+      'An Entity which represents a key/value pair. The key is the timestamp when the value was recorded and the value is the value which was recorded.'
     );
 
     return timeSeriesEntity;
+  }
+
+  private createPoint3D() {
+    const {propertyInstances} = new PredefinedPropertyInstantiator(this.metaModelElementInstantiator);
+    const {bamm, bamme} = this.metaModelElementInstantiator;
+    const point3dEntity = new DefaultAbstractEntity(
+      bamm.version,
+      bamme.Point3d,
+      'Point3d',
+      [
+        {property: propertyInstances[bamme.xProperty](), keys: {}},
+        {property: propertyInstances[bamme.yProperty](), keys: {}},
+        {property: propertyInstances[bamme.zProperty](), keys: {}},
+      ],
+      true
+    );
+
+    point3dEntity.addPreferredName('en', 'Point 3D');
+    point3dEntity.addDescription('en', 'Defines a position in a three dimensional space.');
+
+    return point3dEntity;
+  }
+
+  private createFileResource() {
+    const {propertyInstances} = new PredefinedPropertyInstantiator(this.metaModelElementInstantiator);
+    const {bamm, bamme} = this.metaModelElementInstantiator;
+    const fileResourceEntity = new DefaultEntity(
+      bamm.version,
+      bamme.FileResource,
+      'FileResource',
+      [
+        {property: propertyInstances[bamme.resourceProperty](), keys: {}},
+        {property: propertyInstances[bamme.mimeTypeProperty](), keys: {}},
+      ],
+      true
+    );
+
+    fileResourceEntity.addPreferredName('en', 'File Resource');
+    fileResourceEntity.addDescription('en', 'A file in a specific format');
+
+    return fileResourceEntity;
   }
 }

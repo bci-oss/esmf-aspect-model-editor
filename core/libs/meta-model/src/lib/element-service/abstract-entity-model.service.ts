@@ -35,6 +35,7 @@ import {
 } from '@ame/meta-model';
 import {ModelService} from '@ame/rdf/services';
 import {LanguageSettingsService} from '@ame/settings-dialog';
+import {BaseEntityModelService} from './base-entity-model.service';
 
 @Injectable({providedIn: 'root'})
 export class AbstractEntityModelService extends BaseModelService {
@@ -46,6 +47,7 @@ export class AbstractEntityModelService extends BaseModelService {
     private mxGraphService: MxGraphService,
     private mxGraphAttributeService: MxGraphAttributeService,
     private abstractEntityRenderer: AbstractEntityRenderService,
+    private baseEntityModel: BaseEntityModelService,
     private languageService: LanguageSettingsService
   ) {
     super(namespacesCacheService, modelService);
@@ -57,7 +59,6 @@ export class AbstractEntityModelService extends BaseModelService {
 
   update(cell: mxgraph.mxCell, form: {[key: string]: any}) {
     const metaModelElement: DefaultAbstractEntity = MxGraphHelper.getModelElement(cell);
-    metaModelElement.extendedElement = form?.extends instanceof DefaultAbstractEntity ? form.extends : null;
 
     if (form.editedProperties) {
       for (const {property, keys} of metaModelElement.properties) {
@@ -82,6 +83,7 @@ export class AbstractEntityModelService extends BaseModelService {
     }
 
     super.update(cell, form);
+    this.baseEntityModel.checkExtendedElement(metaModelElement, form?.extends);
     this.abstractEntityRenderer.update({cell});
   }
 

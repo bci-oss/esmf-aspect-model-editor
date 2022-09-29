@@ -16,12 +16,13 @@ import {NamespacesCacheService} from '@ame/cache';
 import {ShapeConnectorService} from '@ame/connection';
 import {RdfService} from '@ame/rdf/services';
 import {LanguageSettingsService} from '@ame/settings-dialog';
-import {DefaultAbstractEntity, DefaultAbstractProperty, DefaultEntity, DefaultProperty} from '@ame/meta-model';
+import {DefaultAbstractEntity, DefaultEntity, DefaultProperty} from '@ame/meta-model';
 import {mxgraph} from 'mxgraph-factory';
 import {MxGraphShapeOverlayService} from '../mx-graph-shape-overlay.service';
 import {MxGraphService} from '../mx-graph.service';
 import {MxGraphHelper, MxGraphVisitorHelper} from '../../helpers';
 import {MxGraphSetupVisitor} from '../../visitors';
+import {MetaModelElementInstantiator, PredefinedEntityInstantiator} from '@ame/instantiator';
 
 @Injectable({
   providedIn: 'root',
@@ -38,8 +39,23 @@ export class BaseEntityRendererService {
 
   public handleExtendsElement(cell: mxgraph.mxCell) {
     const metaModelElement = MxGraphHelper.getModelElement<DefaultEntity>(cell);
-    if (!metaModelElement.extendedElement || this.hasTimeSeries(cell)) {
+    const currentPredefinedAbstractEntity = this.hasPredefinedAbstractEntity(cell);
+
+    if (currentPredefinedAbstractEntity && this.isSameExtendedElement(cell, currentPredefinedAbstractEntity)) {
       return;
+    }
+
+    if (this.isAlreadyConnected(cell)) {
+      return;
+    }
+
+    if (!metaModelElement.extendedElement) {
+      this.cleanUpAbstractConnections(cell);
+      return;
+    }
+
+    if (currentPredefinedAbstractEntity) {
+      this.cleanUpAbstractConnections(cell);
     }
 
     const mxGraphSetupVisitor = new MxGraphSetupVisitor(
@@ -52,8 +68,18 @@ export class BaseEntityRendererService {
 
     const extendsElement = metaModelElement.extendedElement as DefaultAbstractEntity;
     if (extendsElement.isPredefined()) {
+      let predefinedCell = this.mxGraphService.resolveCellByModelElement(extendsElement);
+      if (predefinedCell) {
+        this.shapeConnectorService.connectShapes(metaModelElement, extendsElement, cell, predefinedCell);
+        return;
+      }
+
       mxGraphSetupVisitor.visit(extendsElement, cell);
-      this.createPropertyForValueAbstractProperty(extendsElement, cell);
+      predefinedCell = this.mxGraphService.resolveCellByModelElement(extendsElement);
+
+      // setting to null to create the properties after abstract properties
+      metaModelElement.extendedElement = null;
+      this.shapeConnectorService.connectShapes(metaModelElement, extendsElement, cell, predefinedCell);
       return;
     }
 
@@ -65,42 +91,67 @@ export class BaseEntityRendererService {
     this.updateCell(cell);
   }
 
-  private createPropertyForValueAbstractProperty(timeSeriesEntity: DefaultAbstractEntity, parentCell: mxgraph.mxCell) {
-    if (!(timeSeriesEntity instanceof DefaultAbstractEntity && timeSeriesEntity.name === 'TimeSeriesEntity')) {
-      return;
+  private hasPredefinedAbstractEntity(cell: mxgraph.mxCell): mxgraph.mxCell {
+    const children = this.mxGraphService.graph.getOutgoingEdges(cell).map(e => e.target);
+    const predefinedEntityInstantiator = new PredefinedEntityInstantiator(
+      new MetaModelElementInstantiator(this.rdfService.currentRdfModel, this.namespacesCacheService.getCurrentCachedFile())
+    );
+
+    for (const child of children) {
+      const modelElement = MxGraphHelper.getModelElement<DefaultEntity>(child);
+      if (!!predefinedEntityInstantiator.entityInstances[modelElement?.aspectModelUrn]) {
+        return child;
+      }
     }
 
-    const valueAbstractProperty = timeSeriesEntity.properties.find(({property}) => {
-      return property.name === 'value' && property instanceof DefaultAbstractProperty;
-    })?.property;
-
-    if (!valueAbstractProperty) {
-      return;
-    }
-
-    const valueCell = this.mxGraphService.resolveCellByModelElement(valueAbstractProperty);
-    const [namespace, name] = valueAbstractProperty.aspectModelUrn.split('#');
-    const propertyAspectModelUrn = `${namespace}#[${name}]`;
-    const valueProperty = new DefaultProperty(valueAbstractProperty.metaModelVersion, propertyAspectModelUrn, `[${name}]`, null);
-    const valuePropertyCell = this.mxGraphService.renderModelElement(valueProperty);
-    this.shapeConnectorService.connectShapes(valueProperty, valueAbstractProperty, valuePropertyCell, valueCell);
-
-    const parentModel = MxGraphHelper.getModelElement(parentCell);
-    this.shapeConnectorService.connectShapes(parentModel, valueProperty, parentCell, valuePropertyCell);
+    return null;
   }
 
-  private hasTimeSeries(cell: mxgraph.mxCell): boolean {
+  private isSameExtendedElement(cell: mxgraph.mxCell, child: mxgraph.mxCell) {
     const modelElement = MxGraphHelper.getModelElement<DefaultEntity>(cell);
-    const outgoingEdges = this.mxGraphService.graph.getOutgoingEdges(cell);
-    return (outgoingEdges || []).some(edge => {
-      const targetElement = MxGraphHelper.getModelElement(edge.target);
-      return (
-        targetElement instanceof DefaultAbstractEntity &&
-        targetElement.name === 'TimeSeriesEntity' &&
-        modelElement.extendedElement instanceof DefaultAbstractEntity &&
-        modelElement.name === 'TimeSeriesEntity'
-      );
-    });
+    const childModel = MxGraphHelper.getModelElement<DefaultAbstractEntity>(child);
+    return childModel && modelElement.extendedElement && modelElement.extendedElement?.aspectModelUrn === childModel?.aspectModelUrn;
+  }
+
+  private isAlreadyConnected(cell: mxgraph.mxCell) {
+    const modelElement = MxGraphHelper.getModelElement<DefaultEntity>(cell);
+    const extendedElement = modelElement.extendedElement;
+
+    if (!extendedElement) {
+      return false;
+    }
+
+    return this.mxGraphService.graph
+      .getOutgoingEdges(cell)
+      .some(({target}) => MxGraphHelper.getModelElement(target).aspectModelUrn === extendedElement.aspectModelUrn);
+  }
+
+  private cleanUpAbstractConnections(cell: mxgraph.mxCell) {
+    const childrenEdges = this.mxGraphService.graph.getOutgoingEdges(cell);
+
+    const entityChildEdge = childrenEdges.find(edge =>
+      [DefaultEntity, DefaultAbstractEntity].some(c => MxGraphHelper.getModelElement(edge.target) instanceof c)
+    );
+
+    if (!entityChildEdge) {
+      return;
+    }
+
+    const entityChildModel = MxGraphHelper.getModelElement<DefaultAbstractEntity>(entityChildEdge.target);
+    const extendedProperties = childrenEdges
+      .map(e => e.target)
+      .filter(c => {
+        const childModelElement = MxGraphHelper.getModelElement(c);
+        if (!(childModelElement instanceof DefaultProperty)) {
+          return false;
+        }
+
+        return entityChildModel.properties.some(
+          ({property}) => property.aspectModelUrn === childModelElement.extendedElement?.aspectModelUrn
+        );
+      });
+
+    this.mxGraphService.graph.removeCells([entityChildEdge, ...extendedProperties]);
   }
 
   private updateCell(cell: mxgraph.mxCell) {

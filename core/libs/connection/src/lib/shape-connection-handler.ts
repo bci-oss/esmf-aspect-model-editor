@@ -200,6 +200,12 @@ class PropertyInheritanceConnector extends InheritanceConnector {
   isInheritedElement(element: BaseMetaModelElement): boolean {
     return element instanceof DefaultProperty || element instanceof DefaultAbstractProperty;
   }
+
+  protected hasEntityParent(cell: mxgraph.mxCell) {
+    return !this.mxGraphService
+      .resolveParents(cell)
+      .some(cell => [DefaultAbstractEntity, DefaultEntity].some(c => MxGraphHelper.getModelElement(cell) instanceof c));
+  }
 }
 
 // ==========================================================================================
@@ -393,13 +399,14 @@ export class AbstractEntityConnectionHandler implements ShapeSingleConnector<Ent
       newProperty.aspectModelUrn = `${namespace}#[${name}]`;
       newProperty.metaModelVersion = abstractProperty.metaModelVersion;
       const newPropertyCell = this.mxGraphService.renderModelElement(newProperty);
-      this.propertyAbstractPropertyConnector.connect(newProperty, abstractProperty, newPropertyCell, abstractPropertyCell);
 
       for (const entity of entities) {
         const entityModel: DefaultEntity = MxGraphHelper.getModelElement(entity);
         entityModel.properties.push({property: newProperty, keys: {}});
         this.entityPropertyConnector.connect(entityModel, newProperty, entity, newPropertyCell);
       }
+
+      this.propertyAbstractPropertyConnector.connect(newProperty, abstractProperty, newPropertyCell, abstractPropertyCell);
     }
 
     this.mxGraphService.formatShapes();
@@ -747,41 +754,27 @@ export class PropertyCharacteristicConnectionHandler implements ShapeMultiConnec
   providedIn: 'root',
 })
 export class CharacteristicEntityConnectionHandler implements ShapeMultiConnector<DefaultCharacteristic, DefaultEntity> {
+  get currentCachedFile() {
+    return this.namespacesCacheService.getCurrentCachedFile();
+  }
+
   constructor(
     private mxGraphService: MxGraphService,
     private mxGraphAttributeService: MxGraphAttributeService,
     private mxGraphShapeOverlayService: MxGraphShapeOverlayService,
-    private languageSettingsService: LanguageSettingsService
+    private languageSettingsService: LanguageSettingsService,
+    private namespacesCacheService: NamespacesCacheService
   ) {}
 
   public connect(parentMetaModel: DefaultCharacteristic, childMetaModel: DefaultEntity, parent: mxCell, child: mxCell) {
-    const toRemove = [];
-    this.mxGraphAttributeService.graph.getOutgoingEdges(parent).forEach(outEdge => {
-      const childTargetMetaModel = MxGraphHelper.getModelElement(child.target);
-      const outEdgeTargetMetaModel = MxGraphHelper.getModelElement(outEdge.target);
-
-      if (MxGraphHelper.getModelElement(outEdge.target) instanceof DefaultEntity) {
-        toRemove.push(outEdge);
-      }
-
-      if (
-        outEdge !== child &&
-        !(childTargetMetaModel instanceof DefaultCharacteristic) &&
-        !(outEdgeTargetMetaModel instanceof DefaultCharacteristic) &&
-        !(outEdgeTargetMetaModel instanceof DefaultUnit)
-      ) {
-        // remove icon if we delete the edge between enumeration and entity.
-        if (parentMetaModel instanceof DefaultEnumeration) {
-          this.mxGraphShapeOverlayService.removeComplexTypeShapeOverlays(parent);
-        }
-      }
-    });
+    this.mxGraphAttributeService.graph.getOutgoingEdges(parent).forEach(outEdge => this.removeCells(outEdge, null));
 
     parentMetaModel.dataType = childMetaModel;
     this.mxGraphShapeOverlayService.removeOverlay(parent, MxGraphHelper.getNewShapeOverlayButton(parent));
     // add icon when you simply connect an enumeration with an entity.
     if (parentMetaModel instanceof DefaultEnumeration) {
-      if (!parentMetaModel.createdFromEditor && !(parentMetaModel.dataType instanceof DefaultEntity)) {
+      //TODO User should be informed if he wants to change the entity. Otherwise he deletes all values.
+      if (!parentMetaModel.createdFromEditor) {
         parentMetaModel.values = [];
       }
       this.mxGraphShapeOverlayService.removeOverlay(parent, MxGraphHelper.getRightOverlayButton(parent));
@@ -814,8 +807,28 @@ export class CharacteristicEntityConnectionHandler implements ShapeMultiConnecto
         }
       });
     }
+  }
 
-    toRemove.length && this.mxGraphService.removeCells(toRemove);
+  private removeCells(edge: mxCell, parent: mxCell) {
+    const metaModel = MxGraphHelper.getModelElement(edge.target);
+
+    if (metaModel instanceof DefaultUnit) {
+      return;
+    }
+
+    // remove icon if we delete the edge between enumeration and entity.
+    if (metaModel instanceof DefaultEnumeration) {
+      this.mxGraphShapeOverlayService.removeComplexTypeShapeOverlays(parent);
+    }
+
+    //TODO should be defined in more detail
+    if (metaModel instanceof DefaultEntityValue) {
+      this.mxGraphAttributeService.graph.getOutgoingEdges(edge.target).forEach(outEdge => this.removeCells(outEdge, null));
+      this.mxGraphService.removeCells([edge.target]);
+      this.currentCachedFile.removeCachedElement(metaModel.aspectModelUrn);
+    }
+
+    this.mxGraphService.removeCells([edge]);
   }
 }
 
@@ -938,22 +951,33 @@ export class PropertyPropertyConnectionHandler
       return;
     }
 
+    if (this.hasEntityParent(parentCell)) {
+      this.notificationsService.warning({
+        title: 'No entity as parent present',
+        message: 'One of the Properties/Abstract Properties need to have as parent an Entity/Abstract Entity',
+      });
+      return;
+    }
+
     if (MxGraphHelper.isEntityCycleInheritance(childCell, parentMetaModel, this.mxGraphService.graph)) {
       this.notificationService.warning({
         title: 'Recursive elements',
         message: 'Can not connect elements due to circular connection',
         timeout: 5000,
-      });    } else {
-      if (childMetaModel.extendedElement) {
-        this.notificationService.warning({
-          title: 'Illegal operation',
-          message: 'Can not extend a Property which already extends another element',
-          timeout: 5000,
-        });
-        return;
-      }
-      super.connect(parentMetaModel, childMetaModel, parentCell, childCell);
+      });
+      return;
     }
+
+    if (childMetaModel.extendedElement) {
+      this.notificationService.warning({
+        title: 'Illegal operation',
+        message: 'Can not extend a Property which already extends another element',
+        timeout: 5000,
+      });
+      return;
+    }
+
+    super.connect(parentMetaModel, childMetaModel, parentCell, childCell);
   }
 }
 
@@ -974,12 +998,21 @@ export class PropertyAbstractPropertyConnectionHandler
   }
 
   public connect(parentMetaModel: DefaultProperty, childMetaModel: DefaultAbstractProperty, parentCell: mxCell, childCell: mxCell) {
+    if (this.hasEntityParent(parentCell)) {
+      this.notificationsService.warning({
+        title: 'No entity as parent present',
+        message: 'The Property need to have as parent an Entity/Abstract Entity',
+      });
+      return;
+    }
+
     if (MxGraphHelper.isEntityCycleInheritance(childCell, parentMetaModel, this.mxGraphService.graph)) {
       this.notificationService.warning({
         title: 'Recursive elements',
         message: 'Can not connect elements due to circular connection',
         timeout: 5000,
-      });    } else {
+      });
+    } else {
       super.connect(parentMetaModel, childMetaModel, parentCell, childCell);
     }
   }
@@ -1002,12 +1035,21 @@ export class AbstractPropertyAbstractPropertyConnectionHandler
   }
 
   public connect(parentMetaModel: DefaultAbstractProperty, childMetaModel: DefaultAbstractProperty, parentCell: mxCell, childCell: mxCell) {
+    if (this.hasEntityParent(parentCell)) {
+      this.notificationsService.warning({
+        title: 'No entity as parent present',
+        message: 'One of the Abstract Properties need to have as parent an Entity/Abstract Entity',
+      });
+      return;
+    }
+
     if (MxGraphHelper.isEntityCycleInheritance(childCell, parentMetaModel, this.mxGraphService.graph)) {
       this.notificationService.warning({
         title: 'Recursive elements',
         message: 'Can not connect elements due to circular connection',
         timeout: 5000,
-      });    } else {
+      });
+    } else {
       super.connect(parentMetaModel, childMetaModel, parentCell, childCell);
     }
   }
@@ -1113,7 +1155,8 @@ export class EntityEntityConnectionHandler extends EntityInheritanceConnector im
         title: 'Recursive elements',
         message: 'Can not connect elements due to circular connection',
         timeout: 5000,
-      });      return;
+      });
+      return;
     }
 
     super.connectWithAbstract(parentMetaModel, childMetaModel, parentCell, childCell);
@@ -1143,7 +1186,8 @@ export class AbstractEntityAbstractEntityConnectionHandler
         title: 'Recursive elements',
         message: 'Can not connect elements due to circular connection',
         timeout: 5000,
-      });    } else {
+      });
+    } else {
       super.connect(parentMetaModel, childMetaModel, parentCell, childCell);
     }
   }
@@ -1180,7 +1224,8 @@ export class EntityAbstractEntityConnectionHandler
         title: 'Recursive elements',
         message: 'Can not connect elements due to circular connection',
         timeout: 5000,
-      });      return;
+      });
+      return;
     }
 
     super.connectWithAbstract(parentMetaModel, childMetaModel, parent, child);

@@ -535,7 +535,9 @@ export class CharacteristicConnectionHandler implements ShapeSingleConnector<Cha
       // add trait
       const defaultTrait = this.modelElementNamingService.resolveElementNaming(
         DefaultTrait.createInstance(),
-        RdfModelUtil.capitalizeFirstLetter(selectedParentIncomingEdges.length ? selectedParentIncomingEdges[0].source.id : source.id)
+        RdfModelUtil.capitalizeFirstLetter(
+          (selectedParentIncomingEdges.length ? selectedParentIncomingEdges[0].source.id : source.id)?.replace(/[[\]]/g, '')
+        )
       );
       const traitShape = this.mxGraphService.renderModelElement(this.currentCachedFile.resolveCachedElement(defaultTrait));
 

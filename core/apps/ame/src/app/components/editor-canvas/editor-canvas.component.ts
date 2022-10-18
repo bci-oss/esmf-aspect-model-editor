@@ -161,7 +161,7 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit, OnDestroy {
       this.shapesToHighlight.push(...this.mxGraphAttributeService.graph.getOutgoingEdges(selectedCell));
       const elementShapes = this.shapesToHighlight.filter(edge => MxGraphHelper.getModelElement(edge.target)).map(edge => edge.target);
       this.shapesToHighlight.push(...elementShapes);
-      this.setCellStyle(mxConstants.HIGHLIGHT_COLOR);
+      this.setCellStyle('#448ee4');
     }
 
     this.changeDetector.detectChanges();

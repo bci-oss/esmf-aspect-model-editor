@@ -31,6 +31,9 @@ import {EditorService, ShapeSettingsComponent} from '@ame/editor';
 import {ModelService} from '@ame/rdf/services';
 import {FormGroup} from '@angular/forms';
 
+const PURPLE_BLUE = '#448ee4';
+const BLACK = 'black';
+
 @Component({
   selector: 'ame-editor-canvas',
   templateUrl: './editor-canvas.component.html',
@@ -147,7 +150,7 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit, OnDestroy {
 
   onSelectedCell(cells: Array<mxgraph.mxCell>) {
     if (this.shapesToHighlight) {
-      this.setCellStyle('black');
+      this.setCellColor(BLACK);
     }
 
     if (!cells.length || cells.length >= 2) {
@@ -161,13 +164,13 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit, OnDestroy {
       this.shapesToHighlight.push(...this.mxGraphAttributeService.graph.getOutgoingEdges(selectedCell));
       const elementShapes = this.shapesToHighlight.filter(edge => MxGraphHelper.getModelElement(edge.target)).map(edge => edge.target);
       this.shapesToHighlight.push(...elementShapes);
-      this.setCellStyle('#448ee4');
+      this.setCellColor(PURPLE_BLUE);
     }
 
     this.changeDetector.detectChanges();
   }
 
-  private setCellStyle(value: string) {
+  private setCellColor(value: string) {
     this.mxGraphAttributeService.graph.setCellStyles(mxConstants.STYLE_STROKECOLOR, value, this.shapesToHighlight);
   }
 

@@ -14,7 +14,7 @@ To view particular parts of an Aspect Model, you have several options:
 
 With the map, you can choose how to view the Aspect Model on the graph area canvas.
 
-To toggle the map's visibility, click the Show/Hide map icon image:toolbar-icons/minimap.png[Map toggle icon] in the xref:ui-overview.adoc#toolbar[toolbar].
+To toggle the map's visibility, click the Show/Hide map icon image:toolbar-icons/minimap.png[Map toggle icon] in the xref:getting-started/ui-overview.adoc#toolbar[toolbar].
 
 To see a particular section of your Aspect Model, click and hold the blue selector on the map and drag it around on the map. 
 
@@ -25,7 +25,7 @@ TIP: To zoom in and out, click and hold the lower right corner of the blue selec
 
 With the navigation, you can zoom in and out of the Aspect Model. Also, you can scale the Aspect Model so that the whole model fits on your screen size. 
 
-To toggle the navigation's visibility, click the Show/Hide navigation icon image:toolbar-icons/navigation.png[Navigation toggle icon] in the xref:ui-overview.adoc#toolbar[toolbar].
+To toggle the navigation's visibility, click the Show/Hide navigation icon image:toolbar-icons/navigation.png[Navigation toggle icon] in the xref:getting-started/ui-overview.adoc#toolbar[toolbar].
 
 The navigation provides the following options:
 
@@ -39,7 +39,7 @@ image::zoom-fit.png[Zoom icons]
 [[collapse-expand-models]]
 == Collapse and expand all elements of a model
 
-To collapse or expand the elements of your model, click the Collapse/Expand toggle icon image:toolbar-icons/expand.png[Collapse/Expand icon] in the xref:ui-overview.adoc#toolbar[toolbar].
+To collapse or expand the elements of your model, click the Collapse/Expand toggle icon image:toolbar-icons/expand.png[Collapse/Expand icon] in the xref:getting-started/ui-overview.adoc#toolbar[toolbar].
 
 [cols="50%,50%"]
 |===

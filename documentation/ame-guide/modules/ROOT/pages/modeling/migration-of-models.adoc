@@ -22,7 +22,7 @@ The tool automatically recognises the older version and migrates it to the lates
 
 image::load-old-model.png[width=100%]
 
-image::migrate-notification.png[width=100%]
+image::migrate-notification.png[width=200px]
 
 ++++
 <style>

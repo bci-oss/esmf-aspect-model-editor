@@ -5,7 +5,7 @@
 
 All known issues with the Aspect Model Editor are listed here.
 
-See also xref:known-limitations.adoc#known-limitations[known limitations].
+See also xref:support/known-limitations.adoc#known-limitations[known limitations].
 
 [[issues-with-validation-loading-ttl-files]]
 == Issues with validating, loading, and saving Aspect Models (TTL files)
@@ -186,7 +186,7 @@ h| Error
 a| During usage, a key press (e.g. delete to delete an element) is not recognized. Instead, no action happens.
 
 h| Explanation
-a| The Aspect Model Editor does not support keystrokes like "del". See xref:get-started.adoc[Get started].
+a| The Aspect Model Editor does not support keystrokes like "del". See xref:getting-started/get-started.adoc[Get started].
 
 h| Workaround
 a| Use mouse actions instead, e.g. the toolbar on the top with the Delete icon. You can also change your focus back and forth to try again pressing the delete key.

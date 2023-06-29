@@ -7,7 +7,7 @@ To start modeling, proceed as follows:
 
 WARNING: Already opened Aspect Models will be lost when loading a new one. Always make sure to save the previous Aspect Model first.
 
-. Click the *New/Load* icon in the xref:ui-overview.adoc#toolbar[Toolbar].
+. Click the *New/Load* icon in the xref:getting-started/ui-overview.adoc#toolbar[Toolbar].
 . Click *Create/Upload Aspect Model*.
 . Click *Models/Default Aspect Model* to start from the default Aspect Model.
 +

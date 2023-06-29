@@ -22,12 +22,12 @@ image:notification-02.png[Go to,width=100%]
 Resolve the issue within your model.
 For more information on valid Aspect Models, refer to the https://eclipse-esmf.github.io/samm-specification/2.0.0/modeling-guidelines.html[SAMM Aspect Meta Model version 1.0.0 > Aspects^,opts=nofollow].
 
-See also xref:known-issues.adoc#issues-with-validation-loading-ttl-files[Known issues: issues with validation and
+See also xref:support/known-issues.adoc#issues-with-validation-loading-ttl-files[Known issues: issues with validation and
 loading TTL files].
 
 == Manually trigger a validation
 
-To manually trigger a validation, click the Validate icon image:toolbar-icons/validate.png[Validate icon] in the xref:ui-overview.adoc#toolbar[toolbar].
+To manually trigger a validation, click the Validate icon image:toolbar-icons/validate.png[Validate icon] in the xref:getting-started/ui-overview.adoc#toolbar[toolbar].
 
 image:notification-01.png[width=100%]
 

@@ -3,14 +3,14 @@
 [[use-external-references]]
 = Use external references
 
-For general information on external references, see xref:namespaces-references.adoc#namespaces-external-references[Namespaces and external references].
+For general information on external references, see xref:namespace/namespaces-references.adoc#namespaces-external-references[Namespaces and external references].
 
 [[add-external-references]]
 == Add external references
 
 To add external references, proceed as follows:
 
-1. xref::import-and-export-namespaces.adoc#import-namespaces[Import the namespace] you want to use.
+1. xref:namespace/import-namespaces.adoc#import-namespaces[Import the namespace] you want to use.
 2. Open the Workspace sidebar.
 3. Double-click the TTL file from which you want to use elements from.
 4. Drag the specific element and drop it to the graph area canvas.
@@ -38,14 +38,14 @@ image::external-reference-delete.png[width=100%]
 
 To refer from one element to another one, proceed as follows:
 
-. xref::load-and-save-models.adoc#save-models[Save] the model you are currently working on.
-. xref::load-and-save-models.adoc#load-start-new-models[Load] the model that you intend to reference to.
+. xref:getting-started/load-and-save-models.adoc#save-models[Save] the model you are currently working on.
+. xref:getting-started/load-and-save-models.adoc#load-start-new-models[Load] the model that you intend to reference to.
 . Click *Save*.
 . Click *Save to namespace*.
 +
-→  Now the reference can be found in the xref:ui-overview.adoc#workspace-sidebar[Workspace sidebar].
-. xref::load-and-save-models.adoc#load-start-new-models[Load or start] a new model.
-. xref::import-and-export-namespaces.adoc#import-export-namespaces[Open] the Workspace sidebar.
+→  Now the reference can be found in the xref:getting-started/ui-overview.adoc#workspace-sidebar[Workspace sidebar].
+. xref:getting-started/load-and-save-models.adoc#load-start-new-models[Load or start] a new model.
+. xref:namespace/import-namespaces.adoc[].
 . Double-click the TTL file of which you want to use elements from.
 . Drag the specific element and drop it on the graph area canvas.
 

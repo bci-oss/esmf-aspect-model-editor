@@ -16,7 +16,7 @@ image::settings-configuration.png[Configuration tab in Settings dialog,width=100
 The latest auto-saved version is restored after the restart of the application.
 
 * *Auto-validation*: automatically validates the current model in a predefined period.
-The validation information is displayed in the xref::validation-and-notifications.adoc[Notifications dialog].
+The validation information is displayed in the xref:getting-started/validation-and-notifications.adoc[Notifications dialog].
 
 * *Auto-Formatting*: automatically format the current model if you change something.
 
@@ -38,6 +38,10 @@ image::settings-languages.png[Languages tab in Settings dialog,width=100%]
 Define for which languages the `description` and the `preferredName` attributes for elements should be displayed.
 
 Element attributes can only be added for the languages defined in your settings.
+
+For each language defined in the settings you will later get an entry field, as shown in the example property.
+
+image::lang-example.png[Languages tab in Settings dialog,width=100%]
 
 NOTE: Importing a model automatically imports all languages existing in the respective model but never deletes a language.
 

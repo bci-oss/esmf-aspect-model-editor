@@ -3,7 +3,7 @@
 [[support]]
 = Support
 
-For troubleshooting, have a look at the xref:known-issues.adoc#known-issues[known issues] and the xref:known-limitations.adoc#known-limitations[known limitations] of the Aspect Model Editor.
+For troubleshooting, have a look at the xref:support/known-issues.adoc#known-issues[known issues] and the xref:support/known-limitations.adoc#known-limitations[known limitations] of the Aspect Model Editor.
 
 As the Aspect Model Editor relies on the SAMM specification, also check out the https://eclipse-esmf.github.io/samm-specification/2.0.0/index.html[SAMM Aspect Meta Model version 2.0.0^,opts=nofollow].
 

@@ -49,7 +49,7 @@ export class VersionMigrationComponent implements OnInit {
     private migratorApiService: MigratorApiService,
     private editorService: EditorService,
     private router: Router,
-    private ngZone: NgZone
+    private ngZone: NgZone,
   ) {}
 
   ngOnInit(): void {
@@ -65,15 +65,14 @@ export class VersionMigrationComponent implements OnInit {
           this.namespaces = namespaces;
           return this.rewriteStores();
         }),
-        tap(models => modelsTobeDeleted = models
-          ),
-        switchMap(models => this.rewriteModels(models))
+        tap(models => (modelsTobeDeleted = models)),
+        switchMap(models => this.rewriteModels(models)),
       )
       .subscribe(() => {
-        this.deleteModels(modelsTobeDeleted).subscribe(()=> {
+        this.deleteModels(modelsTobeDeleted).subscribe(() => {
           this.electronSignalsService.call('requestRefreshWorkspaces');
-          this.ngZone.run(()=> this.router.navigate([{outlets: {migrator: 'migration-success'}}]));
-        })
+          this.ngZone.run(() => this.router.navigate([{outlets: {migrator: 'migration-success'}}]));
+        });
       });
   }
 
@@ -165,19 +164,14 @@ export class VersionMigrationComponent implements OnInit {
     return returnObject;
   }
 
-  private rewriteModels(models: any[]){
+  private rewriteModels(models: any[]) {
     return models.reduce(
-      (obs, model) => obs.pipe(switchMap(() => this.migratorApiService.rewriteFile(model)
-      .pipe(tap(() => (model.file.migrated = true))))),
+      (obs, model) => obs.pipe(switchMap(() => this.migratorApiService.rewriteFile(model).pipe(tap(() => (model.file.migrated = true))))),
       of(0),
     );
   }
 
-  private deleteModels(models: any[]){
-    return models.reduce(
-      (obs, model) => obs.pipe(switchMap(() => this.modelApiService.deleteFile(model.oldNamespaceFile)
-      )),
-      of(0),
-    );
+  private deleteModels(models: any[]) {
+    return models.reduce((obs, model) => obs.pipe(switchMap(() => this.modelApiService.deleteFile(model.oldNamespaceFile))), of(0));
   }
 }

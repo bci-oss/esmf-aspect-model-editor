@@ -13,11 +13,7 @@
 
 import {Component, inject} from '@angular/core';
 
-import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {MatInputModule} from '@angular/material/input';
-import {MatAutocompleteModule} from '@angular/material/autocomplete';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatIconModule} from '@angular/material/icon';
+import {FileHandlingService, SaveModelDialogService} from '@ame/editor';
 import {
   ElectronSignals,
   ElectronSignalsService,
@@ -26,13 +22,17 @@ import {
   SearchService,
   filesSearchOption,
 } from '@ame/shared';
-import {FileHandlingService, SaveModelDialogService} from '@ame/editor';
-import {SearchesStateService} from '../../search-state.service';
 import {FileStatus, SidebarStateService} from '@ame/sidebar';
-import {Observable, filter, first, of, startWith, switchMap, tap, throttleTime} from 'rxjs';
-import {OpenFileDialogComponent} from '../open-file-dialog/open-file-dialog.component';
-import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import {LanguageTranslateModule, LanguageTranslationService} from '@ame/translation';
+import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import {MatDialog, MatDialogModule} from '@angular/material/dialog';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatIconModule} from '@angular/material/icon';
+import {MatInputModule} from '@angular/material/input';
+import {Observable, filter, first, of, startWith, switchMap, tap, throttleTime} from 'rxjs';
+import {SearchesStateService} from '../../search-state.service';
+import {OpenFileDialogComponent} from '../open-file-dialog/open-file-dialog.component';
 
 @Component({
   selector: 'ame-files-search',

@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {DefaultProperty, DefaultStructuredValue, Type} from '@ame/meta-model';
+import {DefaultProperty, DefaultStructuredValue, Type} from '@esmf/aspect-model-loader';
 import {DataFactory} from 'n3';
 import {ListElement, ListElementType, OverWrittenListElement, ResolvedListElements, SourceElementType} from '.';
 
@@ -20,7 +20,7 @@ export class RdfListHelper {
     const overWrittenListElements: OverWrittenListElement[] = [];
     const listElements = elements.map(metaModelElement => {
       const {keys, property} = metaModelElement || {};
-      if (property instanceof DefaultProperty && (keys?.optional || keys?.notInPayload || keys?.payloadName || property.extendedElement)) {
+      if (property instanceof DefaultProperty && (keys?.optional || keys?.notInPayload || keys?.payloadName || property.getExtends())) {
         const blankNode = DataFactory.blankNode();
         overWrittenListElements.push({
           metaModelElement,

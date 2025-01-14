@@ -11,26 +11,27 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable} from '@angular/core';
-import {DataFactory, Store} from 'n3';
-import {BaseVisitor} from '../base-visitor';
-import {RdfNodeService} from '../../rdf-node';
-import {DefaultUnit} from '@ame/meta-model';
+import {LoadedFilesService} from '@ame/cache';
 import {RdfService} from '@ame/rdf/services';
-import {Samm} from '@ame/vocabulary';
+import {Injectable} from '@angular/core';
+import {DefaultUnit, Samm} from '@esmf/aspect-model-loader';
+import {DataFactory, Store} from 'n3';
+import {RdfNodeService} from '../../rdf-node';
+import {BaseVisitor} from '../base-visitor';
 
 @Injectable()
 export class UnitVisitor extends BaseVisitor<DefaultUnit> {
   private get store(): Store {
-    return this.rdfNodeService.modelService.currentRdfModel.store;
+    return this.loadedFilesService.currentLoadedFile.rdfModel.store;
   }
 
   private get samm(): Samm {
-    return this.rdfNodeService.modelService.currentRdfModel.SAMM();
+    return this.loadedFilesService.currentLoadedFile.rdfModel.samm;
   }
 
   constructor(
     private rdfNodeService: RdfNodeService,
+    private loadedFilesService: LoadedFilesService,
     rdfService: RdfService,
   ) {
     super(rdfService);
@@ -47,7 +48,7 @@ export class UnitVisitor extends BaseVisitor<DefaultUnit> {
   }
 
   private addProperties(unit: DefaultUnit) {
-    if (unit.isPredefined()) {
+    if (unit.isPredefined) {
       return;
     }
 
@@ -59,7 +60,7 @@ export class UnitVisitor extends BaseVisitor<DefaultUnit> {
       symbol: unit.symbol,
       commonCode: unit.code,
       conversionFactor: unit.conversionFactor,
-      numericConversionFactor: unit.numericConversionFactor,
+      // numericConversionFactor: unit.numericConversionFactor,
     });
 
     // update reference unit

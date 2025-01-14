@@ -20,7 +20,7 @@
       appearance="fill"
     >
       <mat-label for="description">description({{ locale }})</mat-label>
-      <textarea matInput [formControl]="getControl('description' + locale)" name="description{{ locale }}" data-cy="description"></textarea>
+      <textarea [formControl]="getControl('description' + locale)" matInput name="description{{ locale }}" data-cy="description"></textarea>
     </mat-form-field>
   }
 </ng-container>

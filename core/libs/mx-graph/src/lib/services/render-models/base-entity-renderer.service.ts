@@ -11,19 +11,18 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable, inject} from '@angular/core';
 import {NamespacesCacheService} from '@ame/cache';
 import {ShapeConnectorService} from '@ame/connection';
+import {DefaultFilter, FiltersService} from '@ame/loader-filters';
 import {RdfService} from '@ame/rdf/services';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
-import {DefaultAbstractEntity, DefaultEntity, DefaultProperty} from '@ame/meta-model';
+import {Injectable, inject} from '@angular/core';
+import {DefaultEntity, DefaultProperty, PredefinedEntitiesEnum, SammE} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
-import {MxGraphShapeOverlayService} from '../mx-graph-shape-overlay.service';
-import {MxGraphService} from '../mx-graph.service';
 import {MxGraphHelper, MxGraphVisitorHelper} from '../../helpers';
 import {MxGraphRenderer} from '../../renderers';
-import {MetaModelElementInstantiator, PredefinedEntityInstantiator} from '@ame/instantiator';
-import {DefaultFilter, FiltersService} from '@ame/loader-filters';
+import {MxGraphShapeOverlayService} from '../mx-graph-shape-overlay.service';
+import {MxGraphService} from '../mx-graph.service';
 
 @Injectable({
   providedIn: 'root',
@@ -52,7 +51,7 @@ export class BaseEntityRendererService {
       return;
     }
 
-    if (!metaModelElement.extendedElement) {
+    if (!metaModelElement.extends_) {
       this.cleanUpAbstractConnections(cell);
       return;
     }
@@ -64,13 +63,12 @@ export class BaseEntityRendererService {
     const mxGraphSetupVisitor = new MxGraphRenderer(
       this.mxGraphService,
       this.mxGraphShapeOverlayService,
-      this.namespacesCacheService,
       this.sammLangService,
       this.rdfService.currentRdfModel,
     );
 
-    const extendsElement = metaModelElement.extendedElement as DefaultAbstractEntity;
-    if (extendsElement.isPredefined()) {
+    const extendsElement = metaModelElement.extends_;
+    if (extendsElement.isPredefined) {
       let predefinedCell = this.mxGraphService.resolveCellByModelElement(extendsElement);
       if (predefinedCell) {
         this.shapeConnectorService.connectShapes(metaModelElement, extendsElement, cell, predefinedCell);
@@ -82,7 +80,7 @@ export class BaseEntityRendererService {
       predefinedCell = this.mxGraphService.resolveCellByModelElement(extendsElement);
 
       // setting to null to create the properties after abstract properties
-      metaModelElement.extendedElement = null;
+      metaModelElement.extends_ = null;
       this.shapeConnectorService.connectShapes(metaModelElement, extendsElement, cell, predefinedCell);
       return;
     }
@@ -99,13 +97,10 @@ export class BaseEntityRendererService {
 
   private hasPredefinedAbstractEntity(cell: mxgraph.mxCell): mxgraph.mxCell {
     const children = this.mxGraphService.graph.getOutgoingEdges(cell).map(e => e.target);
-    const predefinedEntityInstantiator = new PredefinedEntityInstantiator(
-      new MetaModelElementInstantiator(this.rdfService.currentRdfModel, this.namespacesCacheService.currentCachedFile),
-    );
 
     for (const child of children) {
       const modelElement = MxGraphHelper.getModelElement<DefaultEntity>(child);
-      if (!!predefinedEntityInstantiator.entityInstances[modelElement?.aspectModelUrn]) {
+      if (modelElement?.aspectModelUrn.startsWith(SammE.versionLessUri) && modelElement?.name in PredefinedEntitiesEnum) {
         return child;
       }
     }
@@ -115,13 +110,13 @@ export class BaseEntityRendererService {
 
   private isSameExtendedElement(cell: mxgraph.mxCell, child: mxgraph.mxCell) {
     const modelElement = MxGraphHelper.getModelElement<DefaultEntity>(cell);
-    const childModel = MxGraphHelper.getModelElement<DefaultAbstractEntity>(child);
-    return childModel && modelElement.extendedElement && modelElement.extendedElement?.aspectModelUrn === childModel?.aspectModelUrn;
+    const childModel = MxGraphHelper.getModelElement<DefaultEntity>(child);
+    return childModel && modelElement.extends_ && modelElement.extends_?.aspectModelUrn === childModel?.aspectModelUrn;
   }
 
   private isAlreadyConnected(cell: mxgraph.mxCell) {
     const modelElement = MxGraphHelper.getModelElement<DefaultEntity>(cell);
-    const extendedElement = modelElement.extendedElement;
+    const extendedElement = modelElement.extends_;
 
     if (!extendedElement) {
       return false;
@@ -135,15 +130,13 @@ export class BaseEntityRendererService {
   private cleanUpAbstractConnections(cell: mxgraph.mxCell) {
     const childrenEdges = this.mxGraphService.graph.getOutgoingEdges(cell);
 
-    const entityChildEdge = childrenEdges.find(edge =>
-      [DefaultEntity, DefaultAbstractEntity].some(c => MxGraphHelper.getModelElement(edge.target) instanceof c),
-    );
+    const entityChildEdge = childrenEdges.find(edge => MxGraphHelper.getModelElement(edge.target) instanceof DefaultEntity);
 
     if (!entityChildEdge) {
       return;
     }
 
-    const entityChildModelElement = MxGraphHelper.getModelElement<DefaultAbstractEntity>(entityChildEdge.target);
+    const entityChildModelElement = MxGraphHelper.getModelElement<DefaultEntity>(entityChildEdge.target);
     const extendedProperties = childrenEdges
       .map(e => e.target)
       .filter(c => {
@@ -152,9 +145,7 @@ export class BaseEntityRendererService {
           return false;
         }
 
-        return entityChildModelElement.properties.some(
-          ({property}) => property.aspectModelUrn === childModelElement.extendedElement?.aspectModelUrn,
-        );
+        return entityChildModelElement.properties.some(property => property.aspectModelUrn === childModelElement.extends_?.aspectModelUrn);
       });
 
     this.mxGraphService.removeCells([entityChildEdge, ...extendedProperties]);

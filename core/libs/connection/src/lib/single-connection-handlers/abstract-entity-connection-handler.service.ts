@@ -13,20 +13,13 @@
 
 import {EntityInstanceService} from '@ame/editor';
 import {FiltersService} from '@ame/loader-filters';
-import {
-  Entity,
-  ModelElementNamingService,
-  DefaultAbstractEntity,
-  DefaultAbstractProperty,
-  OverWrittenProperty,
-  DefaultEntity,
-  DefaultProperty,
-} from '@ame/meta-model';
-import {MxGraphService, MxGraphHelper} from '@ame/mx-graph';
+import {ModelElementNamingService} from '@ame/meta-model';
+import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
 import {Injectable} from '@angular/core';
-import {SingleShapeConnector} from '../models';
-import {PropertyAbstractPropertyConnectionHandler, EntityPropertyConnectionHandler} from '../multi-shape-connection-handlers';
+import {DefaultEntity, DefaultProperty, Entity} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
+import {SingleShapeConnector} from '../models';
+import {EntityPropertyConnectionHandler, PropertyAbstractPropertyConnectionHandler} from '../multi-shape-connection-handlers';
 
 @Injectable({
   providedIn: 'root',
@@ -41,15 +34,14 @@ export class AbstractEntityConnectionHandler implements SingleShapeConnector<Ent
     private filtersService: FiltersService,
   ) {}
 
-  public connect(abstractEntity: DefaultAbstractEntity, source: mxgraph.mxCell) {
-    const abstractProperty = DefaultAbstractProperty.createInstance();
+  public connect(abstractEntity: DefaultEntity, source: mxgraph.mxCell) {
+    const abstractProperty = new DefaultProperty({isAbstract: true, name: '', aspectModelUrn: '', metaModelVersion: ''});
     const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(abstractProperty);
     const abstractPropertyCell = this.mxGraphService.renderModelElement(
       this.filtersService.createNode(metaModelElement, {parent: MxGraphHelper.getModelElement(source)}),
     );
-    const overWrittenProperty: OverWrittenProperty<DefaultAbstractProperty> = {property: abstractProperty, keys: {}};
-    abstractEntity.properties.push(overWrittenProperty as any);
-    this.entityInstanceService.onNewProperty(overWrittenProperty as any, abstractEntity);
+    abstractEntity.properties.push(abstractProperty);
+    this.entityInstanceService.onNewProperty(abstractProperty, abstractEntity);
 
     this.mxGraphService.assignToParent(abstractPropertyCell, source);
     this.mxGraphService.formatCell(source);
@@ -60,15 +52,17 @@ export class AbstractEntityConnectionHandler implements SingleShapeConnector<Ent
       .filter(cell => MxGraphHelper.getModelElement(cell) instanceof DefaultEntity);
 
     if (entities.length) {
-      const newProperty = DefaultProperty.createInstance();
       const [namespace, name] = abstractProperty.aspectModelUrn.split('#');
-      newProperty.aspectModelUrn = `${namespace}#[${name}]`;
-      newProperty.metaModelVersion = abstractProperty.metaModelVersion;
+      const newProperty = new DefaultProperty({
+        name: `[${name}]`,
+        aspectModelUrn: `${namespace}#[${name}]`,
+        metaModelVersion: abstractProperty.metaModelVersion,
+      });
       const newPropertyCell = this.mxGraphService.renderModelElement(this.filtersService.createNode(newProperty));
 
       for (const entity of entities) {
         const entityModel = MxGraphHelper.getModelElement<DefaultEntity>(entity);
-        entityModel.properties.push({property: newProperty, keys: {}});
+        entityModel.properties.push(newProperty);
         this.entityPropertyConnector.connect(entityModel, newProperty, entity, newPropertyCell);
       }
 

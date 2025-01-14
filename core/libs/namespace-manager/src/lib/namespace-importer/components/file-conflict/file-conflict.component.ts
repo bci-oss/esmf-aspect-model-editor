@@ -11,14 +11,14 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {CdkScrollable} from '@angular/cdk/scrolling';
 import {Component, Inject} from '@angular/core';
+import {MatButton} from '@angular/material/button';
+import {MatButtonToggle, MatButtonToggleGroup} from '@angular/material/button-toggle';
+import {MatDialogActions, MatDialogContent, MatDialogTitle} from '@angular/material/dialog';
 import {Router} from '@angular/router';
 import {NAMESPACES_SESSION} from '../../../shared';
 import {NamespacesSessionInterface} from '../../../shared/models';
-import {MatButton} from '@angular/material/button';
-import {MatButtonToggleGroup, MatButtonToggle} from '@angular/material/button-toggle';
-import {CdkScrollable} from '@angular/cdk/scrolling';
-import {MatDialogTitle, MatDialogContent, MatDialogActions} from '@angular/material/dialog';
 
 @Component({
   templateUrl: './file-conflict.component.html',

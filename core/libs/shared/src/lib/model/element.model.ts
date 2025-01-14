@@ -13,17 +13,15 @@
 
 import {
   DefaultAspect,
+  DefaultCharacteristic,
+  DefaultConstraint,
+  DefaultEntity,
   DefaultEvent,
   DefaultOperation,
   DefaultProperty,
-  DefaultAbstractProperty,
-  DefaultCharacteristic,
-  DefaultEntity,
-  DefaultAbstractEntity,
-  DefaultUnit,
-  DefaultConstraint,
   DefaultTrait,
-} from '@ame/meta-model';
+  DefaultUnit,
+} from '@esmf/aspect-model-loader';
 
 export type ElementType =
   | 'aspect'
@@ -97,7 +95,7 @@ export const sammElements: ElementInfo = {
     symbol: 'AP',
     plural: 'Abstract Properties',
     description: 'ELEMENT_MODEL_DESCRIPTION.ABSTRACT_PROPERTY',
-    class: DefaultAbstractProperty,
+    class: DefaultProperty,
   },
   characteristic: {
     name: 'Characteristic',
@@ -118,7 +116,7 @@ export const sammElements: ElementInfo = {
     symbol: 'AE',
     plural: 'Abstract Entities',
     description: 'ELEMENT_MODEL_DESCRIPTION.ABSTRACT_ENTITY',
-    class: DefaultAbstractEntity,
+    class: DefaultEntity,
   },
   unit: {
     name: 'Unit',

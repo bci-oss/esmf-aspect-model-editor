@@ -11,14 +11,14 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, inject} from '@angular/core';
 import {ViolationError, VisibleStep} from '@ame/editor';
-import {NAMESPACES_SESSION} from '../../services';
-import {MissingElement, NamespacesSessionInterface, Violation} from '../../models';
-import {MatIcon} from '@angular/material/icon';
-import {MatDialogContent} from '@angular/material/dialog';
-import {MatTooltip} from '@angular/material/tooltip';
 import {LanguageTranslateModule} from '@ame/translation';
+import {Component, inject} from '@angular/core';
+import {MatDialogContent} from '@angular/material/dialog';
+import {MatIcon} from '@angular/material/icon';
+import {MatTooltip} from '@angular/material/tooltip';
+import {MissingElement, NamespacesSessionInterface, Violation} from '../../models';
+import {NAMESPACES_SESSION} from '../../services';
 
 @Component({
   standalone: true,

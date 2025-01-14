@@ -10,19 +10,19 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {Component} from '@angular/core';
-import {MatDialogRef} from '@angular/material/dialog';
-import {FlatTreeControl} from '@angular/cdk/tree';
-import {MatTreeFlatDataSource, MatTreeFlattener} from '@angular/material/tree';
-import {SammLanguageSettingsService, SettingsFormService} from '../../services';
-import * as locale from 'locale-codes';
-import {AlertService, LoadingScreenService, LogService, TitleService} from '@ame/shared';
+import {LoadedFilesService, NamespacesCacheService} from '@ame/cache';
 import {MxGraphAttributeService, MxGraphService, MxGraphShapeSelectorService, ShapeLanguageRemover} from '@ame/mx-graph';
 import {ModelService} from '@ame/rdf/services';
+import {AlertService, LoadingScreenService, LogService, TitleService} from '@ame/shared';
+import {FlatTreeControl} from '@angular/cdk/tree';
+import {Component} from '@angular/core';
 import {FormGroup} from '@angular/forms';
-import {NamespacesCacheService} from '@ame/cache';
-import {RdfModel} from '@ame/rdf/utils';
+import {MatDialogRef} from '@angular/material/dialog';
+import {MatTreeFlatDataSource, MatTreeFlattener} from '@angular/material/tree';
+import {RdfModel} from '@esmf/aspect-model-loader';
+import * as locale from 'locale-codes';
 import {NamespaceConfiguration} from '../../model';
+import {SammLanguageSettingsService, SettingsFormService} from '../../services';
 
 enum NodeNames {
   CONFIGURATION = 'System Configuration',
@@ -129,6 +129,10 @@ export class SettingDialogComponent {
     return this.formService.getForm();
   }
 
+  get currentLoadedFile() {
+    return this.loadedFilesService.currentLoadedFile;
+  }
+
   constructor(
     private settingDialogComponentMatDialogRef: MatDialogRef<SettingDialogComponent>,
     private formService: SettingsFormService,
@@ -142,6 +146,7 @@ export class SettingDialogComponent {
     private loadingScreen: LoadingScreenService,
     private titleService: TitleService,
     private namespaceCacheService: NamespacesCacheService,
+    private loadedFilesService: LoadedFilesService,
   ) {
     this.initializeComponent();
   }
@@ -218,7 +223,6 @@ export class SettingDialogComponent {
 
     currentCachedFile.updateCachedElementsNamespace(oldValue, newValue);
     rdfModel.updatePrefix('', oldValue, newValue);
-    rdfModel.aspectModelFileName;
   }
 
   private updateNamespaceAndVersion(namespaceConfig: NamespaceConfiguration): void {
@@ -228,21 +232,21 @@ export class SettingDialogComponent {
     this.formService.setNamespace(newNamespace);
     this.formService.setVersion(newVersion);
   }
-
+  //@TODO check if this updates are not duplicates
   private updateNamespaceKey(newNamespace: string, newVersion: string, rdfModel: RdfModel): void {
     const newUrn = `urn:samm:${newNamespace}:${newVersion}#`;
 
-    this.namespaceCacheService.addFile(newUrn, rdfModel.aspectModelFileName);
-    if (rdfModel.aspect) {
-      const [, aspectName] = rdfModel.aspect.value.split('#');
-      rdfModel.namespaceHasChanged = true;
-      rdfModel.setAspect(`${newUrn}${aspectName}`);
-      rdfModel.absoluteAspectModelFileName = `${newUrn.replace('#', ':')}${aspectName}.ttl`;
-    }
+    this.namespaceCacheService.addFile(newUrn, this.currentLoadedFile.name);
+    // if (this.currentLoadedFile) {
+    //   const [, aspectName] = rdfModel.aspect.value.split('#');
+    //   rdfModel.namespaceHasChanged = true;
+    //   rdfModel.setAspect(`${newUrn}${aspectName}`);
+    //   rdfModel.absoluteAspectModelFileName = `${newUrn.replace('#', ':')}${aspectName}.ttl`;
+    // }
   }
 
   private updateTitleIfNeeded(): void {
-    this.titleService.updateTitle(this.modelService.getLoadedAspectModel().rdfModel.absoluteAspectModelFileName);
+    this.titleService.updateTitle(this.loadedFilesService.currentLoadedFile.absoluteName);
   }
 
   openConfirmBox(): void {

@@ -11,13 +11,13 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {NamespaceFile} from '@ame/cache';
 import {EditorService} from '@ame/editor';
-import {ExporterHelper} from '@ame/migrator';
-import {RdfModel} from '@ame/rdf/utils';
 import {APP_CONFIG, AppConfig, BrowserService} from '@ame/shared';
 import {HttpClient} from '@angular/common/http';
-import {inject, Injectable} from '@angular/core';
-import {map, Observable, switchMap} from 'rxjs';
+import {Injectable, inject} from '@angular/core';
+import {RdfModel} from '@esmf/aspect-model-loader';
+import {Observable, map, switchMap} from 'rxjs';
 import {ModelApiService} from './model-api.service';
 
 export interface NamespaceStatus {
@@ -40,7 +40,7 @@ export class MigratorApiService {
   private readonly serviceUrl = this.config.serviceUrl;
   private api = this.config.api;
 
-  public rdfModelsToMigrate = [];
+  public rdfModelsToMigrate: NamespaceFile[] = [];
 
   constructor(
     private http: HttpClient,
@@ -59,9 +59,10 @@ export class MigratorApiService {
 
     return this.editorService.loadExternalModels().pipe(
       map((rdfModels: RdfModel[]) => {
-        this.rdfModelsToMigrate = rdfModels.filter(rdfModel =>
-          ExporterHelper.isVersionOutdated(rdfModel?.samm.version, this.config.currentSammVersion),
-        );
+        // @TODO populate with files
+        // this.rdfModelsToMigrate = rdfModels.filter(rdfModel =>
+        //   ExporterHelper.isVersionOutdated(rdfModel?.samm.version, this.config.currentSammVersion),
+        // );
 
         return this.rdfModelsToMigrate.length > 0;
       }),

@@ -13,18 +13,18 @@
 
 import {ModelApiService} from '@ame/api';
 import {ModelService, RdfService} from '@ame/rdf/services';
+import {LanguageTranslateModule} from '@ame/translation';
 import {Component} from '@angular/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
-import {finalize, first, tap} from 'rxjs';
-import {saveAs} from 'file-saver';
-import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
-import {LanguageTranslateModule} from '@ame/translation';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatButtonModule} from '@angular/material/button';
-import {MatSelectModule} from '@angular/material/select';
 import {MatOptionModule} from '@angular/material/core';
+import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
+import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIcon} from '@angular/material/icon';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatSelectModule} from '@angular/material/select';
+import {saveAs} from 'file-saver';
+import {finalize, first, tap} from 'rxjs';
 
 @Component({
   standalone: true,

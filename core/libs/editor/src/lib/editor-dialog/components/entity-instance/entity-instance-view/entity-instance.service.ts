@@ -11,12 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable} from '@angular/core';
-import {DefaultEntity, DefaultEntityInstance, DefaultEnumeration, DefaultProperty, OverWrittenProperty} from '@ame/meta-model';
-import {ConfirmDialogService} from '@ame/editor';
 import {NamespacesCacheService} from '@ame/cache';
-import {NotificationsService} from '@ame/shared';
+import {ConfirmDialogService} from '@ame/editor';
 import {MxGraphHelper} from '@ame/mx-graph';
+import {NotificationsService} from '@ame/shared';
+import {Injectable} from '@angular/core';
+import {DefaultEntity, DefaultEntityInstance, DefaultEnumeration, DefaultProperty, Entity} from '@esmf/aspect-model-loader';
 import {ConfirmDialogEnum} from '../../../../models/confirm-dialog.enum';
 
 @Injectable({
@@ -36,16 +36,16 @@ export class EntityInstanceService {
   onPropertyRemove(property: DefaultProperty, acceptCallback: Function) {
     const entityValues = this.currentCachedFile
       .getCachedEntityValues()
-      .filter(({properties}) => properties.some(({key}) => key.property.name === property.name));
+      .filter(({assertions}) => assertions.some(({key}) => key.property.name === property.name));
 
     if (!entityValues.length) {
       acceptCallback?.();
       return;
     }
 
-    const title = `Remove ${property.name} from ${entityValues[0].entity.name}?`;
+    const title = `Remove ${property.name} from ${entityValues[0].type.name}?`;
     const phrases = [
-      `${entityValues[0].entity.name} has ${entityValues.length} instances.`,
+      `${entityValues[0].type.name} has ${entityValues.length} instances.`,
       `If you remove the property ${property.name} from this entity all the entity instances will lose this property!`,
       'Do you want to continue?',
     ];
@@ -60,25 +60,25 @@ export class EntityInstanceService {
     });
   }
 
-  onNewProperty(property: OverWrittenProperty<DefaultProperty>, entity: DefaultEntity) {
-    const entityValues = this.currentCachedFile.getCachedEntityValues().filter(entityValue => entityValue.entity.name === entity.name);
+  onNewProperty(property: DefaultProperty, entity: Entity) {
+    const entityValues = this.currentCachedFile.getCachedEntityValues().filter(entityValue => entityValue.type.name === entity.name);
     if (!entityValues.length) {
       return;
     }
 
     for (const entityValue of entityValues) {
       entityValue.addProperty(property);
-      MxGraphHelper.establishRelation(entityValue, property.property);
+      MxGraphHelper.establishRelation(entityValue, property);
     }
 
     this.notifications.warning({
-      title: `Property ${property.property.name} was added to ${entity.name} instances. Make sure to add a value to them!`,
+      title: `Property ${property.name} was added to ${entity.name} instances. Make sure to add a value to them!`,
       timeout: 5000,
     });
   }
 
   onEntityRemove(entity: DefaultEntity, acceptCallback: Function) {
-    const entityValues = this.currentCachedFile.getCachedEntityValues().filter(entityValue => entityValue.entity.name === entity.name);
+    const entityValues = this.currentCachedFile.getCachedEntityValues().filter(entityValue => entityValue.type.name === entity.name);
 
     if (!entityValues.length) {
       acceptCallback?.();
@@ -104,7 +104,7 @@ export class EntityInstanceService {
   onEntityDisconnect(characteristic: DefaultEnumeration, entity: DefaultEntity, acceptCallback: Function) {
     const entityValues = this.currentCachedFile
       .getCachedEntityValues()
-      .filter(entityValue => entityValue.entity.name === entity.name)
+      .filter(entityValue => entityValue.type.name === entity.name)
       .filter(entityValue => entityValue.parents.some(parent => parent.aspectModelUrn === characteristic.aspectModelUrn));
 
     if (!entityValues.length) {

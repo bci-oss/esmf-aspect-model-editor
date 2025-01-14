@@ -11,12 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable} from '@angular/core';
-import {DataFactory, Store} from 'n3';
-import {BaseVisitor} from '../base-visitor';
-import {RdfNodeService} from '../../rdf-node';
-import {DefaultProperty} from '@ame/meta-model';
 import {RdfService} from '@ame/rdf/services';
+import {Injectable} from '@angular/core';
+import {DefaultProperty} from '@esmf/aspect-model-loader';
+import {DataFactory, Store} from 'n3';
+import {RdfNodeService} from '../../rdf-node';
+import {BaseVisitor} from '../base-visitor';
 
 @Injectable()
 export class PropertyVisitor extends BaseVisitor<DefaultProperty> {
@@ -32,7 +32,7 @@ export class PropertyVisitor extends BaseVisitor<DefaultProperty> {
   }
 
   visit(property: DefaultProperty): DefaultProperty {
-    if (property.extendedElement || property.isPredefined()) {
+    if (property.getExtends() || property.isPredefined) {
       return null;
     }
 
@@ -54,7 +54,7 @@ export class PropertyVisitor extends BaseVisitor<DefaultProperty> {
         language,
         value: property.getDescription(language),
       })),
-      see: property.getSeeReferences() || [],
+      see: property.getSee() || [],
     });
   }
 
@@ -72,15 +72,15 @@ export class PropertyVisitor extends BaseVisitor<DefaultProperty> {
   }
 
   private addExtends(property: DefaultProperty) {
-    if (!property.extendedElement) {
+    if (!property.getExtends()) {
       return;
     }
 
-    this.setPrefix(property.extendedElement.aspectModelUrn);
+    this.setPrefix(property.getExtends().aspectModelUrn);
     this.store.addQuad(
       DataFactory.namedNode(property.aspectModelUrn),
-      this.rdfService.currentRdfModel.samm.ExtendsProperty(),
-      DataFactory.namedNode(property.extendedElement.aspectModelUrn),
+      this.rdfService.currentRdfModel.samm.Extends(),
+      DataFactory.namedNode(property.getExtends().aspectModelUrn),
     );
   }
 }

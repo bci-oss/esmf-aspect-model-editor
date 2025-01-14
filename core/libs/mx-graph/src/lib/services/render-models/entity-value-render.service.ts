@@ -11,10 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable, inject} from '@angular/core';
+import {LoadedFilesService} from '@ame/cache';
 import {ShapeConnectorService} from '@ame/connection';
-import {DefaultEntity, DefaultEntityInstance, DefaultEnumeration, DefaultState, EntityInstanceProperty} from '@ame/meta-model';
+import {FiltersService} from '@ame/loader-filters';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
+import {Injectable, inject} from '@angular/core';
+import {DefaultEntity, DefaultEntityInstance, DefaultEnumeration, DefaultState} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
 import {MxGraphHelper} from '../../helpers';
 import {EdgeStyles, RendererUpdatePayload} from '../../models';
@@ -22,8 +24,6 @@ import {MxGraphAttributeService} from '../mx-graph-attribute.service';
 import {MxGraphShapeOverlayService} from '../mx-graph-shape-overlay.service';
 import {MxGraphService} from '../mx-graph.service';
 import {BaseRenderService} from './base-render-service';
-import {RdfService} from '@ame/rdf/services';
-import {FiltersService} from '@ame/loader-filters';
 
 @Injectable({
   providedIn: 'root',
@@ -34,12 +34,12 @@ export class EntityValueRenderService extends BaseRenderService {
   constructor(
     mxGraphService: MxGraphService,
     sammLangService: SammLanguageSettingsService,
-    rdfService: RdfService,
+    protected loadedFilesService: LoadedFilesService,
     private mxGraphShapeOverlay: MxGraphShapeOverlayService,
     private shapeConnectorService: ShapeConnectorService,
     private mxGraphAttributeService: MxGraphAttributeService,
   ) {
-    super(mxGraphService, sammLangService, rdfService);
+    super(mxGraphService, sammLangService, loadedFilesService);
   }
 
   isApplicable(cell: mxgraph.mxCell): boolean {
@@ -139,7 +139,7 @@ export class EntityValueRenderService extends BaseRenderService {
 
       // Connect ChildEntityValue with its entity
       this.mxGraphService.assignToParent(
-        this.mxGraphService.resolveCellByModelElement(child.entity),
+        this.mxGraphService.resolveCellByModelElement(child.type),
         this.mxGraphService.resolveCellByModelElement(child),
         EdgeStyles.entityValueEntityEdge,
       );

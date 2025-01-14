@@ -11,15 +11,15 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable, inject} from '@angular/core';
-import {DataFactory, Store} from 'n3';
-import {BaseVisitor} from '../base-visitor';
-import {RdfNodeService} from '../../rdf-node';
-import {DefaultAbstractProperty} from '@ame/meta-model';
 import {RdfService} from '@ame/rdf/services';
+import {Injectable, inject} from '@angular/core';
+import {DefaultProperty} from '@esmf/aspect-model-loader';
+import {DataFactory, Store} from 'n3';
+import {RdfNodeService} from '../../rdf-node';
+import {BaseVisitor} from '../base-visitor';
 
 @Injectable()
-export class AbstractPropertyVisitor extends BaseVisitor<DefaultAbstractProperty> {
+export class AbstractPropertyVisitor extends BaseVisitor<DefaultProperty> {
   private rdfNodeService = inject(RdfNodeService);
 
   private get store(): Store {
@@ -30,8 +30,8 @@ export class AbstractPropertyVisitor extends BaseVisitor<DefaultAbstractProperty
     super(rdfService);
   }
 
-  visit(abstractProperty: DefaultAbstractProperty): DefaultAbstractProperty {
-    if (abstractProperty.isPredefined()) {
+  visit(abstractProperty: DefaultProperty): DefaultProperty {
+    if (abstractProperty.isPredefined) {
       return null;
     }
 
@@ -45,7 +45,7 @@ export class AbstractPropertyVisitor extends BaseVisitor<DefaultAbstractProperty
     return abstractProperty;
   }
 
-  private addProperties(abstractProperty: DefaultAbstractProperty) {
+  private addProperties(abstractProperty: DefaultProperty) {
     this.rdfNodeService.update(abstractProperty, {
       exampleValue: abstractProperty.exampleValue,
       preferredName: abstractProperty.getAllLocalesPreferredNames().map(language => ({
@@ -56,20 +56,20 @@ export class AbstractPropertyVisitor extends BaseVisitor<DefaultAbstractProperty
         language,
         value: abstractProperty.getDescription(language),
       })),
-      see: abstractProperty.getSeeReferences() || [],
+      see: abstractProperty.getSee() || [],
     });
   }
 
-  private addExtends(abstractProperty: DefaultAbstractProperty) {
-    if (!abstractProperty.extendedElement) {
+  private addExtends(abstractProperty: DefaultProperty) {
+    if (!abstractProperty.getExtends()) {
       return;
     }
 
-    this.setPrefix(abstractProperty.extendedElement.aspectModelUrn);
+    this.setPrefix(abstractProperty.getExtends().aspectModelUrn);
     this.store.addQuad(
       DataFactory.namedNode(abstractProperty.aspectModelUrn),
-      this.rdfService.currentRdfModel.samm.ExtendsProperty(),
-      DataFactory.namedNode(abstractProperty.extendedElement.aspectModelUrn),
+      this.rdfService.currentRdfModel.samm.Extends(),
+      DataFactory.namedNode(abstractProperty.getExtends().aspectModelUrn),
     );
   }
 

@@ -11,20 +11,13 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {NamespacesCacheService} from '@ame/cache';
 import {Component, Inject} from '@angular/core';
 import {FormArray, FormControl, FormGroup, Validators} from '@angular/forms';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import {DefaultEntity, DefaultEntityInstance, DefaultEnumeration, DefaultProperty} from '@esmf/aspect-model-loader';
 import {EditorModelService} from '../../../editor-model.service';
 import {EditorDialogValidators} from '../../../validators';
-import {
-  DefaultAbstractProperty,
-  DefaultEntity,
-  DefaultEntityInstance,
-  DefaultEnumeration,
-  DefaultProperty,
-  OverWrittenProperty,
-} from '@ame/meta-model';
-import {NamespacesCacheService} from '@ame/cache';
 import {EntityInstanceUtil} from '../utils/EntityInstanceUtil';
 
 export interface NewEntityInstanceDialogOptions {
@@ -79,9 +72,7 @@ export class EntityInstanceModalComponent {
       newEntityValues: new FormControl([]),
     });
 
-    this.entity.allProperties.forEach((element: OverWrittenProperty<DefaultProperty | DefaultAbstractProperty>) =>
-      this.propertiesForm.setControl(element.property.name, new FormArray([])),
-    );
+    this.entity.properties.forEach((element: DefaultProperty) => this.propertiesForm.setControl(element.name, new FormArray([])));
   }
 
   onSave(): void {
@@ -112,17 +103,17 @@ export class EntityInstanceModalComponent {
   }
 
   private createNewEntityValue(): DefaultEntityInstance {
-    const entityValue = DefaultEntityInstance.createInstance();
+    const entityValue = new DefaultEntityInstance({name: '', aspectModelUrn: '', metaModelVersion: ''});
 
     entityValue.name = this.entityValueName.value;
     entityValue.aspectModelUrn = this.getAspectModelUrnFromName(this.entityValueName.value);
-    entityValue.entity = this.entity;
+    entityValue.type = this.entity;
     entityValue.addParent(this.enumeration);
 
     const propertiesForm = this.form.get('properties');
 
-    this.entity.allProperties.forEach(propertyElement => {
-      const propertyArray = propertiesForm.get(propertyElement.property.name) as FormArray;
+    this.entity.properties.forEach(propertyElement => {
+      const propertyArray = propertiesForm.get(propertyElement.name) as FormArray;
 
       if (EntityInstanceUtil.isDefaultPropertyWithLangString(propertyElement)) {
         propertyArray.controls.forEach(control => {

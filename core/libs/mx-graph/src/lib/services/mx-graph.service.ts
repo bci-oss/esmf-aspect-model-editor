@@ -11,23 +11,23 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {NamespacesCacheService} from '@ame/cache';
+import {FILTER_ATTRIBUTES, FilterAttributesService, ModelTree} from '@ame/loader-filters';
+import {ConfigurationService} from '@ame/settings-dialog';
+import {NotificationsService, overlayGeometry} from '@ame/shared';
 import {Inject, Injectable} from '@angular/core';
+import {DefaultCharacteristic, DefaultEntityInstance, NamedElement} from '@esmf/aspect-model-loader';
+import {environment} from 'environments/environment';
 import {mxgraph} from 'mxgraph-factory';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
-import {MxGraphShapeOverlayService} from './mx-graph-shape-overlay.service';
-import {MxGraphAttributeService} from './mx-graph-attribute.service';
-import {MxGraphShapeSelectorService} from './mx-graph-shape-selector.service';
-import {environment} from 'environments/environment';
 import {MxGraphGeometryProviderService, MxGraphSetupService} from '.';
 import {MxGraphCharacteristicHelper, MxGraphHelper} from '../helpers';
-import {mxCell, mxConstants, mxUtils} from '../providers';
-import {BaseMetaModelElement, DefaultCharacteristic, DefaultEntityInstance} from '@ame/meta-model';
-import {ConfigurationService} from '@ame/settings-dialog';
-import {overlayGeometry, NotificationsService} from '@ame/shared';
-import {NamespacesCacheService} from '@ame/cache';
-import {ThemeService} from '../themes/theme.service';
 import {ShapeConfiguration} from '../models';
-import {FILTER_ATTRIBUTES, FilterAttributesService, ModelTree} from '@ame/loader-filters';
+import {mxCell, mxConstants, mxUtils} from '../providers';
+import {ThemeService} from '../themes/theme.service';
+import {MxGraphAttributeService} from './mx-graph-attribute.service';
+import {MxGraphShapeOverlayService} from './mx-graph-shape-overlay.service';
+import {MxGraphShapeSelectorService} from './mx-graph-shape-selector.service';
 
 export interface Coordinates {
   x: number;
@@ -137,8 +137,8 @@ export class MxGraphService {
    * @param metaModelElement
    * @returns the cell that you want to resolve
    */
-  resolveCellByModelElement(metaModelElement: BaseMetaModelElement): mxgraph.mxCell {
-    if (metaModelElement instanceof DefaultCharacteristic && metaModelElement.isPredefined()) {
+  resolveCellByModelElement(metaModelElement: NamedElement): mxgraph.mxCell {
+    if (metaModelElement instanceof DefaultCharacteristic && metaModelElement.isPredefined) {
       return null;
     }
 
@@ -151,14 +151,14 @@ export class MxGraphService {
   /**
    * Modifies certain model Element with a new cell configuration.
    *
-   * @param {ModelTree<BaseMetaModelElement>} node - The node representing the model element to render.
+   * @param {ModelTree<NamedElement>} node - The node representing the model element to render.
    * @param {ShapeConfiguration} [configuration] - Optional configuration to customize shape rendering.
    *
    * @returns {mxgraph.mxCell} - The rendered shape cell in the graph.
    *
    * @throws {Error} - If there are issues in shape creation or overlay operations.
    */
-  renderModelElement(node: ModelTree<BaseMetaModelElement>, configuration?: ShapeConfiguration): mxgraph.mxCell {
+  renderModelElement(node: ModelTree<NamedElement>, configuration?: ShapeConfiguration): mxgraph.mxCell {
     const geometry = this.mxGraphGeometryProviderService.createGeometry(
       node,
       (configuration && configuration.geometry.x) || this.nextCellCoordinates?.x || 0,

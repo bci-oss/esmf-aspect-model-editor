@@ -19,7 +19,7 @@
 
   <mat-autocomplete class="search-autocomplete" #auto="matAutocomplete">
     @for (entry of searchableFiles; track entry) {
-      <mat-option (click)="openFile(entry)" class="list-option">
+      <mat-option class="list-option" (click)="openFile(entry)">
         <mat-icon>description</mat-icon>
         <div class="file-element">
           <span>{{ entry.file }}</span>

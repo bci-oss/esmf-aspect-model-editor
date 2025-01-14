@@ -11,14 +11,14 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {inject, Injectable} from '@angular/core';
-import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
-import {catchError, map, mergeMap, retry, tap, timeout} from 'rxjs/operators';
-import {forkJoin, Observable, of, throwError} from 'rxjs';
-import {APP_CONFIG, AppConfig, BrowserService, FileContentModel, HttpHeaderBuilder, LogService} from '@ame/shared';
-import {ModelValidatorService} from './model-validator.service';
 import {AsyncApi, OpenApi, ViolationError} from '@ame/editor';
+import {APP_CONFIG, AppConfig, BrowserService, FileContentModel, HttpHeaderBuilder, LogService} from '@ame/shared';
 import {removeCommentsFromTTL} from '@ame/utils';
+import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
+import {inject, Injectable} from '@angular/core';
+import {forkJoin, Observable, of, throwError} from 'rxjs';
+import {catchError, map, mergeMap, retry, tap, timeout} from 'rxjs/operators';
+import {ModelValidatorService} from './model-validator.service';
 
 export enum PREDEFINED_MODELS {
   SIMPLE_ASPECT = 'assets/aspect-models/org.eclipse.examples/1.0.0/SimpleAspect.ttl',

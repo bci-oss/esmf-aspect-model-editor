@@ -11,26 +11,26 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ModelApiService} from '@ame/api';
+import {NamespacesCacheService} from '@ame/cache';
+import {ModelService} from '@ame/rdf/services';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
+import {LanguageTranslateModule} from '@ame/translation';
 import {Component} from '@angular/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
-import * as locale from 'locale-codes';
-import {finalize, first} from 'rxjs/operators';
-import {ModelApiService} from '@ame/api';
-import {EditorService} from '../../../editor.service';
-import {map} from 'rxjs';
 import {saveAs} from 'file-saver';
-import {ModelService} from '@ame/rdf/services';
-import {NamespacesCacheService} from '@ame/cache';
-import {LanguageTranslateModule} from '@ame/translation';
+import * as locale from 'locale-codes';
+import {map} from 'rxjs';
+import {finalize, first} from 'rxjs/operators';
+import {EditorService} from '../../../editor.service';
 
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatSelectModule} from '@angular/material/select';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
-import {MatOptionModule} from '@angular/material/core';
 import {MatButtonModule} from '@angular/material/button';
+import {MatOptionModule} from '@angular/material/core';
+import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIcon} from '@angular/material/icon';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatSelectModule} from '@angular/material/select';
 
 @Component({
   standalone: true,

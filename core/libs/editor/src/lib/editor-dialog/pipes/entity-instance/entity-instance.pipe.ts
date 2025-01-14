@@ -12,7 +12,7 @@
  */
 
 import {Pipe, PipeTransform} from '@angular/core';
-import {DefaultEntityInstance} from '@ame/meta-model';
+import {DefaultEntityInstance} from '@esmf/aspect-model-loader';
 
 @Pipe({
   standalone: true,

@@ -11,6 +11,6 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+export * from './clipboard-copy-button/clipboard-copy-button.component';
 export * from './error/error.component';
 export * from './workspace-summary/workspace-summary.component';
-export * from './clipboard-copy-button/clipboard-copy-button.component';

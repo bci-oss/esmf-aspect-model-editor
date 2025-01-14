@@ -11,17 +11,17 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Parser, Store} from 'n3';
-import {forkJoin, map, Observable, of, Subject, switchMap, throwError} from 'rxjs';
-import {Inject, Injectable} from '@angular/core';
-import {environment} from 'environments/environment';
 import {ModelApiService} from '@ame/api';
-import {APP_CONFIG, AppConfig, BrowserService, FileContentModel, LogService, SaveValidateErrorsCodes} from '@ame/shared';
-import {Samm} from '@ame/vocabulary';
-import {RdfModel, RdfModelUtil} from '../utils';
-import {RdfSerializerService} from './rdf-serializer.service';
+import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {ConfigurationService, Settings} from '@ame/settings-dialog';
+import {APP_CONFIG, AppConfig, BrowserService, FileContentModel, LogService, SaveValidateErrorsCodes} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
+import {Inject, Injectable} from '@angular/core';
+import {RdfModel, Samm} from '@esmf/aspect-model-loader';
+import {environment} from 'environments/environment';
+import {Parser, Store} from 'n3';
+import {Observable, Subject, map, of, switchMap, throwError} from 'rxjs';
+import {RdfSerializerService} from './rdf-serializer.service';
 
 @Injectable({
   providedIn: 'root',
@@ -47,6 +47,7 @@ export class RdfService {
     private configurationService: ConfigurationService,
     private translation: LanguageTranslationService,
     private browserService: BrowserService,
+    private loadedFilesService: LoadedFilesService,
     @Inject(APP_CONFIG) public config: AppConfig,
   ) {
     if (!environment.production) {
@@ -75,9 +76,9 @@ export class RdfService {
           return this.handleError(SaveValidateErrorsCodes.emptyModel);
         }
 
-        return this.modelApiService.saveModel(content, rdfModel.absoluteAspectModelFileName);
+        return this.modelApiService.saveModel(content, '@TODO check this');
       }),
-      switchMap(() => this.loadExternalReferenceModelIntoStore(new FileContentModel(rdfModel.absoluteAspectModelFileName, rdfContent))),
+      switchMap(() => this.loadExternalReferenceModelIntoStore(new FileContentModel('@TODO check this', rdfContent))),
     );
   }
 
@@ -85,79 +86,78 @@ export class RdfService {
     return throwError(() => ({type: errorCode}));
   }
 
-  loadModel(rdf: string, namespaceFileName?: string): Observable<RdfModel> {
-    const rdfModel = new RdfModel(true);
-    const parser = new Parser();
-    const store: Store = new Store();
-    const subject = new Subject<RdfModel>();
+  // loadModel(rdf: string, namespaceFileName?: string): Observable<RdfModel> {
+  //   const rdfModel = new RdfModel(true);
+  //   const parser = new Parser();
+  //   const store: Store = new Store();
+  //   const subject = new Subject<RdfModel>();
 
-    this._settings.copyrightHeader = RdfModelUtil.extractCommentsFromRdfContent(rdf);
+  //   this._settings.copyrightHeader = RdfModelUtil.extractCommentsFromRdfContent(rdf);
 
-    parser.parse(rdf, (error, quad, prefixes) => {
-      if (quad) {
-        store.addQuad(quad);
-      } else if (prefixes) {
-        if (this.haveIncorrectCorrectPrefixes(prefixes)) {
-          const incorrectPrefixes = `Incorrect prefixes, please check SAMM specification: https://eclipse-esmf.github.io/samm-specification/${this.config.currentSammVersion}/namespaces.html`;
-          this.logService.logInfo(incorrectPrefixes);
-          subject.error(incorrectPrefixes);
-          subject.complete();
-        }
-        this.currentRdfModel = rdfModel.initRdfModel(store, prefixes);
+  //   parser.parse(rdf, (error, quad, prefixes) => {
+  //     if (quad) {
+  //       store.addQuad(quad);
+  //     } else if (prefixes) {
+  //       if (this.haveIncorrectCorrectPrefixes(prefixes)) {
+  //         const incorrectPrefixes = `Incorrect prefixes, please check SAMM specification: https://eclipse-esmf.github.io/samm-specification/${this.config.currentSammVersion}/namespaces.html`;
+  //         this.logService.logInfo(incorrectPrefixes);
+  //         subject.error(incorrectPrefixes);
+  //         subject.complete();
+  //       }
+  //       this.currentRdfModel = rdfModel.initRdfModel(store, prefixes);
 
-        this.currentRdfModel.absoluteAspectModelFileName =
-          namespaceFileName ||
-          this.currentRdfModel.absoluteAspectModelFileName ||
-          `${this.currentRdfModel.getAspectModelUrn().replace('#', ':')}NewModel.ttl`;
+  //       this.currentRdfModel.absoluteAspectModelFileName =
+  //         namespaceFileName ||
+  //         this.currentRdfModel.absoluteAspectModelFileName ||
+  //         `${this.currentRdfModel.getAspectModelUrn().replace('#', ':')}NewModel.ttl`;
 
-        this.currentRdfModel.loadedFromWorkspace = !!namespaceFileName;
+  //       this.currentRdfModel.loadedFromWorkspace = !!namespaceFileName;
 
-        subject.next(this.currentRdfModel);
-        subject.complete();
-      }
+  //       subject.next(this.currentRdfModel);
+  //       subject.complete();
+  //     }
 
-      if (error) {
-        this.logService.logInfo(`Error when parsing RDF ${error}`);
-        subject.error(error);
-        subject.complete();
-      }
-    });
+  //     if (error) {
+  //       this.logService.logInfo(`Error when parsing RDF ${error}`);
+  //       subject.error(error);
+  //       subject.complete();
+  //     }
+  //   });
 
-    return subject;
-  }
+  //   return subject;
+  // }
 
   private haveIncorrectCorrectPrefixes(prefixes: any): boolean {
     return Object.keys(prefixes)
       .filter((prefix: any) => !['rdf', 'rdfs', 'samm', 'samm-u', 'samm-c', 'samm-e', 'unit', 'xsd'].includes(prefix))
       .some(key => !Samm.isSammPrefix(prefixes[key]));
   }
-
+  // @TODO check the bellow functionality
   loadExternalReferenceModelIntoStore(fileContent: FileContentModel): Observable<RdfModel> {
-    const rdfModel = new RdfModel();
-    const parser = new Parser();
     const store: Store = new Store();
+    const rdfModel = new RdfModel(store);
+    const parser = new Parser();
     const subject = new Subject<RdfModel>();
 
     parser.parse(fileContent.aspectMetaModel, (error, quad, prefixes) => {
       if (quad) {
         store.addQuad(quad);
       } else if (prefixes) {
-        const externalRdfModel = rdfModel.initRdfModel(store, prefixes);
-        externalRdfModel.isExternalRef = true;
-        externalRdfModel.absoluteAspectModelFileName = this.parseFileName(fileContent.fileName, externalRdfModel.getAspectModelUrn());
-        this.externalRdfModels.push(externalRdfModel);
-        subject.next(externalRdfModel);
+        // rdfModel.isExternalRef = true;
+        // rdfModel.absoluteAspectModelFileName = this.parseFileName(fileContent.fileName, rdfModel.getAspectModelUrn());
+        this.externalRdfModels.push(rdfModel);
+        subject.next(rdfModel);
         subject.complete();
       }
 
       if (error) {
         this.logService.logInfo(`Error when parsing RDF ${error}`);
-        const externalRdfModel = rdfModel.initRdfModel(store, {});
-        externalRdfModel.isExternalRef = true;
-        externalRdfModel.absoluteAspectModelFileName = this.parseFileName(fileContent.fileName, externalRdfModel.getAspectModelUrn());
-        externalRdfModel.hasErrors = true;
-        this.externalRdfModels.push(externalRdfModel);
-        subject.next(externalRdfModel);
+        // const externalRdfModel = rdfModel.initRdfModel(store, {});
+        // externalRdfModel.isExternalRef = true;
+        // externalRdfModel.absoluteAspectModelFileName = this.parseFileName(fileContent.fileName, externalRdfModel.getAspectModelUrn());
+        // externalRdfModel.hasErrors = true;
+        // this.externalRdfModels.push(externalRdfModel);
+        subject.next(rdfModel);
         subject.complete();
       }
     });
@@ -174,45 +174,45 @@ export class RdfService {
     return fileName.charAt(0) === '/' ? fileName.substring(1) : fileName;
   }
 
-  parseModels(fileContentModels: FileContentModel[]): Observable<RdfModel[]> {
-    return forkJoin(fileContentModels.map(fileContent => this.parseModel(fileContent)));
-  }
+  // parseModels(fileContentModels: FileContentModel[]): Observable<RdfModel[]> {
+  //   return forkJoin(fileContentModels.map(fileContent => this.parseModel(fileContent)));
+  // }
 
-  parseModel(fileContent: FileContentModel): Observable<RdfModel> {
-    const rdfModel = new RdfModel();
-    const parser = new Parser();
-    const store: Store = new Store();
-    const subject = new Subject<RdfModel>();
+  // parseModel(fileContent: FileContentModel): Observable<RdfModel> {
+  //   const rdfModel = new RdfModel();
+  //   const parser = new Parser();
+  //   const store: Store = new Store();
+  //   const subject = new Subject<RdfModel>();
 
-    parser.parse(fileContent.aspectMetaModel, (error, quad, prefixes) => {
-      let parsedRdfModel: RdfModel;
+  //   parser.parse(fileContent.aspectMetaModel, (error, quad, prefixes) => {
+  //     let parsedRdfModel: RdfModel;
 
-      if (quad) {
-        store.addQuad(quad);
-      } else if (prefixes) {
-        parsedRdfModel = rdfModel.initRdfModel(store, prefixes);
-      }
+  //     if (quad) {
+  //       store.addQuad(quad);
+  //     } else if (prefixes) {
+  //       parsedRdfModel = rdfModel.initRdfModel(store, prefixes);
+  //     }
 
-      if (error) {
-        parsedRdfModel = rdfModel.initRdfModel(store, {});
-        parsedRdfModel.hasErrors = true;
-        this.logService.logInfo(`Error when parsing RDF ${error}`);
-      }
+  //     if (error) {
+  //       parsedRdfModel = rdfModel.initRdfModel(store, {});
+  //       parsedRdfModel.hasErrors = true;
+  //       this.logService.logInfo(`Error when parsing RDF ${error}`);
+  //     }
 
-      if (prefixes || error) {
-        parsedRdfModel.absoluteAspectModelFileName = fileContent.fileName;
-        subject.next(parsedRdfModel);
-        subject.complete();
-      }
-    });
+  //     if (prefixes || error) {
+  //       parsedRdfModel.absoluteAspectModelFileName = fileContent.fileName;
+  //       subject.next(parsedRdfModel);
+  //       subject.complete();
+  //     }
+  //   });
 
-    return subject.asObservable();
-  }
+  //   return subject.asObservable();
+  // }
 
-  isSameModelContent(absoluteFileName: string, fileContent: string, modelToCompare: RdfModel): Observable<boolean> {
-    if (modelToCompare.absoluteAspectModelFileName !== absoluteFileName) return of(false);
+  isSameModelContent(absoluteFileName: string, fileContent: string, fileToCompare: NamespaceFile): Observable<boolean> {
+    if (fileToCompare.absoluteName !== absoluteFileName) return of(false);
 
-    const serializedModel: string = this.serializeModel(modelToCompare);
+    const serializedModel: string = this.serializeModel(fileToCompare.rdfModel);
     return this.modelApiService.formatModel(serializedModel).pipe(map(formattedModel => formattedModel === fileContent));
   }
 }

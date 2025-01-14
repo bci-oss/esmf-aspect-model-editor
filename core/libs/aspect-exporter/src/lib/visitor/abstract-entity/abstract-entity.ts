@@ -11,17 +11,16 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable} from '@angular/core';
-import {ListProperties, RdfListService} from '../../rdf-list';
-import {BaseVisitor} from '../base-visitor';
-import {DefaultAbstractEntity} from '@ame/meta-model';
-import {RdfNodeService} from '../../rdf-node';
 import {RdfService} from '@ame/rdf/services';
+import {Injectable} from '@angular/core';
+import {DefaultEntity, Samm} from '@esmf/aspect-model-loader';
 import {DataFactory, Store} from 'n3';
-import {Samm} from '@ame/vocabulary';
+import {ListProperties, RdfListService} from '../../rdf-list';
+import {RdfNodeService} from '../../rdf-node';
+import {BaseVisitor} from '../base-visitor';
 
 @Injectable()
-export class AbstractEntityVisitor extends BaseVisitor<DefaultAbstractEntity> {
+export class AbstractEntityVisitor extends BaseVisitor<DefaultEntity> {
   private store: Store;
   private samm: Samm;
 
@@ -33,8 +32,8 @@ export class AbstractEntityVisitor extends BaseVisitor<DefaultAbstractEntity> {
     super(rdfService);
   }
 
-  visit(abstractEntity: DefaultAbstractEntity): DefaultAbstractEntity {
-    if (abstractEntity.isPredefined()) {
+  visit(abstractEntity: DefaultEntity): DefaultEntity {
+    if (abstractEntity.isPredefined) {
       return null;
     }
 
@@ -48,9 +47,9 @@ export class AbstractEntityVisitor extends BaseVisitor<DefaultAbstractEntity> {
     return abstractEntity;
   }
 
-  private updateProperties(abstractEntity: DefaultAbstractEntity) {
+  private updateProperties(abstractEntity: DefaultEntity) {
     this.rdfNodeService.update(abstractEntity, {
-      preferredName: abstractEntity.getAllLocalesPreferredNames()?.map(language => ({
+      preferredName: abstractEntity.preferredNames.keys()?.map(language => ({
         language,
         value: abstractEntity.getPreferredName(language),
       })),
@@ -64,21 +63,21 @@ export class AbstractEntityVisitor extends BaseVisitor<DefaultAbstractEntity> {
     if (abstractEntity.properties?.length) {
       this.rdfListService.push(abstractEntity, ...abstractEntity.properties);
       for (const property of abstractEntity.properties) {
-        this.setPrefix(property.property.aspectModelUrn);
+        this.setPrefix(property.aspectModelUrn);
       }
     } else {
       this.rdfListService.createEmpty(abstractEntity, ListProperties.abstractProperties);
     }
   }
 
-  private updateExtends(entity: DefaultAbstractEntity) {
-    if (entity.extendedElement?.aspectModelUrn) {
+  private updateExtends(entity: DefaultEntity) {
+    if (entity.getExtends()?.aspectModelUrn) {
       this.store.addQuad(
         DataFactory.namedNode(entity.aspectModelUrn),
-        this.samm.ExtendsProperty(),
-        DataFactory.namedNode(entity.extendedElement.aspectModelUrn),
+        this.samm.Extends(),
+        DataFactory.namedNode(entity.getExtends().aspectModelUrn),
       );
-      this.setPrefix(entity.extendedElement.aspectModelUrn);
+      this.setPrefix(entity.getExtends().aspectModelUrn);
     }
   }
 }

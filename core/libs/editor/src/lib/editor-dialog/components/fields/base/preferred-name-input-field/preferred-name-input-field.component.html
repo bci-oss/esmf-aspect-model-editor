@@ -20,9 +20,9 @@
   >
     <mat-label for="preferredName">preferredName({{ locale }})</mat-label>
     <input
-      matInput
       class="ellipsis"
       [formControl]="getControl('preferredName' + locale)"
+      matInput
       name="preferredName{{ locale }}"
       data-cy="preferredName"
     />

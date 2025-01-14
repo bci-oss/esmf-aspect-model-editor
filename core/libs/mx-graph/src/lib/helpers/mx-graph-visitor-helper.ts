@@ -10,16 +10,13 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-
+import {NamespaceFile} from '@ame/cache';
+import {RdfModelUtil} from '@ame/rdf/utils';
+import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {
   Aspect,
-  Base,
-  BaseMetaModelElement,
-  CanExtend,
   Characteristic,
   Constraint,
-  DefaultAbstractEntity,
-  DefaultAbstractProperty,
   DefaultAspect,
   DefaultCharacteristic,
   DefaultConstraint,
@@ -40,12 +37,13 @@ import {
   DefaultState,
   DefaultStructuredValue,
   DefaultUnit,
+  HasExtends,
+  NamedElement,
   Property,
   QuantityKind,
+  StructuredValue,
   Unit,
-} from '@ame/meta-model';
-import {RdfModel, RdfModelUtil} from '@ame/rdf/utils';
-import {SammLanguageSettingsService} from '@ame/settings-dialog';
+} from '@esmf/aspect-model-loader';
 import * as locale from 'locale-codes';
 import {ModelBaseProperties} from '../models';
 import {MxGraphHelper} from './mx-graph-helper';
@@ -99,18 +97,21 @@ export class MxGraphVisitorHelper {
     return null;
   }
 
-  static addLocalizedDescriptions(metaModelElement: CanExtend | Base, sammLangService: SammLanguageSettingsService): ShapeAttribute[] {
+  static addLocalizedDescriptions(
+    metaModelElement: NamedElement | HasExtends<NamedElement>,
+    sammLangService: SammLanguageSettingsService,
+  ): ShapeAttribute[] {
     const languages: string[] =
-      metaModelElement.getAllLocalesDescriptions().length >= ((metaModelElement as CanExtend)?.extendedDescription?.size || 0)
+      metaModelElement.getAllLocalesDescriptions().length >= (metaModelElement?.extendedDescription?.size || 0)
         ? metaModelElement.getAllLocalesDescriptions()
-        : Array.from((metaModelElement as CanExtend)?.extendedDescription?.keys());
+        : Array.from(metaModelElement?.extendedDescription?.keys());
 
     return languages
       .map(languageCode => {
         const langTag = locale.getByTag(languageCode).tag;
         sammLangService.addSammLanguageCode(langTag);
         const description = metaModelElement.getDescription(langTag);
-        const extendedDescription = (metaModelElement as CanExtend)?.extendedDescription?.get(langTag);
+        const extendedDescription = metaModelElement?.extendedDescription?.get(langTag);
 
         if (description || extendedDescription) {
           return {
@@ -125,18 +126,21 @@ export class MxGraphVisitorHelper {
       .filter(e => !!e);
   }
 
-  static addLocalizedPreferredNames(metaModelElement: CanExtend | Base, sammLangService: SammLanguageSettingsService): ShapeAttribute[] {
+  static addLocalizedPreferredNames(
+    metaModelElement: HasExtends<NamedElement> | StructuredValue,
+    sammLangService: SammLanguageSettingsService,
+  ): ShapeAttribute[] {
     const languages: string[] =
-      metaModelElement.getAllLocalesPreferredNames().length >= ((metaModelElement as CanExtend)?.extendedPreferredName?.size || 0)
+      metaModelElement.getAllLocalesPreferredNames().length >= (metaModelElement?.extends_?.preferredNames.size || 0)
         ? metaModelElement.getAllLocalesPreferredNames()
-        : Array.from((metaModelElement as CanExtend)?.extendedPreferredName?.keys());
+        : Array.from(metaModelElement?.extends_?.preferredNames?.keys());
 
     return languages
       .map(languageCode => {
         const langTag = locale.getByTag(languageCode).tag;
         sammLangService.addSammLanguageCode(langTag);
         const preferredName = metaModelElement.getPreferredName(langTag);
-        const extendedPreferredName = (metaModelElement as CanExtend)?.extendedPreferredName?.get(langTag);
+        const extendedPreferredName = metaModelElement?.extendedPreferredName?.get(langTag);
         if (preferredName || extendedPreferredName) {
           return {
             label: `preferredName = ${preferredName || extendedPreferredName} @${langTag}`,
@@ -166,17 +170,13 @@ export class MxGraphVisitorHelper {
     return null;
   }
 
-  static addSee(metaModelElement: Base): ShapeAttribute {
-    if (metaModelElement.getSeeReferences()?.length > 0 || (metaModelElement as CanExtend)?.extendedSee?.length) {
+  static addSee(metaModelElement: HasExtends<NamedElement>): ShapeAttribute {
+    if (metaModelElement.see?.length > 0 || metaModelElement?.extends_?.see?.length) {
       let extended = false;
-      let elements = (metaModelElement.getSeeReferences() || []).map(e =>
-        e.startsWith('urn:samm') && e.includes('#') ? e.split('#')[1] : e,
-      );
+      let elements = (metaModelElement.see || []).map(e => (e.startsWith('urn:samm') && e.includes('#') ? e.split('#')[1] : e));
 
       if (!elements.length) {
-        elements = (metaModelElement as CanExtend)?.extendedSee.map(e =>
-          e.startsWith('urn:samm') && e.includes('#') ? e.split('#')[1] : e,
-        );
+        elements = metaModelElement?.extends_?.see.map(e => (e.startsWith('urn:samm') && e.includes('#') ? e.split('#')[1] : e));
         extended = true;
       }
 
@@ -305,8 +305,8 @@ export class MxGraphVisitorHelper {
     if (quantityKinds) {
       const quantityKindLabels = [];
       quantityKinds.forEach(quantityKind => {
-        if (quantityKind.label || quantityKind.name) {
-          quantityKindLabels.push(quantityKind.label || quantityKind.name);
+        if (quantityKind.label || quantityKind.label) {
+          quantityKindLabels.push(quantityKind.label || quantityKind.label);
         }
       });
       if (quantityKindLabels.length > 0) {
@@ -332,7 +332,7 @@ export class MxGraphVisitorHelper {
   }
 
   static getElementList(characteristic: DefaultStructuredValue): Array<string | Property> {
-    return characteristic.elements.map(element => (typeof element === 'string' ? element : element.property.name));
+    return characteristic.elements.map(element => (typeof element === 'string' ? element : element.name));
   }
 
   static getOperationProperties(operation: DefaultOperation, sammLangService: SammLanguageSettingsService) {
@@ -428,7 +428,7 @@ export class MxGraphVisitorHelper {
     ].filter(e => !!e);
   }
 
-  static getElementProperties(element: BaseMetaModelElement, sammLangService: SammLanguageSettingsService) {
+  static getElementProperties(element: NamedElement, sammLangService: SammLanguageSettingsService) {
     if (element instanceof DefaultOperation) {
       return this.getOperationProperties(element, sammLangService);
     }
@@ -461,40 +461,40 @@ export class MxGraphVisitorHelper {
       return this.getEventProperties(element, sammLangService);
     }
 
-    if (element instanceof DefaultAbstractEntity) {
+    if (element instanceof DefaultEntity && element.isAbstractEntity()) {
       return this.getAbstractEntityProperties(element, sammLangService);
     }
 
-    if (element instanceof DefaultAbstractProperty) {
+    if (element instanceof DefaultProperty && element.isAbstract) {
       return this.getAbstractPropertyProperties(element, sammLangService);
     }
 
     return null;
   }
 
-  static getModelInfo(modelElement: BaseMetaModelElement, rdfModel: RdfModel): ModelBaseProperties {
+  static getModelInfo(modelElement: NamedElement, file: NamespaceFile): ModelBaseProperties {
     try {
-      const [currentNamespace] = rdfModel.getAspectModelUrn().replace('urn:samm:', '').split(':');
+      const [currentNamespace] = file.rdfModel.getAspectModelUrn().replace('urn:samm:', '').split(':');
       const [, elementNamespace] = MxGraphHelper.getNamespaceFromElement(modelElement);
 
-      const aspectVersionedNamespace = rdfModel.getAspectModelUrn().replace('#', '');
+      const aspectVersionedNamespace = file.rdfModel.getAspectModelUrn().replace('#', '');
       const [elementVersionedNamespace] = modelElement.aspectModelUrn.split('#');
 
       let metaModelVersion = modelElement.metaModelVersion;
       if (modelElement instanceof DefaultEntityInstance) {
-        metaModelVersion = modelElement.entity.metaModelVersion;
+        metaModelVersion = modelElement.type.metaModelVersion;
       }
 
       return {
-        version: RdfModelUtil.getNamespaceVersionFromRdf(rdfModel.absoluteAspectModelFileName),
+        version: RdfModelUtil.getNamespaceVersionFromRdf(file.absoluteName),
         sammVersion: metaModelVersion,
         namespace: elementNamespace,
         external: modelElement.isExternalReference(),
-        predefined: !!(modelElement as DefaultCharacteristic)?.isPredefined?.(),
+        predefined: !!(modelElement as DefaultCharacteristic)?.isPredefined,
         sameNamespace: elementNamespace === currentNamespace,
         sameVersionedNamespace: aspectVersionedNamespace === elementVersionedNamespace,
         fileName: modelElement.fileName,
-        isAbstract: modelElement.className.toLowerCase().includes('abstract'),
+        isAbstract: modelElement['isAbstract'],
       };
     } catch (error) {
       return null;

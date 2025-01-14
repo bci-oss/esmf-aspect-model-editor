@@ -12,7 +12,7 @@
  */
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormControl, Validators} from '@angular/forms';
-import {DefaultFixedPointConstraint} from '@ame/meta-model';
+import {DefaultFixedPointConstraint} from '@esmf/aspect-model-loader';
 import {InputFieldComponent} from '../../input-field.component';
 
 @Component({

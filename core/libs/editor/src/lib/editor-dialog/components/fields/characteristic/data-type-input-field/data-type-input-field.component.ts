@@ -11,18 +11,25 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
+import {RdfService} from '@ame/rdf/services';
+import {RdfModelUtil} from '@ame/rdf/utils';
+import {DataTypeService} from '@ame/shared';
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormControl} from '@angular/forms';
-import {map, startWith} from 'rxjs/operators';
-import {Observable} from 'rxjs';
-import {InputFieldComponent} from '../../input-field.component';
-import {DefaultCharacteristic, DefaultEither, DefaultEntity, DefaultScalar, DefaultStructuredValue, Entity} from '@ame/meta-model';
-import {DataTypeService} from '@ame/shared';
-import {RdfModelUtil} from '@ame/rdf/utils';
-import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
-import {EditorDialogValidators} from '../../../../validators';
-import {RdfService} from '@ame/rdf/services';
 import {MatOptionSelectionChange} from '@angular/material/core';
+import {
+  DefaultCharacteristic,
+  DefaultEither,
+  DefaultEntity,
+  DefaultScalar,
+  DefaultStructuredValue,
+  Entity,
+} from '@esmf/aspect-model-loader';
+import {Observable} from 'rxjs';
+import {map, startWith} from 'rxjs/operators';
+import {EditorDialogValidators} from '../../../../validators';
+import {InputFieldComponent} from '../../input-field.component';
 
 @Component({
   selector: 'ame-data-type-input-field',
@@ -67,7 +74,7 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
   }
 
   getCurrentValue() {
-    return !this.metaModelElement.isPredefined()
+    return !this.metaModelElement.isPredefined
       ? this.previousData?.['dataType'] ??
           this.previousData?.['newDataType'] ??
           this.previousData?.[this.fieldName] ??

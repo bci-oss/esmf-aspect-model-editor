@@ -20,11 +20,11 @@
 
     @for (item of namespacesDependencies | keyvalue; track item) {
       <mat-checkbox
+        class="namespace"
         [value]="item.key"
         [checked]="item.value.checked"
         [disabled]="item.value.disabled"
         (change)="toggleNamespace($event, item.key)"
-        class="namespace"
         data-cy="enNamespaceList"
       >
         <div class="checkbox-info">

@@ -11,19 +11,11 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable} from '@angular/core';
-import {mxgraph} from 'mxgraph-factory';
-import {
-  BaseMetaModelElement,
-  DefaultAbstractProperty,
-  DefaultEntityInstance,
-  DefaultProperty,
-  Entity,
-  EntityInstanceProperty,
-  OverWrittenProperty,
-} from '@ame/meta-model';
-import {BaseModelService} from './base-model-service';
 import {EntityValueRenderService, MxGraphHelper} from '@ame/mx-graph';
+import {Injectable} from '@angular/core';
+import {DefaultEntityInstance, DefaultProperty, Entity, NamedElement} from '@esmf/aspect-model-loader';
+import {mxgraph} from 'mxgraph-factory';
+import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
 export class EntityValueModelService extends BaseModelService {
@@ -31,7 +23,7 @@ export class EntityValueModelService extends BaseModelService {
     super();
   }
 
-  isApplicable(metaModelElement: BaseMetaModelElement): boolean {
+  isApplicable(metaModelElement: NamedElement): boolean {
     return metaModelElement instanceof DefaultEntityInstance;
   }
 
@@ -80,12 +72,9 @@ export class EntityValueModelService extends BaseModelService {
     });
   }
 
-  private findPropertyInEntities(
-    entities: Array<Entity>,
-    propertyName: string,
-  ): OverWrittenProperty<DefaultProperty | DefaultAbstractProperty> {
+  private findPropertyInEntities(entities: Array<Entity>, propertyName: string): DefaultProperty {
     for (const entity of entities) {
-      const property = entity.properties.find(prop => prop.property.name === propertyName);
+      const property = entity.properties.find(prop => prop.name === propertyName);
       if (property) {
         return property;
       }

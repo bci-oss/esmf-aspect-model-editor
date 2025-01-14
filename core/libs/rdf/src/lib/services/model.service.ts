@@ -11,18 +11,16 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {inject, Injectable} from '@angular/core';
-import {Observable, Observer, of, Subject, throwError} from 'rxjs';
-import {catchError, first, map, switchMap, tap} from 'rxjs/operators';
-import {Aspect, BaseMetaModelElement, LoadedAspectModel} from '@ame/meta-model';
-import {InstantiatorService} from '@ame/instantiator';
-import {environment} from 'environments/environment';
-import {CachedFile, NamespacesCacheService} from '@ame/cache';
 import {ModelApiService} from '@ame/api';
+import {CachedFile, LoadedFilesService, NamespacesCacheService} from '@ame/cache';
+import {LoadedAspectModel} from '@ame/meta-model';
+import {APP_CONFIG, AppConfig, NotificationsService, SaveValidateErrorsCodes} from '@ame/shared';
+import {Injectable, inject} from '@angular/core';
+import {Aspect, NamedElement, RdfModel, Samm} from '@esmf/aspect-model-loader';
+import {environment} from 'environments/environment';
+import {Observable, Observer, Subject, of, throwError} from 'rxjs';
+import {first, switchMap, tap} from 'rxjs/operators';
 import {RdfService} from './rdf.service';
-import {APP_CONFIG, AppConfig, LogService, NotificationsService, SaveValidateErrorsCodes} from '@ame/shared';
-import {RdfModel} from '../utils';
-import {setUniqueElementName} from '@ame/utils';
 
 @Injectable({
   providedIn: 'root',
@@ -30,10 +28,6 @@ import {setUniqueElementName} from '@ame/utils';
 export class ModelService {
   private aspect: Aspect;
   private visitorAnnouncerSubject$ = new Subject<{observer: Observer<void>}>();
-
-  private get rdfModel(): RdfModel {
-    return this.rdfService.currentRdfModel;
-  }
 
   get visitorAnnouncer$() {
     return this.visitorAnnouncerSubject$.asObservable();
@@ -48,7 +42,7 @@ export class ModelService {
   }
 
   get currentRdfModel() {
-    return this.rdfModel;
+    return this.loadedFilesService?.currentLoadedFile?.rdfModel;
   }
 
   private config: AppConfig = inject(APP_CONFIG);
@@ -58,8 +52,7 @@ export class ModelService {
     private namespaceCacheService: NamespacesCacheService,
     private modelApiService: ModelApiService,
     private notificationsService: NotificationsService,
-    private instantiatorService: InstantiatorService,
-    private logService: LogService,
+    private loadedFilesService: LoadedFilesService,
   ) {
     if (!environment.production) {
       window['angular.modelService'] = this;
@@ -68,7 +61,7 @@ export class ModelService {
 
   removeAspect() {
     this.aspect = null;
-    this.rdfService.currentRdfModel.removeAspectFromStore();
+    this.loadedFilesService.currentLoadedFile.aspect = null;
   }
 
   addAspect(aspect: Aspect) {
@@ -77,9 +70,16 @@ export class ModelService {
 
   getLoadedAspectModel(): LoadedAspectModel {
     return {
-      rdfModel: this.rdfModel,
+      rdfModel: this.currentRdfModel,
       aspect: this.aspect,
     };
+  }
+
+  getSammVersion(aspectModel: string) {
+    const partialSammUri = `<${Samm.BASE_URI}meta-model:`;
+    const startVersionIndex = aspectModel.indexOf(partialSammUri);
+    const endVersionIndex = aspectModel.indexOf('#', startVersionIndex);
+    return aspectModel.slice(startVersionIndex + partialSammUri.length, endVersionIndex);
   }
 
   loadRdfModel(loadedRdfModel: RdfModel, rdfAspectModel: string, namespaceFileName: string): Observable<Aspect> {
@@ -100,23 +100,23 @@ export class ModelService {
       const rdfModel$ =
         sammVersion < this.config.currentSammVersion ? this.migrateAspectModel(sammVersion, rdfAspectModel) : of(loadedRdfModel);
 
-      return rdfModel$.pipe(
-        first(),
-        tap(rdfModel => (this.rdfService.currentRdfModel = rdfModel)),
-        tap(() => this.setCurrentCacheFile(namespaceFileName)),
-        map(() => this.instantiateFile(namespaceFileName)),
-        tap(() => this.processAnonymousElements()),
-        map(aspect => (this.aspect = aspect)),
-        catchError(error =>
-          throwError(() => {
-            // TODO add the real problem maybe ...
-            console.groupCollapsed('model.service -> loadRDFmodel', error);
-            console.groupEnd();
-            this.logService.logError(`Error while loading the model. ${JSON.stringify(error.message)}.`);
-            return error.message;
-          }),
-        ),
-      );
+      // return rdfModel$.pipe(
+      //   first(),
+      //   tap(rdfModel => (this.rdfService.currentRdfModel = rdfModel)),
+      //   tap(() => this.setCurrentCacheFile(namespaceFileName)),
+      //   map(() => this.instantiateFile(namespaceFileName)),
+      //   tap(() => this.processAnonymousElements()),
+      //   map(aspect => (this.aspect = aspect)),
+      //   catchError(error =>
+      //     throwError(() => {
+      //       // TODO add the real problem maybe ...
+      //       console.groupCollapsed('model.service -> loadRDFmodel', error);
+      //       console.groupEnd();
+      //       this.logService.logError(`Error while loading the model. ${JSON.stringify(error.message)}.`);
+      //       return error.message;
+      //     }),
+      //   ),
+      // );
     } catch (error: any) {
       console.groupCollapsed('model.service -> loadRDFmodel', error);
       console.groupEnd();
@@ -125,9 +125,9 @@ export class ModelService {
     }
   }
 
-  private migrateAspectModel(sammVersion: string, rdfAspectModel: string): Observable<RdfModel> {
+  migrateAspectModel(oldSammVersion: string, rdfAspectModel: string): Observable<string> {
     this.notificationsService.info({
-      title: `Migrating from SAMM version ${sammVersion} to SAMM version ${this.config.currentSammVersion}`,
+      title: `Migrating from SAMM version ${oldSammVersion} to SAMM version ${this.config.currentSammVersion}`,
       timeout: 5000,
     });
 
@@ -135,38 +135,37 @@ export class ModelService {
       first(),
       tap(() =>
         this.notificationsService.info({
-          title: `Successfully migrated from SAMM Version ${sammVersion} to SAMM version ${this.config.currentSammVersion} SAMM version`,
+          title: `Successfully migrated from SAMM Version ${oldSammVersion} to SAMM version ${this.config.currentSammVersion} SAMM version`,
           timeout: 5000,
         }),
       ),
-      switchMap(migratedAspectModel => this.rdfService.loadModel(migratedAspectModel).pipe(first())),
     );
   }
 
-  private setCurrentCacheFile(namespaceFileName: string) {
-    let fileName: string;
-    if (namespaceFileName) {
-      [, , fileName] = namespaceFileName.split(':');
-    }
+  // private setCurrentCacheFile(namespaceFileName: string) {
+  //   let fileName: string;
+  //   if (namespaceFileName) {
+  //     [, , fileName] = namespaceFileName.split(':');
+  //   }
 
-    this.namespaceCacheService.currentCachedFile = new CachedFile(fileName, this.rdfModel.getAspectModelUrn());
-  }
+  //   this.namespaceCacheService.currentCachedFile = new CachedFile(fileName, this.rdfModel.getAspectModelUrn());
+  // }
 
-  private instantiateFile(namespaceFileName: string) {
-    const [, , fileName] = namespaceFileName.split(':');
-    try {
-      return this.instantiatorService.instantiateFile(this.rdfModel, this.currentCachedFile, fileName).aspect;
-    } catch (error) {
-      console.groupCollapsed('model.service -> loadRDFmodel', error);
-      console.groupEnd();
-      throw new Error('Instantiator cannot load model!');
-    }
-  }
+  // private instantiateFile(namespaceFileName: string) {
+  //   const [, , fileName] = namespaceFileName.split(':');
+  //   try {
+  //     return this.instantiatorService.instantiateFile(this.rdfModel, this.currentCachedFile, fileName).aspect;
+  //   } catch (error) {
+  //     console.groupCollapsed('model.service -> loadRDFmodel', error);
+  //     console.groupEnd();
+  //     throw new Error('Instantiator cannot load model!');
+  //   }
+  // }
 
   saveModel() {
     const synchronizedModel = this.synchronizeModelToRdf();
     return (synchronizedModel || throwError(() => ({type: SaveValidateErrorsCodes.desynchronized}))).pipe(
-      switchMap(() => this.rdfService.saveModel(this.rdfModel)),
+      switchMap(() => this.rdfService.saveModel(this.currentRdfModel)),
     );
   }
 
@@ -176,7 +175,7 @@ export class ModelService {
   }
 
   synchronizeModelToRdf() {
-    if (!this.rdfModel) {
+    if (!this.currentRdfModel) {
       return throwError(() => ({type: SaveValidateErrorsCodes.emptyModel}));
     }
 
@@ -185,41 +184,41 @@ export class ModelService {
     });
   }
 
-  private processAnonymousElements() {
-    this.currentCachedFile.getAnonymousElements().forEach((modelElementNamePair: {element: BaseMetaModelElement; name: string}) => {
-      this.currentCachedFile.removeElement(modelElementNamePair.element.aspectModelUrn);
-      if (modelElementNamePair.name) {
-        modelElementNamePair.element.name = modelElementNamePair.name; // assign initial name
-        if (this.isElementNameUnique(modelElementNamePair.element)) {
-          // if unique, resolve the instance
-          this.currentCachedFile.resolveElement(modelElementNamePair.element);
-        } else {
-          // else resolve the naming
-          setUniqueElementName(modelElementNamePair.element, this.rdfModel, this.namespaceCacheService, modelElementNamePair.name);
-          this.currentCachedFile.resolveElement(modelElementNamePair.element);
-          this.notificationsService.info({
-            title: 'Renamed anonymous element',
-            message: `The anonymous element ${modelElementNamePair.name} was renamed to ${modelElementNamePair.element.name}`,
-            link: `editor/select/${modelElementNamePair.element.aspectModelUrn}`,
-            timeout: 2000,
-          });
-        }
-      } else {
-        setUniqueElementName(modelElementNamePair.element, this.rdfModel, this.namespaceCacheService);
-        this.currentCachedFile.resolveElement(modelElementNamePair.element);
-        this.notificationsService.info({
-          title: 'Renamed anonymous element',
-          message: `The anonymous element was named to ${modelElementNamePair.element.name}`,
-          link: `editor/select/${modelElementNamePair.element.aspectModelUrn}`,
-          timeout: 2000,
-        });
-      }
-    });
-    this.currentCachedFile.clearAnonymousElements();
-  }
+  // private processAnonymousElements() {
+  //   this.currentCachedFile.getAnonymousElements().forEach((modelElementNamePair: {element: NamedNode; name: string}) => {
+  //     this.currentCachedFile.removeElement(modelElementNamePair.element.aspectModelUrn);
+  //     if (modelElementNamePair.name) {
+  //       modelElementNamePair.element.name = modelElementNamePair.name; // assign initial name
+  //       if (this.isElementNameUnique(modelElementNamePair.element)) {
+  //         // if unique, resolve the instance
+  //         this.currentCachedFile.resolveElement(modelElementNamePair.element);
+  //       } else {
+  //         // else resolve the naming
+  //         setUniqueElementName(modelElementNamePair.element, this.rdfModel, this.namespaceCacheService, modelElementNamePair.name);
+  //         this.currentCachedFile.resolveElement(modelElementNamePair.element);
+  //         this.notificationsService.info({
+  //           title: 'Renamed anonymous element',
+  //           message: `The anonymous element ${modelElementNamePair.name} was renamed to ${modelElementNamePair.element.name}`,
+  //           link: `editor/select/${modelElementNamePair.element.aspectModelUrn}`,
+  //           timeout: 2000,
+  //         });
+  //       }
+  //     } else {
+  //       setUniqueElementName(modelElementNamePair.element, this.rdfModel, this.namespaceCacheService);
+  //       this.currentCachedFile.resolveElement(modelElementNamePair.element);
+  //       this.notificationsService.info({
+  //         title: 'Renamed anonymous element',
+  //         message: `The anonymous element was named to ${modelElementNamePair.element.name}`,
+  //         link: `editor/select/${modelElementNamePair.element.aspectModelUrn}`,
+  //         timeout: 2000,
+  //       });
+  //     }
+  //   });
+  //   this.currentCachedFile.clearAnonymousElements();
+  // }
 
-  private isElementNameUnique(modelElement: BaseMetaModelElement): boolean {
-    modelElement.metaModelVersion = this.rdfModel.SAMM().version;
-    return !this.currentCachedFile.getElement<BaseMetaModelElement>(`${this.rdfModel.getAspectModelUrn()}${modelElement.name}`);
+  private isElementNameUnique(modelElement: NamedElement): boolean {
+    modelElement.metaModelVersion = this.currentRdfModel.samm.version;
+    return !this.currentCachedFile.getElement<NamedElement>(`${this.currentRdfModel.getAspectModelUrn()}${modelElement.name}`);
   }
 }

@@ -11,20 +11,21 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 import {MigratorApiService, ModelApiService} from '@ame/api';
-import {DataFactory} from 'n3';
-import {concatMap, from, Observable, of, switchMap, tap} from 'rxjs';
+import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {EditorService} from '@ame/editor';
 import {RdfService} from '@ame/rdf/services';
-import {RdfModel, RdfModelUtil} from '@ame/rdf/utils';
-import {Component, inject, NgZone, OnInit} from '@angular/core';
+import {RdfModelUtil} from '@ame/rdf/utils';
 import {APP_CONFIG, AppConfig, ElectronSignals, ElectronSignalsService, LogService} from '@ame/shared';
-import {Router} from '@angular/router';
-import {TranslateModule} from '@ngx-translate/core';
+import {CdkScrollable} from '@angular/cdk/scrolling';
 import {KeyValuePipe} from '@angular/common';
+import {Component, NgZone, OnInit, inject} from '@angular/core';
+import {MatDialogContent, MatDialogTitle} from '@angular/material/dialog';
 import {MatIcon} from '@angular/material/icon';
 import {MatProgressSpinner} from '@angular/material/progress-spinner';
-import {CdkScrollable} from '@angular/cdk/scrolling';
-import {MatDialogContent, MatDialogTitle} from '@angular/material/dialog';
+import {Router} from '@angular/router';
+import {TranslateModule} from '@ngx-translate/core';
+import {DataFactory} from 'n3';
+import {Observable, concatMap, from, of, switchMap, tap} from 'rxjs';
 
 export const defaultNamespaces = (sammVersion: string) => [
   `urn:samm:org.eclipse.esmf.samm:meta-model:${sammVersion}#`,
@@ -59,6 +60,7 @@ export class VersionMigrationComponent implements OnInit {
     private logService: LogService,
     private router: Router,
     private ngZone: NgZone,
+    private loadedFilesService: LoadedFilesService,
   ) {}
 
   ngOnInit(): void {
@@ -75,10 +77,10 @@ export class VersionMigrationComponent implements OnInit {
       });
   }
 
-  prepareNamespaces(rdfModels: Array<RdfModel>): any {
+  prepareNamespaces(loadedFiles: NamespaceFile[]): any {
     this.namespaces = {};
-    rdfModels.forEach(rdfModel => {
-      const [namespace, version, file] = RdfModelUtil.splitRdfIntoChunks(rdfModel.absoluteAspectModelFileName);
+    loadedFiles.forEach(loadedFile => {
+      const [namespace, version, file] = RdfModelUtil.splitRdfIntoChunks(loadedFile.absoluteName);
       const namespaceKey = `${namespace}:${version}`;
       if (!this.namespaces[namespaceKey]) {
         this.namespaces[namespaceKey] = [];
@@ -120,13 +122,12 @@ export class VersionMigrationComponent implements OnInit {
     const models = [];
     for (const namespace in this.namespaces) {
       for (let i = 0; i < this.namespaces[namespace].length; i++) {
-        const rdfModel = this.rdfService.externalRdfModels.find(
-          rdf =>
-            rdf.getPrefixes()[''].startsWith(`urn:samm:${namespace}`) && rdf.aspectModelFileName === this.namespaces[namespace][i].name,
+        const file = this.loadedFilesService.filesAsList.find(
+          file => file.namespace === namespace && file.name === this.namespaces[namespace][i].name,
         );
-        const serializedUpdatedModel = this.rewriteStore(rdfModel, this.namespaces[namespace][i]);
+        const serializedUpdatedModel = this.rewriteStore(file, this.namespaces[namespace][i]);
         if (serializedUpdatedModel) {
-          models.push({rdfModel, ...serializedUpdatedModel});
+          models.push({rdfModel: file.rdfModel, ...serializedUpdatedModel});
         }
       }
     }
@@ -134,8 +135,8 @@ export class VersionMigrationComponent implements OnInit {
     return of(models);
   }
 
-  private rewriteStore(rdfModel: RdfModel, file: {name: string; migrated: boolean}) {
-    const prefixes = rdfModel.getPrefixes();
+  private rewriteStore(loadedFile: NamespaceFile, file: {name: string; migrated: boolean}) {
+    const prefixes = loadedFile.rdfModel.getPrefixes();
     const toMigrate: string[] = Object.values(prefixes).filter(namespace => !this.defaultNamespaces.includes(namespace));
 
     if (toMigrate.length <= 0) {
@@ -143,8 +144,10 @@ export class VersionMigrationComponent implements OnInit {
       return null;
     }
 
+    const {rdfModel} = loadedFile;
+
     const returnObject = {
-      oldNamespaceFile: rdfModel.absoluteAspectModelFileName,
+      oldNamespaceFile: loadedFile.absoluteName,
       serializedUpdatedModel: '',
       file,
     };
@@ -179,10 +182,9 @@ export class VersionMigrationComponent implements OnInit {
 
       const prefix = Object.entries(prefixes).find(([, value]) => value === namespace)?.[0];
       rdfModel.updatePrefix(prefix, namespace, newNamespace);
-      rdfModel.updateAspectVersion(oldVersion, newVersion);
 
       if (prefix === '') {
-        rdfModel.updateAbsoluteFileName(namespacePieces[2], newVersion);
+        this.loadedFilesService.updateAbsoluteName(loadedFile.absoluteName, `${namespacePieces[2]}:${newVersion}:${loadedFile.name}`);
       }
     }
 

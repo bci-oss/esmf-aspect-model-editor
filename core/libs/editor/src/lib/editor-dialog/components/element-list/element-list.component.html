@@ -31,9 +31,9 @@
             <div class="model-element__actions">
               @if (cellExists(element)) {
                 <button
+                  [matTooltip]="'EDITOR_CANVAS.SHAPE_SETTING.AME_ELEMENT_LIST_BUTTON.LOCATE_ELEMENT' | translate"
                   (click)="navigateToCell(element)"
                   mat-icon-button
-                  [matTooltip]="'EDITOR_CANVAS.SHAPE_SETTING.AME_ELEMENT_LIST_BUTTON.LOCATE_ELEMENT' | translate"
                   matTooltipPosition="below"
                 >
                   <mat-icon>gps_fixed</mat-icon>
@@ -41,18 +41,18 @@
               }
               @if (element.isExternalReference()) {
                 <button
+                  [matTooltip]="'EDITOR_CANVAS.SHAPE_SETTING.AME_ELEMENT_LIST_BUTTON.OPEN_ELEMENT_IN_NEW_WINDOW' | translate"
                   (click)="openReferencedElement(element)"
                   mat-icon-button
-                  [matTooltip]="'EDITOR_CANVAS.SHAPE_SETTING.AME_ELEMENT_LIST_BUTTON.OPEN_ELEMENT_IN_NEW_WINDOW' | translate"
                   matTooltipPosition="left"
                 >
                   <mat-icon>open_in_new</mat-icon>
                 </button>
               } @else {
                 <button
+                  [matTooltip]="'EDITOR_CANVAS.SHAPE_SETTING.AME_ELEMENT_LIST_BUTTON.OPEN_ELEMENT' | translate"
                   (click)="openElementModel(element)"
                   mat-icon-button
-                  [matTooltip]="'EDITOR_CANVAS.SHAPE_SETTING.AME_ELEMENT_LIST_BUTTON.OPEN_ELEMENT' | translate"
                   matTooltipPosition="below"
                 >
                   <mat-icon class="material-symbols-outlined">jump_to_element</mat-icon>

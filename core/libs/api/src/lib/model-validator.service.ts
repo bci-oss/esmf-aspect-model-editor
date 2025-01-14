@@ -11,10 +11,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable} from '@angular/core';
+import {ViolationError} from '@ame/editor';
 import {MxGraphService} from '@ame/mx-graph';
 import {LogService, NotificationsService} from '@ame/shared';
-import {ViolationError} from '@ame/editor';
+import {Injectable} from '@angular/core';
 
 @Injectable({
   providedIn: 'root',

@@ -27,7 +27,7 @@
     <mat-error>Please select a different name as this one is of different type in the same namespace</mat-error>
   }
 
-  <mat-autocomplete #auto="matAutocomplete" class="characteristic-datatype-autocomplete">
+  <mat-autocomplete class="characteristic-datatype-autocomplete" #auto="matAutocomplete">
     @if (!entitiesDisabled && filteredEntityTypes$ | async; as filteredEntityTypes) {
       <mat-optgroup label="Entities">
         @if (!isAlreadyDefined(filteredEntityTypes, dataType.value) && !getControl('dataType')?.errors) {

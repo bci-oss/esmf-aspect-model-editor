@@ -11,30 +11,24 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {NamespacesCacheService} from '@ame/cache';
 import {AfterViewInit, Component, Inject, OnInit, ViewChild} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup} from '@angular/forms';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {MatPaginator} from '@angular/material/paginator';
 import {MatTableDataSource} from '@angular/material/table';
-import {
-  BaseMetaModelElement,
-  DefaultAbstractProperty,
-  DefaultEntity,
-  DefaultEntityInstance,
-  DefaultProperty,
-  OverWrittenProperty,
-} from '@ame/meta-model';
-import {NamespacesCacheService} from '@ame/cache';
+import {DefaultEntity, DefaultEntityInstance, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
 
 export interface PropertiesDialogData {
   name: string;
-  metaModelElement?: BaseMetaModelElement;
-  properties: OverWrittenProperty[];
+  metaModelElement?: NamedElement;
+  properties: DefaultProperty[];
   isExternalRef: boolean;
   isPredefined?: boolean;
 }
 
 export interface PropertyStatus {
+  property: DefaultProperty;
   inherited?: boolean;
   disabled?: boolean;
 }
@@ -50,12 +44,12 @@ export class PropertiesModalComponent implements OnInit, AfterViewInit {
   public headers = [];
   public standardHeaders = ['name', 'optional', 'payloadName'];
   public enumerationEntityHeaders = ['name', 'optional', 'notInPayload', 'payloadName'];
-  public dataSource: MatTableDataSource<OverWrittenProperty>;
+  public dataSource: MatTableDataSource<PropertyStatus>;
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
-  public get extendedProperties(): OverWrittenProperty[] {
-    return (this.data.metaModelElement as DefaultEntity)?.extendedElement.extendedProperties || [];
+  public get extendedProperties(): DefaultProperty[] {
+    return (this.data.metaModelElement as DefaultEntity)?.extends_.properties || [];
   }
 
   constructor(
@@ -66,42 +60,43 @@ export class PropertiesModalComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit() {
-    const extendedProperties = ((this.data.metaModelElement as DefaultEntity)?.extendedProperties || [])
-      .filter(({property}) => !(property instanceof DefaultAbstractProperty && this.data.metaModelElement instanceof DefaultEntity))
-      .map(e => ({
-        ...e,
+    const extendedProperties: PropertyStatus[] = ((this.data.metaModelElement as DefaultEntity)?.properties || [])
+      .filter(
+        property => !(property instanceof DefaultProperty && property.isAbstract && this.data.metaModelElement instanceof DefaultEntity),
+      )
+      .map(property => ({
+        property,
         inherited: true,
       }));
 
-    const allProperties: (OverWrittenProperty & PropertyStatus)[] = [
+    const allProperties: PropertyStatus[] = [
       ...extendedProperties,
-      ...this.data.properties.map(e => ({
-        ...e,
-        disabled: !!(e.property instanceof DefaultProperty && e.property.extendedElement),
-        abstract: e.property instanceof DefaultAbstractProperty,
+      ...this.data.properties.map(property => ({
+        property,
+        disabled: !!(property instanceof DefaultProperty && property.extends_),
       })),
     ];
 
     this.dataSource = new MatTableDataSource(allProperties);
 
-    const group = allProperties.reduce((acc, curr) => {
-      this.keys.push(curr.property.aspectModelUrn);
-      acc[curr.property.aspectModelUrn] = this.formBuilder.group({
+    const group = allProperties.reduce((acc, status) => {
+      this.keys.push(status.property.aspectModelUrn);
+      acc[status.property.aspectModelUrn] = this.formBuilder.group({
         name: this.formBuilder.control({
-          value: curr.property.name,
-          disabled: curr.inherited || curr.disabled,
+          value: status.property.name,
+          disabled: status.inherited || status.disabled,
         }),
         optional: this.formBuilder.control({
-          value: curr.keys.optional || false,
-          disabled: curr.inherited || curr.disabled,
+          value: status.property.optional || false,
+          disabled: status.inherited || status.disabled,
         }),
         notInPayload: this.formBuilder.control({
-          value: curr.keys.notInPayload || false,
-          disabled: curr.inherited || curr.disabled,
+          value: status.property.notInPayload || false,
+          disabled: status.inherited || status.disabled,
         }),
         payloadName: this.formBuilder.control({
-          value: curr.keys.payloadName || '',
-          disabled: curr.inherited || curr.disabled,
+          value: status.property.payloadName || '',
+          disabled: status.inherited || status.disabled,
         }),
       });
       return acc;
@@ -116,7 +111,7 @@ export class PropertiesModalComponent implements OnInit, AfterViewInit {
     if (this.data.metaModelElement instanceof DefaultEntity) {
       const entityValues = this.cacheService.currentCachedFile.getCachedEntityValues();
       entityValues.forEach((entityValue: DefaultEntityInstance) => {
-        if (entityValue.entity.aspectModelUrn === this.data.metaModelElement.aspectModelUrn) {
+        if (entityValue.type.aspectModelUrn === this.data.metaModelElement.aspectModelUrn) {
           this.headers = this.enumerationEntityHeaders;
         }
       });

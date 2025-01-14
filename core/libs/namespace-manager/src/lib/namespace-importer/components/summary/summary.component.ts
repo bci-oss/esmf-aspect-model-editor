@@ -12,15 +12,15 @@
  */
 
 import {FileHandlingService} from '@ame/editor';
-import {Component, inject} from '@angular/core';
-import {MatDialogActions, MatDialogClose, MatDialogContent, MatDialogRef, MatDialogTitle} from '@angular/material/dialog';
-import {NAMESPACES_SESSION, WorkspaceSummaryComponent} from '../../../shared';
-import {MissingElement, NamespacesSessionInterface} from '../../../shared/models';
-import {take, tap} from 'rxjs/operators';
 import {ElectronSignals, ElectronSignalsService} from '@ame/shared';
-import {MatButton} from '@angular/material/button';
-import {ClipboardCopyButtonComponent} from '../../../shared/components/clipboard-copy-button/clipboard-copy-button.component';
 import {CdkScrollable} from '@angular/cdk/scrolling';
+import {Component, inject} from '@angular/core';
+import {MatButton} from '@angular/material/button';
+import {MatDialogActions, MatDialogClose, MatDialogContent, MatDialogRef, MatDialogTitle} from '@angular/material/dialog';
+import {take, tap} from 'rxjs/operators';
+import {NAMESPACES_SESSION, WorkspaceSummaryComponent} from '../../../shared';
+import {ClipboardCopyButtonComponent} from '../../../shared/components/clipboard-copy-button/clipboard-copy-button.component';
+import {MissingElement, NamespacesSessionInterface} from '../../../shared/models';
 
 @Component({
   templateUrl: './summary.component.html',

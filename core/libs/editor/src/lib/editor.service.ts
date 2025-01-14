@@ -11,42 +11,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {inject, Injectable, Injector, NgZone} from '@angular/core';
-import {
-  AlertService,
-  BrowserService,
-  ElectronSignalsService,
-  FileContentModel,
-  LoadingScreenService,
-  LogService,
-  ModelSavingTrackerService,
-  NotificationsService,
-  sammElements,
-  SaveValidateErrorsCodes,
-  TitleService,
-  ValidateStatus,
-} from '@ame/shared';
-import {environment} from 'environments/environment';
-import {mxgraph} from 'mxgraph-factory';
-import {
-  BehaviorSubject,
-  catchError,
-  delay,
-  delayWhen,
-  filter,
-  first,
-  forkJoin,
-  map,
-  mergeMap,
-  Observable,
-  of,
-  retry,
-  Subscription,
-  switchMap,
-  tap,
-  throwError,
-  timer,
-} from 'rxjs';
+import {ModelApiService} from '@ame/api';
+import {CachedFile, LoadedFilesService, NamespaceFile, NamespacesCacheService} from '@ame/cache';
+import {FILTER_ATTRIBUTES, FilterAttributesService, FiltersService} from '@ame/loader-filters';
+import {ElementModelService, ModelElementNamingService} from '@ame/meta-model';
 import {
   mxConstants,
   mxEvent,
@@ -60,30 +28,60 @@ import {
   mxUtils,
   ShapeConfiguration,
 } from '@ame/mx-graph';
-import {Aspect, Base, BaseMetaModelElement, DefaultAspect, ElementModelService, ModelElementNamingService} from '@ame/meta-model';
-import {InstantiatorService} from '@ame/instantiator';
-import {ConfigurationService, SammLanguageSettingsService} from '@ame/settings-dialog';
-import {ConfirmDialogService} from './confirm-dialog/confirm-dialog.service';
-import {CachedFile, NamespacesCacheService} from '@ame/cache';
-import {ModelApiService} from '@ame/api';
 import {ModelService, RdfService} from '@ame/rdf/services';
-import {RdfModel} from '@ame/rdf/utils';
-import {AsyncApi, OpenApi, ViolationError} from './editor-toolbar';
-import {FILTER_ATTRIBUTES, FilterAttributesService, FiltersService} from '@ame/loader-filters';
-import {ShapeSettingsService, ShapeSettingsStateService} from './editor-dialog';
-import {LargeFileWarningService} from './large-file-warning-dialog/large-file-warning-dialog.service';
-import {LoadModelPayload} from './models/load-model-payload.interface';
-import {LanguageTranslationService} from '@ame/translation';
+import {ConfigurationService, SammLanguageSettingsService} from '@ame/settings-dialog';
+import {
+  AlertService,
+  APP_CONFIG,
+  AppConfig,
+  LoadingScreenService,
+  LogService,
+  ModelSavingTrackerService,
+  NotificationsService,
+  sammElements,
+  SaveValidateErrorsCodes,
+  TitleService,
+  ValidateStatus,
+} from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
+import {LanguageTranslationService} from '@ame/translation';
+import {inject, Injectable, Injector, NgZone} from '@angular/core';
+import {Aspect, DefaultAspect, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
+import {environment} from 'environments/environment';
+import {mxgraph} from 'mxgraph-factory';
+import {
+  BehaviorSubject,
+  catchError,
+  delay,
+  delayWhen,
+  filter,
+  first,
+  map,
+  Observable,
+  of,
+  retry,
+  Subscription,
+  switchMap,
+  tap,
+  throwError,
+  timer,
+} from 'rxjs';
+import {ConfirmDialogService} from './confirm-dialog/confirm-dialog.service';
+import {ShapeSettingsService, ShapeSettingsStateService} from './editor-dialog';
+import {AsyncApi, OpenApi, ViolationError} from './editor-toolbar';
+import {LargeFileWarningService} from './large-file-warning-dialog/large-file-warning-dialog.service';
+import {ModelLoaderService} from './model-loader.service';
 import {ConfirmDialogEnum} from './models/confirm-dialog.enum';
 
 @Injectable({
   providedIn: 'root',
 })
 export class EditorService {
+  private config: AppConfig = inject(APP_CONFIG);
   private filtersService: FiltersService = inject(FiltersService);
   private filterAttributes: FilterAttributesService = inject(FILTER_ATTRIBUTES);
   private configurationService: ConfigurationService = inject(ConfigurationService);
+  private modelLoaderService: ModelLoaderService = inject(ModelLoaderService);
 
   private validateModelSubscription$: Subscription;
   private saveModelSubscription$: Subscription;
@@ -101,6 +99,10 @@ export class EditorService {
     return this.injector.get(ShapeSettingsService);
   }
 
+  get currentLoadedFile() {
+    return this.loadedFilesService.currentLoadedFile;
+  }
+
   constructor(
     private mxGraphService: MxGraphService,
     private mxGraphSetupService: MxGraphSetupService,
@@ -110,7 +112,6 @@ export class EditorService {
     private modelService: ModelService,
     private alertService: AlertService,
     private rdfService: RdfService,
-    private instantiatorService: InstantiatorService,
     private namespaceCacheService: NamespacesCacheService,
     private sammLangService: SammLanguageSettingsService,
     private modelElementNamingService: ModelElementNamingService,
@@ -123,13 +124,12 @@ export class EditorService {
     private sidebarService: SidebarStateService,
     private shapeSettingsStateService: ShapeSettingsStateService,
     private modelSavingTracker: ModelSavingTrackerService,
-    private electronSignalsService: ElectronSignalsService,
     private largeFileWarningService: LargeFileWarningService,
     private loadingScreenService: LoadingScreenService,
     private translate: LanguageTranslationService,
-    private browserService: BrowserService,
     private injector: Injector,
     private ngZone: NgZone,
+    private loadedFilesService: LoadedFilesService,
   ) {
     if (!environment.production) {
       window['angular.editorService'] = this;
@@ -179,7 +179,7 @@ export class EditorService {
               return;
             }
 
-            const sourceElement = MxGraphHelper.getModelElement<Base>(edgeParent.source);
+            const sourceElement = MxGraphHelper.getModelElement<NamedElement>(edgeParent.source);
             if (sourceElement && !sourceElement?.isExternalReference()) {
               sourceElement.delete(MxGraphHelper.getModelElement(cell));
             }
@@ -210,16 +210,14 @@ export class EditorService {
   }
 
   handleFileVersionConflicts(fileName: string, fileContent: string): Observable<RdfModel> {
-    const currentModel = this.rdfService.currentRdfModel;
+    const currentModel = this.currentLoadedFile;
 
-    if (!currentModel.loadedFromWorkspace || !currentModel.isSameFile(fileName)) return of(this.rdfService.currentRdfModel);
+    if (!currentModel.fromWorkspace || fileName !== this.currentLoadedFile.absoluteName) return of(this.currentLoadedFile.rdfModel);
 
     return this.rdfService.isSameModelContent(fileName, fileContent, currentModel).pipe(
-      switchMap(isSameModelContent =>
-        !isSameModelContent ? this.openReloadConfirmationDialog(currentModel.absoluteAspectModelFileName) : of(false),
-      ),
-      switchMap(isApprove => (isApprove ? this.loadNewAspectModel({rdfAspectModel: fileContent}) : of(null))),
-      map(() => this.rdfService.currentRdfModel),
+      switchMap(isSameModelContent => (!isSameModelContent ? this.openReloadConfirmationDialog(currentModel.absoluteName) : of(false))),
+      switchMap(isApprove => (isApprove ? this.modelLoaderService.createRdfModelFromContent(fileContent, fileName) : of(null))),
+      map((file: NamespaceFile) => file.rdfModel),
     );
   }
 
@@ -237,87 +235,57 @@ export class EditorService {
       .pipe(map(confirm => confirm === ConfirmDialogEnum.ok));
   }
 
-  loadNewAspectModel(payload: LoadModelPayload): Observable<Array<RdfModel>> {
-    this.sidebarService.workspace.refresh();
-    this.notificationsService.info({title: 'Loading model', timeout: 2000});
-
-    let rdfModel: RdfModel = null;
-    return this.rdfService.loadModel(payload.rdfAspectModel, payload.namespaceFileName || '').pipe(
-      tap(() => this.namespaceCacheService.removeAll()),
-      tap(loadedRdfModel => (rdfModel = loadedRdfModel)),
-      switchMap(() => this.loadExternalModels()),
-      tap(() =>
-        this.loadCurrentModel(
-          rdfModel,
-          payload.rdfAspectModel,
-          payload.namespaceFileName || rdfModel.absoluteAspectModelFileName,
-          payload.editElementUrn,
-        ),
-      ),
-      tap(() => {
-        this.modelSavingTracker.updateSavedModel();
-        const [namespace, version, file] = (payload.namespaceFileName || this.rdfService.currentRdfModel.absoluteAspectModelFileName).split(
-          ':',
-        );
-
-        if (this.browserService.isStartedAsElectronApp() || window.require) {
-          this.electronSignalsService.call('updateWindowInfo', {
-            namespace: `${namespace}:${version}`,
-            fromWorkspace: payload.fromWorkspace,
-            file,
-          });
-        }
-        if (!payload.isDefault) {
-          this.notificationsService.info({title: 'Aspect Model loaded', timeout: 3000});
-        }
-      }),
-    );
-  }
-
+  // @TODO move this function and redo it
   loadExternalAspectModel(extRefAbsoluteAspectModelFileName: string): CachedFile {
-    const extRdfModel = this.rdfService.externalRdfModels.find(
-      extRef => extRef.absoluteAspectModelFileName === extRefAbsoluteAspectModelFileName,
-    );
-    const fileName = extRdfModel.aspectModelFileName;
-    let foundCachedFile = this.namespaceCacheService.getFile([extRdfModel.getAspectModelUrn(), fileName]);
-    if (!foundCachedFile) {
-      foundCachedFile = this.namespaceCacheService.addFile(extRdfModel.getAspectModelUrn(), fileName);
-      foundCachedFile = this.instantiatorService.instantiateFile(extRdfModel, foundCachedFile, fileName);
-    }
+    // const extRdfModel = this.rdfService.externalRdfModels.find(
+    //   extRef => extRef.absoluteAspectModelFileName === extRefAbsoluteAspectModelFileName,
+    // );
+    // const fileName = extRdfModel.aspectModelFileName;
+    // let foundCachedFile = this.namespaceCacheService.getFile([extRdfModel.getAspectModelUrn(), fileName]);
+    // if (!foundCachedFile) {
+    //   foundCachedFile = this.namespaceCacheService.addFile(extRdfModel.getAspectModelUrn(), fileName);
+    //   // @TODO check rdfModel
+    //   foundCachedFile = this.instantiatorService.instantiateFile(extRdfModel as any, foundCachedFile, fileName);
+    // }
 
-    return foundCachedFile;
+    return null; //foundCachedFile;
   }
 
+  // @TODO move this function to model-loader service and use the new rdf loader
   loadExternalModels(): Observable<Array<RdfModel>> {
-    this.rdfService.externalRdfModels = [];
-    return this.modelApiService.getAllNamespacesFilesContent().pipe(
-      first(),
-      mergeMap((fileContentModels: Array<FileContentModel>) =>
-        fileContentModels.length
-          ? forkJoin(fileContentModels.map(fileContent => this.rdfService.loadExternalReferenceModelIntoStore(fileContent)))
-          : of([] as Array<RdfModel>),
-      ),
-      tap(extRdfModel => {
-        extRdfModel.forEach(extRdfModel => this.loadExternalAspectModel(extRdfModel.absoluteAspectModelFileName));
-      }),
-    );
+    // this.rdfService.externalRdfModels = [];
+    // return this.modelApiService.getAllNamespacesFilesContent().pipe(
+    //   first(),
+    //   mergeMap((fileContentModels: Array<FileContentModel>) =>
+    //     fileContentModels.length
+    //       ? forkJoin(fileContentModels.map(fileContent => this.rdfService.loadExternalReferenceModelIntoStore(fileContent)))
+    //       : of([] as Array<RdfModel>),
+    //   ),
+    //   tap(extRdfModel => {
+    //     extRdfModel.forEach(extRdfModel => this.loadExternalAspectModel(extRdfModel.absoluteAspectModelFileName));
+    //   }),
+    // );
+    return null;
   }
 
+  // @todo see if this funcion is still relevant
   loadModels(): Observable<RdfModel[]> {
-    return this.modelApiService
-      .getAllNamespacesFilesContent()
-      .pipe(
-        mergeMap((fileContentModels: FileContentModel[]) =>
-          fileContentModels.length ? this.rdfService.parseModels(fileContentModels) : of([]),
-        ),
-      );
+    // return this.modelApiService
+    //   .getAllNamespacesFilesContent()
+    //   .pipe(
+    //     mergeMap((fileContentModels: FileContentModel[]) =>
+    //       fileContentModels.length ? this.rdfService.parseModels(fileContentModels) : of([]),
+    //     ),
+    //   );
+    return null;
   }
 
+  // TODO see if is still relevant
   removeAspectModelFileFromStore(aspectModelFileName: string) {
-    const index = this.rdfService.externalRdfModels.findIndex(
-      extRdfModel => extRdfModel.absoluteAspectModelFileName === aspectModelFileName,
-    );
-    this.rdfService.externalRdfModels.splice(index, 1);
+    // const index = this.rdfService.externalRdfModels.findIndex(
+    //   extRdfModel => extRdfModel.absoluteAspectModelFileName === aspectModelFileName,
+    // );
+    // this.rdfService.externalRdfModels.splice(index, 1);
   }
 
   generateJsonSample(rdfModel: RdfModel): Observable<string> {
@@ -379,13 +347,7 @@ export class EditorService {
   private initializeNewGraph(editElementUrn?: string): void {
     try {
       const rdfModel = this.modelService.currentRdfModel;
-      const mxGraphRenderer = new MxGraphRenderer(
-        this.mxGraphService,
-        this.mxGraphShapeOverlayService,
-        this.namespaceCacheService,
-        this.sammLangService,
-        rdfModel,
-      );
+      const mxGraphRenderer = new MxGraphRenderer(this.mxGraphService, this.mxGraphShapeOverlayService, this.sammLangService, rdfModel);
 
       const elements = this.namespaceCacheService.currentCachedFile.getAllElements();
       this.prepareGraphUpdate(mxGraphRenderer, elements, editElementUrn);
@@ -396,7 +358,7 @@ export class EditorService {
     }
   }
 
-  private prepareGraphUpdate(mxGraphRenderer: MxGraphRenderer, elements: BaseMetaModelElement[], editElementUrn?: string): void {
+  private prepareGraphUpdate(mxGraphRenderer: MxGraphRenderer, elements: NamedElement[], editElementUrn?: string): void {
     this.largeFileWarningService
       .openDialog(elements.length)
       .pipe(
@@ -419,7 +381,7 @@ export class EditorService {
     });
   }
 
-  private graphUpdateWorkflow(mxGraphRenderer: MxGraphRenderer, elements: BaseMetaModelElement[]): Observable<boolean> {
+  private graphUpdateWorkflow(mxGraphRenderer: MxGraphRenderer, elements: NamedElement[]): Observable<boolean> {
     return this.mxGraphService.updateGraph(() => {
       this.mxGraphService.firstTimeFold = true;
       MxGraphHelper.filterMode = this.filtersService.currentFilter.filterType;
@@ -476,7 +438,7 @@ export class EditorService {
             this.notificationsService.warning({title: 'An AspectModel can contain only one Aspect element.'});
             return;
           }
-          newInstance = DefaultAspect.createInstance();
+          newInstance = new DefaultAspect({name: '', aspectModelUrn: '', metaModelVersion: ''});
           break;
         default:
           newInstance = sammElements[elementType].class.createInstance();
@@ -495,19 +457,13 @@ export class EditorService {
           })
         : this.openAlertBox();
 
-      if (metaModelElement instanceof Base) {
+      if (metaModelElement instanceof NamedElement) {
         this.namespaceCacheService.currentCachedFile.resolveElement(metaModelElement);
       }
     } else {
-      const element: BaseMetaModelElement = this.namespaceCacheService.findElementOnExtReference(aspectModelUrn);
+      const element: NamedElement = this.namespaceCacheService.findElementOnExtReference(aspectModelUrn);
       if (!this.mxGraphService.resolveCellByModelElement(element)) {
-        const renderer = new MxGraphRenderer(
-          this.mxGraphService,
-          this.mxGraphShapeOverlayService,
-          this.namespaceCacheService,
-          this.sammLangService,
-          null,
-        );
+        const renderer = new MxGraphRenderer(this.mxGraphService, this.mxGraphShapeOverlayService, this.sammLangService, null);
 
         this.mxGraphService.setCoordinatesForNextCellRender(x, y);
 
@@ -540,17 +496,20 @@ export class EditorService {
         if (confirm === ConfirmDialogEnum.cancel) {
           return;
         }
-        const rdfModel = this.rdfService.currentRdfModel;
-        this.modelService.addAspect(aspectInstance);
-        rdfModel.setAspect(aspectInstance.aspectModelUrn);
-        const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(aspectInstance);
-        rdfModel.absoluteAspectModelFileName = `${rdfModel.getAspectModelUrn()}${metaModelElement.name}.ttl`;
+        // const rdfModel = this.rdfService.currentRdfModel;
+        // this.modelService.addAspect(aspectInstance);
 
-        if (!rdfModel.originalAbsoluteFileName) {
-          rdfModel.originalAbsoluteFileName = `${rdfModel.getAspectModelUrn().replace('urn:samm:', '').replace('#', ':')}${
-            metaModelElement.name
-          }.ttl`;
-        }
+        // @TODO recheck functionality
+        const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(aspectInstance);
+        this.currentLoadedFile.name = `${metaModelElement.name}.ttl`;
+
+        // this.currentLoadedFile.absoluteAspectModelFileName = `${rdfModel.getAspectModelUrn()}${metaModelElement.name}.ttl`;
+
+        // if (!rdfModel.originalAbsoluteFileName) {
+        //   rdfModel.originalAbsoluteFileName = `${rdfModel.getAspectModelUrn().replace('urn:samm:', '').replace('#', ':')}${
+        //     metaModelElement.name
+        //   }.ttl`;
+        // }
 
         metaModelElement
           ? this.mxGraphService.renderModelElement(this.filtersService.createNode(aspectInstance), {
@@ -558,7 +517,7 @@ export class EditorService {
               geometry,
             })
           : this.openAlertBox();
-        this.titleService.updateTitle(rdfModel.absoluteAspectModelFileName);
+        this.titleService.updateTitle(this.currentLoadedFile.absoluteName);
       });
   }
 
@@ -785,8 +744,7 @@ export class EditorService {
     return of({}).pipe(
       delayWhen(() => timer(this.settings.saveTimerSeconds * 1000)),
       switchMap(() =>
-        this.namespaceCacheService.currentCachedFile.hasCachedElements() &&
-        !this.rdfService.currentRdfModel.aspectModelFileName.includes('empty.ttl')
+        this.namespaceCacheService.currentCachedFile.hasCachedElements() && !this.currentLoadedFile.name.includes('empty.ttl')
           ? this.saveModel().pipe(first())
           : of([]),
       ),

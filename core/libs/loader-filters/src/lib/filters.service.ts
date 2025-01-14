@@ -11,20 +11,20 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Inject, Injectable, Injector} from '@angular/core';
-import {DefaultFilter} from './filters/default-filter';
-import {PropertiesFilterLoader} from './filters/properties-filter';
-import {FilterLoader, ModelFilter, ModelTree, ModelTreeOptions} from './models';
-import {BaseMetaModelElement} from '@ame/meta-model';
-import {MxGraphAttributeService, MxGraphHelper, MxGraphRenderer, MxGraphService, MxGraphShapeOverlayService} from '@ame/mx-graph';
 import {NamespacesCacheService} from '@ame/cache';
+import {EditorService} from '@ame/editor';
+import {MxGraphAttributeService, MxGraphHelper, MxGraphRenderer, MxGraphService, MxGraphShapeOverlayService} from '@ame/mx-graph';
 import {ModelService} from '@ame/rdf/services';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {LoadingScreenService} from '@ame/shared';
-import {FILTER_ATTRIBUTES, FilterAttributesService} from './active-filter.session';
-import {switchMap} from 'rxjs';
-import {EditorService} from '@ame/editor';
 import {LanguageTranslationService} from '@ame/translation';
+import {Inject, Injectable, Injector} from '@angular/core';
+import {NamedElement} from '@esmf/aspect-model-loader';
+import {switchMap} from 'rxjs';
+import {FILTER_ATTRIBUTES, FilterAttributesService} from './active-filter.session';
+import {DefaultFilter} from './filters/default-filter';
+import {PropertiesFilterLoader} from './filters/properties-filter';
+import {FilterLoader, ModelFilter, ModelTree, ModelTreeOptions} from './models';
 
 export type Filters = {
   default: FilterLoader;
@@ -32,8 +32,8 @@ export type Filters = {
 };
 
 export type FilteredTrees = {
-  default: ModelTree<BaseMetaModelElement>[];
-  properties: ModelTree<BaseMetaModelElement>[];
+  default: ModelTree<NamedElement>[];
+  properties: ModelTree<NamedElement>[];
 };
 
 @Injectable({providedIn: 'root'})
@@ -66,25 +66,25 @@ export class FiltersService {
     this.filterAttributesService.activeFilter = ModelFilter.PROPERTIES;
   }
 
-  filter(elements: BaseMetaModelElement[]): ModelTree<BaseMetaModelElement>[] {
+  filter(elements: NamedElement[]): ModelTree<NamedElement>[] {
     this.filteredTree[this.filterAttributesService.activeFilter] = this.currentFilter.filter(elements);
     this.currentFilter.cache = {};
     return this.filteredTree[this.filterAttributesService.activeFilter];
   }
 
-  createNode<T extends BaseMetaModelElement = BaseMetaModelElement>(element: T, options?: ModelTreeOptions): ModelTree<T> {
+  createNode<T extends NamedElement = NamedElement>(element: T, options?: ModelTreeOptions): ModelTree<T> {
     const node = this.updateNodeInfo<T>({element, filterType: this.currentFilter.filterType}, options);
     return this.updateNodeTree<T>(node, options);
   }
 
-  updateNodeInfo<T extends BaseMetaModelElement = BaseMetaModelElement>(node: ModelTree<T>, options?: ModelTreeOptions): ModelTree<T> {
+  updateNodeInfo<T extends NamedElement = NamedElement>(node: ModelTree<T>, options?: ModelTreeOptions): ModelTree<T> {
     node.fromParentArrow = options?.parent ? this.currentFilter.getArrowStyle(node.element, options.parent) : null;
     node.shape = {...this.currentFilter.getShapeGeometry(node.element), mxGraphStyle: this.currentFilter.getMxGraphStyle(node.element)};
     node.filterType = this.currentFilter.filterType;
     return node;
   }
 
-  updateNodeTree<T extends BaseMetaModelElement = BaseMetaModelElement>(node: ModelTree<T>, options?: ModelTreeOptions): ModelTree<T> {
+  updateNodeTree<T extends NamedElement = NamedElement>(node: ModelTree<T>, options?: ModelTreeOptions): ModelTree<T> {
     return this.currentFilter.generateTree(node.element, options);
   }
 
@@ -109,7 +109,6 @@ export class FiltersService {
           const mxGraphSetupVisitor = new MxGraphRenderer(
             mxGraphService,
             this.injector.get(MxGraphShapeOverlayService),
-            namespaceCacheService,
             this.injector.get(SammLanguageSettingsService),
             this.injector.get(ModelService).getLoadedAspectModel().rdfModel,
           );

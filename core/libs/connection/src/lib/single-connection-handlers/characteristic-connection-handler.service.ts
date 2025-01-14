@@ -13,29 +13,29 @@
 
 import {NamespacesCacheService} from '@ame/cache';
 import {FiltersService} from '@ame/loader-filters';
+import {ModelElementNamingService} from '@ame/meta-model';
 import {
-  Characteristic,
-  ModelElementNamingService,
-  DefaultEnumeration,
-  DefaultEntity,
-  DefaultEntityInstance,
-  DefaultProperty,
-  DefaultTrait,
-  DefaultCollection,
-  DefaultEither,
-  DefaultConstraint,
-} from '@ame/meta-model';
-import {
-  MxGraphService,
-  MxGraphAttributeService,
-  MxGraphShapeOverlayService,
   ModelInfo,
+  MxGraphAttributeService,
   MxGraphHelper,
+  MxGraphService,
+  MxGraphShapeOverlayService,
   MxGraphVisitorHelper,
 } from '@ame/mx-graph';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {Injectable} from '@angular/core';
+import {
+  Characteristic,
+  DefaultCollection,
+  DefaultConstraint,
+  DefaultEither,
+  DefaultEntity,
+  DefaultEntityInstance,
+  DefaultEnumeration,
+  DefaultProperty,
+  DefaultTrait,
+} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
 import {SingleShapeConnector} from '../models';
 
@@ -87,7 +87,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
 
     // add trait
     const defaultTrait: DefaultTrait = this.modelElementNamingService.resolveElementNaming(
-      DefaultTrait.createInstance(),
+      new DefaultTrait({name: '', aspectModelUrn: '', metaModelVersion: ''}),
       RdfModelUtil.capitalizeFirstLetter((incomingEdges.length ? incomingEdges[0].source.id : source.id)?.replace(/[[\]]/g, '')),
     );
 
@@ -114,6 +114,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
           return;
         }
 
+        // TODO replace delete functionality
         sourceElementModel.delete(currentMetaModel);
         MxGraphHelper.removeRelation(sourceElementModel, currentMetaModel);
         this.mxGraphService.removeCells([source.removeEdge(edge, false)]);
@@ -144,7 +145,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
    * @param source mxgraph shape from which the plus button was clicked
    */
   private createEntity(characteristic: Characteristic, source: mxgraph.mxCell) {
-    const defaultEntity = DefaultEntity.createInstance();
+    const defaultEntity = new DefaultEntity({name: '', aspectModelUrn: '', metaModelVersion: ''});
     characteristic.dataType = defaultEntity;
 
     const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(defaultEntity);
@@ -186,11 +187,12 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
    * @returns a cell and model element for newly created Entity Value
    */
   private createEntityValue(characteristic: DefaultEnumeration, source: mxgraph.mxCell): [mxgraph.mxCell, DefaultEntityInstance] {
-    const entityValue = DefaultEntityInstance.createInstance();
+    const entityValue = new DefaultEntityInstance({name: '', metaModelVersion: '', aspectModelUrn: ''});
     const characteristicDataType = characteristic.dataType as DefaultEntity;
 
-    entityValue.entity = characteristicDataType;
-    characteristicDataType.properties.forEach(overWrittenProperty => entityValue.addProperty(overWrittenProperty));
+    entityValue.type = characteristicDataType;
+    // TODO check entityInstance for its implementation
+    characteristicDataType.properties.forEach(property => entityValue.setAssertion(property.aspectModelUrn, property as any));
     entityValue.parents.push(characteristic);
     characteristic.values.push(entityValue);
     const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(entityValue);
@@ -213,7 +215,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
 
     // connect: EntityValue - Enumeration
     this.mxGraphService.assignToParent(entityValueCell, source);
-    const entityCell = this.mxGraphService.resolveCellByModelElement(entityValue.entity);
+    const entityCell = this.mxGraphService.resolveCellByModelElement(entityValue.type);
 
     // connect: Entity - EntityValue
     this.mxGraphService.assignToParent(entityCell, entityValueCell);
@@ -237,6 +239,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
       }),
     );
 
+    // TODO replace update functionality
     defaultTrait.update(defaultConstraint);
     this.mxGraphService.assignToParent(constraintShape, traitShape);
   }

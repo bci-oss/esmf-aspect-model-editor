@@ -11,12 +11,11 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable, inject} from '@angular/core';
 import {NamespacesCacheService} from '@ame/cache';
+import {MxGraphAttributeService} from '@ame/mx-graph';
+import {ModelService} from '@ame/rdf/services';
+import {Injectable, inject} from '@angular/core';
 import {
-  BaseMetaModelElement,
-  DefaultAbstractEntity,
-  DefaultAbstractProperty,
   DefaultAspect,
   DefaultCharacteristic,
   DefaultConstraint,
@@ -26,9 +25,8 @@ import {
   DefaultOperation,
   DefaultProperty,
   DefaultUnit,
-} from '@ame/meta-model';
-import {MxGraphAttributeService} from '@ame/mx-graph';
-import {ModelService} from '@ame/rdf/services';
+  NamedElement,
+} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
 import {filter, tap} from 'rxjs/operators';
 import {
@@ -102,7 +100,7 @@ export class DomainModelToRdfService {
     }
   }
 
-  private visitLayer(element: BaseMetaModelElement, visited = {}) {
+  private visitLayer(element: NamedElement, visited = {}) {
     if (visited[element.aspectModelUrn]) {
       return;
     }
@@ -114,7 +112,7 @@ export class DomainModelToRdfService {
     }
   }
 
-  private exportElement(element: BaseMetaModelElement) {
+  private exportElement(element: NamedElement) {
     if (element?.isExternalReference()) {
       return;
     }
@@ -122,13 +120,13 @@ export class DomainModelToRdfService {
     this.getVisitorService(element)?.visit(element as any);
   }
 
-  private getVisitorService(metaModelElement: BaseMetaModelElement) {
+  private getVisitorService(metaModelElement: NamedElement) {
     if (metaModelElement instanceof DefaultAspect) {
       return this.aspectVisitorService;
     } else if (metaModelElement instanceof DefaultProperty) {
       return this.propertyVisitorService;
-    } else if (metaModelElement instanceof DefaultAbstractProperty) {
-      return this.abstractPropertyVisitorService;
+      // } else if (metaModelElement instanceof DefaultAbstractProperty) {
+      //   return this.abstractPropertyVisitorService;
     } else if (metaModelElement instanceof DefaultOperation) {
       return this.operationVisitorService;
     } else if (metaModelElement instanceof DefaultConstraint) {
@@ -137,8 +135,8 @@ export class DomainModelToRdfService {
       return this.characteristicVisitorService;
     } else if (metaModelElement instanceof DefaultEntity) {
       return this.entityVisitorService;
-    } else if (metaModelElement instanceof DefaultAbstractEntity) {
-      return this.abstractEntityVisitorService;
+      // } else if (metaModelElement instanceof DefaultAbstractEntity) {
+      //   return this.abstractEntityVisitorService;
     } else if (metaModelElement instanceof DefaultEntityInstance) {
       return this.entityInstanceVisitor;
     } else if (metaModelElement instanceof DefaultEvent) {

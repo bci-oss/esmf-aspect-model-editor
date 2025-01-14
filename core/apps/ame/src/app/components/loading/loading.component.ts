@@ -12,10 +12,10 @@
  */
 import {ModelApiService, PREDEFINED_MODELS} from '@ame/api';
 import {ElectronSignals, ElectronSignalsService, ElectronTunnelService} from '@ame/shared';
-import {AfterViewInit, Component, inject, NgZone, OnDestroy} from '@angular/core';
-import {Router} from '@angular/router';
-import {forkJoin, Observable, of, Subscription, switchMap, take} from 'rxjs';
 import {NgOptimizedImage} from '@angular/common';
+import {AfterViewInit, Component, NgZone, OnDestroy, inject} from '@angular/core';
+import {Router} from '@angular/router';
+import {Observable, Subscription, forkJoin, of, switchMap, take} from 'rxjs';
 
 @Component({
   standalone: true,

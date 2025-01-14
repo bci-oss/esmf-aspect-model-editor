@@ -11,9 +11,11 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {LoadedFilesService} from '@ame/cache';
+import {CanExtend} from '@ame/meta-model';
+import {RdfService} from '@ame/rdf/services';
 import {Injectable} from '@angular/core';
 import {
-  CanExtend,
   DefaultCharacteristic,
   DefaultCode,
   DefaultCollection,
@@ -33,9 +35,9 @@ import {
   DefaultStructuredValue,
   DefaultTimeSeries,
   DefaultTrait,
-} from '@ame/meta-model';
-import {RdfService} from '@ame/rdf/services';
-import {Samm, SammC} from '@ame/vocabulary';
+  Samm,
+  SammC,
+} from '@esmf/aspect-model-loader';
 import {DataFactory, Literal, NamedNode, Store} from 'n3';
 import {RdfListService} from '../../rdf-list';
 import {RdfNodeService} from '../../rdf-node';
@@ -44,15 +46,15 @@ import {BaseVisitor} from '../base-visitor';
 @Injectable()
 export class CharacteristicVisitor extends BaseVisitor<DefaultCharacteristic> {
   private get store(): Store {
-    return this.rdfNodeService.modelService.currentRdfModel.store;
+    return this.loadedFilesService.currentLoadedFile.rdfModel.store;
   }
 
   private get samm(): Samm {
-    return this.rdfNodeService.modelService.currentRdfModel.SAMM();
+    return this.loadedFilesService.currentLoadedFile.rdfModel.samm;
   }
 
   private get sammC(): SammC {
-    return this.rdfNodeService.modelService.currentRdfModel.SAMMC();
+    return this.loadedFilesService.currentLoadedFile.rdfModel.sammC;
   }
 
   private readonly characteristicsCallback = {
@@ -76,6 +78,7 @@ export class CharacteristicVisitor extends BaseVisitor<DefaultCharacteristic> {
   constructor(
     private rdfNodeService: RdfNodeService,
     private rdfListService: RdfListService,
+    private loadedFilesService: LoadedFilesService,
     rdfService: RdfService,
   ) {
     super(rdfService);
@@ -85,7 +88,7 @@ export class CharacteristicVisitor extends BaseVisitor<DefaultCharacteristic> {
     this.setPrefix(characteristic.aspectModelUrn);
     this.updateParents(characteristic);
 
-    if (characteristic.isPredefined()) {
+    if (characteristic.isPredefined) {
       return characteristic;
     }
 
@@ -242,7 +245,7 @@ export class CharacteristicVisitor extends BaseVisitor<DefaultCharacteristic> {
         language,
         value: characteristic.getDescription(language),
       })),
-      see: characteristic.getSeeReferences() || [],
+      see: characteristic.getSee() || [],
       dataType: characteristic.dataType?.getUrn(),
     });
 
@@ -299,7 +302,7 @@ export class CharacteristicVisitor extends BaseVisitor<DefaultCharacteristic> {
         continue;
       }
 
-      if (characteristic.dataType?.isComplex() && parent instanceof DefaultProperty && !parent.isPredefined()) {
+      if (characteristic.dataType?.isComplexType() && parent instanceof DefaultProperty && !parent.isPredefined) {
         // remove exampleValue for complex datatype
 
         parent.exampleValue = null;
@@ -307,7 +310,7 @@ export class CharacteristicVisitor extends BaseVisitor<DefaultCharacteristic> {
       }
 
       parent instanceof DefaultProperty &&
-        !parent.isPredefined() &&
+        !parent.isPredefined &&
         this.removeOldAndAddNewReference(
           DataFactory.namedNode(parent.aspectModelUrn),
           parent instanceof DefaultCollection ? this.sammC.ElementCharacteristicProperty() : this.samm.CharacteristicProperty(),

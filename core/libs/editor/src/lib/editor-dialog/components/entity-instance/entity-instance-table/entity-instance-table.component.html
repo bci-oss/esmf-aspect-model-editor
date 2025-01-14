@@ -36,9 +36,9 @@
             <div class="source__column source__column--value">
               @if (formFieldHelper.isComplexProperty(source.key.property)) {
                 <!-- complex property type -->
-                <mat-form-field appearance="fill" class="source__input">
+                <mat-form-field class="source__input" appearance="fill">
                   <mat-label>{{ 'ENTITY_VALUE.ENTITY_VALUE' | translate }}</mat-label>
-                  <input #entityValueInput matInput formControlName="value" [matAutocomplete]="auto" data-cy="propertyValueComplex" />
+                  <input #entityValueInput [matAutocomplete]="auto" matInput formControlName="value" data-cy="propertyValueComplex" />
                   @if (EntityValueUtil.getDisplayControl(propertiesForm, source.key.property.name).disabled) {
                     <button
                       (click)="EntityValueUtil.unlockValue(propertiesForm, source.key.property.name, 0, 'value')"
@@ -51,7 +51,7 @@
                     </button>
                   }
 
-                  <mat-autocomplete #auto="matAutocomplete" class="characteristic-entity-value-autocomplete">
+                  <mat-autocomplete class="characteristic-entity-value-autocomplete" #auto="matAutocomplete">
                     @if (filteredEntityValues$[source.key.property?.name] | async; as filteredEntityValues) {
                       <mat-optgroup label="Entity Values">
                         @if (
@@ -86,7 +86,7 @@
                 </mat-form-field>
               } @else {
                 <!-- non complex property type -->
-                <mat-form-field appearance="fill" class="source__input">
+                <mat-form-field class="source__input" appearance="fill">
                   <mat-label>{{ 'ENTITY_VALUE.VALUE' | translate }}</mat-label>
                   <input matInput type="text" formControlName="value" data-cy="propertyValueNotComplex" />
                   @if (control.get('value').errors?.required) {
@@ -104,15 +104,15 @@
               >
                 <ng-container>
                   <mat-form-field
-                    appearance="fill"
                     [ngClass]="
                       EntityValueUtil.getDisplayControl(propertiesForm, source.key.property.name).at(i)?.get('language')?.disabled
                         ? 'source__input-with-icon'
                         : 'source__input'
                     "
+                    appearance="fill"
                   >
                     <mat-label>{{ 'ENTITY_VALUE.LANGUAGE' | translate }}</mat-label>
-                    <input matInput formControlName="language" [matAutocomplete]="auto" data-cy="propertyLanguageValue" />
+                    <input [matAutocomplete]="auto" matInput formControlName="language" data-cy="propertyLanguageValue" />
                     @if (EntityValueUtil.getDisplayControl(propertiesForm, source.key.property.name).at(i)?.get('language')?.disabled) {
                       <button
                         (click)="EntityValueUtil.unlockValue(propertiesForm, source.key.property.name, i, 'language')"
@@ -123,7 +123,7 @@
                         <mat-icon>close</mat-icon>
                       </button>
                     }
-                    <mat-autocomplete #auto="matAutocomplete" class="characteristic-entity-value-autocomplete">
+                    <mat-autocomplete class="characteristic-entity-value-autocomplete" #auto="matAutocomplete">
                       @if (filteredLanguageValues$[source.key.property?.name] | async; as filteredLanguageValues$) {
                         @for (language of filteredLanguageValues$; track language) {
                           <mat-option [value]="language.tag" (onSelectionChange)="changeLanguageSelection(source, language.tag, i)">
@@ -143,21 +143,21 @@
                 <div class="source__column source__column--icon">
                   @if (i) {
                     <button
+                      [attr.data-cy]="source.key.property.name + 'Remove'"
+                      (click)="removeLanguage(source, i)"
                       mat-mini-fab
                       color="primary"
                       aria-label="Delete added language"
-                      (click)="removeLanguage(source, i)"
-                      [attr.data-cy]="source.key.property.name + 'Remove'"
                     >
                       <mat-icon>delete</mat-icon>
                     </button>
                   } @else {
                     <button
+                      [attr.data-cy]="source.key.property.name + 'Add'"
+                      (click)="addLanguage(source)"
                       mat-mini-fab
                       color="primary"
                       aria-label="Add new language"
-                      (click)="addLanguage(source)"
-                      [attr.data-cy]="source.key.property.name + 'Add'"
                     >
                       <mat-icon>add</mat-icon>
                     </button>

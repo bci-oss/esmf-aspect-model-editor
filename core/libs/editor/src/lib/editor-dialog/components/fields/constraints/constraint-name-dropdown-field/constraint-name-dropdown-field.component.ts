@@ -11,10 +11,11 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {LoadedFilesService, NamespacesCacheService} from '@ame/cache';
+import {ModelService} from '@ame/rdf/services';
+import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
-import {NamespacesCacheService} from '@ame/cache';
 import {
-  BaseMetaModelElement,
   Constraint,
   DefaultConstraint,
   DefaultEncodingConstraint,
@@ -24,9 +25,8 @@ import {
   DefaultLocaleConstraint,
   DefaultRangeConstraint,
   DefaultRegularExpressionConstraint,
-} from '@ame/meta-model';
-import {ModelService} from '@ame/rdf/services';
-import {SammLanguageSettingsService} from '@ame/settings-dialog';
+  NamedElement,
+} from '@esmf/aspect-model-loader';
 import {EditorModelService} from '../../../../editor-model.service';
 import {DropdownFieldComponent} from '../../dropdown-field.component';
 
@@ -45,8 +45,9 @@ export class ConstraintNameDropdownFieldComponent extends DropdownFieldComponent
     public modelService: ModelService,
     public namespacesCacheService: NamespacesCacheService,
     public languageSettings: SammLanguageSettingsService,
+    public loadedFilesService: LoadedFilesService,
   ) {
-    super(editorModelService, modelService, languageSettings);
+    super(editorModelService, modelService, languageSettings, loadedFilesService);
   }
 
   ngOnInit(): void {
@@ -107,7 +108,7 @@ export class ConstraintNameDropdownFieldComponent extends DropdownFieldComponent
     }
   }
 
-  private migrateCommonAttributes(oldMetaModelElement: BaseMetaModelElement) {
+  private migrateCommonAttributes(oldMetaModelElement: NamedElement) {
     Object.keys(oldMetaModelElement).forEach(oldKey => {
       if (Object.keys(this.metaModelElement).find(key => key === oldKey) && oldKey !== 'aspectModelUrn' && oldKey !== 'name') {
         this.metaModelElement[oldKey] = oldMetaModelElement[oldKey];

@@ -11,13 +11,13 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {CdkScrollable} from '@angular/cdk/scrolling';
 import {Component, Inject, OnInit} from '@angular/core';
+import {MatDialogContent, MatDialogTitle} from '@angular/material/dialog';
+import {MatProgressSpinner} from '@angular/material/progress-spinner';
 import {Router} from '@angular/router';
 import {NAMESPACES_SESSION} from '../../../shared';
 import {NamespacesSessionInterface} from '../../../shared/models';
-import {MatProgressSpinner} from '@angular/material/progress-spinner';
-import {CdkScrollable} from '@angular/cdk/scrolling';
-import {MatDialogTitle, MatDialogContent} from '@angular/material/dialog';
 
 @Component({
   selector: 'ame-export-validate',

@@ -11,15 +11,15 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {InputFieldComponent} from '../../input-field.component';
-import {DefaultOperation, DefaultProperty, Property} from '@ame/meta-model';
-import {FormControl} from '@angular/forms';
-import {Observable} from 'rxjs';
-import {ENTER} from '@angular/cdk/keycodes';
-import {EditorDialogValidators} from '../../../../validators';
 import {RdfService} from '@ame/rdf/services';
+import {ENTER} from '@angular/cdk/keycodes';
+import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {FormControl} from '@angular/forms';
 import {ErrorStateMatcher} from '@angular/material/core';
+import {DefaultOperation, DefaultProperty, Property} from '@esmf/aspect-model-loader';
+import {Observable} from 'rxjs';
+import {EditorDialogValidators} from '../../../../validators';
+import {InputFieldComponent} from '../../input-field.component';
 
 @Component({
   selector: 'ame-input-chiplist-field',

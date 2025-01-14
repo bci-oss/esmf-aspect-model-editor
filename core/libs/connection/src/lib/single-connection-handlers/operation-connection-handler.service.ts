@@ -12,12 +12,13 @@
  */
 
 import {FiltersService} from '@ame/loader-filters';
-import {Operation, ModelElementNamingService, DefaultProperty} from '@ame/meta-model';
-import {MxGraphService, ModelInfo, MxGraphHelper} from '@ame/mx-graph';
+import {ModelElementNamingService} from '@ame/meta-model';
+import {ModelInfo, MxGraphHelper, MxGraphService} from '@ame/mx-graph';
 import {NotificationsService} from '@ame/shared';
 import {Injectable} from '@angular/core';
-import {SingleShapeConnector} from '../models';
+import {DefaultProperty, Operation} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
+import {SingleShapeConnector} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -31,17 +32,16 @@ export class OperationConnectionHandler implements SingleShapeConnector<Operatio
   ) {}
 
   public connect(operation: Operation, source: mxgraph.mxCell, modelInfo: ModelInfo) {
-    const defaultProperty = DefaultProperty.createInstance();
+    const defaultProperty = new DefaultProperty({name: '', metaModelVersion: '', aspectModelUrn: ''});
 
-    const overWrittenProperty = {property: defaultProperty, keys: {}};
     if (ModelInfo.IS_OPERATION_OUTPUT === modelInfo) {
       if (operation.output) {
         this.notificationsService.warning({title: 'Operation output is already defined'});
         return;
       }
-      operation.output = overWrittenProperty;
+      operation.output = defaultProperty;
     } else if (ModelInfo.IS_OPERATION_INPUT === modelInfo) {
-      operation.input.push(overWrittenProperty);
+      operation.input.push(defaultProperty);
     }
 
     const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(defaultProperty);

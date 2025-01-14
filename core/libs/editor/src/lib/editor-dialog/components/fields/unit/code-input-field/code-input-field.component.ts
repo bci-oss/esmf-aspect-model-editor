@@ -12,9 +12,9 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {InputFieldComponent} from '../../input-field.component';
-import {DefaultUnit} from '@ame/meta-model';
 import {FormControl} from '@angular/forms';
+import {DefaultUnit} from '@esmf/aspect-model-loader';
+import {InputFieldComponent} from '../../input-field.component';
 
 @Component({
   selector: 'ame-code-input-field',

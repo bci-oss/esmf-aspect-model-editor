@@ -12,14 +12,10 @@
  */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {mxCell, mxgraph} from 'mxgraph';
-import {MxGraphHelper, MxGraphVisitorHelper, ShapeAttribute} from '../helpers';
-import {MxGraphService, MxGraphShapeOverlayService} from '../services';
+import {ModelTree} from '@ame/loader-filters';
+import {RdfModelUtil} from '@ame/rdf/utils';
+import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {
-  Base,
-  BaseMetaModelElement,
-  DefaultAbstractEntity,
-  DefaultAbstractProperty,
   DefaultAspect,
   DefaultCharacteristic,
   DefaultConstraint,
@@ -30,33 +26,29 @@ import {
   DefaultProperty,
   DefaultQuantityKind,
   DefaultUnit,
-} from '@ame/meta-model';
-import {SammLanguageSettingsService} from '@ame/settings-dialog';
-import {NamespacesCacheService} from '@ame/cache';
-import {RdfModel, RdfModelUtil} from '@ame/rdf/utils';
-import {ModelTree} from '@ame/loader-filters';
+  NamedElement,
+  RdfModel,
+} from '@esmf/aspect-model-loader';
+import {mxCell, mxgraph} from 'mxgraph';
+import {MxGraphHelper, MxGraphVisitorHelper, ShapeAttribute} from '../helpers';
+import {MxGraphService, MxGraphShapeOverlayService} from '../services';
 import {ModelRenderer} from './mxgraph-renderer.interface';
 
 export class MxGraphRenderer implements ModelRenderer<mxCell, mxCell> {
   visitedElements = []; // Keep track of already visited elements
-
-  get currentCachedFile() {
-    return this.namespacesCacheService.currentCachedFile;
-  }
 
   private shapes: Map<string, mxCell>;
 
   constructor(
     private mxGraphService: MxGraphService,
     private mxGraphShapeOverlayService: MxGraphShapeOverlayService,
-    private namespacesCacheService: NamespacesCacheService,
     private sammLangService: SammLanguageSettingsService,
     private rdfModel: RdfModel,
   ) {
     this.shapes = new Map<string, mxCell>();
   }
 
-  render(elementTree: ModelTree<BaseMetaModelElement>, parent: mxCell): mxCell {
+  render(elementTree: ModelTree<NamedElement>, parent: mxCell): mxCell {
     const wasVisited = this.visitedElements.includes(elementTree.element);
     const item: mxCell = this.renderElement(elementTree, parent);
     !wasVisited && this.visitedElements.push(elementTree.element);
@@ -147,7 +139,7 @@ export class MxGraphRenderer implements ModelRenderer<mxCell, mxCell> {
     return cell;
   }
 
-  renderAbstractProperty(node: ModelTree<DefaultAbstractProperty>, parent: mxgraph.mxCell): mxgraph.mxCell {
+  renderAbstractProperty(node: ModelTree<DefaultProperty>, parent: mxgraph.mxCell): mxgraph.mxCell {
     const abstractProperty = node.element;
     const cell = this.getOrCreateMxCell(node, MxGraphVisitorHelper.getAbstractPropertyProperties(abstractProperty, this.sammLangService));
     this.connectIsolatedElement(parent, cell);
@@ -166,7 +158,7 @@ export class MxGraphRenderer implements ModelRenderer<mxCell, mxCell> {
     this.connectIsolatedElement(parent, cell);
 
     const parentCell = MxGraphHelper.getModelElement(parent);
-    if (parentCell instanceof DefaultAbstractProperty) {
+    if (parentCell instanceof DefaultProperty && parentCell.isAbstract) {
       return cell;
     }
 
@@ -176,7 +168,7 @@ export class MxGraphRenderer implements ModelRenderer<mxCell, mxCell> {
     return cell;
   }
 
-  renderAbstractEntity(node: ModelTree<DefaultAbstractEntity>, parent: mxCell) {
+  renderAbstractEntity(node: ModelTree<DefaultEntity>, parent: mxCell) {
     const abstractEntity = node.element;
     if (this.shapes.get(abstractEntity.aspectModelUrn)) {
       const cellTmp = this.shapes.get(abstractEntity.aspectModelUrn);
@@ -240,11 +232,11 @@ export class MxGraphRenderer implements ModelRenderer<mxCell, mxCell> {
         return this.renderQuantityKind(node, parent);
       case node.element instanceof DefaultProperty:
         return this.renderProperty(node, parent);
-      case node.element instanceof DefaultAbstractProperty:
+      case node.element instanceof DefaultProperty && node.element.isAbstract:
         return this.renderAbstractProperty(node, parent);
       case node.element instanceof DefaultCharacteristic:
         return this.renderCharacteristic(node, parent);
-      case node.element instanceof DefaultAbstractEntity:
+      case node.element instanceof DefaultEntity && node.element.isAbstractEntity():
         return this.renderAbstractEntity(node, parent);
       case node.element instanceof DefaultAspect:
         return this.renderAspect(node, parent);
@@ -261,7 +253,7 @@ export class MxGraphRenderer implements ModelRenderer<mxCell, mxCell> {
   // Private helper functions
   // ==========================================================================================
 
-  private inParentRendered(element: BaseMetaModelElement, parent: mxCell): boolean {
+  private inParentRendered(element: NamedElement, parent: mxCell): boolean {
     return this.mxGraphService.graph
       .getOutgoingEdges(parent)
       .some(cell => MxGraphHelper.getModelElement(cell)?.aspectModelUrn === element.aspectModelUrn);
@@ -282,7 +274,7 @@ export class MxGraphRenderer implements ModelRenderer<mxCell, mxCell> {
     }
   }
 
-  private createMxCell(node: ModelTree<BaseMetaModelElement>, mxCellAttributes: ShapeAttribute[]): mxCell {
+  private createMxCell(node: ModelTree<NamedElement>, mxCellAttributes: ShapeAttribute[]): mxCell {
     return this.mxGraphService.renderModelElement(node, {shapeAttributes: mxCellAttributes, geometry: {}});
   }
 
@@ -297,8 +289,8 @@ export class MxGraphRenderer implements ModelRenderer<mxCell, mxCell> {
 
     if (
       this.rdfModel &&
-      !RdfModelUtil.isPredefinedCharacteristic(node.element.aspectModelUrn, this.rdfModel.SAMMC()) &&
-      !RdfModelUtil.isSammUDefinition(node.element.aspectModelUrn, this.rdfModel.SAMMU())
+      !RdfModelUtil.isPredefinedCharacteristic(node.element.aspectModelUrn, this.rdfModel.sammC) &&
+      !RdfModelUtil.isSammUDefinition(node.element.aspectModelUrn, this.rdfModel.sammU)
     ) {
       this.shapes.set(node.element.aspectModelUrn, cell);
     }
@@ -306,12 +298,12 @@ export class MxGraphRenderer implements ModelRenderer<mxCell, mxCell> {
     return cell;
   }
 
-  private assignToParent(cell: mxCell, context: mxCell, node: ModelTree<BaseMetaModelElement>) {
+  private assignToParent(cell: mxCell, context: mxCell, node: ModelTree<NamedElement>) {
     this.mxGraphService.assignToParent(cell, context, node.fromParentArrow);
     this.removeActionIcons(node.element, cell);
   }
 
-  private removeActionIcons(baseMetaModelElement: BaseMetaModelElement, cell: mxgraph.mxCell) {
-    this.mxGraphShapeOverlayService.removeShapeActionIconsByLoading(baseMetaModelElement, cell);
+  private removeActionIcons(NamedNode: NamedElement, cell: mxgraph.mxCell) {
+    this.mxGraphShapeOverlayService.removeShapeActionIconsByLoading(NamedNode, cell);
   }
 }

@@ -13,14 +13,14 @@
 
 import {Component, OnInit} from '@angular/core';
 import {FormControl} from '@angular/forms';
-import {BaseMetaModelElement, CanExtend, DefaultCharacteristic, DefaultProperty} from '@ame/meta-model';
+import {DefaultCharacteristic, DefaultProperty, HasExtends, NamedElement} from '@esmf/aspect-model-loader';
 import {InputFieldComponent} from '../../input-field.component';
 
 @Component({
   selector: 'ame-preferred-name-input-field',
   templateUrl: './preferred-name-input-field.component.html',
 })
-export class PreferredNameInputFieldComponent extends InputFieldComponent<BaseMetaModelElement> implements OnInit {
+export class PreferredNameInputFieldComponent extends InputFieldComponent<NamedElement> implements OnInit {
   public fieldName = 'preferredName';
 
   ngOnInit(): void {
@@ -28,15 +28,15 @@ export class PreferredNameInputFieldComponent extends InputFieldComponent<BaseMe
   }
 
   getCurrentValue(key: string, locale: string) {
-    if (this.metaModelElement instanceof DefaultCharacteristic && this.metaModelElement.isPredefined()) {
+    if (this.metaModelElement instanceof DefaultCharacteristic && this.metaModelElement.isPredefined) {
       return this.metaModelElement?.getPreferredName(locale) || '';
     }
 
-    if (this.metaModelElement instanceof CanExtend) {
+    if (this.metaModelElement instanceof HasExtends) {
       return (
         this.previousData?.[key] ||
         this.metaModelElement?.getPreferredName(locale) ||
-        this.metaModelElement.extendedPreferredName?.get(locale) ||
+        this.metaModelElement.extends_.preferredNames?.get(locale) ||
         ''
       );
     }

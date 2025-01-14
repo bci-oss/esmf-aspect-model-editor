@@ -11,11 +11,11 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {mxgraph} from 'mxgraph-factory';
 import {Injectable} from '@angular/core';
+import {DefaultConstraint, DefaultTrait} from '@esmf/aspect-model-loader';
+import {mxgraph} from 'mxgraph-factory';
 import {MxGraphAttributeService} from '.';
 import {MxGraphHelper} from '../helpers';
-import {DefaultConstraint, DefaultTrait} from '@ame/meta-model';
 
 @Injectable()
 export class MxGraphShapeSelectorService {

@@ -13,15 +13,15 @@
 
 import {ModelApiService} from '@ame/api';
 import {NotificationsService} from '@ame/shared';
-import {Component, inject} from '@angular/core';
-import {MatDialogTitle, MatDialogContent, MatDialogActions, MatDialogClose, MatDialogRef} from '@angular/material/dialog';
-import {NAMESPACES_SESSION, WorkspaceSummaryComponent} from '../../../shared';
-import {MissingElement, NamespacesSessionInterface} from '../../../shared/models';
 import {LanguageTranslationService} from '@ame/translation';
-import {TranslateModule} from '@ngx-translate/core';
-import {MatButton} from '@angular/material/button';
-import {ClipboardCopyButtonComponent} from '../../../shared/components/clipboard-copy-button/clipboard-copy-button.component';
 import {CdkScrollable} from '@angular/cdk/scrolling';
+import {Component, inject} from '@angular/core';
+import {MatButton} from '@angular/material/button';
+import {MatDialogActions, MatDialogClose, MatDialogContent, MatDialogRef, MatDialogTitle} from '@angular/material/dialog';
+import {TranslateModule} from '@ngx-translate/core';
+import {NAMESPACES_SESSION, WorkspaceSummaryComponent} from '../../../shared';
+import {ClipboardCopyButtonComponent} from '../../../shared/components/clipboard-copy-button/clipboard-copy-button.component';
+import {MissingElement, NamespacesSessionInterface} from '../../../shared/models';
 
 @Component({
   templateUrl: './summary.component.html',

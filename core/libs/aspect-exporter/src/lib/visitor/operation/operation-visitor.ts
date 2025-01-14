@@ -11,12 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ListProperties, RdfListService, RdfNodeService} from '@ame/aspect-exporter';
+import {RdfService} from '@ame/rdf/services';
 import {Injectable} from '@angular/core';
+import {DefaultOperation} from '@esmf/aspect-model-loader';
 import {DataFactory, Store} from 'n3';
 import {BaseVisitor} from '../base-visitor';
-import {ListProperties, RdfListService, RdfNodeService} from '@ame/aspect-exporter';
-import {DefaultOperation} from '@ame/meta-model';
-import {RdfService} from '@ame/rdf/services';
 
 @Injectable()
 export class OperationVisitor extends BaseVisitor<DefaultOperation> {
@@ -52,20 +52,20 @@ export class OperationVisitor extends BaseVisitor<DefaultOperation> {
         language,
         value: operation.getDescription(language),
       })),
-      see: operation.getSeeReferences() || [],
+      see: operation.getSee() || [],
     });
 
     if (operation.input?.length) {
       this.rdfListService.push(operation, ...operation.input);
       for (const input of operation.input) {
-        this.setPrefix(input.property.aspectModelUrn);
+        this.setPrefix(input.aspectModelUrn);
       }
     } else {
       this.rdfListService.createEmpty(operation, ListProperties.input);
     }
 
     if (operation.output) {
-      const property = operation.output.property;
+      const property = operation.output;
 
       this.setPrefix(property.aspectModelUrn);
       this.store.addQuad(

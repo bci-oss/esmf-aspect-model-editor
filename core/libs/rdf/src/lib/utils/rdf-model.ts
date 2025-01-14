@@ -11,12 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {DataFactory, NamedNode, Prefixes, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store, Util, Writer} from 'n3';
-import * as locale from 'locale-codes';
 import {InstantiatorListElement} from '@ame/rdf/models';
-import {Samm, SammC, SammE, SammU} from '@ame/vocabulary';
 import {RdfModelUtil} from '@ame/rdf/utils/rdf-model-util';
 import {config} from '@ame/shared';
+import {Samm, SammC, SammE, SammU} from '@esmf/aspect-model-loader';
+import * as locale from 'locale-codes';
+import {DataFactory, NamedNode, Prefixes, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store, Util, Writer} from 'n3';
 
 interface QuadComponents {
   subject?: Quad_Subject;
@@ -25,7 +25,7 @@ interface QuadComponents {
   graph?: Quad_Graph;
 }
 
-export class RdfModel {
+export class RdfModel_R {
   private _store: Store;
   private _prefixes: Prefixes;
   private _isExternalRef = false;
@@ -109,7 +109,7 @@ export class RdfModel {
     this._loadedRdfModel = loadedRdfModel;
   }
 
-  public initRdfModel(store: Store, prefixes: Prefixes, mode: 'empty' | 'loaded' = 'loaded'): RdfModel {
+  public initRdfModel(store: Store, prefixes: Prefixes, mode: 'empty' | 'loaded' = 'loaded'): RdfModel_R {
     this._store = store;
     this._prefixes = prefixes;
 
@@ -300,9 +300,9 @@ export class RdfModel {
           blankNode: true,
           optional: blankNodeElements.find(e => e.predicate.value === this.samm.OptionalProperty().value)?.object,
           notInPayload: blankNodeElements.find(e => e.predicate.value === this.samm.NotInPayloadProperty().value)?.object,
-          payloadName: blankNodeElements.find(e => e.predicate.value === this.samm.payloadNameProperty().value)?.object,
-          quad: blankNodeElements.find(e => e.predicate.value === this.samm.PropertyProperty().value)?.object || quad.subject,
-          extends: blankNodeElements.find(e => e.predicate.value === this.samm.ExtendsProperty().value)?.object,
+          payloadName: blankNodeElements.find(e => e.predicate.value === this.samm.PayloadNameProperty().value)?.object,
+          quad: blankNodeElements.find(e => e.predicate.value === this.samm.Property().value)?.object || quad.subject,
+          extends: blankNodeElements.find(e => e.predicate.value === this.samm.Extends().value)?.object,
         });
         continue;
       }

@@ -11,12 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ElementType, sammElements} from '@ame/shared';
-import {Component, inject} from '@angular/core';
-import {SidebarStateService} from '@ame/sidebar';
-import {ModelService} from '@ame/rdf/services';
 import {MxGraphService} from '@ame/mx-graph';
-import {Aspect} from '@ame/meta-model';
+import {ModelService} from '@ame/rdf/services';
+import {ElementType, sammElements} from '@ame/shared';
+import {SidebarStateService} from '@ame/sidebar';
+import {Component, inject} from '@angular/core';
+import {Aspect} from '@esmf/aspect-model-loader';
 
 @Component({
   selector: 'ame-sidebar-samm-elements',

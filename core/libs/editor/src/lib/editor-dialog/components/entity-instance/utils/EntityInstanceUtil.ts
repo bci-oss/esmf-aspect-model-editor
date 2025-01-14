@@ -11,20 +11,11 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {FormArray, FormControl, FormGroup} from '@angular/forms';
-import {
-  DefaultAbstractProperty,
-  DefaultEntity,
-  DefaultEntityInstance,
-  DefaultProperty,
-  DefaultTrait,
-  Entity,
-  EntityInstanceProperty,
-  OverWrittenProperty,
-} from '@ame/meta-model';
 import {CachedFile} from '@ame/cache';
-import {extractNamespace} from '@ame/utils';
 import {isDataTypeLangString} from '@ame/shared';
+import {extractNamespace} from '@ame/utils';
+import {FormArray, FormControl, FormGroup} from '@angular/forms';
+import {DefaultEntity, DefaultEntityInstance, DefaultProperty, DefaultTrait, Entity} from '@esmf/aspect-model-loader';
 
 export class EntityInstanceUtil {
   /**
@@ -69,7 +60,7 @@ export class EntityInstanceUtil {
     const characteristic =
       property?.characteristic instanceof DefaultTrait ? property.characteristic.baseCharacteristic : property?.characteristic;
 
-    return entityValue.entity.aspectModelUrn === characteristic?.dataType?.['aspectModelUrn'];
+    return entityValue.type.aspectModelUrn === characteristic?.dataType?.['aspectModelUrn'];
   };
 
   /**
@@ -177,13 +168,14 @@ export class EntityInstanceUtil {
     const characteristic =
       property?.characteristic instanceof DefaultTrait ? property.characteristic.baseCharacteristic : property.characteristic;
     const urn = `${property.aspectModelUrn.split('#')?.[0]}#${entityValueName}`;
-    const newEntityValue = new DefaultEntityInstance(
-      property.metaModelVersion,
-      entityValueName,
-      urn,
-      characteristic?.dataType as DefaultEntity,
-      (characteristic?.dataType?.['properties'] as OverWrittenProperty[]) || [],
-    );
+    const newEntityValue = new DefaultEntityInstance({
+      metaModelVersion: property.metaModelVersion,
+      name: entityValueName,
+      aspectModelUrn: urn,
+      type: characteristic?.dataType as DefaultEntity,
+      // TODO check assertions type
+      assertions: characteristic?.dataType?.['properties'] || [],
+    });
 
     const newEntityValues = form.get('newEntityValues');
     if (newEntityValues?.value) {
@@ -209,10 +201,10 @@ export class EntityInstanceUtil {
 
   /**
    * Checks if a given property is a default property with a language string.
-   * @param {OverWrittenProperty<DefaultProperty | DefaultAbstractProperty>} element - The property to check.
+   * @param {DefaultProperty} property - The property to check.
    * @returns {boolean} True if the property is a default property with a language string, false otherwise.
    */
-  static isDefaultPropertyWithLangString(element: OverWrittenProperty<DefaultProperty | DefaultAbstractProperty>): boolean {
-    return element.property instanceof DefaultProperty && isDataTypeLangString(element.property);
+  static isDefaultPropertyWithLangString(property: DefaultProperty): boolean {
+    return property instanceof DefaultProperty && isDataTypeLangString(property);
   }
 }

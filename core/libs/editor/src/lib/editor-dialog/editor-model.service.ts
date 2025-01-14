@@ -10,22 +10,20 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {BehaviorSubject, Observable} from 'rxjs';
-import {Injectable} from '@angular/core';
-import {BaseMetaModelElement} from '@ame/meta-model';
-import {CharacteristicInstantiator, MetaModelElementInstantiator} from '@ame/instantiator';
 import {ModelService} from '@ame/rdf/services';
+import {Injectable} from '@angular/core';
+import {NamedElement} from '@esmf/aspect-model-loader';
+import {BehaviorSubject, Observable} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class EditorModelService {
-  protected metaModelElement: BaseMetaModelElement;
+  protected metaModelElement: NamedElement;
   protected dataChangedEventQueue = [];
-  private metaModelElementSubject = new BehaviorSubject<BaseMetaModelElement>(null);
+  private metaModelElementSubject = new BehaviorSubject<NamedElement>(null);
   private saveButtonEnabled = true;
-  private characteristicInstantiator: CharacteristicInstantiator;
-  public originalMetaModel: BaseMetaModelElement;
+  public originalMetaModel: NamedElement;
 
   constructor(private modelService: ModelService) {
     this.metaModelElementSubject.asObservable().subscribe(newMetaModelElement => {
@@ -49,23 +47,17 @@ export class EditorModelService {
   }
 
   isReadOnly(): boolean {
-    return this.metaModelElement?.isPredefined() || this.metaModelElement?.isExternalReference();
+    return this.metaModelElement?.isPredefined || this.metaModelElement?.isExternalReference();
   }
 
-  getMetaModelElement(): Observable<BaseMetaModelElement> {
+  getMetaModelElement(): Observable<NamedElement> {
     return this.metaModelElementSubject.asObservable();
   }
 
-  _updateMetaModelElement(metaModelElement: BaseMetaModelElement): void {
+  _updateMetaModelElement(metaModelElement: NamedElement): void {
     if (metaModelElement === null) {
       this.metaModelElementSubject.next(metaModelElement);
       return;
-    }
-
-    if (!this.characteristicInstantiator) {
-      this.characteristicInstantiator = new CharacteristicInstantiator(
-        new MetaModelElementInstantiator(this.modelService.currentRdfModel, null),
-      );
     }
 
     this.dataChangedEventQueue = [];

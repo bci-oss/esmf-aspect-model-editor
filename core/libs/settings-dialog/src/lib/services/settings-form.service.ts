@@ -10,14 +10,15 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {Injectable} from '@angular/core';
-import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators} from '@angular/forms';
-import {ConfigurationService, NamespaceConfiguration, SammLanguageSettingsService} from '@ame/settings-dialog';
-import {LanguageTranslationService} from '@ame/translation';
-import * as locale from 'locale-codes';
-import {GeneralConfig} from '@ame/shared';
+import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {ModelService} from '@ame/rdf/services';
-import {RdfModel} from '@ame/rdf/utils';
+import {ConfigurationService, NamespaceConfiguration, SammLanguageSettingsService} from '@ame/settings-dialog';
+import {GeneralConfig} from '@ame/shared';
+import {LanguageTranslationService} from '@ame/translation';
+import {inject, Injectable} from '@angular/core';
+import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators} from '@angular/forms';
+import {RdfModel} from '@esmf/aspect-model-loader';
+import * as locale from 'locale-codes';
 import {
   AutomatedWorkflowUpdateStrategy,
   EditorConfigurationUpdateStrategy,
@@ -41,8 +42,12 @@ export const versionFormatValidator = (): ValidatorFn => createRegexValidator(/^
   providedIn: 'root',
 })
 export class SettingsFormService {
+  private loadedFilesService = inject(LoadedFilesService);
+
+  private get currentLoadedFile(): NamespaceFile {
+    return this.loadedFilesService.currentLoadedFile;
+  }
   private form: FormGroup;
-  private loadedRdfModel: RdfModel;
   private namespace: string;
   private version: string;
   private strategies: Array<SettingsUpdateStrategy>;
@@ -70,14 +75,9 @@ export class SettingsFormService {
   }
 
   public initializeForm(): void {
-    this.loadRdfModel();
     this.initializeNamespaceAndVersion();
     this.createForm();
     this.populateLanguages();
-  }
-
-  private loadRdfModel(): void {
-    this.loadedRdfModel = this.modelService.getLoadedAspectModel().rdfModel;
   }
 
   private initializeNamespaceAndVersion(): void {
@@ -87,11 +87,11 @@ export class SettingsFormService {
   }
 
   private parseRdfModelFilename(): Array<string> {
-    if (!this.loadedRdfModel) {
+    if (!this.currentLoadedFile) {
       return ['', '', ''];
     }
 
-    return this.loadedRdfModel?.absoluteAspectModelFileName.replace('.ttl', '').split(':');
+    return this.currentLoadedFile?.absoluteName.replace('.ttl', '').split(':');
   }
 
   private createForm(): void {
@@ -180,7 +180,7 @@ export class SettingsFormService {
     return {
       oldNamespace: this.namespace,
       oldVersion: this.version,
-      rdfModel: this.loadedRdfModel,
+      rdfModel: this.currentLoadedFile.rdfModel,
       newNamespace: settings.namespace,
       newVersion: settings.version,
     } as NamespaceConfiguration;
@@ -191,7 +191,7 @@ export class SettingsFormService {
   }
 
   getLoadedRdfModel(): RdfModel {
-    return this.loadedRdfModel;
+    return this.currentLoadedFile.rdfModel;
   }
 
   setNamespace(value: string): void {

@@ -20,7 +20,7 @@
     </button>
   }
 
-  <mat-autocomplete #auto="matAutocomplete" class="property-element">
+  <mat-autocomplete class="property-element" #auto="matAutocomplete">
     @if (filteredProperties$ | async; as filteredProperties) {
       <mat-optgroup label="Property">
         @if (!filteredProperties.length) {

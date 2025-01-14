@@ -12,4 +12,5 @@
  */
 
 export * from './lib/cached-file';
+export * from './lib/loaded-files.service';
 export * from './lib/namespaces-cache.service';

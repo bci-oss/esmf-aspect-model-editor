@@ -11,22 +11,15 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {
-  Base,
-  BaseMetaModelElement,
-  CanExtend,
-  DefaultAspect,
-  DefaultEntityInstance,
-  DefaultEnumeration,
-  EntityInstanceProperty,
-} from '@ame/meta-model';
-import {mxgraph} from 'mxgraph-factory';
-import {NamespacesCacheService} from '@ame/cache';
+import {ModelApiService} from '@ame/api';
+import {LoadedFilesService, NamespacesCacheService} from '@ame/cache';
+import {EditorService} from '@ame/editor';
 import {MxGraphHelper} from '@ame/mx-graph';
 import {ModelService, RdfService} from '@ame/rdf/services';
-import {EditorService} from '@ame/editor';
-import {ModelApiService} from '@ame/api';
 import {inject} from '@angular/core';
+import {DefaultAspect, DefaultEntityInstance, DefaultEnumeration, NamedElement} from '@esmf/aspect-model-loader';
+import {mxgraph} from 'mxgraph-factory';
+import {CanExtend} from '../aspect-meta-model';
 
 export abstract class BaseModelService {
   protected rdfService: RdfService = inject(RdfService);
@@ -34,6 +27,7 @@ export abstract class BaseModelService {
   protected modelService: ModelService = inject(ModelService);
   protected editorService: EditorService = inject(EditorService);
   protected modelApiService: ModelApiService = inject(ModelApiService);
+  protected loadedFilesService: LoadedFilesService = inject(LoadedFilesService);
 
   get currentCachedFile() {
     return this.namespacesCacheService.currentCachedFile;
@@ -43,7 +37,11 @@ export abstract class BaseModelService {
     return this.rdfService.currentRdfModel;
   }
 
-  abstract isApplicable(metaModelElement: BaseMetaModelElement): boolean;
+  get loadedFile() {
+    return this.loadedFilesService.currentLoadedFile;
+  }
+
+  abstract isApplicable(metaModelElement: NamedElement): boolean;
 
   update(cell: mxgraph.mxCell, form: {[key: string]: any}) {
     const modelElement = MxGraphHelper.getModelElement(cell);
@@ -53,8 +51,8 @@ export abstract class BaseModelService {
     // Add common operations
 
     // update name
-    const aspect = Object.assign({}, this.modelService?.loadedAspect);
-    const aspectModelUrn = this.modelService.currentRdfModel.getAspectModelUrn();
+    const aspect: DefaultAspect = Object.assign({}, this.loadedFile.aspect);
+    const aspectModelUrn = this.loadedFile.rdfModel.getAspectModelUrn();
 
     this.currentCachedFile.updateCachedElementKey(`${aspectModelUrn}${modelElement.name}`, `${aspectModelUrn}${form.name}`);
 
@@ -62,7 +60,7 @@ export abstract class BaseModelService {
     modelElement.aspectModelUrn = `${aspectModelUrn}${form.name}`;
 
     if (aspect && modelElement instanceof DefaultAspect) {
-      this.currentRdfModel.setAspect(modelElement.aspectModelUrn);
+      this.loadedFilesService.currentLoadedFile.aspect = aspect;
     }
 
     // update descriptions (multiple locales)
@@ -79,7 +77,7 @@ export abstract class BaseModelService {
     // Add common operations
     const modeElement = MxGraphHelper.getModelElement(cell);
     for (const edge of (cell.edges?.length && cell.edges) || []) {
-      const sourceNode = MxGraphHelper.getModelElement<Base>(edge.source);
+      const sourceNode = MxGraphHelper.getModelElement<NamedElement>(edge.source);
       if (sourceNode && !(sourceNode instanceof DefaultEnumeration) && !sourceNode.isExternalReference()) {
         this.currentCachedFile.removeElement(modeElement.aspectModelUrn);
         sourceNode.delete(modeElement);
@@ -91,7 +89,7 @@ export abstract class BaseModelService {
     }
   }
 
-  protected updateSee(modelElement: BaseMetaModelElement, form: {[key: string]: any}) {
+  protected updateSee(modelElement: NamedElement, form: {[key: string]: any}) {
     const newSeeValue = form.see instanceof Array ? form.see : form.see?.split(',');
     if (modelElement instanceof CanExtend) {
       if (newSeeValue?.join(',') !== modelElement.extendedSee?.join(',')) {
@@ -104,7 +102,7 @@ export abstract class BaseModelService {
     }
   }
 
-  protected updateDescriptionWithLocales(modelElement: BaseMetaModelElement, form: {[key: string]: any}) {
+  protected updateDescriptionWithLocales(modelElement: NamedElement, form: {[key: string]: any}) {
     Object.keys(form).forEach(key => {
       if (!key.startsWith('description')) {
         return;
@@ -123,7 +121,7 @@ export abstract class BaseModelService {
     });
   }
 
-  protected updatePreferredWithLocales(modelElement: BaseMetaModelElement, form: {[key: string]: any}) {
+  protected updatePreferredWithLocales(modelElement: NamedElement, form: {[key: string]: any}) {
     Object.keys(form).forEach(key => {
       if (!key.startsWith('preferredName')) {
         return;
@@ -141,14 +139,14 @@ export abstract class BaseModelService {
     });
   }
 
-  protected addNewEntityValues(newEntityValues: DefaultEntityInstance[], parent: BaseMetaModelElement) {
+  protected addNewEntityValues(newEntityValues: DefaultEntityInstance[], parent: NamedElement) {
     for (const entityValue of newEntityValues) {
       MxGraphHelper.establishRelation(parent, entityValue);
       this.currentCachedFile.resolveElement(entityValue);
     }
   }
 
-  protected deleteEntityValue(entityValue: DefaultEntityInstance, parent: BaseMetaModelElement) {
+  protected deleteEntityValue(entityValue: DefaultEntityInstance, parent: NamedElement) {
     MxGraphHelper.removeRelation(parent, entityValue);
     // delete the element
     this.namespacesCacheService.currentCachedFile.removeElement(entityValue.aspectModelUrn);

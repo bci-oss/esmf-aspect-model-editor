@@ -11,19 +11,19 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, Inject, inject, NgZone, OnInit} from '@angular/core';
 import {NamespaceStatus} from '@ame/api';
-import {MigratorService} from '../../migrator.service';
-import {Router} from '@angular/router';
 import {EditorService} from '@ame/editor';
-import {RdfModel} from '@ame/rdf/utils';
 import {APP_CONFIG, AppConfig, ElectronSignals, ElectronSignalsService} from '@ame/shared';
-import {TranslateModule} from '@ngx-translate/core';
-import {KeyValuePipe} from '@angular/common';
-import {MatButton} from '@angular/material/button';
-import {MatIcon} from '@angular/material/icon';
 import {CdkScrollable} from '@angular/cdk/scrolling';
-import {MatDialogTitle, MatDialogContent, MatDialogActions} from '@angular/material/dialog';
+import {KeyValuePipe} from '@angular/common';
+import {Component, Inject, inject, NgZone, OnInit} from '@angular/core';
+import {MatButton} from '@angular/material/button';
+import {MatDialogActions, MatDialogContent, MatDialogTitle} from '@angular/material/dialog';
+import {MatIcon} from '@angular/material/icon';
+import {Router} from '@angular/router';
+import {RdfModel} from '@esmf/aspect-model-loader';
+import {TranslateModule} from '@ngx-translate/core';
+import {MigratorService} from '../../migrator.service';
 
 interface CompatibleAmeSammVersions {
   sammVersion: string;
@@ -73,7 +73,8 @@ export class MigrationStatusComponent implements OnInit {
     this.hasErrors = this.migrationStatus.length <= 0;
 
     this.editorService.loadExternalModels().subscribe(rdfModels => {
-      const erroredModels = rdfModels.filter(rdfModel => rdfModel?.hasErrors);
+      // @todo check this functionality
+      const erroredModels = rdfModels.filter(rdfModel => rdfModel); //?.hasErrors);
       this.hasErrors ||= erroredModels.length > 0;
       this.setFilesWithError(erroredModels);
 
@@ -109,15 +110,16 @@ export class MigrationStatusComponent implements OnInit {
           }
           continue;
         }
+        // @TODO rdfModel should be NamespaceFile
+        const hasErroredRdfModel = false; // remove after todo
+        // const hasErroredRdfModel = rdfModels.some(rdfModel => {
+        //   if (rdfModel.aspectModelFileName !== fileStatus.name) {
+        //     return false;
+        //   }
 
-        const hasErroredRdfModel = rdfModels.some(rdfModel => {
-          if (rdfModel.aspectModelFileName !== fileStatus.name) {
-            return false;
-          }
-
-          const [namespace] = rdfModel.aspectUrn.split('#');
-          return namespace.endsWith(status.namespace);
-        });
+        //   const [namespace] = rdfModel.aspectUrn.split('#');
+        //   return namespace.endsWith(status.namespace);
+        // });
 
         if (hasErroredRdfModel) {
           if (!this.filteredErrorFiles[status.namespace]) {

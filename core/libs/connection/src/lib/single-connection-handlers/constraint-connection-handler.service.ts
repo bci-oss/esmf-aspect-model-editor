@@ -12,11 +12,12 @@
  */
 
 import {FiltersService} from '@ame/loader-filters';
-import {DefaultConstraint, ModelElementNamingService, DefaultCharacteristic} from '@ame/meta-model';
-import {MxGraphService, MxGraphHelper} from '@ame/mx-graph';
+import {ModelElementNamingService} from '@ame/meta-model';
+import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
 import {Injectable} from '@angular/core';
-import {SingleShapeConnector} from '../models';
+import {DefaultCharacteristic, DefaultConstraint} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
+import {SingleShapeConnector} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -29,11 +30,12 @@ export class ConstraintConnectionHandler implements SingleShapeConnector<Default
   ) {}
 
   public connect(constraint: DefaultConstraint, source: mxgraph.mxCell) {
-    const defaultCharacteristic = DefaultCharacteristic.createInstance();
+    const defaultCharacteristic = new DefaultCharacteristic({name: '', metaModelVersion: '', aspectModelUrn: ''});
     const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(defaultCharacteristic);
     const child = this.mxGraphService.renderModelElement(
       this.filtersService.createNode(metaModelElement, {parent: MxGraphHelper.getModelElement(source)}),
     );
+    // @ TODO update functionality
     constraint.update(defaultCharacteristic);
     this.mxGraphService.assignToParent(child, source);
     this.mxGraphService.formatCell(source);

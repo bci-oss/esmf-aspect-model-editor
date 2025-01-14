@@ -11,12 +11,11 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable} from '@angular/core';
-import {mxgraph} from 'mxgraph-factory';
-import {BaseModelService} from './base-model-service';
+import {FiltersService} from '@ame/loader-filters';
 import {ConstraintRenderService, MxGraphAttributeService, MxGraphHelper, MxGraphService, MxGraphShapeOverlayService} from '@ame/mx-graph';
-import {Base, BaseMetaModelElement, DefaultConstraint, DefaultTrait} from '@ame/meta-model';
+import {Injectable} from '@angular/core';
 import {
+  DefaultConstraint,
   DefaultEncodingConstraint,
   DefaultFixedPointConstraint,
   DefaultLanguageConstraint,
@@ -24,8 +23,11 @@ import {
   DefaultLocaleConstraint,
   DefaultRangeConstraint,
   DefaultRegularExpressionConstraint,
-} from '../aspect-meta-model';
-import {FiltersService} from '@ame/loader-filters';
+  DefaultTrait,
+  NamedElement,
+} from '@esmf/aspect-model-loader';
+import {mxgraph} from 'mxgraph-factory';
+import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
 export class ConstraintModelService extends BaseModelService {
@@ -63,7 +65,7 @@ export class ConstraintModelService extends BaseModelService {
     this.constraintRenderer.update({cell});
   }
 
-  isApplicable(metaModelElement: BaseMetaModelElement): boolean {
+  isApplicable(metaModelElement: NamedElement): boolean {
     return metaModelElement instanceof DefaultConstraint;
   }
 
@@ -79,7 +81,7 @@ export class ConstraintModelService extends BaseModelService {
 
   private updateModelOfParent(cell: mxgraph.mxCell, value: any) {
     this.mxGraphAttributeService.graph.getIncomingEdges(cell).forEach(cellParent => {
-      const parentModel = MxGraphHelper.getModelElement<Base>(cellParent.source);
+      const parentModel = MxGraphHelper.getModelElement<NamedElement>(cellParent.source);
       parentModel?.update(value);
     });
   }

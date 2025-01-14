@@ -11,15 +11,14 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable} from '@angular/core';
-import {ListProperties, RdfListService} from '../../rdf-list';
-import {BaseVisitor} from '../base-visitor';
-import {DefaultCharacteristic, DefaultEntity} from '@ame/meta-model';
 import {MxGraphService} from '@ame/mx-graph';
-import {RdfNodeService} from '../../rdf-node';
 import {RdfService} from '@ame/rdf/services';
+import {Injectable} from '@angular/core';
+import {DefaultCharacteristic, DefaultEntity, Samm} from '@esmf/aspect-model-loader';
 import {DataFactory, Store} from 'n3';
-import {Samm} from '@ame/vocabulary';
+import {ListProperties, RdfListService} from '../../rdf-list';
+import {RdfNodeService} from '../../rdf-node';
+import {BaseVisitor} from '../base-visitor';
 
 @Injectable()
 export class EntityVisitor extends BaseVisitor<DefaultEntity> {
@@ -36,7 +35,7 @@ export class EntityVisitor extends BaseVisitor<DefaultEntity> {
   }
 
   visit(entity: DefaultEntity): DefaultEntity {
-    if (entity.isPredefined()) {
+    if (entity.isPredefined) {
       return null;
     }
 
@@ -61,13 +60,13 @@ export class EntityVisitor extends BaseVisitor<DefaultEntity> {
         language,
         value: entity.getDescription(language),
       })),
-      see: entity.getSeeReferences() || [],
+      see: entity.getSee() || [],
     });
 
     if (entity.properties?.length) {
       this.rdfListService.push(entity, ...entity.properties);
       for (const property of entity.properties) {
-        !property.property?.extendedElement && this.setPrefix(property.property.aspectModelUrn);
+        !property?._extends && this.setPrefix(property.aspectModelUrn);
       }
     } else {
       this.rdfListService.createEmpty(entity, ListProperties.properties);
@@ -83,13 +82,13 @@ export class EntityVisitor extends BaseVisitor<DefaultEntity> {
   }
 
   private updateExtends(entity: DefaultEntity) {
-    if (entity.extendedElement?.aspectModelUrn) {
+    if (entity.getExtends()?.aspectModelUrn) {
       this.store.addQuad(
         DataFactory.namedNode(entity.aspectModelUrn),
-        this.samm.ExtendsProperty(),
-        DataFactory.namedNode(entity.extendedElement.aspectModelUrn),
+        this.samm.Extends(),
+        DataFactory.namedNode(entity.getExtends().aspectModelUrn),
       );
-      this.setPrefix(entity.extendedElement.aspectModelUrn);
+      this.setPrefix(entity.getExtends().aspectModelUrn);
     }
   }
 }

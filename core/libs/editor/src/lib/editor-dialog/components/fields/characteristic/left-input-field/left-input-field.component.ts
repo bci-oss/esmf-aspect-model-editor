@@ -11,15 +11,15 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {NamespacesCacheService} from '@ame/cache';
+import {RdfService} from '@ame/rdf/services';
+import {NotificationsService} from '@ame/shared';
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormControl, Validators} from '@angular/forms';
-import {map, Observable} from 'rxjs';
-import {InputFieldComponent} from '../../input-field.component';
-import {Characteristic, DefaultCharacteristic, DefaultEither} from '@ame/meta-model';
-import {NamespacesCacheService} from '@ame/cache';
+import {Characteristic, DefaultCharacteristic, DefaultEither} from '@esmf/aspect-model-loader';
+import {Observable, map} from 'rxjs';
 import {EditorDialogValidators} from '../../../../validators';
-import {NotificationsService} from '@ame/shared';
-import {RdfService} from '@ame/rdf/services';
+import {InputFieldComponent} from '../../input-field.component';
 
 @Component({
   selector: 'ame-left-input-field',
@@ -136,7 +136,12 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
       return;
     }
 
-    const newCharacteristic = new DefaultCharacteristic(this.metaModelElement.metaModelVersion, urn, characteristicName, null);
+    const newCharacteristic = new DefaultCharacteristic({
+      metaModelVersion: this.metaModelElement.metaModelVersion,
+      aspectModelUrn: urn,
+      name: characteristicName,
+      dataType: null,
+    });
     this.parentForm.setControl('leftCharacteristic', new FormControl(newCharacteristic));
 
     this.leftControl.patchValue(characteristicName);

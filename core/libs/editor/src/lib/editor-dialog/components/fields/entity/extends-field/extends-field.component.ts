@@ -11,13 +11,13 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MetaModelElementInstantiator, PredefinedEntityInstantiator} from '@ame/instantiator';
-import {DefaultAbstractEntity, DefaultEntity} from '@ame/meta-model';
+import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {RdfService} from '@ame/rdf/services';
 import {NotificationsService} from '@ame/shared';
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormControl} from '@angular/forms';
-import {combineLatest, map, Observable, of} from 'rxjs';
+import {DefaultEntity, Entity, getAllPredefinedEntities} from '@esmf/aspect-model-loader';
+import {Observable, combineLatest, map, of} from 'rxjs';
 import {EditorDialogValidators} from '../../../../validators';
 import {InputFieldComponent} from '../../input-field.component';
 
@@ -34,7 +34,7 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
   public extendsControl: FormControl;
   public predefinedEntities: {
     name: string;
-    entity: DefaultAbstractEntity;
+    entity: Entity;
     urn: string;
     description: string;
     complex: boolean;
@@ -42,13 +42,18 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
   }[];
 
   public get isAbstractEntity() {
-    return this.metaModelElement instanceof DefaultAbstractEntity;
+    return (this.metaModelElement as DefaultEntity).isAbstractEntity();
+  }
+
+  get currentFile(): NamespaceFile {
+    return this.loadedFilesService.currentLoadedFile;
   }
 
   constructor(
     private notificationsService: NotificationsService,
     public rdfService: RdfService,
     private validators: EditorDialogValidators,
+    private loadedFilesService: LoadedFilesService,
   ) {
     super();
     this.fieldName = 'extends';
@@ -56,11 +61,10 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
 
   ngOnInit(): void {
     this.subscription = this.getMetaModelData().subscribe(() => this.setExtendsControl());
-    const predefinedEntities = new PredefinedEntityInstantiator(new MetaModelElementInstantiator(this.rdfService.currentRdfModel, null))
-      .entityInstances;
+    const predefinedEntities = getAllPredefinedEntities();
     this.predefinedEntities = Object.values(predefinedEntities)
       .map(value => {
-        const entity = value();
+        const entity = value;
 
         return {
           name: entity.name,
@@ -70,7 +74,7 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
           entity,
         };
       })
-      .filter(({entity}) => (this.metaModelElement instanceof DefaultAbstractEntity ? entity instanceof DefaultAbstractEntity : true))
+      .filter(({entity}) => (entity as DefaultEntity).isAbstractEntity())
       .sort(({name: a}, {name: b}) => (a > b ? 1 : -1));
   }
 
@@ -93,13 +97,10 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
       new FormControl(
         {
           value,
-          disabled: !!value || this.metaModelElement.isExternalReference() || this.metaModelElement.isPredefined(),
+          disabled: !!value || this.metaModelElement.isExternalReference() || this.metaModelElement.isPredefined,
         },
         {
-          validators: [
-            this.validators.duplicateNameWithDifferentType(this.metaModelElement, DefaultAbstractEntity),
-            this.validators.duplicateNameWithDifferentType(this.metaModelElement, DefaultEntity),
-          ],
+          validators: [this.validators.duplicateNameWithDifferentType(this.metaModelElement, DefaultEntity)],
         },
       ),
     );
@@ -128,16 +129,10 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
       return; // happens on reset form
     }
 
-    let foundEntity: DefaultEntity | DefaultAbstractEntity = this.currentCachedFile
-      .getCachedAbstractEntities()
-      .find(entity => entity.aspectModelUrn === newValue.urn);
+    let foundEntity: DefaultEntity = this.currentFile.cachedFile.get(newValue.urn);
 
     if (!foundEntity) {
-      foundEntity = this.currentCachedFile.getCachedEntities().find(entity => entity.aspectModelUrn === newValue.urn) as DefaultEntity;
-    }
-
-    if (!foundEntity) {
-      foundEntity = this.namespacesCacheService.findElementOnExtReference<DefaultEntity>(newValue.urn);
+      foundEntity = this.loadedFilesService.getElement(newValue.urn);
     }
 
     if (!foundEntity) {
@@ -164,7 +159,13 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
       return;
     }
 
-    const newAbstractEntity = new DefaultAbstractEntity(this.metaModelElement.metaModelVersion, urn, entityName, []);
+    // const newAbstractEntity = new DefaultAbstractEntity(this.metaModelElement.metaModelVersion, urn, entityName, []);
+    const newAbstractEntity = new DefaultEntity({
+      isAbstract: true,
+      name: entityName,
+      aspectModelUrn: urn,
+      metaModelVersion: this.metaModelElement.metaModelVersion,
+    });
     this.parentForm.setControl('extends', new FormControl(newAbstractEntity));
 
     this.extendsValueControl.patchValue(entityName);
@@ -185,7 +186,11 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
       return;
     }
 
-    const newAbstractEntity = new DefaultEntity(this.metaModelElement.metaModelVersion, urn, entityName, []);
+    const newAbstractEntity = new DefaultEntity({
+      name: entityName,
+      aspectModelUrn: urn,
+      metaModelVersion: this.metaModelElement.metaModelVersion,
+    });
     this.parentForm.setControl('extends', new FormControl(newAbstractEntity));
 
     this.extendsValueControl.patchValue(entityName);

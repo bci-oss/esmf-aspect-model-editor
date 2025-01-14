@@ -11,10 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable, inject} from '@angular/core';
+import {LoadedFilesService, NamespacesCacheService} from '@ame/cache';
 import {ShapeConnectorService} from '@ame/connection';
+import {FiltersService} from '@ame/loader-filters';
+import {SammLanguageSettingsService} from '@ame/settings-dialog';
+import {Injectable, inject} from '@angular/core';
 import {
-  BaseMetaModelElement,
   DefaultCharacteristic,
   DefaultCollection,
   DefaultEither,
@@ -25,9 +27,9 @@ import {
   DefaultScalar,
   DefaultStructuredValue,
   DefaultUnit,
+  NamedElement,
   Type,
-} from '@ame/meta-model';
-import {SammLanguageSettingsService} from '@ame/settings-dialog';
+} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
 import {MxGraphCharacteristicHelper, MxGraphHelper, MxGraphVisitorHelper} from '../../helpers';
 import {ModelInfo, RendererUpdatePayload} from '../../models';
@@ -35,9 +37,6 @@ import {MxGraphShapeOverlayService} from '../mx-graph-shape-overlay.service';
 import {MxGraphService} from '../mx-graph.service';
 import {BaseRenderService} from './base-render-service';
 import {UnitRenderService} from './unit-render.service';
-import {NamespacesCacheService} from '@ame/cache';
-import {RdfService} from '@ame/rdf/services';
-import {FiltersService} from '@ame/loader-filters';
 
 @Injectable({
   providedIn: 'root',
@@ -49,13 +48,13 @@ export class CharacteristicRenderService extends BaseRenderService {
   constructor(
     mxGraphService: MxGraphService,
     sammLangService: SammLanguageSettingsService,
-    rdfService: RdfService,
+    protected loadedFilesService: LoadedFilesService,
     private shapeConnectorService: ShapeConnectorService,
     private unitRendererService: UnitRenderService,
     private mxGraphShapeOverlayService: MxGraphShapeOverlayService,
     private namespacesCacheService: NamespacesCacheService,
   ) {
-    super(mxGraphService, sammLangService, rdfService);
+    super(mxGraphService, sammLangService, loadedFilesService);
   }
 
   isApplicable(cell: mxgraph.mxCell): boolean {
@@ -108,36 +107,34 @@ export class CharacteristicRenderService extends BaseRenderService {
         continue;
       }
 
-      let propertyCell = this.mxGraphService.resolveCellByModelElement(element.property);
+      let propertyCell = this.mxGraphService.resolveCellByModelElement(element);
       this.shapeConnectorService.connectShapes(
         this.metaModelElement,
-        element.property,
+        element,
         cell,
-        propertyCell || this.mxGraphService.renderModelElement(this.filtersService.createNode(element.property, {parent: modelElement})),
+        propertyCell || this.mxGraphService.renderModelElement(this.filtersService.createNode(element, {parent: modelElement})),
       );
 
-      propertyCell = this.mxGraphService.resolveCellByModelElement(element.property);
-      propertyCell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(element.property, this.sammLangService);
+      propertyCell = this.mxGraphService.resolveCellByModelElement(element);
+      propertyCell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(element, this.sammLangService);
       this.graph.labelChanged(propertyCell, MxGraphHelper.createPropertiesLabel(propertyCell));
 
-      if (!element.property?.characteristic) {
+      if (!element?.characteristic) {
         continue;
       }
 
-      let childCharacteristicCell = this.mxGraphService.resolveCellByModelElement(element.property.characteristic);
+      let childCharacteristicCell = this.mxGraphService.resolveCellByModelElement(element.characteristic);
       this.shapeConnectorService.connectShapes(
-        element.property,
-        element.property.characteristic,
+        element,
+        element.characteristic,
         propertyCell,
         childCharacteristicCell ||
-          this.mxGraphService.renderModelElement(
-            this.filtersService.createNode(element.property.characteristic, {parent: element.property}),
-          ),
+          this.mxGraphService.renderModelElement(this.filtersService.createNode(element.characteristic, {parent: element})),
       );
 
-      childCharacteristicCell = this.mxGraphService.resolveCellByModelElement(element.property.characteristic);
+      childCharacteristicCell = this.mxGraphService.resolveCellByModelElement(element.characteristic);
       childCharacteristicCell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(
-        element.property.characteristic,
+        element.characteristic,
         this.sammLangService,
       );
       this.graph.labelChanged(childCharacteristicCell, MxGraphHelper.createPropertiesLabel(childCharacteristicCell));
@@ -155,7 +152,7 @@ export class CharacteristicRenderService extends BaseRenderService {
     for (const edge of outGoingEdges) {
       const modelElement = MxGraphHelper.getModelElement(edge.target);
       MxGraphHelper.removeRelation(characteristic, modelElement);
-      if (modelElement?.isPredefined()) {
+      if (modelElement?.isPredefined) {
         this.mxGraphService.removeCells([edge.target]);
       }
     }
@@ -168,7 +165,7 @@ export class CharacteristicRenderService extends BaseRenderService {
       const modelElement = MxGraphHelper.getModelElement(edge.target);
       if (modelElement && modelElement.aspectModelUrn !== left.aspectModelUrn && modelElement.aspectModelUrn !== right.aspectModelUrn) {
         MxGraphHelper.removeRelation(characteristic, modelElement);
-        if (modelElement?.isPredefined()) {
+        if (modelElement?.isPredefined) {
           this.mxGraphService.removeCells([edge.target], true);
         } else {
           this.mxGraphService.removeCells([edge], true);
@@ -197,7 +194,7 @@ export class CharacteristicRenderService extends BaseRenderService {
       this.mxGraphShapeOverlayService.removeOverlay(cell, MxGraphHelper.getNewShapeOverlayButton(cell));
       this.mxGraphShapeOverlayService.removeOverlay(cell, MxGraphHelper.getTopOverlayButton(cell));
 
-      if (this.metaModelElement?.isPredefined()) {
+      if (this.metaModelElement?.isPredefined) {
         this.mxGraphShapeOverlayService.addTopShapeOverlay(cell);
       } else {
         this.mxGraphShapeOverlayService.addTopShapeOverlay(cell);
@@ -208,7 +205,7 @@ export class CharacteristicRenderService extends BaseRenderService {
 
   private handlePredefinedCharacteristicConnections(cell: mxgraph.mxCell) {
     const modelElement = MxGraphHelper.getModelElement<DefaultCharacteristic>(cell);
-    if (!modelElement?.isPredefined()) {
+    if (!modelElement?.isPredefined) {
       return;
     }
 
@@ -227,7 +224,7 @@ export class CharacteristicRenderService extends BaseRenderService {
     });
   }
 
-  private handleDataType(cell: mxgraph.mxCell, newDataType: BaseMetaModelElement | Type) {
+  private handleDataType(cell: mxgraph.mxCell, newDataType: NamedElement | Type) {
     if (this.metaModelElement instanceof DefaultStructuredValue) {
       this.removeOutgoingComplexDataType(cell);
     }
@@ -265,7 +262,7 @@ export class CharacteristicRenderService extends BaseRenderService {
     });
   }
 
-  private handleScalarDataType(newDataType: BaseMetaModelElement | Type) {
+  private handleScalarDataType(newDataType: NamedElement | Type) {
     this.metaModelElement.update(newDataType);
   }
 
@@ -299,7 +296,7 @@ export class CharacteristicRenderService extends BaseRenderService {
       this.unitRendererService.removeFrom(cell);
       return;
     }
-    if (unit && !isSameUnit && !unit.isPredefined()) {
+    if (unit && !isSameUnit && !unit.isPredefined) {
       // if this is a custom unit
       let unitCell = this.mxGraphService.resolveCellByModelElement(unit);
       if (!unitCell) {
@@ -325,7 +322,7 @@ export class CharacteristicRenderService extends BaseRenderService {
     const parent = MxGraphHelper.getModelElement(cell);
     const unit = MxGraphHelper.getModelElement<DefaultUnit>(edgeToOldUnit.target);
 
-    if (unit?.isPredefined()) {
+    if (unit?.isPredefined) {
       MxGraphHelper.removeRelation(parent, unit);
       this.namespacesCacheService.currentCachedFile.removeElement(unit.aspectModelUrn);
       this.mxGraphService.removeCells([edgeToOldUnit.target], true);

@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable} from '@angular/core';
+import {NamespacesCacheService} from '@ame/cache';
 import {
   AASXGenerationModalComponent,
   EditorService,
@@ -21,15 +21,15 @@ import {
   GenerateOpenApiComponent,
   LanguageSelectorModalComponent,
 } from '@ame/editor';
-import {MatDialog, MatDialogRef} from '@angular/material/dialog';
-import {finalize, first} from 'rxjs/operators';
-import {LoadingScreenOptions, LoadingScreenService, NotificationsService} from '@ame/shared';
 import {ModelService} from '@ame/rdf/services';
-import {catchError, map, Observable, switchMap, throwError} from 'rxjs';
-import {PreviewDialogComponent} from '../../preview-dialog';
-import {NamespacesCacheService} from '@ame/cache';
+import {LoadingScreenOptions, LoadingScreenService, NotificationsService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
+import {Injectable} from '@angular/core';
+import {MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {Observable, catchError, map, switchMap, throwError} from 'rxjs';
+import {finalize, first} from 'rxjs/operators';
 import {environment} from '../../../../../../environments/environment';
+import {PreviewDialogComponent} from '../../preview-dialog';
 
 @Injectable({
   providedIn: 'root',

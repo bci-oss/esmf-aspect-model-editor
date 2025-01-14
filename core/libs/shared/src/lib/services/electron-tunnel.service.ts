@@ -11,12 +11,9 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {inject, Injectable, NgZone} from '@angular/core';
-import {IpcRenderer} from 'electron';
-import {BehaviorSubject, catchError, distinctUntilChanged, map, Observable, of, switchMap, take, tap} from 'rxjs';
-import {ElectronSignals, LockUnlockPayload, StartupData, StartupPayload} from '../model';
-import {NotificationsService} from './notifications.service';
-import {ModelSavingTrackerService} from './model-saving-tracker.service';
+import {ModelApiService} from '@ame/api';
+import {NamespacesCacheService} from '@ame/cache';
+import {ShapeConnectorService} from '@ame/connection';
 import {
   EditorService,
   FileHandlingService,
@@ -26,20 +23,23 @@ import {
   ShapeSettingsService,
   TextModelLoaderModalComponent,
 } from '@ame/editor';
+import {FiltersService, ModelFilter} from '@ame/loader-filters';
 import {MxGraphService} from '@ame/mx-graph';
-import {NamespacesCacheService} from '@ame/cache';
-import {BaseMetaModelElement} from '@ame/meta-model';
-import {ElectronSignalsService} from './electron-signals.service';
-import {ElectronEvents} from '../enums';
-import {ModelApiService} from '@ame/api';
 import {NamespacesManagerService} from '@ame/namespace-manager';
 import {ConfigurationService} from '@ame/settings-dialog';
-import {FiltersService, ModelFilter} from '@ame/loader-filters';
-import {ShapeConnectorService} from '@ame/connection';
 import {SidebarStateService} from '@ame/sidebar';
-import {MatDialog} from '@angular/material/dialog';
-import {SearchesStateService} from '@ame/utils';
 import {LanguageTranslationService} from '@ame/translation';
+import {SearchesStateService} from '@ame/utils';
+import {Injectable, NgZone, inject} from '@angular/core';
+import {MatDialog} from '@angular/material/dialog';
+import {NamedElement} from '@esmf/aspect-model-loader';
+import {IpcRenderer} from 'electron';
+import {BehaviorSubject, Observable, catchError, distinctUntilChanged, map, of, switchMap, take, tap} from 'rxjs';
+import {ElectronEvents} from '../enums';
+import {ElectronSignals, LockUnlockPayload, StartupData, StartupPayload} from '../model';
+import {ElectronSignalsService} from './electron-signals.service';
+import {ModelSavingTrackerService} from './model-saving-tracker.service';
+import {NotificationsService} from './notifications.service';
 
 @Injectable({providedIn: 'root'})
 export class ElectronTunnelService {
@@ -275,7 +275,7 @@ export class ElectronTunnelService {
         return;
       }
 
-      const element = this.namespaceCacheService.currentCachedFile.getElement<BaseMetaModelElement>(modelUrn);
+      const element = this.namespaceCacheService.currentCachedFile.getElement<NamedElement>(modelUrn);
       if (element) {
         this.shapeSettingsService.editModel(element);
         requestAnimationFrame(() => {

@@ -11,14 +11,14 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable} from '@angular/core';
-import {mxgraph} from 'mxgraph-factory';
-import {BaseModelService} from './base-model-service';
 import {EntityInstanceService} from '@ame/editor';
 import {MxGraphAttributeService, MxGraphHelper, MxGraphService, MxGraphVisitorHelper, PropertyRenderService} from '@ame/mx-graph';
-import {BaseMetaModelElement, DefaultProperty} from '@ame/meta-model';
-import {CanExtend, DefaultAbstractProperty, DefaultStructuredValue} from '../aspect-meta-model';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
+import {Injectable} from '@angular/core';
+import {DefaultProperty, DefaultStructuredValue, NamedElement} from '@esmf/aspect-model-loader';
+import {mxgraph} from 'mxgraph-factory';
+import {CanExtend} from '../aspect-meta-model';
+import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
 export class PropertyModelService extends BaseModelService {
@@ -32,20 +32,20 @@ export class PropertyModelService extends BaseModelService {
     super();
   }
 
-  isApplicable(metaModelElement: BaseMetaModelElement): boolean {
+  isApplicable(metaModelElement: NamedElement): boolean {
     return metaModelElement instanceof DefaultProperty;
   }
 
   update(cell: mxgraph.mxCell, form: {[key: string]: any}) {
     const modelElement = MxGraphHelper.getModelElement<DefaultProperty>(cell);
-    if (modelElement.extendedElement) {
+    if (modelElement.extends_) {
       return;
     }
 
     modelElement.exampleValue = form.exampleValue;
     super.update(cell, form);
 
-    modelElement.extendedElement = [DefaultProperty, DefaultAbstractProperty].some(c => form?.extends instanceof c) ? form.extends : null;
+    modelElement.extends_ = form.extends instanceof DefaultProperty ? form.extends : null;
     this.updatePropertiesNames(cell);
     this.propertyRenderer.update({cell});
   }

@@ -11,13 +11,13 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {RdfService} from '@ame/rdf/services';
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {InputFieldComponent} from '../../input-field.component';
-import {DefaultOperation, DefaultProperty, Property} from '@ame/meta-model';
 import {FormControl} from '@angular/forms';
+import {DefaultOperation, DefaultProperty, Property} from '@esmf/aspect-model-loader';
 import {Observable} from 'rxjs';
 import {EditorDialogValidators} from '../../../../validators';
-import {RdfService} from '@ame/rdf/services';
+import {InputFieldComponent} from '../../input-field.component';
 
 @Component({
   selector: 'ame-output-input-field',

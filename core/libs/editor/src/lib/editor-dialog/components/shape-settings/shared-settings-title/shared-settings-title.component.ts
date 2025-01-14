@@ -11,12 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {BaseMetaModelElement} from '@ame/meta-model';
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
-import {LanguageTranslationService} from '@ame/translation';
-import {finalize} from 'rxjs';
-import {LangChangeEvent} from '@ngx-translate/core';
 import {sammElements} from '@ame/shared';
+import {LanguageTranslationService} from '@ame/translation';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
+import {NamedElement} from '@esmf/aspect-model-loader';
+import {LangChangeEvent} from '@ngx-translate/core';
+import {finalize} from 'rxjs';
 
 @Component({
   selector: 'ame-shared-settings-title',
@@ -25,10 +25,10 @@ import {sammElements} from '@ame/shared';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SharedSettingsTitleComponent implements OnInit {
-  public metaModelElement: BaseMetaModelElement;
+  public metaModelElement: NamedElement;
   public metaModelClassName: string;
 
-  @Input() set metaModelElementInput(value: BaseMetaModelElement) {
+  @Input() set metaModelElementInput(value: NamedElement) {
     this.metaModelElement = value;
     this.elementName = this.getTitle();
   }

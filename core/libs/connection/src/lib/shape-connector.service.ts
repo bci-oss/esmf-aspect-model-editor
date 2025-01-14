@@ -13,9 +13,11 @@
 import {Injectable} from '@angular/core';
 import {mxgraph} from 'mxgraph-factory';
 import {ShapeConnectorUtil} from './shape-connector-util';
+
+import {ModelInfo, MxGraphAttributeService, MxGraphHelper, MxGraphShapeOverlayService} from '@ame/mx-graph';
+import {LogService, NotificationsService, cellRelations} from '@ame/shared';
+import {LanguageTranslationService} from '@ame/translation';
 import {
-  BaseMetaModelElement,
-  DefaultAbstractEntity,
   DefaultAspect,
   DefaultCharacteristic,
   DefaultEither,
@@ -26,10 +28,36 @@ import {
   DefaultProperty,
   DefaultStructuredValue,
   DefaultTrait,
-} from '@ame/meta-model';
+  NamedElement,
+} from '@esmf/aspect-model-loader';
 import {environment} from 'environments/environment';
-import {cellRelations, LogService, NotificationsService} from '@ame/shared';
-import {ModelInfo, MxGraphAttributeService, MxGraphHelper, MxGraphShapeOverlayService} from '@ame/mx-graph';
+import {MultiShapeConnector, SingleShapeConnector} from './models';
+import {
+  AbstractEntityAbstractEntityConnectionHandler,
+  AbstractEntityAbstractPropertyConnectionHandler,
+  AbstractEntityPropertyConnectionHandler,
+  AbstractPropertyAbstractPropertyConnectionHandler,
+  AspectEventConnectionHandler,
+  AspectPropertyConnectionHandler,
+  CharacteristicEntityConnectionHandler,
+  CharacteristicUnitConnectionHandler,
+  CollectionCharacteristicConnectionHandler,
+  EitherCharacteristicLeftConnectionHandler,
+  EitherCharacteristicRightConnectionHandler,
+  EntityAbstractEntityConnectionHandler,
+  EntityEntityConnectionHandler,
+  EntityPropertyConnectionHandler,
+  EnumerationEntityValueConnectionHandler,
+  EventPropertyConnectionHandler,
+  OperationPropertyInputConnectionHandler,
+  OperationPropertyOutputConnectionHandler,
+  PropertyAbstractPropertyConnectionHandler,
+  PropertyCharacteristicConnectionHandler,
+  PropertyPropertyConnectionHandler,
+  PropertyStructuredValueConnectionHandler,
+  StructuredValueCharacteristicPropertyConnectionHandler,
+  TraitWithCharacteristicOrConstraintConnectionHandler,
+} from './multi-shape-connection-handlers';
 import {
   AbstractEntityConnectionHandler,
   AspectConnectionHandler,
@@ -43,35 +71,7 @@ import {
   StructuredValueConnectionHandler,
   TraitConnectionHandler,
 } from './single-connection-handlers';
-import {SingleShapeConnector, MultiShapeConnector} from './models';
-import {
-  AspectPropertyConnectionHandler,
-  AspectEventConnectionHandler,
-  EventPropertyConnectionHandler,
-  OperationPropertyInputConnectionHandler,
-  OperationPropertyOutputConnectionHandler,
-  EitherCharacteristicLeftConnectionHandler,
-  EitherCharacteristicRightConnectionHandler,
-  PropertyCharacteristicConnectionHandler,
-  CharacteristicEntityConnectionHandler,
-  TraitWithCharacteristicOrConstraintConnectionHandler,
-  CollectionCharacteristicConnectionHandler,
-  EntityPropertyConnectionHandler,
-  EntityEntityConnectionHandler,
-  AbstractEntityAbstractEntityConnectionHandler,
-  EntityAbstractEntityConnectionHandler,
-  AbstractEntityPropertyConnectionHandler,
-  PropertyPropertyConnectionHandler,
-  PropertyAbstractPropertyConnectionHandler,
-  AbstractEntityAbstractPropertyConnectionHandler,
-  AbstractPropertyAbstractPropertyConnectionHandler,
-  EnumerationEntityValueConnectionHandler,
-  StructuredValueCharacteristicPropertyConnectionHandler,
-  CharacteristicUnitConnectionHandler,
-  PropertyStructuredValueConnectionHandler,
-} from './multi-shape-connection-handlers';
 import mxCell = mxgraph.mxCell;
-import {LanguageTranslationService} from '@ame/translation';
 
 @Injectable({
   providedIn: 'root',
@@ -156,13 +156,13 @@ export class ShapeConnectorService {
     }
   }
 
-  createAndConnectShape(metaModel: BaseMetaModelElement, source: mxCell, modelInfo: ModelInfo = ModelInfo.IS_CHARACTERISTIC) {
+  createAndConnectShape(metaModel: NamedElement, source: mxCell, modelInfo: ModelInfo = ModelInfo.IS_CHARACTERISTIC) {
     if (!metaModel) {
       this.logService.logInfo('No cell selected with a meta model to connect.');
       return;
     }
 
-    let connectionHandler: SingleShapeConnector<BaseMetaModelElement>;
+    let connectionHandler: SingleShapeConnector<NamedElement>;
 
     switch (true) {
       case metaModel instanceof DefaultAspect:
@@ -189,7 +189,7 @@ export class ShapeConnectorService {
       case metaModel instanceof DefaultEntity:
         connectionHandler = this.entityConnectionHandler;
         break;
-      case metaModel instanceof DefaultAbstractEntity:
+      case metaModel instanceof DefaultEntity && metaModel.isAbstractEntity():
         connectionHandler = this.abstractEntityConnectionHandler;
         break;
       case metaModel instanceof DefaultEntityInstance:
@@ -206,13 +206,13 @@ export class ShapeConnectorService {
   }
 
   connectShapes(
-    parentModel: BaseMetaModelElement,
-    childModel: BaseMetaModelElement,
+    parentModel: NamedElement,
+    childModel: NamedElement,
     parentSource: mxCell,
     childSource: mxCell,
     modelInfo?: ModelInfo,
   ): boolean {
-    let connectionHandler: MultiShapeConnector<BaseMetaModelElement, BaseMetaModelElement>;
+    let connectionHandler: MultiShapeConnector<NamedElement, NamedElement>;
 
     switch (true) {
       case ShapeConnectorUtil.isAspectPropertyConnection(parentModel, childModel):
@@ -252,7 +252,7 @@ export class ShapeConnectorService {
         connectionHandler = this.propertyCharacteristicConnectionHandler;
         break;
       case ShapeConnectorUtil.isCharacteristicEntityConnection(parentModel, childModel):
-        if ((<DefaultCharacteristic>parentModel).isPredefined()) {
+        if ((<DefaultCharacteristic>parentModel).isPredefined) {
           this.notificationsService.warning({title: 'The element can only be connected if the characteristic contains a class'});
           break;
         }
@@ -316,7 +316,7 @@ export class ShapeConnectorService {
     return !!connectionHandler;
   }
 
-  private isConnectionException(parentModel: BaseMetaModelElement, childModel: BaseMetaModelElement): boolean {
+  private isConnectionException(parentModel: NamedElement, childModel: NamedElement): boolean {
     return ShapeConnectorUtil.isStructuredValuePropertyConnection(parentModel, childModel);
   }
 }

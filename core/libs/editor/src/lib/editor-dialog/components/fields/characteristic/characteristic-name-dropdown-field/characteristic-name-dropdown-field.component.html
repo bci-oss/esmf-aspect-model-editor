@@ -14,8 +14,8 @@
 <mat-form-field [floatLabel]="selectedMetaModelElement?.isExternalReference() ? 'always' : 'auto'" appearance="fill">
   <mat-label for="characteristicName">Characteristic class</mat-label>
   <mat-select
-    [disabled]="selectedMetaModelElement?.isExternalReference()"
     #characteristicName
+    [disabled]="selectedMetaModelElement?.isExternalReference()"
     [ngModel]="metaModelClassName"
     (ngModelChange)="onCharacteristicChange($event)"
     name="characteristicName"

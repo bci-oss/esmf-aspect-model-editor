@@ -11,6 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {DataType, EditorDialogValidators, EntityInstanceUtil, FormFieldHelper} from '@ame/editor';
+import {isDataTypeLangString} from '@ame/shared';
 import {ChangeDetectorRef, Component, OnChanges, OnDestroy, OnInit, QueryList, SimpleChanges, ViewChildren} from '@angular/core';
 import {
   AbstractControl,
@@ -22,22 +24,11 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import {
-  BaseMetaModelElement,
-  Characteristic,
-  DefaultAbstractProperty,
-  DefaultCollection,
-  DefaultEntityInstance,
-  DefaultProperty,
-  EntityInstanceProperty,
-  OverWrittenProperty,
-} from '@ame/meta-model';
-import {DataType, EditorDialogValidators, EntityInstanceUtil, FormFieldHelper} from '@ame/editor';
-import {InputFieldComponent} from '../../fields';
-import {map, Observable, of, startWith, Subscription} from 'rxjs';
-import * as locale from 'locale-codes';
 import {MatAutocompleteTrigger} from '@angular/material/autocomplete';
-import {isDataTypeLangString} from '@ame/shared';
+import {Characteristic, DefaultCollection, DefaultEntityInstance, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
+import * as locale from 'locale-codes';
+import {Observable, Subscription, map, of, startWith} from 'rxjs';
+import {InputFieldComponent} from '../../fields';
 
 @Component({
   selector: 'ame-entity-instance-table',
@@ -75,7 +66,7 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
 
   ngOnInit(): void {
     this.subscription.add(
-      this.getMetaModelData().subscribe((metaModelElement: BaseMetaModelElement) => {
+      this.getMetaModelData().subscribe((metaModelElement: NamedElement) => {
         this.propertiesForm = new FormGroup({});
         this.metaModelElement = metaModelElement as DefaultEntityInstance;
         this.parentForm.setControl('entityValueProperties', this.propertiesForm);
@@ -101,35 +92,34 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
     );
   }
 
-  private createEntityValueProp(prop: OverWrittenProperty<DefaultProperty | DefaultAbstractProperty>): EntityInstanceProperty {
-    const property = prop.property as DefaultProperty;
+  private createEntityValueProp(property: DefaultProperty): EntityInstanceProperty {
     const propertyControl = this.propertiesForm.get(property.name);
 
     if (!propertyControl) {
       const propertiesFormArray = EntityInstanceUtil.getDisplayControl(this.propertiesForm, property.name);
-      const valueControl = this.createFormControl(prop);
-      this.subscribeToEntityValueChanges(valueControl, prop.property as DefaultProperty);
+      const valueControl = this.createFormControl(property);
+      this.subscribeToEntityValueChanges(valueControl, property);
 
       const group = new UntypedFormGroup({value: valueControl});
       propertiesFormArray.push(group);
 
-      if (EntityInstanceUtil.isDefaultPropertyWithLangString(prop)) {
-        const languageControl = this.createFormControl(prop);
+      if (EntityInstanceUtil.isDefaultPropertyWithLangString(property)) {
+        const languageControl = this.createFormControl(property);
         this.subscribeToLangValueChanges(languageControl, property);
         group.addControl('language', languageControl);
       }
     }
 
     return {
-      key: prop as OverWrittenProperty,
+      key: property,
       value: '',
-      language: EntityInstanceUtil.isDefaultPropertyWithLangString(prop) ? '' : undefined,
-      optional: prop.keys.optional,
+      language: EntityInstanceUtil.isDefaultPropertyWithLangString(property) ? '' : undefined,
+      optional: property.optional,
     };
   }
 
-  private createFormControl(prop: OverWrittenProperty<DefaultProperty | DefaultAbstractProperty>): FormControl {
-    return new FormControl('', prop.keys.optional ? null : EditorDialogValidators.requiredObject);
+  private createFormControl(prop: DefaultProperty): FormControl {
+    return new FormControl('', prop.optional ? null : EditorDialogValidators.requiredObject);
   }
 
   private getValidators(entityValueProperty: EntityInstanceProperty): (control: AbstractControl) => ValidationErrors | null {

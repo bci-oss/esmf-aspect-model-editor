@@ -13,7 +13,7 @@
 
 import {HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {iif, Observable, of, throwError} from 'rxjs';
+import {Observable, iif, of, throwError} from 'rxjs';
 import {catchError, concatMap, delay, retryWhen} from 'rxjs/operators';
 import {LogService, NotificationsService} from './services';
 

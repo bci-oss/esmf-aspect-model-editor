@@ -13,7 +13,7 @@
 
 import {Component, OnInit} from '@angular/core';
 import {FormControl} from '@angular/forms';
-import {BaseMetaModelElement, CanExtend, DefaultCharacteristic, DefaultProperty} from '@ame/meta-model';
+import {DefaultCharacteristic, DefaultProperty, HasExtends, NamedElement} from '@esmf/aspect-model-loader';
 import {EditorModelService} from '../../../../editor-model.service';
 import {InputFieldComponent} from '../../input-field.component';
 
@@ -28,7 +28,7 @@ import {InputFieldComponent} from '../../input-field.component';
     `,
   ],
 })
-export class DescriptionInputFieldComponent extends InputFieldComponent<BaseMetaModelElement> implements OnInit {
+export class DescriptionInputFieldComponent extends InputFieldComponent<NamedElement> implements OnInit {
   constructor(public metaModelDialogService: EditorModelService) {
     super();
     this.fieldName = 'description';
@@ -39,16 +39,13 @@ export class DescriptionInputFieldComponent extends InputFieldComponent<BaseMeta
   }
 
   getCurrentValue(key: string, locale: string) {
-    if (this.metaModelElement instanceof DefaultCharacteristic && this.metaModelElement.isPredefined()) {
+    if (this.metaModelElement instanceof DefaultCharacteristic && this.metaModelElement.isPredefined) {
       return this.metaModelElement?.[key] || '';
     }
 
-    if (this.metaModelElement instanceof CanExtend) {
+    if (this.metaModelElement['extends_']) {
       return (
-        this.previousData?.[key] ||
-        this.metaModelElement?.getDescription(locale) ||
-        this.metaModelElement.extendedDescription?.get(locale) ||
-        ''
+        this.previousData?.[key] || this.metaModelElement?.getDescription(locale) || this.metaModelElement['extends_']?.get(locale) || ''
       );
     }
 
@@ -58,21 +55,21 @@ export class DescriptionInputFieldComponent extends InputFieldComponent<BaseMeta
   isInherited(locale: string): boolean {
     const control = this.parentForm.get('description' + locale);
     return (
-      this.metaModelElement instanceof CanExtend &&
-      this.metaModelElement.extendedDescription?.get(locale) &&
-      control.value === this.metaModelElement.extendedDescription?.get(locale)
+      this.metaModelElement instanceof HasExtends &&
+      this.metaModelElement.getExtends()?.get(locale) &&
+      control.value === this.metaModelElement.getExtends()?.get(locale)
     );
   }
 
   private isDisabled() {
-    return this.metaModelElement instanceof DefaultProperty && !!this.metaModelElement?.extendedElement;
+    return this.metaModelElement instanceof DefaultProperty && !!this.metaModelElement?.extends_;
   }
 
   private setDescriptionControls() {
     const allLocalesDescriptions = this.metaModelElement?.getAllLocalesDescriptions();
 
     if (!allLocalesDescriptions.length) {
-      this.metaModelElement.addDescription('en', '');
+      this.metaModelElement.descriptions.set('en', '');
     }
 
     this.metaModelElement?.getAllLocalesDescriptions().forEach(locale => {

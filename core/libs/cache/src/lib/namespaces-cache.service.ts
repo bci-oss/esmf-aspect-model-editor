@@ -12,8 +12,8 @@
  */
 
 import {Injectable} from '@angular/core';
+import {NamedElement} from '@esmf/aspect-model-loader';
 import {CachedFile} from './cached-file';
-import {Base, BaseMetaModelElement} from '@ame/meta-model';
 
 @Injectable({
   providedIn: 'root',
@@ -135,8 +135,8 @@ export class NamespacesCacheService {
    *
    * @param element - MetaModelElement to resolve
    */
-  resolveCachedElement(element: Base) {
-    let cachedProperty = this.findElementOnExtReference<Base>(element.aspectModelUrn);
+  resolveCachedElement(element: NamedElement) {
+    let cachedProperty = this.findElementOnExtReference<NamedElement>(element.aspectModelUrn);
     if (!cachedProperty) {
       cachedProperty = this.#currentCachedFile.resolveElement(element);
     }
@@ -144,18 +144,18 @@ export class NamespacesCacheService {
   }
 
   /**
-   * Retrieves a BaseMetaModelElement from a specified namespace using the provided aspectModelUrn.
+   * Retrieves a NamedElement from a specified namespace using the provided aspectModelUrn.
    *
    * @param {string} namespaceKey - The namespaceKey from which the element should be retrieved.
    * @param {string} aspectModelUrn - The URN of the aspect model element to find.
-   * @returns {BaseMetaModelElement} The found BaseMetaModelElement or null if not found.
+   * @returns {NamedElement} The found NamedElement or null if not found.
    */
-  getElementFromNamespace(namespaceKey: string, aspectModelUrn: string): BaseMetaModelElement {
+  getElementFromNamespace(namespaceKey: string, aspectModelUrn: string): NamedElement {
     const namespace = this.getNamespace(namespaceKey);
     const source = namespace ? Array.from(namespace.values()) : [this.currentCachedFile];
 
     for (const value of source) {
-      const element = value.getElement<BaseMetaModelElement>(aspectModelUrn);
+      const element = value.getElement<NamedElement>(aspectModelUrn);
       if (element) {
         return element;
       }

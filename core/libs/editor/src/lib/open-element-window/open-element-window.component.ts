@@ -11,14 +11,14 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 import {ModelApiService} from '@ame/api';
-import {RdfService} from '@ame/rdf/services';
 import {ElectronSignals, ElectronSignalsService, NotificationsService} from '@ame/shared';
 import {DialogRef} from '@angular/cdk/dialog';
-import {Component, Inject, inject, OnInit} from '@angular/core';
+import {Component, Inject, OnInit, inject} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogModule} from '@angular/material/dialog';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {NamedNode} from 'n3';
 import {catchError, of, switchMap, tap} from 'rxjs';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {ModelLoaderService} from '../model-loader.service';
 
 @Component({
   standalone: true,
@@ -44,10 +44,10 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 })
 export class OpenElementWindowComponent implements OnInit {
   private electronSignalsService: ElectronSignals = inject(ElectronSignalsService);
+  private modelLoaderService = inject(ModelLoaderService);
 
   constructor(
     private dialogRef: DialogRef<OpenElementWindowComponent>,
-    private rdfService: RdfService,
     private modelApiService: ModelApiService,
     private notificationService: NotificationsService,
     @Inject(MAT_DIALOG_DATA) private elementInfo: {urn: string; file: string},
@@ -58,12 +58,7 @@ export class OpenElementWindowComponent implements OnInit {
     this.modelApiService
       .getAspectMetaModel(`${namespace}:${this.elementInfo.file}`)
       .pipe(
-        switchMap((model: string) =>
-          this.rdfService.parseModel({
-            fileName: this.elementInfo.file,
-            aspectMetaModel: model,
-          }),
-        ),
+        switchMap((model: string) => this.modelLoaderService.parseRdfModel([model])),
         tap(rdfModel => {
           const quads = rdfModel.store.getQuads(new NamedNode(this.elementInfo.urn), null, null, null);
           if (quads.length) {

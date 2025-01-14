@@ -11,8 +11,11 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ShapeSettingsStateService} from '@ame/editor';
+import {MxGraphHelper} from '@ame/mx-graph';
+import {ShapeGeometry, basicShapeGeometry, smallCircleShapeGeometry} from '@ame/shared';
+import {Injector} from '@angular/core';
 import {
-  BaseMetaModelElement,
   DefaultAspect,
   DefaultEither,
   DefaultEntity,
@@ -21,12 +24,9 @@ import {
   DefaultOperation,
   DefaultProperty,
   DefaultUnit,
-} from '@ame/meta-model';
+  NamedElement,
+} from '@esmf/aspect-model-loader';
 import {ArrowStyle, ChildrenArray, FilterLoader, ModelFilter, ModelTree, ModelTreeOptions} from '../models';
-import {ShapeGeometry, basicShapeGeometry, smallCircleShapeGeometry} from '@ame/shared';
-import {MxGraphHelper} from '@ame/mx-graph';
-import {Injector} from '@angular/core';
-import {ShapeSettingsStateService} from '@ame/editor';
 
 const allowedElements = [DefaultAspect, DefaultProperty, DefaultEntity, DefaultEither];
 
@@ -37,7 +37,7 @@ export class PropertiesFilterLoader implements FilterLoader {
 
   constructor(private injector: Injector) {}
 
-  filter(rootElements: BaseMetaModelElement[]): ModelTree<BaseMetaModelElement>[] {
+  filter(rootElements: NamedElement[]): ModelTree<NamedElement>[] {
     const shapeSettingsStateService = this.injector.get(ShapeSettingsStateService);
     if (shapeSettingsStateService.isShapeSettingOpened) {
       shapeSettingsStateService.closeShapeSettings();
@@ -51,12 +51,12 @@ export class PropertiesFilterLoader implements FilterLoader {
       .filter(tree => tree);
   }
 
-  generateTree(element: BaseMetaModelElement, options?: ModelTreeOptions): ModelTree<BaseMetaModelElement> {
+  generateTree(element: NamedElement, options?: ModelTreeOptions): ModelTree<NamedElement> {
     if (!element || element instanceof DefaultEntityInstance) {
       return null;
     }
 
-    const elementTree: ModelTree<BaseMetaModelElement> = {
+    const elementTree: ModelTree<NamedElement> = {
       element,
       fromParentArrow: options?.parent ? this.getArrowStyle(element, options.parent) : null,
       shape: {...this.getShapeGeometry(element), mxGraphStyle: this.getMxGraphStyle(element)},
@@ -119,7 +119,7 @@ export class PropertiesFilterLoader implements FilterLoader {
     return this.isValid(elementTree) && elementTree;
   }
 
-  getArrowStyle(element: BaseMetaModelElement, parent: BaseMetaModelElement): ArrowStyle {
+  getArrowStyle(element: NamedElement, parent: NamedElement): ArrowStyle {
     if (
       element instanceof DefaultProperty &&
       (parent instanceof DefaultEntity || parent instanceof DefaultAspect) &&
@@ -136,7 +136,7 @@ export class PropertiesFilterLoader implements FilterLoader {
     return 'optionalPropertyEdge';
   }
 
-  getShapeGeometry(element: BaseMetaModelElement): ShapeGeometry {
+  getShapeGeometry(element: NamedElement): ShapeGeometry {
     if (element instanceof DefaultAspect) {
       return basicShapeGeometry;
     }
@@ -144,7 +144,7 @@ export class PropertiesFilterLoader implements FilterLoader {
     return element instanceof DefaultProperty ? basicShapeGeometry : smallCircleShapeGeometry;
   }
 
-  getMxGraphStyle(element: BaseMetaModelElement): string {
+  getMxGraphStyle(element: NamedElement): string {
     return element instanceof DefaultAspect
       ? 'aspect'
       : element instanceof DefaultProperty
@@ -154,21 +154,21 @@ export class PropertiesFilterLoader implements FilterLoader {
           : 'filteredProperties_either';
   }
 
-  hasOverlay(element?: BaseMetaModelElement): boolean {
+  hasOverlay(element?: NamedElement): boolean {
     return element instanceof DefaultEntity || element instanceof DefaultAspect;
   }
 
   private generateEitherTree(
     element: DefaultEither,
-    parentNode: ModelTree<BaseMetaModelElement>,
-  ): [ModelTree<BaseMetaModelElement>, ModelTree<BaseMetaModelElement>] {
+    parentNode: ModelTree<NamedElement>,
+  ): [ModelTree<NamedElement>, ModelTree<NamedElement>] {
     return [
       this.generateTree(element.left, {notAllowed: [DefaultEntity], parent: element, parentNode}),
       this.generateTree(element.right, {notAllowed: [DefaultEntity], parent: element, parentNode}),
     ];
   }
 
-  private getAllowedDescendants(element: BaseMetaModelElement): BaseMetaModelElement[] {
+  private getAllowedDescendants(element: NamedElement): NamedElement[] {
     const eligibleElements = [];
     for (const child of element.children) {
       if (child instanceof DefaultUnit) {
@@ -185,13 +185,13 @@ export class PropertiesFilterLoader implements FilterLoader {
     return eligibleElements;
   }
 
-  private isAllowed(element: BaseMetaModelElement, options: ModelTreeOptions = {}): boolean {
+  private isAllowed(element: NamedElement, options: ModelTreeOptions = {}): boolean {
     return allowedElements.some(
       allowedElement => element instanceof allowedElement && !(options.notAllowed || [])?.some(c => element instanceof c),
     );
   }
 
-  private isValid(tree: ModelTree<BaseMetaModelElement>): boolean {
+  private isValid(tree: ModelTree<NamedElement>): boolean {
     return tree && (tree.children.length > 0 || tree.element instanceof DefaultProperty || tree.element instanceof DefaultAspect);
   }
 }

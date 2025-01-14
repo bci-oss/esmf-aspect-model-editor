@@ -11,14 +11,14 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ChangeDetectorRef, Component, inject, NgZone, OnDestroy, OnInit} from '@angular/core';
-import {FileStatus, SidebarStateService} from '@ame/sidebar';
-import {ElectronSignals, ElectronSignalsService, NotificationsService} from '@ame/shared';
+import {ModelApiService} from '@ame/api';
 import {ConfirmDialogService, EditorService, FileHandlingService} from '@ame/editor';
 import {RdfService} from '@ame/rdf/services';
-import {ModelApiService} from '@ame/api';
-import {Subscription, switchMap} from 'rxjs';
+import {ElectronSignals, ElectronSignalsService, NotificationsService} from '@ame/shared';
+import {FileStatus, SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
+import {ChangeDetectorRef, Component, inject, NgZone, OnDestroy, OnInit} from '@angular/core';
+import {Subscription, switchMap} from 'rxjs';
 import {ConfirmDialogEnum} from '../../../../../editor/src/lib/models/confirm-dialog.enum';
 
 @Component({

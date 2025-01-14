@@ -22,9 +22,7 @@
         </mat-chip-row>
       }
       <input
-        matInput
         class="enumeration-value-input"
-        name="values"
         [formControl]="getControl('values')"
         [matChipInputFor]="chipList"
         [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
@@ -32,6 +30,8 @@
         (matChipInputTokenEnd)="add($event)"
         (paste)="paste($event)"
         (keyup)="onEnumChange()"
+        matInput
+        name="values"
         placeholder="add value, hit enter"
         data-cy="values"
       />

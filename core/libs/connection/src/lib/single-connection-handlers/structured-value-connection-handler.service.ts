@@ -13,9 +13,10 @@
 
 import {NamespacesCacheService} from '@ame/cache';
 import {FiltersService} from '@ame/loader-filters';
-import {StructuredValue, ModelElementNamingService, DefaultProperty} from '@ame/meta-model';
-import {MxGraphService, MxGraphHelper} from '@ame/mx-graph';
+import {ModelElementNamingService} from '@ame/meta-model';
+import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
 import {Injectable} from '@angular/core';
+import {DefaultProperty, StructuredValue} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
 import {SingleShapeConnector} from '../models';
 
@@ -35,8 +36,8 @@ export class StructuredValueConnectionHandler implements SingleShapeConnector<St
   ) {}
 
   public connect(structuredValue: StructuredValue, source: mxgraph.mxCell) {
-    const property = DefaultProperty.createInstance();
-    structuredValue.elements.push({property, keys: {}});
+    const property = new DefaultProperty({name: '', aspectModelUrn: '', metaModelVersion: ''});
+    structuredValue.elements.push(property);
     structuredValue.deconstructionRule = `${structuredValue.deconstructionRule}(regex)`;
     const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(property);
     const propertyCell = this.mxGraphService.renderModelElement(

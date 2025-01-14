@@ -13,20 +13,18 @@
 
 import {EntityInstanceService} from '@ame/editor';
 import {FiltersService} from '@ame/loader-filters';
-import {DefaultAbstractEntity, DefaultAbstractProperty, DefaultEntity, DefaultProperty} from '@ame/meta-model';
-import {MxGraphService, MxGraphHelper} from '@ame/mx-graph';
+import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
 import {Injectable} from '@angular/core';
+import {DefaultEntity, DefaultProperty} from '@esmf/aspect-model-loader';
+import {mxgraph} from 'mxgraph-factory';
 import {MultiShapeConnector} from '../models';
 import {EntityPropertyConnectionHandler} from './entity--property.service';
 import {PropertyAbstractPropertyConnectionHandler} from './property--abstract-property.service';
-import {mxgraph} from 'mxgraph-factory';
 
 @Injectable({
   providedIn: 'root',
 })
-export class AbstractEntityAbstractPropertyConnectionHandler
-  implements MultiShapeConnector<DefaultAbstractEntity, DefaultAbstractProperty>
-{
+export class AbstractEntityAbstractPropertyConnectionHandler implements MultiShapeConnector<DefaultEntity, DefaultProperty> {
   constructor(
     private mxGraphService: MxGraphService,
     private entityInstanceService: EntityInstanceService,
@@ -35,16 +33,14 @@ export class AbstractEntityAbstractPropertyConnectionHandler
     private filtersService: FiltersService,
   ) {}
 
-  public connect(
-    parentMetaModel: DefaultAbstractEntity,
-    childMetaModel: DefaultAbstractProperty,
-    parentCell: mxgraph.mxCell,
-    childCell: mxgraph.mxCell,
-  ) {
-    if (!parentMetaModel.properties.find(({property}) => property.aspectModelUrn === childMetaModel.aspectModelUrn)) {
+  public connect(parentMetaModel: DefaultEntity, childMetaModel: DefaultProperty, parentCell: mxgraph.mxCell, childCell: mxgraph.mxCell) {
+    if (!parentMetaModel.isAbstractEntity() || !childMetaModel.isAbstract) return;
+
+    if (!parentMetaModel.properties.find(property => property.aspectModelUrn === childMetaModel.aspectModelUrn)) {
       const overWrittenProperty = {property: childMetaModel, keys: {}};
       parentMetaModel.properties.push(overWrittenProperty as any);
-      parentMetaModel.children.push(childMetaModel);
+      // TODO solve the children <-> parents relationship
+      // parentMetaModel.children.push(childMetaModel);
       this.entityInstanceService.onNewProperty(overWrittenProperty as any, parentMetaModel);
     }
 
@@ -56,25 +52,28 @@ export class AbstractEntityAbstractPropertyConnectionHandler
     for (const grandParent of grandParents) {
       const grandParentElement = MxGraphHelper.getModelElement<DefaultEntity>(grandParent);
       const alreadyExtended = grandParentElement.properties.some(
-        ({property}) => property.extendedElement?.aspectModelUrn === childMetaModel.aspectModelUrn,
+        property => property.getExtends()?.aspectModelUrn === childMetaModel.aspectModelUrn,
       );
 
       if (alreadyExtended) {
         continue;
       }
 
-      // creates the property which will extend the abstract property
-      const property = DefaultProperty.createInstance();
-      property.metaModelVersion = childMetaModel.metaModelVersion;
       const [namespace, name] = childMetaModel.aspectModelUrn.split('#');
-      property.aspectModelUrn = `${namespace}#[${name}]`;
-      property.extendedElement = childMetaModel;
+
+      // TODO solve the children <-> parents relationship
+      const property = new DefaultProperty({
+        name: `[${name}]`,
+        aspectModelUrn: `${namespace}#[${name}]`,
+        metaModelVersion: childMetaModel.metaModelVersion,
+        extends_: childMetaModel,
+      });
       property.children.push(childMetaModel);
 
       MxGraphHelper.establishRelation(property, childMetaModel);
 
       // adding property to its parent (entity)
-      grandParentElement.properties.push({property, keys: {}});
+      grandParentElement.properties.push(property);
       MxGraphHelper.establishRelation(grandParentElement, property);
 
       const propertyCell = this.mxGraphService.renderModelElement(this.filtersService.createNode(property, {parent: grandParentElement}));

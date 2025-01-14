@@ -11,187 +11,100 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {RdfModelUtil} from '@ame/rdf/utils';
 import {Injectable} from '@angular/core';
-import {DataFactory, Quad_Subject, Util} from 'n3';
-import {BaseMetaModelElement, DefaultAspect} from '@ame/meta-model';
 import {
-  AbstractPropertyInstantiator,
-  AspectInstantiator,
-  EntityInstantiator,
-  EntityValueInstantiator,
-  EventInstantiator,
-  OperationInstantiator,
-  PropertyInstantiator,
-  UnitInstantiator,
-} from './instantiators';
-import {MetaModelElementInstantiator} from './meta-model-element-instantiator';
-import {CachedFile, NamespacesCacheService} from '@ame/cache';
-import {RdfService} from '@ame/rdf/services';
-import {RdfModel, RdfModelUtil} from '@ame/rdf/utils';
-import {NotificationsService} from '@ame/shared';
-import {AbstractEntityInstantiator} from './instantiators/abstract-entity-instantiator';
-import {LanguageTranslationService} from '@ame/translation';
+  CacheStrategy,
+  NamedElement,
+  RdfModel,
+  createEntity,
+  createEvent,
+  createOperation,
+  createProperty,
+  createUnit,
+  destroyElementCache,
+  destroyRdfModel,
+  destroyStore,
+  detectAndCreateCharacteristic,
+  detectAndCreateConstraint,
+  useElementsCache,
+  useRdfModel,
+  useStore,
+} from '@esmf/aspect-model-loader';
+import {resolveEntityInstance} from 'libs/aspect-model-loader/src/lib/instantiator/characteristic/enumeration-characteristic-instantiator';
+import {NamedNode, Triple, Util} from 'n3';
 
 @Injectable({
   providedIn: 'root',
 })
 export class InstantiatorService {
-  constructor(
-    private namespaceCacheService: NamespacesCacheService,
-    public rdfService: RdfService,
-    public notificationsService: NotificationsService,
-    public translate: LanguageTranslationService,
-  ) {}
+  public instantiateRemainingElements(rdfModel: RdfModel, cachedFile: CacheStrategy) {
+    useRdfModel(rdfModel);
+    useStore(rdfModel.store);
+    useElementsCache(cachedFile);
 
-  public instantiateFile(rdfModel: RdfModel, cachedFile: CachedFile, fileName: string): CachedFile {
-    const aspect = rdfModel.store.getSubjects(rdfModel.SAMM().RdfType(), rdfModel.SAMM().Aspect(), null)?.[0];
-
-    if (cachedFile.getElement<DefaultAspect>(aspect?.value)) {
-      return cachedFile;
-    }
-
-    const metaModelElementInstantiator = new MetaModelElementInstantiator(
-      rdfModel,
-      cachedFile,
-      fileName,
-      this,
-      this.namespaceCacheService,
-      new Map<string, Array<BaseMetaModelElement>>(),
-      this.notificationsService,
-      this.translate,
-    );
-
-    if (aspect) {
-      const aspectInstantiator = new AspectInstantiator(metaModelElementInstantiator);
-      aspectInstantiator.createAspect(aspect).fileName = fileName;
-    }
-
-    const uniqueSubjects = rdfModel.store
+    const uniqueSubjects: string[] = rdfModel.store
       .getSubjects(null, null, null)
       .reduce(
-        (subjects, subject) => (!Util.isBlankNode(subject) && !cachedFile.getElement(subject.value) ? [...subjects, subject] : subjects),
+        (subjects, subject) => (!Util.isBlankNode(subject) && !cachedFile.get(subject.value) ? [...subjects, subject.value] : subjects),
         [],
       );
 
-    metaModelElementInstantiator.isIsolated = true;
     for (const subject of uniqueSubjects) {
-      if (cachedFile.getElement(subject.value)) {
-        continue;
-      }
-
-      this.instantiateUnusedElement(subject, rdfModel, cachedFile, metaModelElementInstantiator);
+      const element = this.instantiateElement(rdfModel, subject);
+      if (element) cachedFile.resolveInstance(element);
     }
 
-    metaModelElementInstantiator.executeQueueInstantiators(rdfModel.isExternalRef);
-
-    return cachedFile;
+    destroyElementCache();
+    destroyRdfModel({keepStore: true});
+    destroyStore();
   }
 
-  public instantiateUnusedElement(
-    subject: Quad_Subject,
-    rdfModel: RdfModel,
-    cachedFile: CachedFile,
-    metaModelElementInstantiator: MetaModelElementInstantiator,
-  ) {
-    const samm = rdfModel.SAMM();
-    const sammC = rdfModel.SAMMC();
-    const elementType = rdfModel.store.getObjects(subject, rdfModel.SAMM().RdfType(), null)?.[0]?.value;
-
-    if (samm.isPropertyElement(elementType)) {
-      const overwrittenProperty = new PropertyInstantiator(metaModelElementInstantiator).createProperty({
-        blankNode: false,
-        quad: subject,
-      });
-      if (overwrittenProperty?.property) {
-        cachedFile.resolveElement(overwrittenProperty.property);
-      }
-      return;
+  public instantiateElement(rdfModel: RdfModel, subject: string): NamedElement {
+    const {samm, sammC} = rdfModel;
+    const elementType = rdfModel.store.getObjects(subject, rdfModel.samm.RdfType(), null)?.[0]?.value;
+    if (samm.Property().value === elementType) {
+      return createProperty(new Triple(null, null, new NamedNode(subject)));
     }
 
-    if (samm.isAbstractPropertyElement(elementType)) {
-      const overwrittenProperty = new AbstractPropertyInstantiator(metaModelElementInstantiator).createAbstractProperty({
-        blankNode: false,
-        quad: subject,
-      });
-
-      if (overwrittenProperty?.property) {
-        cachedFile.resolveElement(overwrittenProperty.property);
-      }
-      return;
+    if (samm.AbstractProperty().value === elementType) {
+      const property = createProperty(new Triple(null, null, new NamedNode(subject)));
+      property.isAbstract = true;
+      return property;
     }
 
     if (elementType.endsWith('Constraint')) {
-      const constraint = metaModelElementInstantiator.getConstraint(DataFactory.quad(null, null, subject));
-      if (constraint) {
-        cachedFile.resolveElement(constraint);
-      }
-      return;
+      return detectAndCreateConstraint(new Triple(null, null, new NamedNode(subject)));
     }
 
-    if (sammC.isStandardCharacteristic(elementType) || samm.isCharacteristic(elementType)) {
-      const characteristic = metaModelElementInstantiator.getCharacteristic(DataFactory.quad(null, null, subject));
-      if (characteristic) {
-        cachedFile.resolveElement(characteristic);
-      }
-      return;
+    if (sammC.isStandardCharacteristic(elementType) || samm.Characteristic().value === elementType) {
+      return detectAndCreateCharacteristic(new Triple(null, null, new NamedNode(subject)));
     }
 
-    if (samm.isOperationElement(elementType)) {
-      const operation = new OperationInstantiator(metaModelElementInstantiator).createOperation({
-        blankNode: false,
-        quad: subject,
-      });
-      if (operation) {
-        cachedFile.resolveElement(operation);
-      }
-      return;
+    if (samm.Operation().value === elementType) {
+      createOperation(new Triple(null, null, new NamedNode(subject)));
     }
 
-    if (samm.isEventElement(elementType)) {
-      const event = new EventInstantiator(metaModelElementInstantiator).createEvent({
-        blankNode: false,
-        quad: subject,
-      });
-      if (event) {
-        cachedFile.resolveElement(event);
-      }
-      return;
+    if (samm.Event().value === elementType) {
+      return createEvent(new Triple(null, null, new NamedNode(subject)));
     }
 
-    if (samm.isUnitElement(elementType)) {
-      const unit = new UnitInstantiator(metaModelElementInstantiator).createUnit(subject.value);
-      if (unit) {
-        cachedFile.resolveElement(unit);
-      }
-      return;
+    if (samm.Unit().value === elementType) {
+      return createUnit(subject);
     }
 
-    if (samm.isEntity(elementType)) {
-      const entity = new EntityInstantiator(metaModelElementInstantiator).createEntity(rdfModel.store.getQuads(subject, null, null, null));
-      if (entity) {
-        cachedFile.resolveElement(entity);
-      }
-      return;
+    if (samm.Entity().value === elementType) {
+      return createEntity(rdfModel.store.getQuads(subject, null, null, null));
     }
 
-    if (samm.isAbstractEntity(elementType)) {
-      const entity = new AbstractEntityInstantiator(metaModelElementInstantiator).createAbstractEntity(
-        rdfModel.store.getQuads(subject, null, null, null),
-      );
-      if (entity) {
-        cachedFile.resolveElement(entity);
-      }
-      return;
+    if (samm.isAbstractEntity(subject)) {
+      return createEntity(rdfModel.store.getQuads(subject, null, null, null), true);
     }
 
-    if (RdfModelUtil.isEntityValue(elementType, metaModelElementInstantiator)) {
-      const entityValue = new EntityValueInstantiator(metaModelElementInstantiator).createEntityValue(
-        rdfModel.store.getQuads(subject, null, null, null),
-        subject,
-      );
-      if (entityValue) {
-        cachedFile.resolveElement(entityValue);
-      }
+    if (RdfModelUtil.isEntityValue(subject, rdfModel)) {
+      return resolveEntityInstance(new Triple(null, null, new NamedNode(subject)));
     }
+
+    return null;
   }
 }

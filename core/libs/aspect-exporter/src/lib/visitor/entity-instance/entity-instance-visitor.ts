@@ -11,19 +11,24 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable} from '@angular/core';
-import {DefaultCollection, DefaultEntityInstance, EntityInstanceProperty} from '@ame/meta-model';
+import {LoadedFilesService} from '@ame/cache';
 import {ModelService, RdfService} from '@ame/rdf/services';
-import {DataFactory, Literal, NamedNode} from 'n3';
-import {BaseVisitor} from '../base-visitor';
 import {isDataTypeLangString} from '@ame/shared';
+import {Injectable} from '@angular/core';
+import {DefaultCollection, DefaultEntityInstance, Samm} from '@esmf/aspect-model-loader';
+import {DataFactory, Literal, NamedNode} from 'n3';
 import {RdfListService} from '../../rdf-list';
-import {Samm} from '@ame/vocabulary';
+import {BaseVisitor} from '../base-visitor';
 
 @Injectable()
 export class EntityInstanceVisitor extends BaseVisitor<DefaultEntityInstance> {
+  get currentFile() {
+    return this.loadedFilesService.currentLoadedFile;
+  }
+
   constructor(
     private rdfListService: RdfListService,
+    private loadedFilesService: LoadedFilesService,
     public modelService: ModelService,
     rdfService: RdfService,
   ) {
@@ -45,8 +50,8 @@ export class EntityInstanceVisitor extends BaseVisitor<DefaultEntityInstance> {
     const {aspectModelUrn} = entityValue;
     const rdfModel = this.modelService.currentRdfModel;
 
-    const {propertyCollectionWithLangString, property} = entityValue.properties.reduce(
-      (acc, property) => (
+    const {propertyCollectionWithLangString, property} = Array.from(entityValue.assertions.values()).reduce(
+      (acc, property: any) => (
         isDataTypeLangString(property.key.property) && property.key.property.characteristic instanceof DefaultCollection
           ? acc.propertyCollectionWithLangString.push(property)
           : acc.property.push(property),
@@ -109,10 +114,10 @@ export class EntityInstanceVisitor extends BaseVisitor<DefaultEntityInstance> {
   }
 
   private updateBaseProperties(entityValue: DefaultEntityInstance): void {
-    const rdfModel = this.modelService.currentRdfModel;
+    const rdfModel = this.currentFile.rdfModel;
     rdfModel.store.addQuad(
       DataFactory.namedNode(entityValue.aspectModelUrn),
-      rdfModel.SAMM().RdfType(),
+      rdfModel.samm.RdfType(),
       DataFactory.namedNode(entityValue.entity.aspectModelUrn),
     );
   }

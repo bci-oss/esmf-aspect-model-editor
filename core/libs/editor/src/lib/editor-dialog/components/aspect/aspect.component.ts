@@ -13,7 +13,7 @@
 
 import {Component, Input} from '@angular/core';
 import {FormControl} from '@angular/forms';
-import {DefaultAspect} from '@ame/meta-model';
+import {DefaultAspect} from '@esmf/aspect-model-loader';
 import {ModelElementEditorComponent} from '..';
 import {UpdatedProperties} from '../properties';
 

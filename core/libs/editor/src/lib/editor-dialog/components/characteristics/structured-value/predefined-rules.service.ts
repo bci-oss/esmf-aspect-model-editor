@@ -11,9 +11,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable} from '@angular/core';
-import {DefaultCharacteristic, DefaultProperty, DefaultScalar, OverWrittenProperty} from '@ame/meta-model';
+import {OverWrittenProperty} from '@ame/meta-model';
 import {RdfService} from '@ame/rdf/services';
+import {Injectable} from '@angular/core';
+import {DefaultCharacteristic, DefaultProperty, DefaultScalar} from '@esmf/aspect-model-loader';
 import {simpleDataTypes} from '../../../../../../../shared/src/lib/constants/xsd-datatypes';
 
 @Injectable({
@@ -112,12 +113,12 @@ export class PredefinedRulesService {
     const namespace = this.rdfService.currentRdfModel.getAspectModelUrn();
     const version = this.rdfService.currentRdfModel.getMetaModelVersion();
     return {
-      property: new DefaultProperty(
-        version,
-        namespace + property.label,
-        property.label,
-        this.createCharacteristic(property.characteristic),
-      ),
+      property: new DefaultProperty({
+        metaModelVersion: version,
+        aspectModelUrn: namespace + property.label,
+        name: property.label,
+        characteristic: this.createCharacteristic(property.characteristic),
+      }),
       keys: {},
     };
   }
@@ -129,11 +130,11 @@ export class PredefinedRulesService {
 
     const namespace = this.rdfService.currentRdfModel.getAspectModelUrn();
     const version = this.rdfService.currentRdfModel.getMetaModelVersion();
-    return new DefaultCharacteristic(
-      version,
-      namespace + characteristic.name,
-      characteristic.name,
-      new DefaultScalar(characteristic.type.isDefinedBy),
-    );
+    return new DefaultCharacteristic({
+      metaModelVersion: version,
+      aspectModelUrn: namespace + characteristic.name,
+      name: characteristic.name,
+      dataType: new DefaultScalar(characteristic.type.isDefinedBy),
+    });
   }
 }

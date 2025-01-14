@@ -16,13 +16,13 @@
     <h2>{{ 'SIDEBAR.WORKSPACE.TITLE' | translate }}</h2>
 
     <button
+      class="refresh"
       [class.loading]="loading"
       [class.disabled]="loading"
       [matTooltip]="loading ? ('SIDEBAR.WORKSPACE.REFRESHING' | translate) : ('SIDEBAR.WORKSPACE.REFRESH' | translate)"
       [disabled]="loading"
       (click)="sidebarService.workspace.refresh()"
       mat-mini-fab
-      class="refresh"
     >
       <mat-icon>refresh</mat-icon>
     </button>

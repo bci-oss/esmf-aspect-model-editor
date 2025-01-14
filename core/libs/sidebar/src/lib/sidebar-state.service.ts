@@ -11,14 +11,13 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {RdfService} from '@ame/rdf/services';
+import {ModelApiService} from '@ame/api';
+import {LoadedFilesService, NamespacesCacheService} from '@ame/cache';
+import {ExporterHelper} from '@ame/migrator';
+import {APP_CONFIG, AppConfig, BrowserService, ElectronSignals, ElectronSignalsService, NotificationsService} from '@ame/shared';
 import {inject, Injectable} from '@angular/core';
 import {BehaviorSubject, catchError, map, of, Subscription, throwError} from 'rxjs';
-import {ModelApiService} from '@ame/api';
-import {APP_CONFIG, AppConfig, BrowserService, ElectronSignals, ElectronSignalsService, NotificationsService} from '@ame/shared';
-import {ExporterHelper} from '@ame/migrator';
 import {environment} from '../../../../environments/environment';
-import {NamespacesCacheService} from '@ame/cache';
 
 class SidebarState {
   private opened$ = new BehaviorSubject(false);
@@ -129,6 +128,7 @@ export class SidebarStateService {
   private electronSignalsService: ElectronSignals = inject(ElectronSignalsService);
   private namespacesCacheService: NamespacesCacheService = inject(NamespacesCacheService);
   private config: AppConfig = inject(APP_CONFIG);
+  private loadedFilesService = inject(LoadedFilesService);
 
   public sammElements = new SidebarState();
   public workspace = new SidebarStateWithRefresh();
@@ -137,7 +137,7 @@ export class SidebarStateService {
   public namespacesState = new NamespacesManager();
 
   constructor(
-    private rdfService: RdfService,
+    // private rdfService: RdfService,
     private modelApiService: ModelApiService,
     private notificationService: NotificationsService,
     private browserService: BrowserService,
@@ -148,16 +148,13 @@ export class SidebarStateService {
     });
   }
 
-  public isCurrentFileLoaded() {
-    const currentRdfModel = this.rdfService.currentRdfModel;
-    return Boolean(currentRdfModel?.originalAbsoluteFileName || currentRdfModel?.absoluteAspectModelFileName);
+  public isCurrentFileLoaded(): boolean {
+    return !!this.loadedFilesService.currentLoadedFile;
   }
 
   public isCurrentFile(namespace: string, fileName: string): boolean {
-    const currentFileName = this.namespacesCacheService.currentCachedFile?.fileName;
-    const currentNamespace = this.rdfService.currentRdfModel.getAspectModelUrn().replace('urn:samm:', '').replace('#', '');
-
-    return `${currentNamespace}:${currentFileName}` === `${namespace}:${fileName}`;
+    const {namespace: currentNamespace, name} = this.loadedFilesService.currentLoadedFile;
+    return currentNamespace === namespace && name === fileName;
   }
 
   public requestGetNamespaces() {
@@ -212,13 +209,12 @@ export class SidebarStateService {
       return;
     }
 
-    const rdfModel = this.rdfService.externalRdfModels.find(rdf => rdf.absoluteAspectModelFileName === `${namespace}:${file.name}`);
-
+    const loadedFile = this.loadedFilesService.files[`${namespace}:${file.name}`];
     file.loaded = this.isCurrentFile(namespace, file.name);
 
-    if (rdfModel?.samm) {
-      file.sammVersion = rdfModel?.samm.version;
-      file.outdated = ExporterHelper.isVersionOutdated(rdfModel?.samm.version, this.config.currentSammVersion);
+    if (loadedFile?.rdfModel?.samm) {
+      file.sammVersion = loadedFile.rdfModel?.samm.version;
+      file.outdated = ExporterHelper.isVersionOutdated(loadedFile.rdfModel?.samm.version, this.config.currentSammVersion);
     }
   }
 

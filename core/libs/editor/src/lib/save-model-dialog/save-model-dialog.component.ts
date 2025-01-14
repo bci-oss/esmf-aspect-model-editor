@@ -11,11 +11,11 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, NgZone} from '@angular/core';
-import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {EditorService} from '@ame/editor';
 import {LanguageTranslateModule} from '@ame/translation';
+import {Component, NgZone} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
+import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 
 @Component({
   standalone: true,

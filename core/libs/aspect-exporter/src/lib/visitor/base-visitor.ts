@@ -11,25 +11,25 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {BaseMetaModelElement} from '@ame/meta-model';
 import {RdfService} from '@ame/rdf/services';
+import {NamedElement} from '@esmf/aspect-model-loader';
 import {DataFactory} from 'n3';
 
 export abstract class BaseVisitor<T> {
   constructor(protected rdfService: RdfService) {}
 
-  abstract visit(element: BaseMetaModelElement): T;
+  abstract visit(element: NamedElement): T;
 
   protected setPrefix(aspectModelUrn: string) {
     const namespace = `${aspectModelUrn.split('#')[0]}#`;
-    if (this.rdfService.currentRdfModel.hasNamespace(namespace)) {
+    if (this.rdfService.currentRdfModel.hasDependency(namespace)) {
       return;
     }
 
     const externalRdfModel = this.rdfService.externalRdfModels.find(
       rdfModel => rdfModel.store.getQuads(DataFactory.namedNode(aspectModelUrn), null, null, null).length > 0,
     );
-    const alias = externalRdfModel?.getAliasByNamespace(namespace);
+    const alias = externalRdfModel?.getAliasByDependency(namespace);
     this.rdfService.currentRdfModel.addPrefix(alias, namespace);
   }
 }

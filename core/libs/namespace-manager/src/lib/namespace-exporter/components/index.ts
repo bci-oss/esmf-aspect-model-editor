@@ -13,5 +13,5 @@
 
 export * from './root-export-namespaces/root-export-namespaces.component';
 export * from './select-namespaces/select-namespaces.component';
-export * from './validate/validate.components';
 export * from './summary/summary.component';
+export * from './validate/validate.components';

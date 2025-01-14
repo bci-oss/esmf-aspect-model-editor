@@ -11,12 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {DefaultProperty, DefaultCharacteristic, DefaultAbstractProperty} from '@ame/meta-model';
-import {MxGraphService, MxGraphAttributeService, MxGraphHelper} from '@ame/mx-graph';
+import {MxGraphAttributeService, MxGraphHelper, MxGraphService} from '@ame/mx-graph';
 import {basicShapeGeometry} from '@ame/shared';
 import {Injectable} from '@angular/core';
-import {MultiShapeConnector} from '../models';
+import {DefaultCharacteristic, DefaultProperty} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
+import {MultiShapeConnector} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -35,7 +35,7 @@ export class PropertyCharacteristicConnectionHandler implements MultiShapeConnec
       }
 
       const targetModel = MxGraphHelper.getModelElement(outEdge.target);
-      if (targetModel instanceof DefaultProperty || targetModel instanceof DefaultAbstractProperty) {
+      if (targetModel instanceof DefaultProperty || targetModel.isAbstract) {
         return;
       }
 

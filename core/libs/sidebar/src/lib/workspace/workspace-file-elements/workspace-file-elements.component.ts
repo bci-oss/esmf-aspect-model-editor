@@ -11,13 +11,13 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ChangeDetectorRef, Component, OnInit, inject} from '@angular/core';
-import {SidebarStateService} from '@ame/sidebar';
-import {ElementType, sammElements} from '@ame/shared';
 import {EditorService} from '@ame/editor';
-import {filter} from 'rxjs';
-import {BaseMetaModelElement} from '@ame/meta-model';
 import {MxGraphService} from '@ame/mx-graph';
+import {ElementType, sammElements} from '@ame/shared';
+import {SidebarStateService} from '@ame/sidebar';
+import {ChangeDetectorRef, Component, OnInit, inject} from '@angular/core';
+import {NamedElement} from '@esmf/aspect-model-loader';
+import {filter} from 'rxjs';
 
 @Component({
   selector: 'ame-workspace-file-elements',
@@ -76,7 +76,7 @@ export class WorkspaceFileElementsComponent implements OnInit {
     });
   }
 
-  public elementImported(element: BaseMetaModelElement): boolean {
+  public elementImported(element: NamedElement): boolean {
     if (element?.aspectModelUrn) {
       return !!this.mxGraphService.resolveCellByModelElement(element);
     }
@@ -98,7 +98,7 @@ export class WorkspaceFileElementsComponent implements OnInit {
       const searchString = target.value.toLowerCase();
       for (const key in this.elements) {
         this.searched[key] = searchString
-          ? this.elements[key].elements.filter((element: BaseMetaModelElement) => {
+          ? this.elements[key].elements.filter((element: NamedElement) => {
               // @TODO: Search for the language the application is set on
               return (
                 element.name.toLowerCase().includes(searchString) || element.getDescription('en')?.toLowerCase()?.includes(searchString)

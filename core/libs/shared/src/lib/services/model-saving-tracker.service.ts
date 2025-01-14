@@ -11,9 +11,9 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelService, RdfService} from '@ame/rdf/services';
 import {MxGraphService} from '@ame/mx-graph';
-import {inject, Injectable} from '@angular/core';
+import {ModelService, RdfService} from '@ame/rdf/services';
+import {Injectable, inject} from '@angular/core';
 import {map, take} from 'rxjs';
 
 @Injectable({providedIn: 'root'})

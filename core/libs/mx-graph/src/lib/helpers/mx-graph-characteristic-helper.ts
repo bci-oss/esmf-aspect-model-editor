@@ -12,7 +12,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {DefaultEntityInstance, EntityInstanceProperty} from '@ame/meta-model';
+import {DefaultEntityInstance} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
 
 @Injectable({

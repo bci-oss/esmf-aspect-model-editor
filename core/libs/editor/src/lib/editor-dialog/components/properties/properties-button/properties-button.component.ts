@@ -13,20 +13,13 @@
 
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
-import {
-  BaseMetaModelElement,
-  DefaultAbstractEntity,
-  DefaultAspect,
-  DefaultEntity,
-  OverWrittenProperty,
-  OverWrittenPropertyKeys,
-} from '@ame/meta-model';
+import {DefaultAbstractEntity, DefaultAspect, DefaultEntity, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
 import {first} from 'rxjs/operators';
 import {PropertiesModalComponent} from '..';
 import {EditorModelService} from '../../../editor-model.service';
 
 export interface UpdatedProperties {
-  [key: string]: OverWrittenPropertyKeys;
+  [key: string]: DefaultProperty;
 }
 
 @Component({
@@ -37,11 +30,11 @@ export interface UpdatedProperties {
 export class PropertiesButtonComponent implements OnInit {
   @Output() overwrite = new EventEmitter();
 
-  private propertiesClone: OverWrittenProperty[];
+  private propertiesClone: DefaultProperty[];
 
   public metaModelElement: DefaultEntity | DefaultAspect | DefaultAbstractEntity;
   public get isPredefined(): boolean {
-    return this.metaModelElement?.isPredefined();
+    return this.metaModelElement?.isPredefined;
   }
 
   constructor(
@@ -50,7 +43,7 @@ export class PropertiesButtonComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.metaModelDialogService.getMetaModelElement().subscribe((metaModelElement: BaseMetaModelElement) => {
+    this.metaModelDialogService.getMetaModelElement().subscribe((metaModelElement: NamedElement) => {
       if (
         metaModelElement instanceof DefaultEntity ||
         metaModelElement instanceof DefaultAbstractEntity ||
@@ -80,17 +73,15 @@ export class PropertiesButtonComponent implements OnInit {
           return;
         }
 
+        // @TODO clone this property
         this.propertiesClone = this.metaModelElement.properties.map(({property, keys}) => ({property, keys: {...keys}}));
-        for (const {
-          property: {aspectModelUrn},
-          keys,
-        } of this.propertiesClone) {
-          if (!data[aspectModelUrn]) {
+        for (const property of this.propertiesClone) {
+          if (!data[property.aspectModelUrn]) {
             continue;
           }
-          keys.notInPayload = data[aspectModelUrn].notInPayload;
-          keys.optional = data[aspectModelUrn].optional;
-          keys.payloadName = data[aspectModelUrn].payloadName;
+          property.notInPayload = data[property.aspectModelUrn].notInPayload;
+          property.optional = data[property.aspectModelUrn].optional;
+          property.payloadName = data[property.aspectModelUrn].payloadName;
         }
 
         this.overwrite.emit(data);

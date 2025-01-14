@@ -11,12 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ListProperties, RdfListService, RdfNodeService} from '@ame/aspect-exporter';
+import {RdfService} from '@ame/rdf/services';
 import {Injectable} from '@angular/core';
+import {DefaultEvent} from '@esmf/aspect-model-loader';
 import {DataFactory, Store} from 'n3';
 import {BaseVisitor} from '../base-visitor';
-import {ListProperties, RdfListService, RdfNodeService} from '@ame/aspect-exporter';
-import {DefaultEvent} from '@ame/meta-model';
-import {RdfService} from '@ame/rdf/services';
 
 @Injectable()
 export class EventVisitor extends BaseVisitor<DefaultEvent> {
@@ -52,13 +52,13 @@ export class EventVisitor extends BaseVisitor<DefaultEvent> {
         language,
         value: event.getDescription(language),
       })),
-      see: event.getSeeReferences() || [],
+      see: event.getSee() || [],
     });
 
-    if (event.parameters?.length) {
-      this.rdfListService.push(event, ...event.parameters);
-      for (const param of event.parameters) {
-        this.setPrefix(param.property.aspectModelUrn);
+    if (event.properties?.length) {
+      this.rdfListService.push(event, ...event.properties);
+      for (const param of event.properties) {
+        this.setPrefix(param.aspectModelUrn);
       }
     } else {
       this.rdfListService.createEmpty(event, ListProperties.parameters);

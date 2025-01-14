@@ -11,22 +11,24 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, Inject, OnInit} from '@angular/core';
-import {MatCheckboxChange, MatCheckboxModule} from '@angular/material/checkbox';
-import {Router} from '@angular/router';
-import {NamespacesManagerService} from '../../../shared';
-import {Prefixes} from 'n3';
-import {RdfModel, RdfModelUtil} from '@ame/rdf/utils';
+import {LoadedFilesService} from '@ame/cache';
 import {EditorService} from '@ame/editor';
-import {tap} from 'rxjs/operators';
-import {first} from 'rxjs';
+import {RdfModelUtil} from '@ame/rdf/utils';
 import {APP_CONFIG, AppConfig} from '@ame/shared';
-import {MatDialogModule} from '@angular/material/dialog';
 import {LanguageTranslateModule} from '@ame/translation';
 import {KeyValuePipe} from '@angular/common';
-import {MatIconModule} from '@angular/material/icon';
+import {Component, Inject, OnInit} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
-import {MatTooltip, MatTooltipModule} from '@angular/material/tooltip';
+import {MatCheckboxChange, MatCheckboxModule} from '@angular/material/checkbox';
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatIconModule} from '@angular/material/icon';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {Router} from '@angular/router';
+import {RdfModel} from '@esmf/aspect-model-loader';
+import {Prefixes} from 'n3';
+import {first} from 'rxjs';
+import {tap} from 'rxjs/operators';
+import {NamespacesManagerService} from '../../../shared';
 
 const nonDependentNamespaces = (sammVersion: string) => [
   'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
@@ -63,6 +65,7 @@ export class SelectNamespacesComponent implements OnInit {
     private namespacesManager: NamespacesManagerService,
     private editorService: EditorService,
     private router: Router,
+    private loadedFilesService: LoadedFilesService,
     @Inject(APP_CONFIG) public config: AppConfig,
   ) {}
 
@@ -92,9 +95,10 @@ export class SelectNamespacesComponent implements OnInit {
   }
 
   private getNamespacesDependencies(models: RdfModel[]): NamespacesDependencies {
+    const currentLoadedFile = this.loadedFilesService.currentLoadedFile;
     return models.reduce((acc, rdfModel) => {
-      const versionedNamespace = RdfModelUtil.getNamespaceFromRdf(rdfModel.absoluteAspectModelFileName);
-      const fileName = RdfModelUtil.getFileNameFromRdf(rdfModel.absoluteAspectModelFileName);
+      const versionedNamespace = RdfModelUtil.getNamespaceFromRdf(currentLoadedFile.absoluteName);
+      const fileName = RdfModelUtil.getFileNameFromRdf(currentLoadedFile.absoluteName);
 
       let nDependency = acc[versionedNamespace];
       if (!nDependency) {
@@ -107,9 +111,7 @@ export class SelectNamespacesComponent implements OnInit {
         nDependency = acc[versionedNamespace];
       }
 
-      nDependency.dependencies = Array.from(
-        new Set([...nDependency.dependencies, ...this.getDependentNamespaces(rdfModel.getNamespaces())]),
-      );
+      nDependency.dependencies = Array.from(new Set([...nDependency.dependencies, ...this.getDependentNamespaces(rdfModel.getPrefixes())]));
       nDependency.files = Array.from(new Set([...nDependency.files, fileName]));
       return acc;
     }, {});

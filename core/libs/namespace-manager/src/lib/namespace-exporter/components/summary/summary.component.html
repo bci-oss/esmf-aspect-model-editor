@@ -11,7 +11,7 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-<h2 mat-dialog-title class="properties-title">{{ 'VALIDATION_RESULT_DIALOG.TITLE' | translate }}</h2>
+<h2 class="properties-title" mat-dialog-title>{{ 'VALIDATION_RESULT_DIALOG.TITLE' | translate }}</h2>
 
 <mat-dialog-content>
   @if (!missingElements.length) {
@@ -39,7 +39,7 @@
   <div class="actions-right">
     <button mat-flat-button mat-dialog-close>{{ 'VALIDATION_RESULT_DIALOG.DISMISS_BUTTON' | translate }}</button>
     @if (!missingElements.length) {
-      <button mat-flat-button color="primary" (click)="export()">
+      <button (click)="export()" mat-flat-button color="primary">
         {{ 'VALIDATION_RESULT_DIALOG.EXPORT' | translate }}
       </button>
     }

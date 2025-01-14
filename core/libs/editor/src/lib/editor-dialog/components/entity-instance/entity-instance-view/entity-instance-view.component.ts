@@ -13,11 +13,11 @@
 
 import {SelectionModel} from '@angular/cdk/collections';
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {filter} from 'rxjs/operators';
-import {EntityInstanceModalComponent} from '..';
-import {DefaultEntityInstance, DefaultEnumeration, EntityInstanceProperty} from '@ame/meta-model';
 import {FormControl, FormGroup} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
+import {DefaultEntityInstance, DefaultEnumeration} from '@esmf/aspect-model-loader';
+import {filter} from 'rxjs/operators';
+import {EntityInstanceModalComponent} from '..';
 import {DataType, FormFieldHelper} from '../../../../helpers/form-field.helper';
 
 @Component({
@@ -49,7 +49,7 @@ export class EntityInstanceViewComponent implements OnInit, OnDestroy {
     this._complexValues = newValues;
     // keep the original entity references
     this._complexValues.forEach((complexValue: DefaultEntityInstance) => {
-      complexValue.entity = newValues.find(newValue => newValue.aspectModelUrn === complexValue.aspectModelUrn).entity;
+      complexValue.type = newValues.find(newValue => newValue.aspectModelUrn === complexValue.aspectModelUrn).type;
     });
   }
 
@@ -129,7 +129,7 @@ export class EntityInstanceViewComponent implements OnInit, OnDestroy {
 
   private checkInnerComplexValues(newValue: DefaultEntityInstance[]) {
     newValue.forEach(value =>
-      value?.properties.forEach(innerVal => {
+      value?.assertions.forEach(innerVal => {
         innerVal.isComplex = innerVal.value instanceof DefaultEntityInstance;
       }),
     );

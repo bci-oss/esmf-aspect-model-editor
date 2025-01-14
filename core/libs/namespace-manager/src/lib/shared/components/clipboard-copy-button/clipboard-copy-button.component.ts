@@ -11,15 +11,15 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, inject} from '@angular/core';
-import {NamespacesSessionInterface} from '../../models';
-import {NAMESPACES_SESSION} from '../../services';
 import {NotificationsService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
-import {TranslateModule} from '@ngx-translate/core';
+import {Component, inject} from '@angular/core';
+import {MatButton} from '@angular/material/button';
 import {MatIcon} from '@angular/material/icon';
 import {MatTooltip} from '@angular/material/tooltip';
-import {MatButton} from '@angular/material/button';
+import {TranslateModule} from '@ngx-translate/core';
+import {NamespacesSessionInterface} from '../../models';
+import {NAMESPACES_SESSION} from '../../services';
 
 @Component({
   selector: 'ame-clipboard-copy-button',

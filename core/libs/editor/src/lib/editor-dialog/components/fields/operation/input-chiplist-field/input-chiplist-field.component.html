@@ -25,13 +25,13 @@
       </mat-chip-row>
     }
     <input
+      class="enumeration-value-input"
       #searchInput
       [formControl]="searchControl"
       [matAutocomplete]="auto"
       [matChipInputFor]="chipList"
       [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
       matInput
-      class="enumeration-value-input"
       name="inputValues"
       spellcheck="false"
       placeholder="Add value, click option"

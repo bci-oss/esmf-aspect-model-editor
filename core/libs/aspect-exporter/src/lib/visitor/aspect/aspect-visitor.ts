@@ -11,9 +11,9 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable} from '@angular/core';
-import {DefaultAspect} from '@ame/meta-model';
 import {RdfService} from '@ame/rdf/services';
+import {Injectable} from '@angular/core';
+import {DefaultAspect} from '@esmf/aspect-model-loader';
 import {ListProperties, RdfListService} from '../../rdf-list';
 import {RdfNodeService} from '../../rdf-node';
 import {BaseVisitor} from '../base-visitor';
@@ -45,13 +45,13 @@ export class AspectVisitor extends BaseVisitor<DefaultAspect> {
         language,
         value: aspect.getDescription(language),
       })),
-      see: aspect.getSeeReferences() || [],
+      see: aspect.getSee() || [],
     });
 
     if (aspect.properties?.length) {
       this.rdfListService.push(aspect, ...aspect.properties);
       for (const property of aspect.properties) {
-        this.setPrefix(property.property.aspectModelUrn);
+        this.setPrefix(property.aspectModelUrn);
       }
     } else {
       this.rdfListService.createEmpty(aspect, ListProperties.properties);

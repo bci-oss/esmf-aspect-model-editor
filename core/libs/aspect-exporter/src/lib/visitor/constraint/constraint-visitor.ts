@@ -12,6 +12,10 @@
  */
 
 import {Injectable} from '@angular/core';
+
+import {LoadedFilesService} from '@ame/cache';
+import {MxGraphService} from '@ame/mx-graph';
+import {RdfService} from '@ame/rdf/services';
 import {
   DefaultConstraint,
   DefaultEncodingConstraint,
@@ -22,11 +26,10 @@ import {
   DefaultRangeConstraint,
   DefaultRegularExpressionConstraint,
   DefaultTrait,
+  SammC,
   Type,
-} from '@ame/meta-model';
-import {MxGraphService} from '@ame/mx-graph';
-import {RdfService} from '@ame/rdf/services';
-import {SammC} from '@ame/vocabulary';
+} from '@esmf/aspect-model-loader';
+import {ComplexType} from 'libs/aspect-model-loader/src/lib/aspect-meta-model/complex-type';
 import {DataFactory, NamedNode, Store} from 'n3';
 import {RdfNodeService} from '../../rdf-node/rdf-node.service';
 import {BaseVisitor} from '../base-visitor';
@@ -34,11 +37,11 @@ import {BaseVisitor} from '../base-visitor';
 @Injectable()
 export class ConstraintVisitor extends BaseVisitor<DefaultConstraint> {
   private get store(): Store {
-    return this.rdfNodeService.modelService.currentRdfModel.store;
+    return this.loadedFilesService.currentLoadedFile.rdfModel.store;
   }
 
   private get sammC(): SammC {
-    return this.rdfNodeService.modelService.currentRdfModel.SAMMC();
+    return this.loadedFilesService.currentLoadedFile.rdfModel.sammC;
   }
 
   private readonly constraintCallbacks = {
@@ -55,6 +58,7 @@ export class ConstraintVisitor extends BaseVisitor<DefaultConstraint> {
   constructor(
     public rdfNodeService: RdfNodeService,
     public mxGraphService: MxGraphService,
+    private loadedFilesService: LoadedFilesService,
     rdfService: RdfService,
   ) {
     super(rdfService);
@@ -85,11 +89,11 @@ export class ConstraintVisitor extends BaseVisitor<DefaultConstraint> {
         language,
         value: constraint.getDescription(language),
       })),
-      see: constraint.getSeeReferences() || [],
+      see: constraint.getSee() || [],
     });
   }
 
-  private updateRange(constraint: DefaultRangeConstraint, characteristicType: Type) {
+  private updateRange(constraint: DefaultRangeConstraint, characteristicType: ComplexType) {
     this.rdfNodeService.update(constraint, {
       characteristicType: characteristicType,
       minValue: constraint.minValue,

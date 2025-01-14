@@ -11,15 +11,15 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {NamespacesCacheService} from '@ame/cache';
+import {DataTypeService} from '@ame/shared';
+import {ENTER} from '@angular/cdk/keycodes';
 import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {FormControl, Validators} from '@angular/forms';
-import {MatChipInputEvent, MatChipGrid} from '@angular/material/chips';
+import {MatChipGrid, MatChipInputEvent} from '@angular/material/chips';
+import {DefaultEntity, DefaultEntityInstance, DefaultEnumeration, NamedElement} from '@esmf/aspect-model-loader';
 import {debounceTime} from 'rxjs/operators';
-import {ENTER} from '@angular/cdk/keycodes';
 import {InputFieldComponent} from '../../input-field.component';
-import {BaseMetaModelElement, DefaultEntity, DefaultEntityInstance, DefaultEnumeration} from '@ame/meta-model';
-import {DataTypeService} from '@ame/shared';
-import {NamespacesCacheService} from '@ame/cache';
 
 @Component({
   selector: 'ame-values-input-field',
@@ -159,7 +159,7 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
     });
   }
 
-  private handleNextModelElement(modelElement: BaseMetaModelElement): void {
+  private handleNextModelElement(modelElement: NamedElement): void {
     this.enumValues = [];
     if (!(modelElement instanceof DefaultEnumeration)) {
       return;

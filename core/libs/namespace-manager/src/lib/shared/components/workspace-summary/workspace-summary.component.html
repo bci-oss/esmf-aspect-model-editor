@@ -27,10 +27,10 @@
             </div>
 
             @if (value.violationError?.length) {
-              <mat-icon matTooltip="This file has errors" matTooltipPosition="right" class="violation"> error </mat-icon>
+              <mat-icon class="violation" matTooltip="This file has errors" matTooltipPosition="right"> error </mat-icon>
             }
             @if (!value.violationError?.length) {
-              <mat-icon [matTooltip]="'WORKSPACE_SUMMARY.VALIDATED_SUCCESSFULLY' | translate" matTooltipPosition="right" class="success">
+              <mat-icon class="success" [matTooltip]="'WORKSPACE_SUMMARY.VALIDATED_SUCCESSFULLY' | translate" matTooltipPosition="right">
                 done
               </mat-icon>
             }

@@ -13,10 +13,7 @@
 
 import {
   Aspect,
-  BaseMetaModelElement,
   Characteristic,
-  DefaultAbstractEntity,
-  DefaultAbstractProperty,
   DefaultAspect,
   DefaultCharacteristic,
   DefaultEntity,
@@ -25,13 +22,13 @@ import {
   DefaultProperty,
   DefaultUnit,
   Entity,
-  IsNamed,
+  NamedElement,
   Property,
-} from '@ame/meta-model';
+} from '@esmf/aspect-model-loader';
 
 export class CachedFile {
-  private anonymousElements: {element: BaseMetaModelElement; name: string}[] = [];
-  private cachedElements: Map<string, any> = new Map<string, BaseMetaModelElement>();
+  private anonymousElements: {element: NamedElement; name: string}[] = [];
+  private cachedElements: Map<string, any> = new Map<string, NamedElement>();
   private _aspect: Aspect;
 
   get aspect(): Aspect {
@@ -49,7 +46,7 @@ export class CachedFile {
     public namespace: string,
   ) {}
 
-  resolveElement<T>(instance: T & IsNamed): T {
+  resolveElement<T extends NamedElement>(instance: T): T {
     const aspectModelUrn = instance.aspectModelUrn;
     const resolvedInstance: T = this.getElement(aspectModelUrn);
     if (resolvedInstance) {
@@ -69,7 +66,7 @@ export class CachedFile {
   }
 
   reset() {
-    this.cachedElements = new Map<string, BaseMetaModelElement>();
+    this.cachedElements = new Map<string, NamedElement>();
     this._aspect = null;
     this.anonymousElements = [];
   }
@@ -82,7 +79,7 @@ export class CachedFile {
     return this.cachedElements.get(key);
   }
 
-  getAllElements<T extends BaseMetaModelElement>(): Array<T> {
+  getAllElements<T extends NamedElement>(): Array<T> {
     return [...this.cachedElements.values()];
   }
 
@@ -108,20 +105,20 @@ export class CachedFile {
     return entities;
   }
 
-  getCachedAbstractEntities(): Array<DefaultAbstractEntity> {
-    const entities: Array<DefaultAbstractEntity> = [];
+  getCachedAbstractEntities(): Array<DefaultEntity> {
+    const entities: Array<DefaultEntity> = [];
     this.cachedElements.forEach(modelElement => {
-      if (modelElement instanceof DefaultAbstractEntity) {
+      if (modelElement instanceof DefaultEntity && modelElement.isAbstractEntity()) {
         entities.push(modelElement);
       }
     });
     return entities;
   }
 
-  getCachedAbstractProperties(): Array<DefaultAbstractProperty> {
-    const abstractProperties: Array<DefaultAbstractProperty> = [];
+  getCachedAbstractProperties(): Array<DefaultProperty> {
+    const abstractProperties: Array<DefaultProperty> = [];
     this.cachedElements.forEach(modelElement => {
-      if (modelElement instanceof DefaultAbstractProperty) {
+      if (modelElement instanceof DefaultProperty && modelElement.isAbstract) {
         abstractProperties.push(modelElement);
       }
     });
@@ -157,22 +154,22 @@ export class CachedFile {
 
   getCachedUnits(): Array<DefaultUnit> {
     return Array.from(this.cachedElements.values()).reduce(
-      (acc: DefaultUnit[], item: any) => (item instanceof DefaultUnit && !item.isPredefined() ? [...acc, item] : acc),
+      (acc: DefaultUnit[], item: any) => (item instanceof DefaultUnit && !item.isPredefined ? [...acc, item] : acc),
       [],
     );
   }
 
   getCachedEvents(): Array<DefaultEvent> {
     return Array.from(this.cachedElements.values()).reduce(
-      (acc: DefaultEvent[], item: any) => (item instanceof DefaultEvent && !item.isPredefined() ? [...acc, item] : acc),
+      (acc: DefaultEvent[], item: any) => (item instanceof DefaultEvent && !item.isPredefined ? [...acc, item] : acc),
       [],
     );
   }
 
   updateCachedElementsNamespace(oldValue: string, newValue: string) {
-    const newCachedElements = new Map<string, BaseMetaModelElement>();
+    const newCachedElements = new Map<string, NamedElement>();
 
-    this.cachedElements.forEach((element: BaseMetaModelElement, key: string) => {
+    this.cachedElements.forEach((element: NamedElement, key: string) => {
       const newAspectModelUrn = element.aspectModelUrn.replace(oldValue, newValue);
       const newKey = key.replace(oldValue, newValue);
 
@@ -183,11 +180,11 @@ export class CachedFile {
     this.namespace = this.namespace.replace(oldValue, newValue);
   }
 
-  addAnonymousElement(modelElement: BaseMetaModelElement, name?: string) {
+  addAnonymousElement(modelElement: NamedElement, name?: string) {
     this.anonymousElements.push({element: modelElement, name: name});
   }
 
-  getAnonymousElements(): {element: BaseMetaModelElement; name: string}[] {
+  getAnonymousElements(): {element: NamedElement; name: string}[] {
     return [...this.anonymousElements];
   }
 

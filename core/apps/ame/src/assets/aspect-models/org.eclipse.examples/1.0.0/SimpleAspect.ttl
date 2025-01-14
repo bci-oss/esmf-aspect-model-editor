@@ -17,9 +17,10 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix : <urn:samm:org.eclipse.examples:1.0.0#> .
+@prefix esmf: <urn:samm:org.eclipse.esmf:1.0.0#> .
 
 :SimpleAspect a samm:Aspect ;
-    samm:properties (:property1) ;
+    samm:properties (:property1 esmf:propertyEsmf) ;
     samm:operations ();
     samm:events () .
 
@@ -28,3 +29,6 @@
 
 :Characteristic1 a samm:Characteristic ;
     samm:dataType xsd:string .
+
+:Entity1 a samm:Entity;
+    samm:properties (esmf:propertyEsmf).

@@ -11,13 +11,13 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, Input, OnInit, inject} from '@angular/core';
-import {FormControl, Validators} from '@angular/forms';
 import {NamespacesCacheService} from '@ame/cache';
 import {EditorDialogValidators} from '@ame/editor';
-import {DefaultProperty, OverWrittenProperty} from '@ame/meta-model';
 import {RdfService} from '@ame/rdf/services';
-import {debounceTime, map, Observable, startWith} from 'rxjs';
+import {Component, Input, OnInit, inject} from '@angular/core';
+import {FormControl, Validators} from '@angular/forms';
+import {DefaultProperty} from '@esmf/aspect-model-loader';
+import {Observable, debounceTime, map, startWith} from 'rxjs';
 
 @Component({
   selector: 'ame-structured-value-property-field',
@@ -25,7 +25,7 @@ import {debounceTime, map, Observable, startWith} from 'rxjs';
   styleUrls: ['./structured-value-property-field.component.scss'],
 })
 export class StructuredValuePropertyFieldComponent implements OnInit {
-  @Input() public overwrittenProperty: OverWrittenProperty = null;
+  @Input() public property: DefaultProperty = null;
   @Input() public fieldControl: FormControl;
 
   public filteredProperties$: Observable<any>;
@@ -41,8 +41,8 @@ export class StructuredValuePropertyFieldComponent implements OnInit {
   ngOnInit() {
     this.control = new FormControl(
       {
-        value: this.overwrittenProperty?.property?.name || '',
-        disabled: !!this.overwrittenProperty?.property?.name || this.overwrittenProperty?.property?.isExternalReference(),
+        value: this.property?.name || '',
+        disabled: !!this.property?.name || this.property?.isExternalReference(),
       },
       [Validators.required, EditorDialogValidators.namingLowerCase],
     );
@@ -57,7 +57,7 @@ export class StructuredValuePropertyFieldComponent implements OnInit {
     this.control.enable();
     this.control.patchValue('');
     this.fieldControl.setValue('');
-    this.overwrittenProperty = null;
+    this.property = null;
   }
 
   isLowerCase(value: string) {
@@ -67,7 +67,7 @@ export class StructuredValuePropertyFieldComponent implements OnInit {
   createNewProperty(name: string) {
     const namespace = this.rdfService.currentRdfModel.getAspectModelUrn();
     const version = this.rdfService.currentRdfModel.getMetaModelVersion();
-    const newProperty = new DefaultProperty(version, namespace + name, name, null, false);
+    const newProperty = new DefaultProperty({metaModelVersion: version, aspectModelUrn: namespace + name, name});
     this.fieldControl.setValue(newProperty);
     this.control.disable();
   }

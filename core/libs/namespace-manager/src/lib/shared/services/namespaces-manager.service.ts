@@ -13,16 +13,16 @@
 
 import {ModelApiService} from '@ame/api';
 import {EditorService, FileInfo, FileTypes, FileUploadService} from '@ame/editor';
+import {SidebarStateService} from '@ame/sidebar';
+import {createFile} from '@ame/utils';
 import {Injectable, InjectionToken} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {Router} from '@angular/router';
-import {catchError, first, Observable, of, switchMap, tap} from 'rxjs';
+import {Observable, catchError, first, of, switchMap, tap} from 'rxjs';
+import {environment} from '../../../../../../environments/environment';
 import {RootExportNamespacesComponent} from '../../namespace-exporter/components';
 import {RootNamespacesImporterComponent} from '../../namespace-importer/components';
 import {NamespacesSession} from '../models';
-import {createFile} from '@ame/utils';
-import {SidebarStateService} from '@ame/sidebar';
-import {environment} from '../../../../../../environments/environment';
 
 const NAMESPACES_SESSION_NAME = 'NAMESPACES_SESSION';
 export let NAMESPACES_SESSION: InjectionToken<NamespacesSession>;

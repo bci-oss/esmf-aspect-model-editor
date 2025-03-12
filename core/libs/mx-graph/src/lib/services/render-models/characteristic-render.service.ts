@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {LoadedFilesService, NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {ShapeConnectorService} from '@ame/connection';
 import {FiltersService} from '@ame/loader-filters';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
@@ -52,7 +52,6 @@ export class CharacteristicRenderService extends BaseRenderService {
     private shapeConnectorService: ShapeConnectorService,
     private unitRendererService: UnitRenderService,
     private mxGraphShapeOverlayService: MxGraphShapeOverlayService,
-    private namespacesCacheService: NamespacesCacheService,
   ) {
     super(mxGraphService, sammLangService, loadedFilesService);
   }
@@ -175,7 +174,7 @@ export class CharacteristicRenderService extends BaseRenderService {
   }
 
   private handleEitherCharacteristic(cell: mxgraph.mxCell, characteristic: DefaultCharacteristic, modelInfo: ModelInfo) {
-    const cachedCharacteristic = this.namespacesCacheService.resolveCachedElement(characteristic);
+    const cachedCharacteristic = this.loadedFilesService.currentLoadedFile.cachedFile.resolveInstance(characteristic);
     const childCell = this.mxGraphService.resolveCellByModelElement(cachedCharacteristic);
     this.unitRendererService.removeFrom(cell);
     this.shapeConnectorService.connectShapes(
@@ -245,7 +244,7 @@ export class CharacteristicRenderService extends BaseRenderService {
     if (this.metaModelElement instanceof DefaultStructuredValue) {
       return;
     }
-    const cachedEntity = this.namespacesCacheService.resolveCachedElement(newDataType);
+    const cachedEntity = this.loadedFilesService.currentLoadedFile.cachedFile.resolveInstance(newDataType);
     const resolvedCell = this.mxGraphService.resolveCellByModelElement(cachedEntity);
     const entityCell = resolvedCell
       ? resolvedCell
@@ -324,7 +323,7 @@ export class CharacteristicRenderService extends BaseRenderService {
 
     if (unit?.isPredefined) {
       MxGraphHelper.removeRelation(parent, unit);
-      this.namespacesCacheService.currentCachedFile.removeElement(unit.aspectModelUrn);
+      this.loadedFilesService.currentLoadedFile.cachedFile.removeElement(unit.aspectModelUrn);
       this.mxGraphService.removeCells([edgeToOldUnit.target], true);
     } else if (edgeToOldUnit) {
       MxGraphHelper.removeRelation(parent, unit);
@@ -345,7 +344,7 @@ export class CharacteristicRenderService extends BaseRenderService {
             this.mxGraphService.removeCells([edge], true);
           }
         });
-        const cachedCharacteristic = this.namespacesCacheService.resolveCachedElement(elementCharacteristic);
+        const cachedCharacteristic = this.loadedFilesService.currentLoadedFile.cachedFile.resolveInstance(elementCharacteristic);
         const childCell = this.mxGraphService.resolveCellByModelElement(cachedCharacteristic);
         this.unitRendererService.removeFrom(cell);
         this.shapeConnectorService.connectShapes(

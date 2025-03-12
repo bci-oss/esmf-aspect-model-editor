@@ -12,6 +12,7 @@
  */
 
 import {Quad} from 'n3';
+import {Value} from '../../aspect-meta-model';
 
 export interface MultiLanguageText {
   value: string;
@@ -47,7 +48,7 @@ export class CharacteristicInstantiatorUtil {
     }
   }
 
-  public static solveBlankNodeValues(resolvedBlankNodes: Array<Quad>): Array<MultiLanguageText> {
+  public static solveBlankNodeValues(resolvedBlankNodes: Array<Quad>): Array<Value> {
     return resolvedBlankNodes.length > 0 ? resolvedBlankNodes.map(item => this.createLanguageObject(item)) : [];
   }
 
@@ -55,7 +56,9 @@ export class CharacteristicInstantiatorUtil {
     return quad.predicate.value.split('#')[1];
   }
 
-  public static createLanguageObject(quad: Quad): MultiLanguageText {
-    return {value: quad.object.value, language: (quad.object as any).language};
+  public static createLanguageObject(quad: Quad): Value {
+    const value = new Value(quad.object.value);
+    value.language = (quad.object as any).language;
+    return value;
   }
 }

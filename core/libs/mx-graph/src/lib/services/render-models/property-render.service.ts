@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {LoadedFilesService, NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {ShapeConnectorService} from '@ame/connection';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {Injectable} from '@angular/core';
@@ -30,7 +30,6 @@ export class PropertyRenderService extends BaseRenderService {
     mxGraphService: MxGraphService,
     sammLangService: SammLanguageSettingsService,
     protected loadedFilesService: LoadedFilesService,
-    private namespacesCacheService: NamespacesCacheService,
     private shapeConnectorService: ShapeConnectorService,
   ) {
     super(mxGraphService, sammLangService, loadedFilesService);
@@ -54,7 +53,7 @@ export class PropertyRenderService extends BaseRenderService {
     }
 
     const extendsElement = metaModelElement.extends_;
-    const cachedEntity = this.namespacesCacheService.resolveCachedElement(extendsElement);
+    const cachedEntity = this.loadedFilesService.currentLoadedFile.cachedFile.resolveInstance(extendsElement);
     const resolvedCell = this.mxGraphService.resolveCellByModelElement(cachedEntity);
     const entityCell = resolvedCell
       ? resolvedCell

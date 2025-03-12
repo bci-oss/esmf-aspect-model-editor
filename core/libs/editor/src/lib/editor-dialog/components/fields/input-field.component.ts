@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
+import {CacheUtils, LoadedFilesService} from '@ame/cache';
 import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
 import {SearchService, mxCellSearchOption, unitSearchOption} from '@ame/shared';
 import {Directive, Input, OnChanges, OnDestroy, SimpleChanges, inject} from '@angular/core';
@@ -46,9 +46,9 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
   @Input() previousData: PreviousFormDataSnapshot = {};
 
   public metaModelDialogService = inject(EditorModelService);
-  public namespacesCacheService = inject(NamespacesCacheService);
   public searchService = inject(SearchService);
   public mxGraphService = inject(MxGraphService);
+  public loadedFiles = inject(LoadedFilesService);
 
   public metaModelElement: T;
   public subscription: Subscription = new Subscription();
@@ -58,7 +58,7 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
   protected fieldName: string = null;
 
   get currentCachedFile() {
-    return this.namespacesCacheService.currentCachedFile;
+    return this.loadedFiles.currentLoadedFile.cachedFile;
   }
 
   get elementExtends() {
@@ -127,13 +127,15 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
           startWith(''),
           filter(value => value !== null),
           map((value: string) => {
-            const entities = this.currentCachedFile.getCachedEntities()?.map(entity => ({
-              name: entity.name,
-              description: entity.getDescription('en') || '',
-              urn: entity.getUrn(),
-              complex: true,
-              entity,
-            }));
+            const entities = CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntity)
+              .filter(e => !e.isAbstractEntity())
+              ?.map(entity => ({
+                name: entity.name,
+                description: entity.getDescription('en') || '',
+                urn: entity.getUrn(),
+                complex: true,
+                entity,
+              }));
 
             return [...entities, ...this.searchExtEntity(value)]?.filter(type => this.inSearchList(type, value));
           }),
@@ -148,13 +150,15 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
           startWith(''),
           filter(value => value !== null),
           map((value: string) => {
-            const entities = this.currentCachedFile.getCachedAbstractEntities()?.map(abstractEntity => ({
-              name: abstractEntity.name,
-              description: abstractEntity.getDescription('en') || '',
-              urn: abstractEntity.getUrn(),
-              complex: true,
-              entity: abstractEntity,
-            }));
+            const entities = CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntity)
+              .filter(e => e.isAbstractEntity())
+              ?.map(abstractEntity => ({
+                name: abstractEntity.name,
+                description: abstractEntity.getDescription('en') || '',
+                urn: abstractEntity.getUrn(),
+                complex: true,
+                entity: abstractEntity,
+              }));
 
             return [...entities, ...this.searchExtAbstractEntity(value)]?.filter(type => this.inSearchList(type, value));
           }),
@@ -162,45 +166,48 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
         );
   }
 
-  initFilteredPropertyTypes(control: FormControl): Observable {
+  initFilteredPropertyTypes(control: FormControl): Observable<any> {
     return control?.valueChanges.pipe(
       startWith(''),
       filter(value => value !== null),
       map((value: string) => {
-        const properties: Array = this.currentCachedFile.getCachedProperties()?.map(property => ({
-          name: property.name,
-          description: property.getDescription('en') || '',
-          urn: property.aspectModelUrn,
-        }));
+        const properties: Array<any> = CacheUtils.getCachedElements(this.currentCachedFile, DefaultProperty)
+          .filter(e => !e.isAbstract)
+          ?.map(property => ({
+            name: property.name,
+            description: property.getDescription('en') || '',
+            urn: property.aspectModelUrn,
+          }));
         return [...properties, ...this.searchExtProperty(value)]?.filter(type => this.inSearchList(type, value));
       }),
       startWith([]),
     );
   }
 
-  initFilteredAbstractPropertyTypes(control: FormControl): Observable {
+  initFilteredAbstractPropertyTypes(control: FormControl): Observable<any> {
     return control?.valueChanges.pipe(
       startWith(''),
       filter(value => value !== null),
       map((value: string) => {
-        const properties: Array = this.currentCachedFile.getCachedAbstractProperties()?.map(property => ({
-          name: property.name,
-          description: property.getDescription('en') || '',
-          urn: property.aspectModelUrn,
-        }));
+        const properties: Array<any> = CacheUtils.getCachedElements(this.currentCachedFile, DefaultProperty)
+          .filter(e => e.isAbstract)
+          ?.map(property => ({
+            name: property.name,
+            description: property.getDescription('en') || '',
+            urn: property.aspectModelUrn,
+          }));
         return [...properties, ...this.searchExtProperty(value)]?.filter(type => this.inSearchList(type, value));
       }),
       startWith([]),
     );
   }
 
-  initFilteredCharacteristicTypes(control: FormControl, elementAspectUrn: string): Observable {
+  initFilteredCharacteristicTypes(control: FormControl, elementAspectUrn: string): Observable<any> {
     return control?.valueChanges.pipe(
       startWith(''),
       filter(value => value !== null),
       map((value: string) => {
-        const characteristics: Array = this.currentCachedFile
-          .getCachedCharacteristics()
+        const characteristics: Array<any> = CacheUtils.getCachedElements(this.currentCachedFile, DefaultCharacteristic)
           ?.map(cachedCharacteristic => ({
             name: cachedCharacteristic.name,
             description: cachedCharacteristic.getDescription('en') || '',
@@ -215,7 +222,7 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
   }
 
   initFilteredUnits(control: FormControl, searchService: SearchService) {
-    const units = this.currentCachedFile.getCachedUnits();
+    const units = CacheUtils.getCachedElements(this.currentCachedFile, DefaultUnit);
     return control?.valueChanges.pipe(
       startWith(''),
       filter(value => value !== null),
@@ -229,7 +236,7 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
     );
   }
 
-  initFilteredPredefinedUnits(control: FormControl, units: Array, searchService: SearchService) {
+  initFilteredPredefinedUnits(control: FormControl, units: Array<Unit>, searchService: SearchService) {
     return control?.valueChanges.pipe(
       filter(value => value !== null),
       map((value: string) => {

@@ -78,7 +78,7 @@ export class ModelRootService {
   }
 
   public isPredefined(modelElement: NamedElement) {
-    return (modelElement as any)?.isPredefined?.() && this.predefinedModels[modelElement.name];
+    return modelElement?.isPredefined && this.predefinedModels[modelElement.name];
   }
 
   public getPredefinedService(modelElement: NamedElement) {

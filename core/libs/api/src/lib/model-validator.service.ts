@@ -13,7 +13,7 @@
 
 import {ViolationError} from '@ame/editor';
 import {MxGraphService} from '@ame/mx-graph';
-import {LogService, NotificationsService} from '@ame/shared';
+import {NotificationsService} from '@ame/shared';
 import {Injectable} from '@angular/core';
 
 @Injectable({
@@ -23,7 +23,6 @@ export class ModelValidatorService {
   constructor(
     private mxGraphService: MxGraphService,
     private notificationsService: NotificationsService,
-    private logService: LogService,
   ) {
     this.notificationsService.clearNotifications();
   }
@@ -35,12 +34,12 @@ export class ModelValidatorService {
   notifyCorrectableErrors(violationErrors: Array<ViolationError>) {
     if (!violationErrors.length) {
       this.notificationsService.info({title: 'Validation completed successfully', message: 'The model is valid'});
-      this.logService.logInfo('Validated completed successfully');
+      console.info('Validated completed successfully');
       return;
     }
 
     this.notificationsService.warning({title: 'Validation completed with errors', message: 'The model is not valid'});
-    this.logService.logWarn('Validated completed with errors');
+    console.warn('Validated completed with errors');
 
     violationErrors.forEach((error: ViolationError) => {
       this.notificationsService.validationError({

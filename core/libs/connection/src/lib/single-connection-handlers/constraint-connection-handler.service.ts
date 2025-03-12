@@ -36,7 +36,7 @@ export class ConstraintConnectionHandler implements SingleShapeConnector<Default
       this.filtersService.createNode(metaModelElement, {parent: MxGraphHelper.getModelElement(source)}),
     );
     // @ TODO update functionality
-    constraint.update(defaultCharacteristic);
+    // constraint.update(defaultCharacteristic);
     this.mxGraphService.assignToParent(child, source);
     this.mxGraphService.formatCell(source);
     this.mxGraphService.formatShapes();

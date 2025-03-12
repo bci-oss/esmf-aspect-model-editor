@@ -11,11 +11,19 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {CachedFile} from '@ame/cache';
+import {CacheUtils} from '@ame/cache';
 import {isDataTypeLangString} from '@ame/shared';
 import {extractNamespace} from '@ame/utils';
 import {FormArray, FormControl, FormGroup} from '@angular/forms';
-import {DefaultEntity, DefaultEntityInstance, DefaultProperty, DefaultTrait, Entity} from '@esmf/aspect-model-loader';
+import {
+  CacheStrategy,
+  DefaultEntity,
+  DefaultEntityInstance,
+  DefaultProperty,
+  DefaultTrait,
+  Entity,
+  EntityInstanceProperty,
+} from '@esmf/aspect-model-loader';
 
 export class EntityInstanceUtil {
   /**
@@ -42,8 +50,8 @@ export class EntityInstanceUtil {
    * @param {DefaultProperty} property - The property to match against the cached values.
    * @returns {DefaultEntityValue[]} An array of entity values that match the given property.
    */
-  static existingEntityValues = (currentCachedFile: CachedFile, property: DefaultProperty) => {
-    return currentCachedFile.getCachedEntityValues().filter(value => this.entityValueFilter(value, property));
+  static existingEntityValues = (currentCachedFile: CacheStrategy, property: DefaultProperty) => {
+    return CacheUtils.getCachedElements(currentCachedFile, DefaultEntityInstance).filter(value => this.entityValueFilter(value, property));
   };
 
   /**
@@ -75,7 +83,7 @@ export class EntityInstanceUtil {
   static showCreateNewEntityOption(
     entityValueName: string,
     entityValues: DefaultEntityInstance[],
-    currentCachedFile: CachedFile,
+    currentCachedFile: CacheStrategy,
     form: FormGroup,
     entity: Entity | DefaultEntityInstance,
   ): boolean {
@@ -100,11 +108,11 @@ export class EntityInstanceUtil {
   private static isEntityValueAvailable(
     entityValueName: string,
     namespace: string,
-    currentCachedFile: CachedFile,
+    currentCachedFile: CacheStrategy,
     form: FormGroup,
   ): boolean {
     return (
-      !currentCachedFile.getElement(`${namespace}#${entityValueName}`) &&
+      !currentCachedFile.get(`${namespace}#${entityValueName}`) &&
       !form.get('newEntityValues')?.value?.some(ev => ev.name === entityValueName)
     );
   }
@@ -137,8 +145,13 @@ export class EntityInstanceUtil {
    * @param {string} propertyValue - The value to set for the language control.
    * @param {number} index - The index of the control within the FormArray that should be updated.
    */
-  static changeLanguageSelection(propertiesForm: FormGroup, ev: EntityInstanceProperty, propertyValue: string, index: number): void {
-    const propertiesFormArray = propertiesForm.get(ev.key.property.name) as FormArray;
+  static changeLanguageSelection(
+    propertiesForm: FormGroup,
+    [property]: EntityInstanceProperty<DefaultProperty>,
+    propertyValue: string,
+    index: number,
+  ): void {
+    const propertiesFormArray = propertiesForm.get(property.name) as FormArray;
     const languageControl = propertiesFormArray.at(index).get('language');
     languageControl.setValue(propertyValue);
     languageControl.disable();

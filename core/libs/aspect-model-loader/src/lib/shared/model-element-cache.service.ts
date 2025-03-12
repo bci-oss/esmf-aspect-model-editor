@@ -69,6 +69,27 @@ export interface CacheStrategy {
    * @param key element to be removed
    */
   removeElement(key: string): void;
+
+  /**
+   * Updates the namespace of all elements in the cache
+   *
+   * @param oldValue old namespace
+   * @param newValue new namespace
+   */
+  updateElementsNamespace(oldValue: string, newValue: string): void;
+
+  /**
+   * Updates the key of a cached element
+   *
+   * @param oldKey old key of the element
+   * @param newKey new key of the element
+   */
+  updateElementKey(oldKey: string, newKey: string): void;
+
+  /**
+   * Get all elements in the cache
+   */
+  getAllElements<T extends NamedElement>(): T[];
 }
 
 /**
@@ -134,6 +155,31 @@ export class ModelElementCache implements CacheStrategy {
 
   public getKeys(search = '') {
     return Array.from(this.instanceCache.keys()).filter(key => key.includes(search));
+  }
+
+  public updateElementsNamespace(oldValue: string, newValue: string): void {
+    const newCachedElements = new Map<string, NamedElement>();
+
+    this.instanceCache.forEach((element: NamedElement, key: string) => {
+      const newAspectModelUrn = element.aspectModelUrn.replace(oldValue, newValue);
+      const newKey = key.replace(oldValue, newValue);
+
+      element.aspectModelUrn = newAspectModelUrn;
+      newCachedElements.set(newKey, element);
+    });
+    this.instanceCache = newCachedElements;
+  }
+
+  updateElementKey(oldKey: string, newKey: string) {
+    const resolvedEntry = this.instanceCache.get(oldKey);
+    if (resolvedEntry) {
+      this.instanceCache.delete(oldKey);
+      this.instanceCache.set(newKey, resolvedEntry);
+    }
+  }
+
+  getAllElements<T extends NamedElement>(): T[] {
+    return [...this.instanceCache.values()] as T[];
   }
 }
 

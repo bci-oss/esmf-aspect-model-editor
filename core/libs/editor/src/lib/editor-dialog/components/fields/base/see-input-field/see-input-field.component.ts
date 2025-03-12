@@ -15,7 +15,7 @@ import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
 import {Component, Injector, OnInit, ViewChild} from '@angular/core';
 import {FormControl} from '@angular/forms';
 import {MatChipGrid} from '@angular/material/chips';
-import {DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
+import {DefaultProperty, HasExtends, NamedElement} from '@esmf/aspect-model-loader';
 import {Observable, map} from 'rxjs';
 import {EditorDialogValidators} from '../../../../validators';
 import {InputFieldComponent} from '../../input-field.component';
@@ -45,9 +45,9 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
   get isInherited(): boolean {
     const control = this.parentForm.get(this.fieldName);
     return (
-      this.metaModelElement instanceof CanExtend &&
-      this.metaModelElement.extendedSee &&
-      control.value === this.metaModelElement.extendedSee?.join(',')
+      this.metaModelElement instanceof HasExtends &&
+      this.metaModelElement.extends_?.see &&
+      control.value === this.metaModelElement.extends_?.see?.join(',')
     );
   }
 
@@ -73,8 +73,8 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
   getCurrentValue() {
     return (
       this.previousData?.[this.fieldName] ||
-      this.metaModelElement?.getSeeReferences()?.join(',') ||
-      (this.metaModelElement as CanExtend)?.extendedSee?.join(',') ||
+      this.metaModelElement?.see?.join(',') ||
+      (this.metaModelElement as HasExtends)?.extends_?.see?.join(',') ||
       ''
     );
   }
@@ -99,7 +99,7 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
   }
 
   private isDisabled() {
-    return this.metaModelElement instanceof DefaultProperty && !!this.metaModelElement?.extendedElement;
+    return this.metaModelElement instanceof DefaultProperty && !!this.metaModelElement?.extends_;
   }
 
   private setSeeControl() {

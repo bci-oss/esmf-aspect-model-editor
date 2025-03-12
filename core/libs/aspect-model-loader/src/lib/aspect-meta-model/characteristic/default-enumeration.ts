@@ -26,7 +26,7 @@ export class DefaultEnumeration extends DefaultCharacteristic implements Enumera
 
   override get children(): NamedElement[] {
     const elementValues = this.values.filter(v => v instanceof DefaultEntityInstance);
-    return [...super.children, ...elementValues];
+    return [...super.children, ...elementValues] as NamedElement[];
   }
 
   constructor(props: EnumerationProps) {

@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 import {simpleDataTypes} from '@ame/shared';
+import {getDeepLookupDataType} from '@ame/utils';
 import {
   DefaultAspect,
   DefaultCharacteristic,
@@ -74,10 +75,9 @@ export class RdfModelUtil {
   }
 
   static resolveAccurateType(
-    metaModelElement: NamedNode,
+    metaModelElement: NamedElement,
     predicateUrn: string,
-    // @todo replace with any with RdfModel when the old one is removed
-    rdfModel: any,
+    rdfModel: RdfModel,
     characteristicType: Type,
   ): NamedNode {
     const samm = rdfModel.samm;
@@ -105,7 +105,7 @@ export class RdfModelUtil {
         new DefaultScalar({urn: simpleDataTypes?.positiveInteger?.isDefinedBy, scalar: true, metaModelVersion: null}),
       );
     } else if (metaModelElement instanceof DefaultProperty && samm.isExampleValueProperty(predicateUrn)) {
-      return this.getDataType(metaModelElement?.getDeepLookUpDataType());
+      return this.getDataType(getDeepLookupDataType(metaModelElement?.characteristic));
     } else if (metaModelElement instanceof DefaultEnumeration && sammC.isValuesProperty(predicateUrn)) {
       return this.getDataType(metaModelElement.dataType);
     } else if (metaModelElement instanceof DefaultState && sammC.isDefaultValueProperty(predicateUrn)) {

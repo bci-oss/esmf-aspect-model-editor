@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {LoadedFilesService, NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {ModelService} from '@ame/rdf/services';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
@@ -43,7 +43,6 @@ export class ConstraintNameDropdownFieldComponent extends DropdownFieldComponent
   constructor(
     public editorModelService: EditorModelService,
     public modelService: ModelService,
-    public namespacesCacheService: NamespacesCacheService,
     public languageSettings: SammLanguageSettingsService,
     public loadedFilesService: LoadedFilesService,
   ) {
@@ -96,14 +95,29 @@ export class ConstraintNameDropdownFieldComponent extends DropdownFieldComponent
 
   private initConstraintList(): void {
     if (this.listConstraints.size <= 0) {
-      this.listConstraints.set('Constraint', DefaultConstraint.createInstance);
-      this.listConstraints.set('EncodingConstraint', DefaultEncodingConstraint.createInstance);
-      this.listConstraints.set('FixedPointConstraint', DefaultFixedPointConstraint.createInstance);
-      this.listConstraints.set('LanguageConstraint', DefaultLanguageConstraint.createInstance);
-      this.listConstraints.set('LengthConstraint', DefaultLengthConstraint.createInstance);
-      this.listConstraints.set('LocaleConstraint', DefaultLocaleConstraint.createInstance);
-      this.listConstraints.set('RangeConstraint', DefaultRangeConstraint.createInstance);
-      this.listConstraints.set('RegularExpressionConstraint', DefaultRegularExpressionConstraint.createInstance);
+      this.listConstraints.set('Constraint', () => new DefaultConstraint({name: '', aspectModelUrn: '', metaModelVersion: ''}));
+      this.listConstraints.set(
+        'EncodingConstraint',
+        () => new DefaultEncodingConstraint({name: '', aspectModelUrn: '', metaModelVersion: '', value: ''}),
+      );
+      this.listConstraints.set(
+        'FixedPointConstraint',
+        () => new DefaultFixedPointConstraint({name: '', aspectModelUrn: '', metaModelVersion: '', scale: 0, integer: 0}),
+      );
+      this.listConstraints.set(
+        'LanguageConstraint',
+        () => new DefaultLanguageConstraint({name: '', aspectModelUrn: '', metaModelVersion: '', languageCode: ''}),
+      );
+      this.listConstraints.set('LengthConstraint', () => new DefaultLengthConstraint({name: '', aspectModelUrn: '', metaModelVersion: ''}));
+      this.listConstraints.set(
+        'LocaleConstraint',
+        () => new DefaultLocaleConstraint({name: '', aspectModelUrn: '', metaModelVersion: '', localeCode: ''}),
+      );
+      this.listConstraints.set('RangeConstraint', () => new DefaultRangeConstraint({name: '', aspectModelUrn: '', metaModelVersion: ''}));
+      this.listConstraints.set(
+        'RegularExpressionConstraint',
+        () => new DefaultRegularExpressionConstraint({name: '', aspectModelUrn: '', metaModelVersion: '', value: ''}),
+      );
       this.listConstraintNames = [...this.listConstraints.keys()];
     }
   }

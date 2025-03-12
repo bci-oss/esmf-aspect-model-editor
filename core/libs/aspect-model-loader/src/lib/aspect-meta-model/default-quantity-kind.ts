@@ -15,12 +15,16 @@ import {QuantityKindProps} from '../shared/props';
 import {ModelVisitor} from '../visitor/model-visitor';
 import {NamedElement} from './named-element';
 
-export interface QuantityKind {
+export interface QuantityKind extends NamedElement {
   label: string;
 }
 
 export class DefaultQuantityKind extends NamedElement {
   override className = 'DefaultQuantityKind';
+  override get children(): NamedElement[] {
+    return [];
+  }
+
   label: string;
 
   constructor(props: QuantityKindProps) {

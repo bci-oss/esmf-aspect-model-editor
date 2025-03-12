@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {Component, Inject} from '@angular/core';
 import {FormArray, FormControl, FormGroup, Validators} from '@angular/forms';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
@@ -51,7 +51,7 @@ export class EntityInstanceModalComponent {
     @Inject(MAT_DIALOG_DATA) private data: NewEntityInstanceDialogOptions,
     private dialogRef: MatDialogRef<EntityInstanceModalComponent>,
     private editorModelService: EditorModelService,
-    private namespacesCacheService: NamespacesCacheService,
+    private loadedFilesService: LoadedFilesService,
   ) {
     this.complexValues = data.complexValues;
     this.enumeration = data.metaModel as DefaultEnumeration;
@@ -60,7 +60,10 @@ export class EntityInstanceModalComponent {
     this.entityValueName = new FormControl('', [
       Validators.required,
       EditorDialogValidators.noWhiteSpace,
-      EditorDialogValidators.duplicateNameString(this.namespacesCacheService, this.entity.aspectModelUrn.split('#')[0]),
+      EditorDialogValidators.duplicateNameString(
+        this.loadedFilesService.currentLoadedFile.cachedFile,
+        this.entity.aspectModelUrn.split('#')[0],
+      ),
     ]);
     this.buildForm();
   }
@@ -119,11 +122,13 @@ export class EntityInstanceModalComponent {
         propertyArray.controls.forEach(control => {
           const value = control.get('value').value;
           const language = control.get('language').value;
-          entityValue.addProperty(propertyElement, value, language);
+          // TODO: Check this after entity instances are done
+          // entityValue.addProperty(propertyElement, value, language);
         });
       } else {
         const value = propertyArray.at(0).get('value').value;
-        entityValue.addProperty(propertyElement, value);
+        // TODO: Check this after entity instances are done
+        // entityValue.addProperty(propertyElement, value);
       }
     });
 

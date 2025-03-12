@@ -11,7 +11,6 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
 import {MxGraphService} from '@ame/mx-graph';
 import {RdfService} from '@ame/rdf/services';
 import {NotificationsService, SearchService} from '@ame/shared';
@@ -57,10 +56,6 @@ describe('EntityExtendsFieldComponent', () => {
         {
           provide: EditorModelService,
           useValue: provideMockObject(EditorModelService),
-        },
-        {
-          provide: NamespacesCacheService,
-          useValue: provideMockObject(NamespacesCacheService),
         },
         {
           provide: RdfService,

@@ -11,7 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {RdfService} from '@ame/rdf/services';
+import {LoadedFilesService} from '@ame/cache';
+import {getDescriptionsLocales, getPreferredNamesLocales} from '@ame/utils';
 import {Injectable} from '@angular/core';
 import {DefaultAspect} from '@esmf/aspect-model-loader';
 import {ListProperties, RdfListService} from '../../rdf-list';
@@ -23,9 +24,9 @@ export class AspectVisitor extends BaseVisitor<DefaultAspect> {
   constructor(
     public rdfNodeService: RdfNodeService,
     public rdfListService: RdfListService,
-    rdfService: RdfService,
+    loadedFiles: LoadedFilesService,
   ) {
-    super(rdfService);
+    super(loadedFiles);
   }
 
   visit(aspect: DefaultAspect): DefaultAspect {
@@ -37,11 +38,11 @@ export class AspectVisitor extends BaseVisitor<DefaultAspect> {
 
   private updateProperties(aspect: DefaultAspect) {
     this.rdfNodeService.update(aspect, {
-      preferredName: aspect.getAllLocalesPreferredNames().map(language => ({
+      preferredName: getPreferredNamesLocales(aspect).map(language => ({
         language,
         value: aspect.getPreferredName(language),
       })),
-      description: aspect.getAllLocalesDescriptions().map(language => ({
+      description: getDescriptionsLocales(aspect).map(language => ({
         language,
         value: aspect.getDescription(language),
       })),

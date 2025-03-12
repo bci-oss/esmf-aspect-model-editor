@@ -11,7 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {RdfService} from '@ame/rdf/services';
+import {LoadedFilesService} from '@ame/cache';
+import {getDescriptionsLocales, getPreferredNamesLocales} from '@ame/utils';
 import {Injectable} from '@angular/core';
 import {DefaultProperty} from '@esmf/aspect-model-loader';
 import {DataFactory, Store} from 'n3';
@@ -26,9 +27,9 @@ export class PropertyVisitor extends BaseVisitor<DefaultProperty> {
 
   constructor(
     public rdfNodeService: RdfNodeService,
-    rdfService: RdfService,
+    loadedFiles: LoadedFilesService,
   ) {
-    super(rdfService);
+    super(loadedFiles);
   }
 
   visit(property: DefaultProperty): DefaultProperty {
@@ -46,11 +47,11 @@ export class PropertyVisitor extends BaseVisitor<DefaultProperty> {
   private addProperties(property: DefaultProperty) {
     this.rdfNodeService.update(property, {
       exampleValue: property.exampleValue,
-      preferredName: property.getAllLocalesPreferredNames().map(language => ({
+      preferredName: getPreferredNamesLocales(property).map(language => ({
         language,
         value: property.getPreferredName(language),
       })),
-      description: property.getAllLocalesDescriptions().map(language => ({
+      description: getDescriptionsLocales(property).map(language => ({
         language,
         value: property.getDescription(language),
       })),
@@ -66,7 +67,7 @@ export class PropertyVisitor extends BaseVisitor<DefaultProperty> {
     this.setPrefix(property.characteristic.aspectModelUrn);
     this.store.addQuad(
       DataFactory.namedNode(property.aspectModelUrn),
-      this.rdfService.currentRdfModel.samm.CharacteristicProperty(),
+      this.loadedFiles.currentLoadedFile.rdfModel.samm.CharacteristicProperty(),
       DataFactory.namedNode(property.characteristic.aspectModelUrn),
     );
   }
@@ -79,7 +80,7 @@ export class PropertyVisitor extends BaseVisitor<DefaultProperty> {
     this.setPrefix(property.getExtends().aspectModelUrn);
     this.store.addQuad(
       DataFactory.namedNode(property.aspectModelUrn),
-      this.rdfService.currentRdfModel.samm.Extends(),
+      this.loadedFiles.currentLoadedFile.rdfModel.samm.Extends(),
       DataFactory.namedNode(property.getExtends().aspectModelUrn),
     );
   }

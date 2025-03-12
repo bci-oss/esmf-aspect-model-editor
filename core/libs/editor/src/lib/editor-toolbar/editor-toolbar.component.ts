@@ -19,7 +19,7 @@ import {ConfigurationService, Settings} from '@ame/settings-dialog';
 import {BindingsService, NotificationsService} from '@ame/shared';
 import {LanguageTranslateModule} from '@ame/translation';
 import {AsyncPipe, CommonModule} from '@angular/common';
-import {AfterViewInit, Component, inject, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, Component, OnDestroy, OnInit, inject} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';

@@ -11,8 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
-import {Component, Inject} from '@angular/core';
+import {LoadedFilesService} from '@ame/cache';
+import {Component, inject, Inject} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 
@@ -22,18 +22,18 @@ import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/
   imports: [MatDialogModule, MatButtonModule],
 })
 export class LargeFileWarningComponent {
+  private loadedFiles = inject(LoadedFilesService);
   public elementsCount: number;
 
   constructor(
-    private namespacesCacheService: NamespacesCacheService,
     private dialogRef: MatDialogRef<LargeFileWarningComponent>,
     @Inject(MAT_DIALOG_DATA) private data: {elementsCount: number},
   ) {
-    this.elementsCount = data?.elementsCount || 0;
+    this.elementsCount = this.data?.elementsCount || 0;
   }
 
   close(response: 'open' | 'cancel') {
-    if (response === 'cancel') this.namespacesCacheService.currentCachedFile.clearCache();
+    if (response === 'cancel') this.loadedFiles.currentLoadedFile.cachedFile.reset();
     this.dialogRef.close(response);
   }
 }

@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {LoadedFilesService, NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {ShapeConnectorService} from '@ame/connection';
 import {FiltersService} from '@ame/loader-filters';
 import {MxGraphShapeOverlayService} from '@ame/mx-graph';
@@ -53,7 +53,6 @@ export class EnumerationRenderService extends BaseRenderService {
     private entityValueRenderer: EntityValueRenderService,
     private mxGraphShapeOverlayService: MxGraphShapeOverlayService,
     private unitRendererService: UnitRenderService,
-    private namespaceCacheService: NamespacesCacheService,
   ) {
     super(mxGraphService, sammLangService, loadedFilesService);
   }
@@ -122,7 +121,7 @@ export class EnumerationRenderService extends BaseRenderService {
         }
 
         if (!modelElement.isExternalReference()) {
-          this.namespaceCacheService.currentCachedFile.removeElement(modelElement.aspectModelUrn);
+          this.loadedFilesService.currentLoadedFile.cachedFile.removeElement(modelElement.aspectModelUrn);
         }
         return edge.target;
       }),

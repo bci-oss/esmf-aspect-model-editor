@@ -11,12 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
+import {CacheUtils, LoadedFilesService} from '@ame/cache';
 import {FILTER_ATTRIBUTES, FilterAttributesService, ModelTree} from '@ame/loader-filters';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {NotificationsService, overlayGeometry} from '@ame/shared';
 import {Inject, Injectable} from '@angular/core';
-import {DefaultCharacteristic, DefaultEntityInstance, NamedElement} from '@esmf/aspect-model-loader';
+import {DefaultCharacteristic, DefaultEntityInstance, EntityInstance, NamedElement} from '@esmf/aspect-model-loader';
 import {environment} from 'environments/environment';
 import {mxgraph} from 'mxgraph-factory';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
@@ -49,12 +49,12 @@ export class MxGraphService {
   public graphInitialized$ = new BehaviorSubject(false);
 
   get currentCachedFile() {
-    return this.namespacesCacheService.currentCachedFile;
+    return this.loadedFiles.currentLoadedFile.cachedFile;
   }
 
   constructor(
     @Inject(FILTER_ATTRIBUTES) private filterAttributes: FilterAttributesService,
-    private namespacesCacheService: NamespacesCacheService,
+    private loadedFiles: LoadedFilesService,
     private configurationService: ConfigurationService,
     private graphSetupService: MxGraphSetupService,
     private mxGraphGeometryProviderService: MxGraphGeometryProviderService,
@@ -207,11 +207,12 @@ export class MxGraphService {
     });
 
     // update all parent entity values
-    const allEntityValues = this.currentCachedFile.getCachedEntityValues();
+    const allEntityValues: EntityInstance[] = CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntityInstance);
+
     allEntityValues.forEach(entityValue => {
-      entityValue.properties.forEach(prop => {
-        if (prop.value?.['aspectModelUrn'] === selectedModelElement.aspectModelUrn) {
-          prop.value = undefined;
+      entityValue.getTuples().forEach(([propertyUrn, value]) => {
+        if (value instanceof DefaultEntityInstance && value.aspectModelUrn === selectedModelElement.aspectModelUrn) {
+          entityValue.removeAssertion(propertyUrn, value);
         }
       });
     });
@@ -533,13 +534,11 @@ export class MxGraphService {
       return;
     }
 
-    this.currentCachedFile.getCachedEntityValues().forEach(entityValue =>
-      entityValue.properties.forEach(entityValueToUpdate => {
-        if (
-          entityValueToUpdate.value instanceof DefaultEntityInstance &&
-          entityValueToUpdate.value.aspectModelUrn === deletedEntityValue.aspectModelUrn
-        )
-          entityValueToUpdate.value = '';
+    CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntityInstance).forEach(entityValue =>
+      entityValue.getTuples().forEach(([propertyUrn, value]) => {
+        if (value instanceof DefaultEntityInstance && value.aspectModelUrn === deletedEntityValue.aspectModelUrn) {
+          entityValue.removeAssertion(propertyUrn, value);
+        }
       }),
     );
   }

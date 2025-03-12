@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {CacheUtils} from '@ame/cache';
 import {EntityInstanceService} from '@ame/editor';
 import {
   AbstractEntityRenderService,
@@ -56,15 +57,15 @@ export class AbstractEntityModelService extends BaseModelService {
         property.payloadName = newKeys.payloadName;
       }
 
-      this.namespacesCacheService.currentCachedFile
-        .getCachedEntityValues()
+      CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntityInstance)
         ?.filter((entityValue: DefaultEntityInstance) => entityValue.type.aspectModelUrn === metaModelElement.aspectModelUrn)
         ?.forEach((entityValue: DefaultEntityInstance) => {
-          for (const entityValueProperty of entityValue.properties) {
-            const property = metaModelElement.properties.find(property => property.name === entityValueProperty.key.property.name);
-            entityValueProperty.key.keys.optional = property.optional;
-            entityValueProperty.key.keys.notInPayload = property.notInPayload;
-            entityValueProperty.key.keys.payloadName = property.payloadName;
+          for (const entityValueProperty of entityValue.assertions) {
+            // TODO update this functionality with the new structure from entityInstance
+            // const property = metaModelElement.properties.find(property => property.name === entityValueProperty.key.property.name);
+            // entityValueProperty.key.keys.optional = property.optional;
+            // entityValueProperty.key.keys.notInPayload = property.notInPayload;
+            // entityValueProperty.key.keys.payloadName = property.payloadName;
           }
         });
     }
@@ -103,7 +104,7 @@ export class AbstractEntityModelService extends BaseModelService {
     }
 
     this.mxGraphService.removeCells(extendingProperties);
-    this.namespacesCacheService.currentCachedFile.removeElement(modelElement.aspectModelUrn);
+    this.currentCachedFile.removeElement(modelElement.aspectModelUrn);
     super.delete(cell);
 
     this.mxGraphShapeOverlayService.checkAndAddTopShapeActionIcon(outgoingEdges, modelElement);
@@ -119,7 +120,8 @@ export class AbstractEntityModelService extends BaseModelService {
         const modelElement = MxGraphHelper.getModelElement(edge.source);
         if (modelElement && !modelElement.isExternalReference()) {
           this.currentCachedFile.removeElement(modelElement.aspectModelUrn);
-          (<NamedElement>modelElement).delete(modelElement);
+          // TODO update delete functionality
+          // (<NamedElement>modelElement).delete(modelElement);
         }
 
         if (modelElement instanceof DefaultEnumeration) {

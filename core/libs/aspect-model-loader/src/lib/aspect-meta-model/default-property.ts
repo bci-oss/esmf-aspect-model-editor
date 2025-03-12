@@ -33,6 +33,19 @@ export interface Property extends NamedElement, HasExtends<Property> {
 
 export class DefaultProperty extends NamedElement implements Property {
   override className = 'DefaultProperty';
+  override get children(): NamedElement[] {
+    const children = [];
+    if (this.extends_ instanceof NamedElement) {
+      children.push(this.extends_);
+    }
+
+    if (this.characteristic instanceof NamedElement) {
+      children.push(this.characteristic);
+    }
+
+    return children;
+  }
+
   extends_: Property;
   characteristic: Characteristic;
   exampleValue: string;

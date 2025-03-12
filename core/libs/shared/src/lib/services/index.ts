@@ -18,7 +18,6 @@ export * from './data-type.service';
 export * from './electron-signals.service';
 export * from './electron-tunnel.service';
 export * from './loading-screen.service';
-export * from './log.service';
 export * from './model-saving-tracker.service';
 export * from './notifications.service';
 export * from './search.service';

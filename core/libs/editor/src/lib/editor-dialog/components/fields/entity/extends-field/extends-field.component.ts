@@ -85,7 +85,7 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
   }
 
   getCurrentValue() {
-    return this.previousData?.[this.fieldName] || this.metaModelElement?.extendedElement || null;
+    return this.previousData?.[this.fieldName] || this.metaModelElement?.extends_ || null;
   }
 
   setExtendsControl() {
@@ -132,7 +132,7 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
     let foundEntity: DefaultEntity = this.currentFile.cachedFile.get(newValue.urn);
 
     if (!foundEntity) {
-      foundEntity = this.loadedFilesService.getElement(newValue.urn);
+      foundEntity = this.loadedFilesService.findElementOnExtReferences(newValue.urn);
     }
 
     if (!foundEntity) {

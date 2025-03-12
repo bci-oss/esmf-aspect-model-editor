@@ -61,23 +61,31 @@ export class DescriptionInputFieldComponent extends InputFieldComponent<NamedEle
     );
   }
 
+  getPreferredNamesLocales(): string[] {
+    return Array.from(this.metaModelElement?.preferredNames?.keys());
+  }
+
+  getDescriptionsLocales(): string[] {
+    return Array.from(this.metaModelElement?.preferredNames?.keys());
+  }
+
   private isDisabled() {
     return this.metaModelElement instanceof DefaultProperty && !!this.metaModelElement?.extends_;
   }
 
   private setDescriptionControls() {
-    const allLocalesDescriptions = this.metaModelElement?.getAllLocalesDescriptions();
+    const allLocalesDescriptions = [...this.metaModelElement.descriptions.keys()];
 
     if (!allLocalesDescriptions.length) {
       this.metaModelElement.descriptions.set('en', '');
     }
 
-    this.metaModelElement?.getAllLocalesDescriptions().forEach(locale => {
+    [...this.metaModelElement.descriptions.keys()].forEach(locale => {
       const key = `description${locale}`;
 
       const control = this.parentForm.get(key);
       const previousDisabled = control?.disabled;
-      const isNowPredefined = (this.metaModelElement as DefaultCharacteristic)?.isPredefined?.();
+      const isNowPredefined = (this.metaModelElement as DefaultCharacteristic)?.isPredefined;
 
       if (previousDisabled && !isNowPredefined) {
         control?.patchValue(this.getCurrentValue(key, locale));

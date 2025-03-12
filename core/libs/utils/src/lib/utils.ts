@@ -11,8 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
-import {DefaultProperty, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
+import {LoadedFilesService} from '@ame/cache';
+import {DefaultCharacteristic, DefaultProperty, DefaultTrait, NamedElement, RdfModel, Type} from '@esmf/aspect-model-loader';
 import {Observable} from 'rxjs';
 
 /**
@@ -68,15 +68,10 @@ export const decodeText = (content: BufferSource, encoding = 'utf-8'): string =>
  *
  * @param {NamedNode} modelElement - The model element whose name should be set.
  * @param {RdfModel} rdfModel - The RDF model in which the element resides.
- * @param {NamespacesCacheService} namespaceCacheService - The service to check for namespace collisions.
+ * @param {LoadedFilesService} loadedFiles - The service to check for namespace collisions.
  * @param {string} [name] - An optional initial name suggestion for the element.
  */
-export const setUniqueElementName = (
-  modelElement: NamedElement,
-  rdfModel: RdfModel,
-  namespaceCacheService: NamespacesCacheService,
-  name?: string,
-) => {
+export const setUniqueElementName = (modelElement: NamedElement, rdfModel: RdfModel, loadedFiles: LoadedFilesService, name?: string) => {
   name = name || `${modelElement.className}`.replace('Default', '');
 
   if (modelElement instanceof DefaultProperty) {
@@ -90,7 +85,7 @@ export const setUniqueElementName = (
   do {
     tmpName = `${name}${counter++}`;
     tmpAspectModelUrnName = `${rdfModel.getAspectModelUrn()}${tmpName}`;
-  } while (namespaceCacheService.getElementFromNamespace(rdfModel.getAspectModelUrn(), tmpAspectModelUrnName));
+  } while (loadedFiles.getElement(tmpAspectModelUrnName));
 
   modelElement.aspectModelUrn = tmpAspectModelUrnName;
   modelElement.name = tmpName;
@@ -115,4 +110,33 @@ export const removeCommentsFromTTL = (aspectModel: string): string => {
     .split('\n')
     .filter(line => !line.trim().startsWith('#'))
     .join('\n');
+};
+
+/**
+ * Get the preferred names locales of a NamedElement
+ *
+ * @param {NamedElement} element - The NamedElement to get the preferred names locales from.
+ * @returns {string[]} - Array of preferred names locales.
+ */
+export const getPreferredNamesLocales = (element: NamedElement) => [...element.preferredNames.keys()];
+
+/**
+ * Get the descriptions locales of a NamedElement
+ *
+ * @param {NamedElement} element - The NamedElement to get the descriptions locales from.
+ * @returns {string[]} - Array of descriptions locales.
+ */
+export const getDescriptionsLocales = (element: NamedElement) => [...element.descriptions.keys()];
+
+/**
+ * Get the data type of a characteristic
+ *
+ * @param {DefaultCharacteristic} characteristic - The characteristic to get the data type from.
+ * @returns {Type} - The data type of the characteristic.
+ */
+export const getDeepLookupDataType = (characteristic: DefaultCharacteristic): Type => {
+  if (characteristic instanceof DefaultTrait) {
+    return characteristic?.baseCharacteristic?.dataType;
+  }
+  return characteristic ? characteristic.dataType : null;
 };

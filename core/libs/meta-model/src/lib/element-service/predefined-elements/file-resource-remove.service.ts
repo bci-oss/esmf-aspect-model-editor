@@ -12,9 +12,8 @@
  */
 import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
 import {Injectable} from '@angular/core';
-import {PredefinedEntitiesEnum, PredefinedPropertiesEnum} from '@esmf/aspect-model-loader';
+import {NamedElement, PredefinedEntitiesEnum, PredefinedPropertiesEnum} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
-import {NamedNode} from '../../aspect-meta-model';
 import {ModelRootService} from '../model-root.service';
 import {PredefinedRemove} from './predefined-remove.type';
 
@@ -55,7 +54,7 @@ export class FileResourceRemoveService implements PredefinedRemove {
     return false;
   }
 
-  decouple(edge: mxgraph.mxCell, source: NamedNode): boolean {
+  decouple(edge: mxgraph.mxCell, source: NamedElement): boolean {
     if ([PredefinedPropertiesEnum.resource, PredefinedPropertiesEnum.mimeType].includes(source.name as PredefinedPropertiesEnum)) {
       const parent = this.mxGraphService
         .resolveParents(edge.source)

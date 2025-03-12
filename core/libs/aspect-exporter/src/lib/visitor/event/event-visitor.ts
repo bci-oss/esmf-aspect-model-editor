@@ -12,7 +12,8 @@
  */
 
 import {ListProperties, RdfListService, RdfNodeService} from '@ame/aspect-exporter';
-import {RdfService} from '@ame/rdf/services';
+import {LoadedFilesService} from '@ame/cache';
+import {getDescriptionsLocales, getPreferredNamesLocales} from '@ame/utils';
 import {Injectable} from '@angular/core';
 import {DefaultEvent} from '@esmf/aspect-model-loader';
 import {DataFactory, Store} from 'n3';
@@ -26,10 +27,10 @@ export class EventVisitor extends BaseVisitor<DefaultEvent> {
 
   constructor(
     private rdfNodeService: RdfNodeService,
-    rdfService: RdfService,
+    loadedFiles: LoadedFilesService,
     public rdfListService: RdfListService,
   ) {
-    super(rdfService);
+    super(loadedFiles);
   }
 
   visit(event: DefaultEvent): DefaultEvent {
@@ -44,11 +45,11 @@ export class EventVisitor extends BaseVisitor<DefaultEvent> {
 
   private addProperties(event: DefaultEvent) {
     this.rdfNodeService.update(event, {
-      preferredName: event.getAllLocalesPreferredNames().map(language => ({
+      preferredName: getPreferredNamesLocales(event).map(language => ({
         language,
         value: event.getPreferredName(language),
       })),
-      description: event.getAllLocalesDescriptions().map(language => ({
+      description: getDescriptionsLocales(event).map(language => ({
         language,
         value: event.getDescription(language),
       })),

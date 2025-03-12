@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
+import {CacheUtils, LoadedFilesService} from '@ame/cache';
 import {ConfirmDialogService} from '@ame/editor';
 import {MxGraphHelper} from '@ame/mx-graph';
 import {NotificationsService} from '@ame/shared';
@@ -24,19 +24,21 @@ import {ConfirmDialogEnum} from '../../../../models/confirm-dialog.enum';
 })
 export class EntityInstanceService {
   get currentCachedFile() {
-    return this.namespacesCacheService.currentCachedFile;
+    return this.loadedFiles.currentLoadedFile.cachedFile;
   }
 
   constructor(
-    private namespacesCacheService: NamespacesCacheService,
     private confirmDialogService: ConfirmDialogService,
     private notifications: NotificationsService,
+    private loadedFiles: LoadedFilesService,
   ) {}
 
   onPropertyRemove(property: DefaultProperty, acceptCallback: Function) {
-    const entityValues = this.currentCachedFile
-      .getCachedEntityValues()
-      .filter(({assertions}) => assertions.some(({key}) => key.property.name === property.name));
+    const entityValues = [];
+    // TODO check this functionality
+    //  = CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntityInstance).filter(({assertions}) =>
+    //   assertions.some(({key}) => key.property.name === property.name),
+    // );
 
     if (!entityValues.length) {
       acceptCallback?.();
@@ -53,7 +55,8 @@ export class EntityInstanceService {
     this.confirmDialogService.open({title, phrases, closeButtonText: 'No', okButtonText: 'Yes'}).subscribe(confirm => {
       if (confirm !== ConfirmDialogEnum.cancel) {
         for (const entityValue of entityValues) {
-          entityValue.removeProperty(property);
+          // TODO check this function
+          // entityValue.removeProperty(property);
         }
         acceptCallback?.();
       }
@@ -61,13 +64,16 @@ export class EntityInstanceService {
   }
 
   onNewProperty(property: DefaultProperty, entity: Entity) {
-    const entityValues = this.currentCachedFile.getCachedEntityValues().filter(entityValue => entityValue.type.name === entity.name);
+    const entityValues = CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntityInstance).filter(
+      entityValue => entityValue.type.name === entity.name,
+    );
     if (!entityValues.length) {
       return;
     }
 
     for (const entityValue of entityValues) {
-      entityValue.addProperty(property);
+      // TODO check this function
+      // entityValue.addProperty(property);
       MxGraphHelper.establishRelation(entityValue, property);
     }
 
@@ -78,7 +84,9 @@ export class EntityInstanceService {
   }
 
   onEntityRemove(entity: DefaultEntity, acceptCallback: Function) {
-    const entityValues = this.currentCachedFile.getCachedEntityValues().filter(entityValue => entityValue.type.name === entity.name);
+    const entityValues = CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntityInstance).filter(
+      entityValue => entityValue.type.name === entity.name,
+    );
 
     if (!entityValues.length) {
       acceptCallback?.();
@@ -102,8 +110,7 @@ export class EntityInstanceService {
   }
 
   onEntityDisconnect(characteristic: DefaultEnumeration, entity: DefaultEntity, acceptCallback: Function) {
-    const entityValues = this.currentCachedFile
-      .getCachedEntityValues()
+    const entityValues = CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntityInstance)
       .filter(entityValue => entityValue.type.name === entity.name)
       .filter(entityValue => entityValue.parents.some(parent => parent.aspectModelUrn === characteristic.aspectModelUrn));
 
@@ -141,7 +148,8 @@ export class EntityInstanceService {
 
     const characteristicEntityValues = characteristic.values as DefaultEntityInstance[];
     for (const entityValue of characteristicEntityValues) {
-      entityValue.removeParent(characteristic);
+      // TODO check this function
+      // entityValue.removeParent(characteristic);
 
       // if the instance is not used by another characteristic, remove it
       if (entityValue.parents.length <= 0) {

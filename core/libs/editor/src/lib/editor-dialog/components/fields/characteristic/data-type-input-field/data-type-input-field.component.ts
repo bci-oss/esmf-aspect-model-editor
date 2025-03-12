@@ -125,10 +125,10 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
     }
 
     if (newValue.complex) {
-      let entity = this.currentCachedFile.getElement(newValue.urn);
+      let entity = this.currentCachedFile.get(newValue.urn);
 
       if (!entity) {
-        entity = this.namespacesCacheService.findElementOnExtReference<Entity>(newValue.urn);
+        entity = this.loadedFiles.findElementOnExtReferences<Entity>(newValue.urn);
       }
 
       this.parentForm.get('dataTypeEntity').setValue(entity);
@@ -146,7 +146,7 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
     }
 
     const urn = `${this.metaModelElement.aspectModelUrn.split('#')?.[0]}#${entityName}`;
-    const newEntity = new DefaultEntity(this.metaModelElement.metaModelVersion, urn, entityName);
+    const newEntity = new DefaultEntity({metaModelVersion: this.metaModelElement.metaModelVersion, aspectModelUrn: urn, name: entityName});
 
     // set the control of newDatatype
     const newDataTypeControl = this.parentForm.get('newDataType');

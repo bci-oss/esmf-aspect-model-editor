@@ -12,7 +12,7 @@
  */
 
 import {ModelApiService} from '@ame/api';
-import {CachedFile, LoadedFilesService, NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {LoadedAspectModel} from '@ame/meta-model';
 import {APP_CONFIG, AppConfig, NotificationsService, SaveValidateErrorsCodes} from '@ame/shared';
 import {Injectable, inject} from '@angular/core';
@@ -33,9 +33,9 @@ export class ModelService {
     return this.visitorAnnouncerSubject$.asObservable();
   }
 
-  get currentCachedFile(): CachedFile {
-    return this.namespaceCacheService.currentCachedFile;
-  }
+  // get currentCachedFile(): CachedFile {
+  //   return this.namespaceCacheService.currentCachedFile;
+  // }
 
   get loadedAspect(): Aspect {
     return this.aspect;
@@ -49,7 +49,6 @@ export class ModelService {
 
   constructor(
     private rdfService: RdfService,
-    private namespaceCacheService: NamespacesCacheService,
     private modelApiService: ModelApiService,
     private notificationsService: NotificationsService,
     private loadedFilesService: LoadedFilesService,
@@ -83,9 +82,9 @@ export class ModelService {
   }
 
   loadRdfModel(loadedRdfModel: RdfModel, rdfAspectModel: string, namespaceFileName: string): Observable<Aspect> {
-    if (this.currentCachedFile) {
-      this.currentCachedFile.reset();
-    }
+    // if (this.currentCachedFile) {
+    //   this.currentCachedFile.reset();
+    // }
 
     const sammVersion: string = loadedRdfModel.samm.version;
 
@@ -219,6 +218,6 @@ export class ModelService {
 
   private isElementNameUnique(modelElement: NamedElement): boolean {
     modelElement.metaModelVersion = this.currentRdfModel.samm.version;
-    return !this.currentCachedFile.getElement<NamedElement>(`${this.currentRdfModel.getAspectModelUrn()}${modelElement.name}`);
+    return null; // !this.currentCachedFile.getElement<NamedElement>(`${this.currentRdfModel.getAspectModelUrn()}${modelElement.name}`);
   }
 }

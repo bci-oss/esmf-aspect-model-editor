@@ -22,24 +22,38 @@ import {NamedElement} from './named-element';
 import {Value} from './value';
 
 export type PropertyUrn = string;
+export type EntityInstanceProperty<T = PropertyUrn> = [T, Value];
 
 export interface EntityInstance extends NamedElement, Value {
-  assertions: Map<PropertyUrn, Value>;
+  assertions: Map<PropertyUrn, Value[]>;
   type: Entity;
-  getAssertions(): Map<PropertyUrn, Value>;
-  getAssertion(propertyUrn: PropertyUrn): Value;
+  getAssertions(): Map<PropertyUrn, Value[]>;
+  getAssertion(propertyUrn: PropertyUrn): Value[];
   setAssertion(propertyUrn: PropertyUrn, value: Value): void;
+  getTuples(): EntityInstanceProperty[];
+  removeAssertion(propertyUrn: PropertyUrn, value: Value): void;
 }
 
-export interface DefaultEntityInstance extends EntityInstance {}
+export interface DefaultEntityInstance extends EntityInstance, Value {}
 export class DefaultEntityInstance extends NamedElement implements EntityInstance {
   @use(Value) _: DefaultEntityInstance;
 
   className = 'DefaultEntityInstance';
-
-  assertions: Map<PropertyUrn, Value> = new Map();
+  assertions: Map<PropertyUrn, Value[]> = new Map();
   type: Entity;
+
   override parents: Enumeration[] = [];
+  override get children(): DefaultEntityInstance[] {
+    const children = [];
+    Array.from(this.assertions.values())
+      .flat()
+      .forEach(value => {
+        if (value instanceof DefaultEntityInstance) {
+          children.push(value);
+        }
+      });
+    return children;
+  }
 
   constructor(props: EntityInstanceProps) {
     super(props);
@@ -47,21 +61,48 @@ export class DefaultEntityInstance extends NamedElement implements EntityInstanc
     this.assertions = props.assertions || new Map();
   }
 
+  getTuples(): EntityInstanceProperty[] {
+    return Array.from(this.assertions.entries()).reduce((tuples, [propertyUrn, values]) => {
+      values.forEach(value => tuples.push([propertyUrn, value]));
+      return tuples;
+    }, []);
+  }
+
   getType(): Entity {
     return this.type as Entity;
   }
 
-  getAssertions(): Map<PropertyUrn, Value> {
+  getAssertions(): Map<PropertyUrn, Value[]> {
     return this.assertions;
   }
 
-  getAssertion(propertyUrn: PropertyUrn): Value {
+  getAssertion(propertyUrn: PropertyUrn): Value[] {
     return this.assertions.get(propertyUrn);
+  }
+
+  getValues<T>(): T {
+    return Array.from(this.assertions.values()) as T;
   }
 
   setAssertion(propertyUrn: PropertyUrn, value: Value) {
     if (!value) return;
-    this.assertions.set(propertyUrn, value);
+    if (!this.assertions.has(propertyUrn)) {
+      this.assertions.set(propertyUrn, []);
+    }
+    const values = this.assertions.get(propertyUrn);
+    values.push(value);
+  }
+
+  removeAssertion(propertyUrn: PropertyUrn, value: Value) {
+    if (!value) return;
+    if (!this.assertions.has(propertyUrn)) {
+      return;
+    }
+    const values = this.assertions.get(propertyUrn);
+    const index = values.indexOf(value);
+    if (index > -1) {
+      values.splice(index, 1);
+    }
   }
 
   accept<T, U>(visitor: ModelVisitor<T, U>, context: U): T {

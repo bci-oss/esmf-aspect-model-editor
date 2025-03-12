@@ -25,7 +25,15 @@ import {
   Validators,
 } from '@angular/forms';
 import {MatAutocompleteTrigger} from '@angular/material/autocomplete';
-import {Characteristic, DefaultCollection, DefaultEntityInstance, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
+import {
+  Characteristic,
+  DefaultCollection,
+  DefaultEntityInstance,
+  DefaultProperty,
+  EntityInstanceProperty,
+  NamedElement,
+  Value,
+} from '@esmf/aspect-model-loader';
 import * as locale from 'locale-codes';
 import {Observable, Subscription, map, of, startWith} from 'rxjs';
 import {InputFieldComponent} from '../../fields';
@@ -43,7 +51,7 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
   protected readonly dataType = DataType;
 
   propertiesForm: FormGroup;
-  sources: EntityInstanceProperty[] = [];
+  sources: EntityInstanceProperty<DefaultProperty>[] = [];
   subscriptions = new Subscription();
 
   filteredEntityValues$: {[key: string]: Observable<any[]>} = {};
@@ -71,28 +79,28 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
         this.metaModelElement = metaModelElement as DefaultEntityInstance;
         this.parentForm.setControl('entityValueProperties', this.propertiesForm);
 
-        const {properties, entity} = this.metaModelElement;
+        const {assertions: properties, type: entity} = this.metaModelElement;
 
-        if (!properties.length && entity.allProperties.length) {
-          for (const property of entity.allProperties) {
-            this.metaModelElement.addProperty(property);
+        if (!properties.size && entity.properties.length) {
+          for (const property of entity.properties) {
+            !this.metaModelElement.getAssertion(property.aspectModelUrn).length &&
+              this.metaModelElement.setAssertion(property.aspectModelUrn, new Value(''));
           }
         }
 
-        this.metaModelElement.properties.forEach(entityValueProperty => {
-          const property = entityValueProperty.key.property;
-          const validators = this.getValidators(entityValueProperty);
-          const {value, language} = entityValueProperty;
+        this.metaModelElement.getTuples().forEach(([propertyUrn, value]) => {
+          const property = this.loadedFiles.getElement<DefaultProperty>(propertyUrn);
+          const validators = this.getValidators([propertyUrn, value]);
 
-          this.initializeFormControl(property, validators, value, language);
+          this.initializeFormControl(property, validators, value instanceof DefaultEntityInstance ? value : value.value, value.language);
         });
 
-        this.sources = this.metaModelElement?.entity?.allProperties.map(prop => this.createEntityValueProp(prop));
+        this.sources = this.metaModelElement?.type?.properties.map(prop => this.createEntityValueProp(prop));
       }),
     );
   }
 
-  private createEntityValueProp(property: DefaultProperty): EntityInstanceProperty {
+  private createEntityValueProp(property: DefaultProperty): EntityInstanceProperty<DefaultProperty> {
     const propertyControl = this.propertiesForm.get(property.name);
 
     if (!propertyControl) {
@@ -110,20 +118,19 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
       }
     }
 
-    return {
-      key: property,
-      value: '',
-      language: EntityInstanceUtil.isDefaultPropertyWithLangString(property) ? '' : undefined,
-      optional: property.optional,
-    };
+    return [
+      property,
+      new Value('', property.characteristic?.dataType, EntityInstanceUtil.isDefaultPropertyWithLangString(property) ? '' : undefined),
+    ];
   }
 
   private createFormControl(prop: DefaultProperty): FormControl {
     return new FormControl('', prop.optional ? null : EditorDialogValidators.requiredObject);
   }
 
-  private getValidators(entityValueProperty: EntityInstanceProperty): (control: AbstractControl) => ValidationErrors | null {
-    return entityValueProperty.key.keys.optional ? null : Validators.required;
+  private getValidators([propertyUrn]: EntityInstanceProperty): (control: AbstractControl) => ValidationErrors | null {
+    const property = this.loadedFiles.getElement<DefaultProperty>(propertyUrn);
+    return property.optional ? null : Validators.required;
   }
 
   private initializeFormControl(
@@ -221,7 +228,7 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
     this.changeDetector.detectChanges();
   }
 
-  changeLanguageSelection(ev: EntityInstanceProperty, propertyValue: string, index: number): void {
+  changeLanguageSelection(ev: EntityInstanceProperty<DefaultProperty>, propertyValue: string, index: number): void {
     EntityInstanceUtil.changeLanguageSelection(this.propertiesForm, ev, propertyValue, index);
     this.closeAllAutocompletePanels();
     this.changeDetector.detectChanges();
@@ -238,15 +245,15 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
     this.changeDetector.detectChanges();
   }
 
-  addLanguage(entityValueProp: EntityInstanceProperty): void {
-    const fieldValidators = entityValueProp.optional ? null : EditorDialogValidators.requiredObject;
-    const languagesFormArray = this.propertiesForm.get(entityValueProp.key.property.name) as FormArray;
+  addLanguage([property]: EntityInstanceProperty<DefaultProperty>): void {
+    const fieldValidators = property.optional ? null : EditorDialogValidators.requiredObject;
+    const languagesFormArray = this.propertiesForm.get(property.name) as FormArray;
 
     const languageInputControl = new FormControl('', fieldValidators);
 
     this.subscriptions.add(
       languageInputControl.valueChanges.subscribe(value => {
-        this.changeLanguageInput(entityValueProp.key.property.name, value);
+        this.changeLanguageInput(property.name, value);
       }),
     );
 
@@ -258,8 +265,8 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
     languagesFormArray.push(languageFormGroup);
   }
 
-  removeLanguage(entityValueProp: EntityInstanceProperty, index: number): void {
-    const languagesFormArray = this.propertiesForm.get(entityValueProp.key.property.name) as FormArray;
+  removeLanguage([property]: EntityInstanceProperty<DefaultProperty>, index: number): void {
+    const languagesFormArray = this.propertiesForm.get(property.name) as FormArray;
     languagesFormArray.removeAt(index);
   }
 

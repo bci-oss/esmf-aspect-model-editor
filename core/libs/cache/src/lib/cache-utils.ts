@@ -11,18 +11,15 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ScalarValueProps} from '../shared/props';
-import {ModelVisitor} from '../visitor/model-visitor';
-import {Value} from './value';
+import {CacheStrategy} from '@esmf/aspect-model-loader';
 
-export class ScalarValue extends Value {
-  constructor(props: ScalarValueProps) {
-    super(props.value);
-    this.value = props.value;
-    this.type = props.type;
-  }
-
-  accept<T, U>(visitor: ModelVisitor<T, U>, context: U): T {
-    return visitor.visitScalarValue(this, context);
+export class CacheUtils {
+  static getCachedElements<T>(cache: CacheStrategy, type: {new (...x: any[]): T}): T[] {
+    return cache.getKeys().reduce((acc, key) => {
+      if (cache.get(key) instanceof type) {
+        acc.push(cache.get(key));
+      }
+      return acc;
+    }, []);
   }
 }

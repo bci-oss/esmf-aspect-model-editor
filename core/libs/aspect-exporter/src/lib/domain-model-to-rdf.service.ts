@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {MxGraphAttributeService} from '@ame/mx-graph';
 import {ModelService} from '@ame/rdf/services';
 import {Injectable, inject} from '@angular/core';
@@ -30,8 +30,6 @@ import {
 import {mxgraph} from 'mxgraph-factory';
 import {filter, tap} from 'rxjs/operators';
 import {
-  AbstractEntityVisitor,
-  AbstractPropertyVisitor,
   AspectVisitor,
   CharacteristicVisitor,
   CleanupVisitor,
@@ -47,14 +45,14 @@ import {
 @Injectable()
 export class DomainModelToRdfService {
   private mxGraphAttributeService = inject(MxGraphAttributeService);
-  private namespacesCacheService = inject(NamespacesCacheService);
+  private loadedFiles = inject(LoadedFilesService);
 
   get graph(): mxgraph.mxGraph {
     return this.mxGraphAttributeService.graph;
   }
 
   get currentCachedFile() {
-    return this.namespacesCacheService.currentCachedFile;
+    return this.loadedFiles.currentLoadedFile.cachedFile;
   }
 
   private working = false;
@@ -66,8 +64,6 @@ export class DomainModelToRdfService {
     private characteristicVisitorService: CharacteristicVisitor,
     private constraintVisitorService: ConstraintVisitor,
     private entityVisitorService: EntityVisitor,
-    private abstractEntityVisitorService: AbstractEntityVisitor,
-    private abstractPropertyVisitorService: AbstractPropertyVisitor,
     private entityInstanceVisitor: EntityInstanceVisitor,
     private eventVisitorService: EventVisitor,
     private unitVisitorService: UnitVisitor,
@@ -94,7 +90,7 @@ export class DomainModelToRdfService {
   private updateRdfStore() {
     this.cleanupVisitorService.removeStoreElements();
 
-    const rootElements = this.namespacesCacheService.currentCachedFile.getAllElements().filter(e => !e.parents.length);
+    const rootElements = this.currentCachedFile.getAllElements().filter(e => !e.parents.length);
     for (const element of rootElements) {
       this.visitLayer(element);
     }

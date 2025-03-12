@@ -39,7 +39,7 @@ export class TraitConnectionHandler implements SingleShapeConnector<DefaultTrait
       this.filtersService.createNode(metaModelElement, {parent: MxGraphHelper.getModelElement(source)}),
     );
     // TODO update
-    trait.update(defaultElement);
+    // trait.update(defaultElement);
     this.mxGraphService.assignToParent(child, source);
     this.mxGraphService.moveCells([child], source.getGeometry().x + 30, source.getGeometry().y + 60);
     this.mxGraphService.formatCell(child);

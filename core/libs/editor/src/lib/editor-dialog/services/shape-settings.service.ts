@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {MxGraphAttributeService, MxGraphHelper, MxGraphService, MxGraphShapeSelectorService, mxEvent, mxUtils} from '@ame/mx-graph';
 import {BindingsService, NotificationsService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
@@ -38,8 +38,8 @@ export class ShapeSettingsService {
     private editorService: EditorService,
     private shapeSettingsStateService: ShapeSettingsStateService,
     private openReferencedElementService: OpenReferencedElementService,
-    private namespaceCacheService: NamespacesCacheService,
     private translate: LanguageTranslationService,
+    private loadedFiles: LoadedFilesService,
     private ngZone: NgZone,
   ) {}
 
@@ -119,7 +119,7 @@ export class ShapeSettingsService {
   }
 
   editModelByUrn(elementUrn: string) {
-    const element = this.namespaceCacheService.currentCachedFile.getElement<NamedElement>(elementUrn);
+    const element = this.loadedFiles.currentLoadedFile.cachedFile.get<NamedElement>(elementUrn);
     if (!element) {
       this.notificationsService.error({
         title: this.translate.language.EDITOR_CANVAS.SHAPE_SETTING.NOTIFICATION.EDIT_VIEW_UNAVAILABLE,

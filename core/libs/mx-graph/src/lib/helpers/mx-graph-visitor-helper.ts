@@ -37,11 +37,9 @@ import {
   DefaultState,
   DefaultStructuredValue,
   DefaultUnit,
-  HasExtends,
   NamedElement,
   Property,
   QuantityKind,
-  StructuredValue,
   Unit,
 } from '@esmf/aspect-model-loader';
 import * as locale from 'locale-codes';
@@ -79,10 +77,12 @@ export class MxGraphVisitorHelper {
       characteristic.values?.length &&
       !characteristic.values.every(value => value instanceof DefaultEntityInstance)
     ) {
-      return {
-        label: `values = ${RdfModelUtil.getValuesWithoutUrnDefinition(characteristic.values)}`,
-        key: 'values',
-      };
+      return null;
+      // TODO fix this whn EntityInstance is completed
+      //  {
+      //   label: `values = ${RdfModelUtil.getValuesWithoutUrnDefinition(characteristic.values)}`,
+      //   key: 'values',
+      // };
     }
     return null;
   }
@@ -90,7 +90,7 @@ export class MxGraphVisitorHelper {
   static addDefaultValue(characteristic: Characteristic): ShapeAttribute {
     if (characteristic instanceof DefaultState && characteristic.defaultValue) {
       return {
-        label: `defaultValue = ${RdfModelUtil.getValuesWithoutUrnDefinition(Array(characteristic.defaultValue))}`,
+        label: `defaultValue = ${RdfModelUtil.getValuesWithoutUrnDefinition(Array(characteristic.defaultValue.value))}`,
         key: 'defaultValue',
       };
     }
@@ -98,20 +98,20 @@ export class MxGraphVisitorHelper {
   }
 
   static addLocalizedDescriptions(
-    metaModelElement: NamedElement | HasExtends<NamedElement>,
+    metaModelElement: NamedElement & {extends_?: NamedElement},
     sammLangService: SammLanguageSettingsService,
   ): ShapeAttribute[] {
     const languages: string[] =
-      metaModelElement.getAllLocalesDescriptions().length >= (metaModelElement?.extendedDescription?.size || 0)
-        ? metaModelElement.getAllLocalesDescriptions()
-        : Array.from(metaModelElement?.extendedDescription?.keys());
+      Array.from(metaModelElement.descriptions.keys()).length >= (metaModelElement?.extends_?.descriptions?.size || 0)
+        ? Array.from(metaModelElement.descriptions.keys())
+        : Array.from(metaModelElement?.extends_?.descriptions?.keys());
 
     return languages
       .map(languageCode => {
         const langTag = locale.getByTag(languageCode).tag;
         sammLangService.addSammLanguageCode(langTag);
         const description = metaModelElement.getDescription(langTag);
-        const extendedDescription = metaModelElement?.extendedDescription?.get(langTag);
+        const extendedDescription = metaModelElement?.extends_?.descriptions?.get(langTag);
 
         if (description || extendedDescription) {
           return {
@@ -127,12 +127,12 @@ export class MxGraphVisitorHelper {
   }
 
   static addLocalizedPreferredNames(
-    metaModelElement: HasExtends<NamedElement> | StructuredValue,
+    metaModelElement: NamedElement & {extends_?: NamedElement},
     sammLangService: SammLanguageSettingsService,
   ): ShapeAttribute[] {
     const languages: string[] =
-      metaModelElement.getAllLocalesPreferredNames().length >= (metaModelElement?.extends_?.preferredNames.size || 0)
-        ? metaModelElement.getAllLocalesPreferredNames()
+      Array.from(metaModelElement.preferredNames.keys()).length >= (metaModelElement?.extends_?.preferredNames.size || 0)
+        ? Array.from(metaModelElement.preferredNames.keys())
         : Array.from(metaModelElement?.extends_?.preferredNames?.keys());
 
     return languages
@@ -140,7 +140,7 @@ export class MxGraphVisitorHelper {
         const langTag = locale.getByTag(languageCode).tag;
         sammLangService.addSammLanguageCode(langTag);
         const preferredName = metaModelElement.getPreferredName(langTag);
-        const extendedPreferredName = metaModelElement?.extendedPreferredName?.get(langTag);
+        const extendedPreferredName = metaModelElement?.extends_?.preferredNames?.get(langTag);
         if (preferredName || extendedPreferredName) {
           return {
             label: `preferredName = ${preferredName || extendedPreferredName} @${langTag}`,
@@ -170,7 +170,7 @@ export class MxGraphVisitorHelper {
     return null;
   }
 
-  static addSee(metaModelElement: HasExtends<NamedElement>): ShapeAttribute {
+  static addSee(metaModelElement: NamedElement & {extends_?: NamedElement}): ShapeAttribute {
     if (metaModelElement.see?.length > 0 || metaModelElement?.extends_?.see?.length) {
       let extended = false;
       let elements = (metaModelElement.see || []).map(e => (e.startsWith('urn:samm') && e.includes('#') ? e.split('#')[1] : e));
@@ -493,7 +493,7 @@ export class MxGraphVisitorHelper {
         predefined: !!(modelElement as DefaultCharacteristic)?.isPredefined,
         sameNamespace: elementNamespace === currentNamespace,
         sameVersionedNamespace: aspectVersionedNamespace === elementVersionedNamespace,
-        fileName: modelElement.fileName,
+        fileName: file.absoluteName,
         isAbstract: modelElement['isAbstract'],
       };
     } catch (error) {

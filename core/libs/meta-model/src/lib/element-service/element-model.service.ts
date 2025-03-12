@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {LoadedFilesService, NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {EntityInstanceService, RenameModelDialogService} from '@ame/editor';
 import {MxGraphCharacteristicHelper, MxGraphHelper, MxGraphService, MxGraphShapeOverlayService, MxGraphVisitorHelper} from '@ame/mx-graph';
 import {ModelService} from '@ame/rdf/services';
@@ -26,7 +26,6 @@ import {
   DefaultEnumeration,
   DefaultProperty,
   DefaultStructuredValue,
-  HasExtends,
   NamedElement,
 } from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
@@ -40,7 +39,6 @@ export class ElementModelService {
     private titleService: TitleService,
     private mxGraphShapeOverlayService: MxGraphShapeOverlayService,
     private mxGraphService: MxGraphService,
-    private namespacesCacheService: NamespacesCacheService,
     private entityInstanceService: EntityInstanceService,
     private sammLangService: SammLanguageSettingsService,
     private modelRootService: ModelRootService,
@@ -53,7 +51,7 @@ export class ElementModelService {
   ) {}
 
   get currentCachedFile() {
-    return this.namespacesCacheService.currentCachedFile;
+    return this.loadedFilesService.currentLoadedFile.cachedFile;
   }
 
   updateElement(cell: mxgraph.mxCell, form: {[key: string]: any}) {
@@ -153,7 +151,8 @@ export class ElementModelService {
     }
 
     if (sourceModelElement instanceof DefaultStructuredValue && targetModelElement instanceof DefaultProperty) {
-      sourceModelElement.delete(targetModelElement);
+      // TODO update delete functionality
+      // sourceModelElement.delete(targetModelElement);
       MxGraphHelper.updateLabel(edge.source, this.mxGraphService.graph, this.sammLangService);
     }
 
@@ -228,14 +227,14 @@ export class ElementModelService {
     return false;
   }
 
-  private handleAbstractElementsDecoupling(edge: mxgraph.mxCell, source: HasExtends<DefaultEntity>, target: NamedElement) {
+  private handleAbstractElementsDecoupling(edge: mxgraph.mxCell, source: NamedElement, target: NamedElement) {
     if (
       (source instanceof DefaultEntity && target instanceof DefaultEntity && target.isAbstractEntity()) ||
       (source instanceof DefaultEntity && source.isAbstractEntity() && target instanceof DefaultEntity && target.isAbstractEntity()) ||
       (source instanceof DefaultEntity && target instanceof DefaultEntity) ||
       (source instanceof DefaultProperty && source.isAbstract && target instanceof DefaultProperty && target.isAbstract)
     ) {
-      source._extends = null;
+      source.extends_ = null;
       edge.source['configuration'].fields = MxGraphVisitorHelper.getElementProperties(
         MxGraphHelper.getModelElement(edge.source),
         this.sammLangService,
@@ -327,6 +326,6 @@ export class ElementModelService {
     }
 
     elementModelService?.delete(cell);
-    this.namespacesCacheService.currentCachedFile.removeElement(MxGraphHelper.getModelElement(cell).aspectModelUrn);
+    this.currentCachedFile.removeElement(MxGraphHelper.getModelElement(cell).aspectModelUrn);
   }
 }

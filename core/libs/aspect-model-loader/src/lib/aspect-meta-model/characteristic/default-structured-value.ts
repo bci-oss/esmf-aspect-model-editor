@@ -28,7 +28,7 @@ export class DefaultStructuredValue extends DefaultCharacteristic implements Str
 
   override get children(): NamedElement[] {
     const children = this.elements.filter(element => element instanceof NamedElement);
-    return [...super.children, ...children];
+    return [...super.children, ...children] as NamedElement[];
   }
 
   deconstructionRule: string;

@@ -16,7 +16,6 @@ import {ElementModelService} from '@ame/meta-model';
 import {MxGraphService} from '@ame/mx-graph';
 import {ModelService} from '@ame/rdf/services';
 import {ConfigurationService} from '@ame/settings-dialog';
-import {LogService} from '@ame/shared';
 import {SidebarModule} from '@ame/sidebar';
 import {ElementsSearchComponent, FilesSearchComponent, SearchesStateService} from '@ame/utils';
 import {CdkDrag, CdkDragEnd, CdkDragHandle} from '@angular/cdk/drag-drop';
@@ -86,7 +85,6 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit, OnDestroy {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private modelService: ModelService,
-    private logService: LogService,
     private elementModelService: ElementModelService,
     private changeDetector: ChangeDetectorRef,
     private editorService: EditorService,
@@ -164,7 +162,7 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit, OnDestroy {
   onSave(formData: FormGroup) {
     this.selectedShapeForUpdate
       ? this.elementModelService.updateElement(this.selectedShapeForUpdate, formData)
-      : this.logService.logInfo('Skip shape update because nothing is selected.');
+      : console.info('Skip shape update because nothing is selected.');
 
     this.resetSelectedShapeForUpdate();
   }

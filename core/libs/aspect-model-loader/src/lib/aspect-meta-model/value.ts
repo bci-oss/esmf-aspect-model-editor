@@ -11,18 +11,16 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelElement} from './model-element';
+import {LangString} from './named-element';
 import {Type} from './type';
 
-export abstract class Value extends ModelElement {
-  type: Type;
-  value: any;
-
-  getType(): Type {
-    return this.type;
-  }
-
-  getValue() {
-    return this.value;
-  }
+export class Value {
+  /**
+   *
+   */
+  constructor(
+    public value: string | number | boolean,
+    public type?: Type,
+    public language?: LangString,
+  ) {}
 }

@@ -11,7 +11,6 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 import {filterRelations, ModelFilter, ModelTree} from '@ame/loader-filters';
-import {CanExtend} from '@ame/meta-model';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {basicShapeGeometry, ModelCompactTreeLayout, ModelHierarchicalLayout} from '@ame/shared';
@@ -26,6 +25,7 @@ import {
   DefaultProperty,
   DefaultStructuredValue,
   DefaultTrait,
+  HasExtends,
   NamedElement,
 } from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
@@ -186,7 +186,7 @@ export class MxGraphHelper {
       return;
     }
 
-    parent.children = parent.children.filter(c => c.aspectModelUrn !== child.aspectModelUrn);
+    // parent.children = parent.children.filter(c => c.aspectModelUrn !== child.aspectModelUrn);
     child.parents = child.parents.filter(p => p.aspectModelUrn !== parent.aspectModelUrn);
   }
 
@@ -371,7 +371,7 @@ export class MxGraphHelper {
 
     if (isSmallShape) {
       title.classList.add('simple');
-      if (modelElement instanceof CanExtend && cell.collapsed) {
+      if (modelElement instanceof HasExtends && cell.collapsed) {
         div.removeChild(title);
       }
       return div;

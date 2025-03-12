@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {LoadedFilesService, NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {ShapeConnectorService} from '@ame/connection';
 import {FiltersService} from '@ame/loader-filters';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
@@ -33,7 +33,6 @@ export class AbstractPropertyRenderService extends BaseRenderService {
     mxGraphService: MxGraphService,
     sammLangService: SammLanguageSettingsService,
     protected loadedFilesService: LoadedFilesService,
-    private namespacesCacheService: NamespacesCacheService,
     private shapeConnectorService: ShapeConnectorService,
   ) {
     super(mxGraphService, sammLangService, loadedFilesService);
@@ -58,7 +57,7 @@ export class AbstractPropertyRenderService extends BaseRenderService {
     }
 
     const extendsElement = metaModelElement.extends_ as DefaultProperty;
-    const cachedEntity = this.namespacesCacheService.resolveCachedElement(extendsElement);
+    const cachedEntity = this.loadedFilesService.currentLoadedFile.cachedFile.resolveInstance(extendsElement);
     const resolvedCell = this.mxGraphService.resolveCellByModelElement(cachedEntity);
     const entityCell = resolvedCell
       ? resolvedCell

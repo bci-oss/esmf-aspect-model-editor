@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {EditorService} from '@ame/editor';
 import {MxGraphAttributeService, MxGraphHelper, MxGraphRenderer, MxGraphService, MxGraphShapeOverlayService} from '@ame/mx-graph';
 import {ModelService} from '@ame/rdf/services';
@@ -105,7 +105,7 @@ export class FiltersService {
           MxGraphHelper.filterMode = filter;
           this.filterAttributesService.isFiltering = true;
           this.filtersMethods[filter]?.();
-          const namespaceCacheService = this.injector.get(NamespacesCacheService);
+          const loadedFiles = this.injector.get(LoadedFilesService);
           const mxGraphSetupVisitor = new MxGraphRenderer(
             mxGraphService,
             this.injector.get(MxGraphShapeOverlayService),
@@ -113,8 +113,13 @@ export class FiltersService {
             this.injector.get(ModelService).getLoadedAspectModel().rdfModel,
           );
 
-          const currentFile = namespaceCacheService.currentCachedFile;
-          const rootElements = currentFile.getAllElements().filter(e => e.parents.length <= 0);
+          const cachedFile = loadedFiles.currentLoadedFile.cachedFile;
+          const rootElements = cachedFile.getKeys().reduce((acc, e) => {
+            if (cachedFile.get<NamedElement>(e).parents.length <= 0) {
+              acc.push(cachedFile.get<NamedElement>(e));
+            }
+            return acc;
+          }, []);
           const filteredElements = this.filter(rootElements);
 
           mxGraphService.deleteAllShapes();

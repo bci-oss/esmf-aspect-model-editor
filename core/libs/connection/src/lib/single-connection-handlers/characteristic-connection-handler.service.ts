@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {FiltersService} from '@ame/loader-filters';
 import {ModelElementNamingService} from '@ame/meta-model';
 import {
@@ -44,17 +44,17 @@ import {SingleShapeConnector} from '../models';
 })
 export class CharacteristicConnectionHandler implements SingleShapeConnector<Characteristic> {
   get currentCachedFile() {
-    return this.namespacesCacheService.currentCachedFile;
+    return this.loadedFiles.currentLoadedFile.cachedFile;
   }
 
   constructor(
     private mxGraphService: MxGraphService,
     private modelElementNamingService: ModelElementNamingService,
-    private namespacesCacheService: NamespacesCacheService,
     private mxGraphAttributeService: MxGraphAttributeService,
     private mxGraphShapeOverlayService: MxGraphShapeOverlayService,
     private sammLangService: SammLanguageSettingsService,
     private filtersService: FiltersService,
+    private loadedFiles: LoadedFilesService,
   ) {}
 
   public connect(characteristic: Characteristic, source: mxgraph.mxCell, modelInfo: ModelInfo) {
@@ -92,7 +92,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
     );
 
     const traitShape = this.mxGraphService.renderModelElement(
-      this.filtersService.createNode(this.currentCachedFile.resolveElement(defaultTrait), {
+      this.filtersService.createNode(this.currentCachedFile.resolveInstance(defaultTrait), {
         parent: MxGraphHelper.getModelElement(source),
       }),
     );
@@ -115,7 +115,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
         }
 
         // TODO replace delete functionality
-        sourceElementModel.delete(currentMetaModel);
+        // sourceElementModel.delete(currentMetaModel);
         MxGraphHelper.removeRelation(sourceElementModel, currentMetaModel);
         this.mxGraphService.removeCells([source.removeEdge(edge, false)]);
 
@@ -220,7 +220,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
     // connect: Entity - EntityValue
     this.mxGraphService.assignToParent(entityCell, entityValueCell);
     this.mxGraphService.graph.labelChanged(source, MxGraphHelper.createPropertiesLabel(source));
-    this.currentCachedFile.resolveElement(entityValue);
+    this.currentCachedFile.resolveInstance(entityValue);
     this.mxGraphService.formatShapes();
   }
 
@@ -232,15 +232,17 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
    * @param traitShape trait object
    */
   private addConstraint(defaultTrait: DefaultTrait, traitShape: mxgraph.mxCell) {
-    const defaultConstraint = this.modelElementNamingService.resolveElementNaming(DefaultConstraint.createInstance());
+    const defaultConstraint = this.modelElementNamingService.resolveElementNaming(
+      new DefaultConstraint({name: '', aspectModelUrn: '', metaModelVersion: defaultTrait.metaModelVersion}),
+    );
     const constraintShape = this.mxGraphService.renderModelElement(
-      this.filtersService.createNode(this.currentCachedFile.resolveElement(defaultConstraint), {
+      this.filtersService.createNode(this.currentCachedFile.resolveInstance(defaultConstraint), {
         parent: MxGraphHelper.getModelElement(traitShape),
       }),
     );
 
     // TODO replace update functionality
-    defaultTrait.update(defaultConstraint);
+    // defaultTrait.update(defaultConstraint);
     this.mxGraphService.assignToParent(constraintShape, traitShape);
   }
 }

@@ -13,7 +13,7 @@
 
 <mat-form-field
   [floatLabel]="searchControl?.disabled ? 'always' : 'auto'"
-  [matTooltip]="isInherited ? 'This was extended from ' + elementExtends.extendedElement.name : ''"
+  [matTooltip]="isInherited ? 'This was extended from ' + elementExtends.extends_?.name : ''"
   [matTooltipPosition]="'left'"
   appearance="fill"
   subscriptSizing="dynamic"

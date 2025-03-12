@@ -12,8 +12,6 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {CanExtend} from '@ame/meta-model';
-import {RdfService} from '@ame/rdf/services';
 import {Injectable} from '@angular/core';
 import {
   DefaultCharacteristic,
@@ -35,6 +33,7 @@ import {
   DefaultStructuredValue,
   DefaultTimeSeries,
   DefaultTrait,
+  HasExtends,
   Samm,
   SammC,
 } from '@esmf/aspect-model-loader';
@@ -79,9 +78,9 @@ export class CharacteristicVisitor extends BaseVisitor<DefaultCharacteristic> {
     private rdfNodeService: RdfNodeService,
     private rdfListService: RdfListService,
     private loadedFilesService: LoadedFilesService,
-    rdfService: RdfService,
+    loadedFiles: LoadedFilesService,
   ) {
-    super(rdfService);
+    super(loadedFiles);
   }
 
   visit(characteristic: DefaultCharacteristic): DefaultCharacteristic {
@@ -237,11 +236,11 @@ export class CharacteristicVisitor extends BaseVisitor<DefaultCharacteristic> {
   // base functions
   private updateProperties(characteristic: DefaultCharacteristic) {
     this.rdfNodeService.update(characteristic, {
-      preferredName: characteristic.getAllLocalesPreferredNames()?.map(language => ({
+      preferredName: Array.from(characteristic.preferredNames.keys())?.map(language => ({
         language,
         value: characteristic.getPreferredName(language),
       })),
-      description: characteristic.getAllLocalesDescriptions()?.map(language => ({
+      description: Array.from(characteristic.descriptions.keys())?.map(language => ({
         language,
         value: characteristic.getDescription(language),
       })),
@@ -298,7 +297,7 @@ export class CharacteristicVisitor extends BaseVisitor<DefaultCharacteristic> {
         continue;
       }
 
-      if (parent instanceof CanExtend && parent.extendedElement) {
+      if (parent instanceof HasExtends && parent.extends_) {
         continue;
       }
 

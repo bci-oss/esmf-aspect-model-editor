@@ -11,12 +11,11 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
+import {CacheUtils, LoadedFilesService} from '@ame/cache';
 import {EditorDialogValidators} from '@ame/editor';
-import {RdfService} from '@ame/rdf/services';
 import {Component, Input, OnInit, inject} from '@angular/core';
 import {FormControl, Validators} from '@angular/forms';
-import {DefaultProperty} from '@esmf/aspect-model-loader';
+import {DefaultProperty, RdfModel} from '@esmf/aspect-model-loader';
 import {Observable, debounceTime, map, startWith} from 'rxjs';
 
 @Component({
@@ -25,31 +24,34 @@ import {Observable, debounceTime, map, startWith} from 'rxjs';
   styleUrls: ['./structured-value-property-field.component.scss'],
 })
 export class StructuredValuePropertyFieldComponent implements OnInit {
-  @Input() public property: DefaultProperty = null;
+  @Input() public defaultProperty: DefaultProperty = null;
   @Input() public fieldControl: FormControl;
+
+  private loadedFiles = inject(LoadedFilesService);
 
   public filteredProperties$: Observable<any>;
   public control: FormControl;
 
-  private namespaceCacheService = inject(NamespacesCacheService);
   get currentCacheFile() {
-    return this.namespaceCacheService.currentCachedFile;
+    return this.loadedFiles.currentLoadedFile.cachedFile;
   }
 
-  constructor(private rdfService: RdfService) {}
+  get currentRdfModel(): RdfModel {
+    return this.loadedFiles.currentLoadedFile.rdfModel;
+  }
 
   ngOnInit() {
     this.control = new FormControl(
       {
-        value: this.property?.name || '',
-        disabled: !!this.property?.name || this.property?.isExternalReference(),
+        value: this.defaultProperty?.name || '',
+        disabled: !!this.defaultProperty?.name || this.defaultProperty?.isExternalReference(),
       },
       [Validators.required, EditorDialogValidators.namingLowerCase],
     );
     this.filteredProperties$ = this.control.valueChanges.pipe(
       startWith([]),
       debounceTime(250),
-      map(value => this.currentCacheFile.getCachedProperties().filter(property => property.name.includes(value))),
+      map(value => CacheUtils.getCachedElements(this.currentCacheFile, DefaultProperty).filter(property => property.name.includes(value))),
     );
   }
 
@@ -57,7 +59,7 @@ export class StructuredValuePropertyFieldComponent implements OnInit {
     this.control.enable();
     this.control.patchValue('');
     this.fieldControl.setValue('');
-    this.property = null;
+    this.defaultProperty = null;
   }
 
   isLowerCase(value: string) {
@@ -65,8 +67,8 @@ export class StructuredValuePropertyFieldComponent implements OnInit {
   }
 
   createNewProperty(name: string) {
-    const namespace = this.rdfService.currentRdfModel.getAspectModelUrn();
-    const version = this.rdfService.currentRdfModel.getMetaModelVersion();
+    const namespace = this.currentRdfModel.getAspectModelUrn();
+    const version = this.currentRdfModel.getMetaModelVersion();
     const newProperty = new DefaultProperty({metaModelVersion: version, aspectModelUrn: namespace + name, name});
     this.fieldControl.setValue(newProperty);
     this.control.disable();

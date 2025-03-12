@@ -26,7 +26,7 @@ import {
   ListElement,
   ListElementType,
   ListProperties,
-  OverWrittenListElement,
+  PropertyListElement,
   SourceElementType,
   StoreListReferences,
 } from './rdf-list.types';
@@ -75,7 +75,7 @@ export class RdfListService implements CreateEmptyRdfList, EmptyRdfList {
 
     this.remove(source, ...elements);
     this.recreateList(list, [...listElements.map(({node}) => node), ...elementsToBeAdded.listElements]);
-    this.createOverWrittenElements(elementsToBeAdded.overWrittenListElements);
+    this.createPropertyList(elementsToBeAdded.overWrittenListElements);
     return this;
   }
 
@@ -172,40 +172,40 @@ export class RdfListService implements CreateEmptyRdfList, EmptyRdfList {
     return quads;
   }
 
-  private createOverWrittenElements(elements: OverWrittenListElement[]) {
+  private createPropertyList(elements: PropertyListElement[]) {
     for (const element of elements) {
-      const model = element.metaModelElement?.property;
-      if (model?.extendedElement) {
+      const model = element.metaModelElement;
+      if (model?.extends_) {
         this.nodeService.updateBlankNode(element.blankNode, model, {
-          extends: model?.extendedElement?.aspectModelUrn,
+          extends: model?.extends_?.aspectModelUrn,
           characteristic: model.characteristic?.aspectModelUrn,
         });
         continue;
       }
 
-      this.store.addQuad(element.blankNode, this.samm.property(), DataFactory.namedNode(element.metaModelElement.property.aspectModelUrn));
+      this.store.addQuad(element.blankNode, this.samm.property(), DataFactory.namedNode(element.metaModelElement.aspectModelUrn));
 
-      if (element.metaModelElement.keys.optional) {
+      if (element.metaModelElement.optional) {
         this.store.addQuad(
           element.blankNode,
           this.samm.OptionalProperty(),
-          DataFactory.literal(`${element.metaModelElement.keys.optional}`, DataFactory.namedNode(simpleDataTypes.boolean.isDefinedBy)),
+          DataFactory.literal(`${element.metaModelElement.optional}`, DataFactory.namedNode(simpleDataTypes.boolean.isDefinedBy)),
         );
       }
 
-      if (element.metaModelElement.keys.notInPayload) {
+      if (element.metaModelElement.notInPayload) {
         this.store.addQuad(
           element.blankNode,
           this.samm.NotInPayloadProperty(),
-          DataFactory.literal(`${element.metaModelElement.keys.notInPayload}`, DataFactory.namedNode(simpleDataTypes.boolean.isDefinedBy)),
+          DataFactory.literal(`${element.metaModelElement.notInPayload}`, DataFactory.namedNode(simpleDataTypes.boolean.isDefinedBy)),
         );
       }
 
-      if (element.metaModelElement.keys.payloadName) {
+      if (element.metaModelElement.payloadName) {
         this.store.addQuad(
           element.blankNode,
           this.samm.PayloadNameProperty(),
-          DataFactory.literal(`${element.metaModelElement.keys.payloadName}`, DataFactory.namedNode(simpleDataTypes.string.isDefinedBy)),
+          DataFactory.literal(`${element.metaModelElement.payloadName}`, DataFactory.namedNode(simpleDataTypes.string.isDefinedBy)),
         );
       }
     }

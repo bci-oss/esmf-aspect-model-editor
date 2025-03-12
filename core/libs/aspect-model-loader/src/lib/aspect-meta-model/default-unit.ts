@@ -13,6 +13,7 @@
 
 import {UnitProps} from '../shared/props';
 import {ModelVisitor} from '../visitor/model-visitor';
+import {QuantityKind} from './default-quantity-kind';
 import {NamedElement} from './named-element';
 
 export interface Unit extends NamedElement {
@@ -21,18 +22,28 @@ export interface Unit extends NamedElement {
   name: string;
   referenceUnit?: Unit;
   conversionFactor?: string;
+  numericConversionFactor?: number;
+  commonCode?: string;
   quantityKinds?: Array<any>;
 }
 
 export class DefaultUnit extends NamedElement implements Unit {
   override className = 'DefaultUnit';
+  override get children(): NamedElement[] {
+    if (this.referenceUnit instanceof NamedElement) {
+      return [this.referenceUnit];
+    }
+
+    return [];
+  }
+
   symbol?: string;
   code?: string;
   referenceUnit?: DefaultUnit;
   conversionFactor?: string;
   numericConversionFactor?: number;
   commonCode?: string;
-  quantityKinds?: Array<any>;
+  quantityKinds?: Array<QuantityKind>;
 
   constructor(props: UnitProps) {
     super(props);

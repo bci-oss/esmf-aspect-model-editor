@@ -15,7 +15,7 @@ import {mxgraph} from 'mxgraph-factory';
 import {ShapeConnectorUtil} from './shape-connector-util';
 
 import {ModelInfo, MxGraphAttributeService, MxGraphHelper, MxGraphShapeOverlayService} from '@ame/mx-graph';
-import {LogService, NotificationsService, cellRelations} from '@ame/shared';
+import {NotificationsService, cellRelations} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {
   DefaultAspect,
@@ -78,7 +78,6 @@ import mxCell = mxgraph.mxCell;
 })
 export class ShapeConnectorService {
   constructor(
-    private logService: LogService,
     private notificationsService: NotificationsService,
     private mxGraphAttributeService: MxGraphAttributeService,
     private mxGraphShapeOverlayService: MxGraphShapeOverlayService,
@@ -158,7 +157,7 @@ export class ShapeConnectorService {
 
   createAndConnectShape(metaModel: NamedElement, source: mxCell, modelInfo: ModelInfo = ModelInfo.IS_CHARACTERISTIC) {
     if (!metaModel) {
-      this.logService.logInfo('No cell selected with a meta model to connect.');
+      console.info('No cell selected with a meta model to connect.');
       return;
     }
 

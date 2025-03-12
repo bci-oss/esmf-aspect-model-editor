@@ -45,7 +45,7 @@ export class ConstraintModelService extends BaseModelService {
     let metaModelElement = MxGraphHelper.getModelElement<DefaultConstraint>(cell);
     if (form.changedMetaModel) {
       this.currentCachedFile.removeElement(metaModelElement?.aspectModelUrn);
-      this.currentCachedFile.resolveElement(form.changedMetaModel);
+      this.currentCachedFile.resolveInstance(form.changedMetaModel);
       cell = this.mxGraphService.resolveCellByModelElement(metaModelElement);
 
       cell.edges?.forEach(({source}) => {
@@ -82,7 +82,8 @@ export class ConstraintModelService extends BaseModelService {
   private updateModelOfParent(cell: mxgraph.mxCell, value: any) {
     this.mxGraphAttributeService.graph.getIncomingEdges(cell).forEach(cellParent => {
       const parentModel = MxGraphHelper.getModelElement<NamedElement>(cellParent.source);
-      parentModel?.update(value);
+      // TODO update this functionality
+      // parentModel?.update(value);
     });
   }
 

@@ -11,9 +11,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {CacheUtils} from '@ame/cache';
 import {EntityValueRenderService, MxGraphHelper} from '@ame/mx-graph';
 import {Injectable} from '@angular/core';
-import {DefaultEntityInstance, DefaultProperty, Entity, NamedElement} from '@esmf/aspect-model-loader';
+import {DefaultEntity, DefaultEntityInstance, DefaultProperty, Entity, NamedElement} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
 import {BaseModelService} from './base-model-service';
 
@@ -31,7 +32,7 @@ export class EntityValueModelService extends BaseModelService {
     const modelElement = MxGraphHelper.getModelElement<DefaultEntityInstance>(cell);
     // update name
     const aspectModelUrn = this.modelService.currentRdfModel.getAspectModelUrn();
-    this.currentCachedFile.updateCachedElementKey(`${aspectModelUrn}${modelElement.name}`, `${aspectModelUrn}${form.name}`);
+    this.currentCachedFile.updateElementKey(`${aspectModelUrn}${modelElement.name}`, `${aspectModelUrn}${form.name}`);
     modelElement.name = form.name;
     modelElement.aspectModelUrn = `${aspectModelUrn}${form.name}`;
 
@@ -55,10 +56,11 @@ export class EntityValueModelService extends BaseModelService {
 
   private updatePropertiesEntityValues(metaModelElement: DefaultEntityInstance, form: {[key: string]: any}): void {
     const {entityValueProperties} = form;
-    metaModelElement.properties = [];
+    // TODO update this functionality with the new structure from entityInstance
+    metaModelElement.assertions = new Map();
 
     Object.keys(entityValueProperties).forEach(key => {
-      const property = this.findPropertyInEntities(this.currentCachedFile.getCachedEntities(), key);
+      const property = this.findPropertyInEntities(CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntity), key);
 
       if (!property) return;
 
@@ -68,7 +70,8 @@ export class EntityValueModelService extends BaseModelService {
         language,
       }));
 
-      metaModelElement.properties.push(...propertyValues);
+      // TODO update this functionality with the new structure from entityInstance
+      // metaModelElement.assertions.push(...propertyValues);
     });
   }
 
@@ -84,7 +87,8 @@ export class EntityValueModelService extends BaseModelService {
   }
 
   private removeObsoleteEntityValues(metaModelElement: DefaultEntityInstance): void {
-    metaModelElement.properties.forEach((property: EntityInstanceProperty) => {
+    // TODO Update this functionality with the new structure from entityInstance
+    metaModelElement.assertions.forEach((property: any) => {
       if (property.value instanceof DefaultEntityInstance && !property.value.parents?.length) {
         this.deleteEntityValue(property.value, metaModelElement);
       }

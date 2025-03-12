@@ -12,9 +12,9 @@
  */
 
 import {ModelApiService} from '@ame/api';
-import {LoadedFilesService, NamespaceFile} from '@ame/cache';
+import {NamespaceFile} from '@ame/cache';
 import {ConfigurationService, Settings} from '@ame/settings-dialog';
-import {APP_CONFIG, AppConfig, BrowserService, FileContentModel, LogService, SaveValidateErrorsCodes} from '@ame/shared';
+import {APP_CONFIG, AppConfig, BrowserService, FileContentModel, SaveValidateErrorsCodes} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {Inject, Injectable} from '@angular/core';
 import {RdfModel, Samm} from '@esmf/aspect-model-loader';
@@ -29,25 +29,14 @@ import {RdfSerializerService} from './rdf-serializer.service';
 export class RdfService {
   private _rdfSerializer: RdfSerializerService;
   private _settings: Settings;
-  private _currentModel: RdfModel;
 
   public externalRdfModels: Array<RdfModel> = [];
 
-  get currentRdfModel(): RdfModel {
-    return this._currentModel;
-  }
-
-  set currentRdfModel(value: RdfModel) {
-    this._currentModel = value;
-  }
-
   constructor(
-    private logService: LogService,
     private modelApiService: ModelApiService,
     private configurationService: ConfigurationService,
     private translation: LanguageTranslationService,
     private browserService: BrowserService,
-    private loadedFilesService: LoadedFilesService,
     @Inject(APP_CONFIG) public config: AppConfig,
   ) {
     if (!environment.production) {
@@ -66,7 +55,7 @@ export class RdfService {
     const rdfContent = this.serializeModel(rdfModel);
 
     if (!rdfContent) {
-      this.logService.logInfo('Model is empty. Skipping saving.');
+      console.info('Model is empty. Skipping saving.');
       return this.handleError(SaveValidateErrorsCodes.emptyModel);
     }
 
@@ -151,7 +140,7 @@ export class RdfService {
       }
 
       if (error) {
-        this.logService.logInfo(`Error when parsing RDF ${error}`);
+        console.info(`Error when parsing RDF ${error}`);
         // const externalRdfModel = rdfModel.initRdfModel(store, {});
         // externalRdfModel.isExternalRef = true;
         // externalRdfModel.absoluteAspectModelFileName = this.parseFileName(fileContent.fileName, externalRdfModel.getAspectModelUrn());

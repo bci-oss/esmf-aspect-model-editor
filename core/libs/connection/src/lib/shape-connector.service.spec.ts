@@ -54,7 +54,7 @@ import {describe, expect} from '@jest/globals';
 
 import {EntityInstanceService} from '@ame/editor';
 import {MxGraphAttributeService, MxGraphService, MxGraphShapeOverlayService} from '@ame/mx-graph';
-import {LogService, NotificationsService} from '@ame/shared';
+import {NotificationsService} from '@ame/shared';
 import {LanguageTranslateModule} from '@ame/translation';
 import {
   DefaultAspect,
@@ -70,7 +70,6 @@ import {provideMockObject} from 'jest-helpers/utils';
 
 describe('Test Shape connector service', () => {
   let service: ShapeConnectorService;
-  let logService: jest.Mocked<LogService>;
   let notificationsService: jest.Mocked<NotificationsService>;
   let aspectConnectionHandler: jest.Mocked<AspectConnectionHandler>;
   let propertyConnectionHandler: jest.Mocked<PropertyConnectionHandler>;
@@ -90,10 +89,6 @@ describe('Test Shape connector service', () => {
       imports: [TranslateModule.forRoot(), LanguageTranslateModule],
       providers: [
         ShapeConnectorService,
-        {
-          provide: LogService,
-          useValue: provideMockObject(LogService),
-        },
         {
           provide: MxGraphShapeOverlayService,
           useValue: provideMockObject(MxGraphShapeOverlayService),
@@ -257,7 +252,6 @@ describe('Test Shape connector service', () => {
       ],
     });
 
-    logService = TestBed.inject(LogService) as jest.Mocked<LogService>;
     notificationsService = TestBed.inject(NotificationsService) as jest.Mocked<NotificationsService>;
     aspectConnectionHandler = TestBed.inject(AspectConnectionHandler) as jest.Mocked<AspectConnectionHandler>;
     aspectPropertyConnectionHandler = TestBed.inject(AspectPropertyConnectionHandler) as jest.Mocked<AspectPropertyConnectionHandler>;
@@ -330,12 +324,6 @@ describe('Test Shape connector service', () => {
       service.createAndConnectShape(element, null);
 
       expect(abstractEntityConnectionHandler.connect).toHaveBeenCalled();
-    });
-
-    test('should only log in case of no metaModel', () => {
-      service.createAndConnectShape(null, null);
-
-      expect(logService.logInfo).toHaveBeenCalled();
     });
   });
   describe('connectShapes', () => {

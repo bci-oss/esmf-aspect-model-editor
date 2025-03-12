@@ -122,21 +122,57 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
 
   private createCharacteristicClassesList() {
     const characteristicList = [...this.listCharacteristics.keys()];
-    this.listCharacteristics.set(CharacteristicClassType.Characteristic, DefaultCharacteristic.createInstance);
-    this.listCharacteristics.set(CharacteristicClassType.Code, DefaultCode.createInstance);
-    this.listCharacteristics.set(CharacteristicClassType.Collection, DefaultCollection.createInstance);
-    this.listCharacteristics.set(CharacteristicClassType.Duration, DefaultDuration.createInstance);
-    this.listCharacteristics.set(CharacteristicClassType.Either, DefaultEither.createInstance);
-    this.listCharacteristics.set(CharacteristicClassType.Enumeration, DefaultEnumeration.createInstance);
-    this.listCharacteristics.set(CharacteristicClassType.List, DefaultList.createInstance);
-    this.listCharacteristics.set(CharacteristicClassType.Measurement, DefaultMeasurement.createInstance);
-    this.listCharacteristics.set(CharacteristicClassType.Quantifiable, DefaultQuantifiable.createInstance);
-    this.listCharacteristics.set(CharacteristicClassType.Set, DefaultSet.createInstance);
-    this.listCharacteristics.set(CharacteristicClassType.SortedSet, DefaultSortedSet.createInstance);
-    this.listCharacteristics.set(CharacteristicClassType.SingleEntity, DefaultSingleEntity.createInstance);
-    this.listCharacteristics.set(CharacteristicClassType.State, DefaultState.createInstance);
-    this.listCharacteristics.set(CharacteristicClassType.StructuredValue, DefaultStructuredValue.createInstance);
-    this.listCharacteristics.set(CharacteristicClassType.TimeSeries, DefaultTimeSeries.createInstance);
+    this.listCharacteristics.set(
+      CharacteristicClassType.Characteristic,
+      () => new DefaultCharacteristic({metaModelVersion: '', aspectModelUrn: '', name: ''}),
+    );
+    this.listCharacteristics.set(CharacteristicClassType.Code, () => new DefaultCode({metaModelVersion: '', aspectModelUrn: '', name: ''}));
+    this.listCharacteristics.set(
+      CharacteristicClassType.Collection,
+      () => new DefaultCollection({metaModelVersion: '', aspectModelUrn: '', name: ''}),
+    );
+    this.listCharacteristics.set(
+      CharacteristicClassType.Duration,
+      () => new DefaultDuration({metaModelVersion: '', aspectModelUrn: '', name: ''}),
+    );
+    this.listCharacteristics.set(
+      CharacteristicClassType.Either,
+      () => new DefaultEither({metaModelVersion: '', aspectModelUrn: '', name: '', left: null, right: null}),
+    );
+    this.listCharacteristics.set(
+      CharacteristicClassType.Enumeration,
+      () => new DefaultEnumeration({metaModelVersion: '', aspectModelUrn: '', name: '', values: []}),
+    );
+    this.listCharacteristics.set(CharacteristicClassType.List, () => new DefaultList({metaModelVersion: '', aspectModelUrn: '', name: ''}));
+    this.listCharacteristics.set(
+      CharacteristicClassType.Measurement,
+      () => new DefaultMeasurement({metaModelVersion: '', aspectModelUrn: '', name: ''}),
+    );
+    this.listCharacteristics.set(
+      CharacteristicClassType.Quantifiable,
+      () => new DefaultQuantifiable({metaModelVersion: '', aspectModelUrn: '', name: ''}),
+    );
+    this.listCharacteristics.set(CharacteristicClassType.Set, () => new DefaultSet({metaModelVersion: '', aspectModelUrn: '', name: ''}));
+    this.listCharacteristics.set(
+      CharacteristicClassType.SortedSet,
+      () => new DefaultSortedSet({metaModelVersion: '', aspectModelUrn: '', name: ''}),
+    );
+    this.listCharacteristics.set(
+      CharacteristicClassType.SingleEntity,
+      () => new DefaultSingleEntity({metaModelVersion: '', aspectModelUrn: '', name: ''}),
+    );
+    this.listCharacteristics.set(
+      CharacteristicClassType.State,
+      () => new DefaultState({metaModelVersion: '', aspectModelUrn: '', name: '', values: [], defaultValue: null}),
+    );
+    this.listCharacteristics.set(
+      CharacteristicClassType.StructuredValue,
+      () => new DefaultStructuredValue({metaModelVersion: '', aspectModelUrn: '', name: '', deconstructionRule: null, elements: []}),
+    );
+    this.listCharacteristics.set(
+      CharacteristicClassType.TimeSeries,
+      () => new DefaultTimeSeries({metaModelVersion: '', aspectModelUrn: '', name: ''}),
+    );
     return [...this.listCharacteristics.keys()].filter(value => !characteristicList.includes(value));
   }
 

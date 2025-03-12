@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {LoadedFilesService, NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {FiltersService} from '@ame/loader-filters';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {Injectable, inject} from '@angular/core';
@@ -34,7 +34,6 @@ export class UnitRenderService extends BaseRenderService {
     sammLangService: SammLanguageSettingsService,
     protected loadedFilesService: LoadedFilesService,
     private mxGraphShapeOverlayService: MxGraphShapeOverlayService,
-    private namespacesCacheService: NamespacesCacheService,
   ) {
     super(mxGraphService, sammLangService, loadedFilesService);
   }
@@ -57,7 +56,7 @@ export class UnitRenderService extends BaseRenderService {
 
     if (edgeToUnit && unit?.isPredefined) {
       MxGraphHelper.removeRelation(parent, unit);
-      this.namespacesCacheService.currentCachedFile.removeElement(unit.aspectModelUrn);
+      this.loadedFilesService.currentLoadedFile.cachedFile.removeElement(unit.aspectModelUrn);
       this.mxGraphService.removeCells([edgeToUnit.target], true);
     } else if (edgeToUnit) {
       MxGraphHelper.removeRelation(parent, unit);

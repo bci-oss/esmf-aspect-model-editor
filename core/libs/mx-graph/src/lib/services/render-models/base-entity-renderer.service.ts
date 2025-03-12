@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {ShapeConnectorService} from '@ame/connection';
 import {DefaultFilter, FiltersService} from '@ame/loader-filters';
 import {RdfService} from '@ame/rdf/services';
@@ -29,11 +29,11 @@ import {MxGraphService} from '../mx-graph.service';
 })
 export class BaseEntityRendererService {
   private filtersService = inject(FiltersService);
+  private loadedFiles = inject(LoadedFilesService);
 
   constructor(
     private mxGraphService: MxGraphService,
     private sammLangService: SammLanguageSettingsService,
-    private namespacesCacheService: NamespacesCacheService,
     private shapeConnectorService: ShapeConnectorService,
     private mxGraphShapeOverlayService: MxGraphShapeOverlayService,
     private rdfService: RdfService,
@@ -64,7 +64,7 @@ export class BaseEntityRendererService {
       this.mxGraphService,
       this.mxGraphShapeOverlayService,
       this.sammLangService,
-      this.rdfService.currentRdfModel,
+      this.loadedFiles.currentLoadedFile.rdfModel,
     );
 
     const extendsElement = metaModelElement.extends_;
@@ -85,7 +85,7 @@ export class BaseEntityRendererService {
       return;
     }
 
-    const cachedEntity = this.namespacesCacheService.resolveCachedElement(extendsElement);
+    const cachedEntity = this.loadedFiles.currentLoadedFile.cachedFile.resolveInstance(extendsElement);
     const resolvedCell = this.mxGraphService.resolveCellByModelElement(cachedEntity);
     const entityCell = resolvedCell
       ? resolvedCell

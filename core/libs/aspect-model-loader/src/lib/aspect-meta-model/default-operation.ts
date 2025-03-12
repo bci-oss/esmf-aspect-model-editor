@@ -31,6 +31,16 @@ export interface Operation extends NamedElement {
 
 export class DefaultOperation extends NamedElement implements Operation {
   override className = 'DefaultOperation';
+
+  override get children(): NamedElement[] {
+    const children = [];
+    if (this.output instanceof NamedElement) {
+      children.push(this.output);
+    }
+
+    return [...this.input, ...children];
+  }
+
   input: Property[] = [];
   output: Property;
 

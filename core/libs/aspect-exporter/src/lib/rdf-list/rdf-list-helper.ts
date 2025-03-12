@@ -13,11 +13,11 @@
 
 import {DefaultProperty, DefaultStructuredValue, Type} from '@esmf/aspect-model-loader';
 import {DataFactory} from 'n3';
-import {ListElement, ListElementType, OverWrittenListElement, ResolvedListElements, SourceElementType} from '.';
+import {ListElement, ListElementType, PropertyListElement, ResolvedListElements, SourceElementType} from '.';
 
 export class RdfListHelper {
   static resolveNewElements(source: SourceElementType & {dataType?: Type}, elements: ListElementType[]): ResolvedListElements {
-    const overWrittenListElements: OverWrittenListElement[] = [];
+    const overWrittenListElements: PropertyListElement[] = [];
     const listElements = elements.map(metaModelElement => {
       const {keys, property} = metaModelElement || {};
       if (property instanceof DefaultProperty && (keys?.optional || keys?.notInPayload || keys?.payloadName || property.getExtends())) {

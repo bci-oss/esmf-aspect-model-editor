@@ -14,7 +14,12 @@
 import {ModelVisitor} from '../visitor/model-visitor';
 import {NamedElement} from './named-element';
 
-export class HasExtends<T extends NamedElement> extends NamedElement {
+export class HasExtends<T extends NamedElement = NamedElement> extends NamedElement {
+  override className = '';
+  override get children(): NamedElement[] {
+    return this.extends_ instanceof NamedElement ? [this.extends_] : [];
+  }
+
   extends_: T;
 
   getExtends(): T {
@@ -25,7 +30,7 @@ export class HasExtends<T extends NamedElement> extends NamedElement {
     this.extends_ = value;
   }
 
-  override accept<T, U>(visitor: ModelVisitor<T, U>, context: U): T {
+  override accept<T, U>(_visitor: ModelVisitor<T, U>, _context: U): T {
     throw new Error('Method not implemented.');
   }
 }

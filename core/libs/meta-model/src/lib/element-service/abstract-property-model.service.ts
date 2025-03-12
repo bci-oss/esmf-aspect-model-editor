@@ -14,9 +14,8 @@
 import {AbstractPropertyRenderService, MxGraphAttributeService, MxGraphHelper, MxGraphService, MxGraphVisitorHelper} from '@ame/mx-graph';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {Injectable} from '@angular/core';
-import {DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
+import {DefaultProperty, HasExtends, NamedElement} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
-import {CanExtend} from '../aspect-meta-model';
 import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
@@ -68,14 +67,14 @@ export class AbstractPropertyModelService extends BaseModelService {
     const modelElement = MxGraphHelper.getModelElement(cell);
 
     for (const edge of incomingEdges) {
-      const element = MxGraphHelper.getModelElement<CanExtend>(edge.source);
+      const element = MxGraphHelper.getModelElement<HasExtends>(edge.source);
       if (element instanceof DefaultProperty && isDeleting) {
         MxGraphHelper.removeRelation(element, modelElement);
         this.mxGraphService.removeCells([edge.source]);
         continue;
       }
 
-      element.extendedElement = null;
+      element.extends_ = null;
       this.updateCell(edge.source);
     }
   }

@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {CacheUtils} from '@ame/cache';
 import {RdfService} from '@ame/rdf/services';
 import {NotificationsService} from '@ame/shared';
 import {Component, OnDestroy, OnInit} from '@angular/core';
@@ -99,12 +100,12 @@ export class RightInputFieldComponent extends InputFieldComponent<DefaultEither>
       return; // happens on reset form
     }
 
-    let defaultCharacteristic = this.currentCachedFile
-      .getCachedCharacteristics()
-      .find(characteristic => characteristic.aspectModelUrn === newValue.urn);
+    let defaultCharacteristic = CacheUtils.getCachedElements(this.currentCachedFile, DefaultCharacteristic).find(
+      characteristic => characteristic.aspectModelUrn === newValue.urn,
+    );
 
     if (!defaultCharacteristic) {
-      defaultCharacteristic = this.namespacesCacheService.findElementOnExtReference<Characteristic>(newValue.urn);
+      defaultCharacteristic = this.loadedFiles.findElementOnExtReferences<Characteristic>(newValue.urn);
     }
 
     this.parentForm.setControl('rightCharacteristic', new FormControl(defaultCharacteristic));
@@ -133,7 +134,11 @@ export class RightInputFieldComponent extends InputFieldComponent<DefaultEither>
       return;
     }
 
-    const newCharacteristic = new DefaultCharacteristic(this.metaModelElement.metaModelVersion, urn, characteristicName, null);
+    const newCharacteristic = new DefaultCharacteristic({
+      metaModelVersion: this.metaModelElement.metaModelVersion,
+      aspectModelUrn: urn,
+      name: characteristicName,
+    });
     this.parentForm.setControl('rightCharacteristic', new FormControl(newCharacteristic));
 
     this.rightControl.patchValue(characteristicName);

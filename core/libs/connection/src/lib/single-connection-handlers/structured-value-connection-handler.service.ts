@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {FiltersService} from '@ame/loader-filters';
 import {ModelElementNamingService} from '@ame/meta-model';
 import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
@@ -25,14 +25,14 @@ import {SingleShapeConnector} from '../models';
 })
 export class StructuredValueConnectionHandler implements SingleShapeConnector<StructuredValue> {
   get currentCachedFile() {
-    return this.namespacesCacheService.currentCachedFile;
+    return this.loadedFiles.currentLoadedFile.cachedFile;
   }
 
   constructor(
     private mxGraphService: MxGraphService,
     private modelElementNamingService: ModelElementNamingService,
-    private namespacesCacheService: NamespacesCacheService,
     private filtersService: FiltersService,
+    private loadedFiles: LoadedFilesService,
   ) {}
 
   public connect(structuredValue: StructuredValue, source: mxgraph.mxCell) {
@@ -45,7 +45,7 @@ export class StructuredValueConnectionHandler implements SingleShapeConnector<St
     );
     this.mxGraphService.graph.labelChanged(source, MxGraphHelper.createPropertiesLabel(source));
     this.mxGraphService.assignToParent(propertyCell, source);
-    this.currentCachedFile.resolveElement(property);
+    this.currentCachedFile.resolveInstance(property);
 
     this.mxGraphService.formatCell(source);
     this.mxGraphService.formatShapes();

@@ -15,9 +15,8 @@ import {EntityInstanceService} from '@ame/editor';
 import {MxGraphAttributeService, MxGraphHelper, MxGraphService, MxGraphVisitorHelper, PropertyRenderService} from '@ame/mx-graph';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {Injectable} from '@angular/core';
-import {DefaultProperty, DefaultStructuredValue, NamedElement} from '@esmf/aspect-model-loader';
+import {DefaultProperty, DefaultStructuredValue, HasExtends, NamedElement} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
-import {CanExtend} from '../aspect-meta-model';
 import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
@@ -57,7 +56,8 @@ export class PropertyModelService extends BaseModelService {
     for (const parent of parents) {
       const parentModel = MxGraphHelper.getModelElement(parent);
       if (parentModel instanceof DefaultStructuredValue) {
-        parentModel.delete(node);
+        // TODO create functionality for delete
+        // parentModel.delete(node);
         MxGraphHelper.updateLabel(parent, this.mxGraphService.graph, this.sammLangService);
       }
     }
@@ -91,9 +91,9 @@ export class PropertyModelService extends BaseModelService {
   private updateExtends(cell: mxgraph.mxCell, isDeleting = true) {
     const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell);
     for (const edge of incomingEdges) {
-      const element = MxGraphHelper.getModelElement<CanExtend>(edge.source);
+      const element = MxGraphHelper.getModelElement<HasExtends>(edge.source);
       if (element instanceof DefaultProperty && isDeleting) {
-        element.extendedElement = null;
+        element.extends_ = null;
         this.mxGraphService.removeCells([edge.source]);
         continue;
       }

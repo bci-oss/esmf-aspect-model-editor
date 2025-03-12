@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
+import {CacheUtils} from '@ame/cache';
 import {RdfService} from '@ame/rdf/services';
 import {NotificationsService} from '@ame/shared';
 import {Component, OnDestroy, OnInit} from '@angular/core';
@@ -33,7 +33,6 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
   leftCharacteristicControl: FormControl;
 
   constructor(
-    public namespacesCacheService: NamespacesCacheService,
     private notificationsService: NotificationsService,
     private validators: EditorDialogValidators,
     public rdfService: RdfService,
@@ -102,12 +101,12 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
       return; // happens on reset form
     }
 
-    let defaultCharacteristic = this.currentCachedFile
-      .getCachedCharacteristics()
-      .find(characteristic => characteristic.aspectModelUrn === newValue.urn);
+    let defaultCharacteristic = CacheUtils.getCachedElements(this.currentCachedFile, DefaultCharacteristic).find(
+      characteristic => characteristic.aspectModelUrn === newValue.urn,
+    );
 
     if (!defaultCharacteristic) {
-      defaultCharacteristic = this.namespacesCacheService.findElementOnExtReference<Characteristic>(newValue.urn);
+      defaultCharacteristic = this.loadedFiles.findElementOnExtReferences<Characteristic>(newValue.urn);
     }
 
     this.parentForm.setControl('leftCharacteristic', new FormControl(defaultCharacteristic));

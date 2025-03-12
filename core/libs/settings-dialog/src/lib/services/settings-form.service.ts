@@ -15,7 +15,7 @@ import {ModelService} from '@ame/rdf/services';
 import {ConfigurationService, NamespaceConfiguration, SammLanguageSettingsService} from '@ame/settings-dialog';
 import {GeneralConfig} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
-import {inject, Injectable} from '@angular/core';
+import {Injectable, inject} from '@angular/core';
 import {AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators} from '@angular/forms';
 import {RdfModel} from '@esmf/aspect-model-loader';
 import * as locale from 'locale-codes';

@@ -34,8 +34,8 @@ export class PropertyCharacteristicConnectionHandler implements MultiShapeConnec
         outEdge.target.geometry.translate(basicShapeGeometry.expandedWith, 0);
       }
 
-      const targetModel = MxGraphHelper.getModelElement(outEdge.target);
-      if (targetModel instanceof DefaultProperty || targetModel.isAbstract) {
+      const targetModel = MxGraphHelper.getModelElement<DefaultProperty>(outEdge.target);
+      if (targetModel instanceof DefaultProperty) {
         return;
       }
 

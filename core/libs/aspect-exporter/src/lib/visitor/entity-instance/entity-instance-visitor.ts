@@ -12,10 +12,10 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {ModelService, RdfService} from '@ame/rdf/services';
+import {ModelService} from '@ame/rdf/services';
 import {isDataTypeLangString} from '@ame/shared';
 import {Injectable} from '@angular/core';
-import {DefaultCollection, DefaultEntityInstance, Samm} from '@esmf/aspect-model-loader';
+import {DefaultCollection, DefaultEntityInstance, Samm, Value} from '@esmf/aspect-model-loader';
 import {DataFactory, Literal, NamedNode} from 'n3';
 import {RdfListService} from '../../rdf-list';
 import {BaseVisitor} from '../base-visitor';
@@ -30,9 +30,9 @@ export class EntityInstanceVisitor extends BaseVisitor<DefaultEntityInstance> {
     private rdfListService: RdfListService,
     private loadedFilesService: LoadedFilesService,
     public modelService: ModelService,
-    rdfService: RdfService,
+    loadedFiles: LoadedFilesService,
   ) {
-    super(rdfService);
+    super(loadedFiles);
   }
 
   visit(entityValue: DefaultEntityInstance): DefaultEntityInstance {
@@ -48,8 +48,14 @@ export class EntityInstanceVisitor extends BaseVisitor<DefaultEntityInstance> {
 
   private updateProperties(entityValue: DefaultEntityInstance): void {
     const {aspectModelUrn} = entityValue;
-    const rdfModel = this.modelService.currentRdfModel;
+    const rdfModel = this.loadedFilesService.currentLoadedFile.rdfModel;
 
+    const values = entityValue.getValues<any[]>();
+
+    // Collect all values with more than 1 value and language in one array
+
+    // Collect all values with one value each
+    // TODO fix this code
     const {propertyCollectionWithLangString, property} = Array.from(entityValue.assertions.values()).reduce(
       (acc, property: any) => (
         isDataTypeLangString(property.key.property) && property.key.property.characteristic instanceof DefaultCollection
@@ -87,14 +93,15 @@ export class EntityInstanceVisitor extends BaseVisitor<DefaultEntityInstance> {
     }
   }
 
-  private createObjectForCollectionLangStringRDF(ev: EntityInstanceProperty): {predicate: NamedNode; literal: Literal} {
-    return {
-      predicate: DataFactory.namedNode(ev.key.property.aspectModelUrn),
-      literal: DataFactory.literal(ev?.value?.toString(), ev?.language?.toString()),
-    };
+  private createObjectForCollectionLangStringRDF(ev: Value): {predicate: NamedNode; literal: Literal} {
+    return null;
+    //  {
+    //   predicate: DataFactory.namedNode(ev.key.property.aspectModelUrn),
+    //   literal: DataFactory.literal(ev?.value?.toString(), ev?.language?.toString()),
+    // };
   }
 
-  private createObjectForRDF({key, value, language}: EntityInstanceProperty): NamedNode | Literal {
+  private createObjectForRDF({key, value, language}: any): NamedNode | Literal {
     if (value instanceof DefaultEntityInstance) {
       return DataFactory.namedNode(value.aspectModelUrn);
     }
@@ -118,7 +125,7 @@ export class EntityInstanceVisitor extends BaseVisitor<DefaultEntityInstance> {
     rdfModel.store.addQuad(
       DataFactory.namedNode(entityValue.aspectModelUrn),
       rdfModel.samm.RdfType(),
-      DataFactory.namedNode(entityValue.entity.aspectModelUrn),
+      DataFactory.namedNode(entityValue.type.aspectModelUrn),
     );
   }
 }

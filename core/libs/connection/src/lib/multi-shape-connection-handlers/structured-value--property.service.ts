@@ -11,7 +11,6 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
 import {MxGraphAttributeService, MxGraphHelper, MxGraphService} from '@ame/mx-graph';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {NotificationsService} from '@ame/shared';
@@ -29,7 +28,6 @@ export class StructuredValueCharacteristicPropertyConnectionHandler
   constructor(
     private mxGraphService: MxGraphService,
     private mxGraphAttributeService: MxGraphAttributeService,
-    private namespacesCacheService: NamespacesCacheService,
     private sammLangService: SammLanguageSettingsService,
     private notificationsService: NotificationsService,
   ) {}

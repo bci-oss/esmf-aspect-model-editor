@@ -12,7 +12,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {Aspect, CacheStrategy, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
+import {Aspect, CacheStrategy, DefaultAspect, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
 
 export interface LoadedFilePayload {
   rdfModel: RdfModel;
@@ -22,6 +22,12 @@ export interface LoadedFilePayload {
   absoluteName: string;
   rendered?: boolean;
   fromWorkspace?: boolean;
+}
+
+export interface UpdateFilePayload {
+  aspect?: DefaultAspect;
+  name?: string;
+  namespace?: string;
 }
 
 export class NamespaceFile {
@@ -97,6 +103,14 @@ export class LoadedFilesService {
     return Object.values(this.files);
   }
 
+  get externalFiles(): NamespaceFile[] {
+    return this.filesAsList.filter(file => !file.rendered);
+  }
+
+  constructor() {
+    window['loadedFiles'] = this;
+  }
+
   addFile(fileInfo: LoadedFilePayload): NamespaceFile {
     const newFile = new NamespaceFile(fileInfo.rdfModel, fileInfo.cachedFile, fileInfo.aspect);
     if (fileInfo.absoluteName) {
@@ -111,6 +125,14 @@ export class LoadedFilesService {
     newFile.sharedRdfModel = fileInfo.sharedRdfModel;
     this.files[newFile.absoluteName] = newFile;
     return newFile;
+  }
+
+  updateFileNaming(file: NamespaceFile, {aspect, name, namespace}: UpdateFilePayload) {
+    const oldAbsoluteName = file.absoluteName;
+    if (name) file.name = name;
+    if (namespace) file.namespace = namespace;
+    if (aspect) file.aspect = aspect;
+    this.updateAbsoluteName(oldAbsoluteName, file.absoluteName);
   }
 
   removeFile(absoluteName: string) {
@@ -152,5 +174,33 @@ export class LoadedFilesService {
     }
 
     return null;
+  }
+
+  getFileFromElement(element: NamedElement): string {
+    for (const file of Object.values(this.files)) {
+      if (file.cachedFile?.get(element.aspectModelUrn)) {
+        return file.absoluteName;
+      }
+    }
+
+    return null;
+  }
+
+  findElementOnExtReferences<T extends NamedElement>(aspectModelUrn: string): T {
+    for (const file of this.filesAsList) {
+      if (this.currentLoadedFile.absoluteName === file.absoluteName) continue;
+      const element = file.cachedFile?.get<T>(aspectModelUrn);
+      if (element) return element;
+    }
+
+    return null;
+  }
+
+  removeAll() {
+    for (const file in this.files) {
+      delete this.files[file];
+    }
+
+    this.files = {};
   }
 }

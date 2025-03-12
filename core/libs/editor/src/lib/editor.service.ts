@@ -12,12 +12,10 @@
  */
 
 import {ModelApiService} from '@ame/api';
-import {CachedFile, LoadedFilesService, NamespaceFile, NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {FILTER_ATTRIBUTES, FilterAttributesService, FiltersService} from '@ame/loader-filters';
 import {ElementModelService, ModelElementNamingService} from '@ame/meta-model';
 import {
-  mxConstants,
-  mxEvent,
   MxGraphAttributeService,
   MxGraphHelper,
   MxGraphRenderer,
@@ -25,42 +23,42 @@ import {
   MxGraphSetupService,
   MxGraphShapeOverlayService,
   MxGraphShapeSelectorService,
-  mxUtils,
   ShapeConfiguration,
+  mxConstants,
+  mxEvent,
+  mxUtils,
 } from '@ame/mx-graph';
 import {ModelService, RdfService} from '@ame/rdf/services';
 import {ConfigurationService, SammLanguageSettingsService} from '@ame/settings-dialog';
 import {
   AlertService,
-  APP_CONFIG,
-  AppConfig,
   LoadingScreenService,
-  LogService,
   ModelSavingTrackerService,
   NotificationsService,
-  sammElements,
   SaveValidateErrorsCodes,
   TitleService,
   ValidateStatus,
+  createEmptyElement,
+  sammElements,
 } from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
-import {inject, Injectable, Injector, NgZone} from '@angular/core';
+import {Injectable, Injector, NgZone, inject} from '@angular/core';
 import {Aspect, DefaultAspect, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
 import {environment} from 'environments/environment';
 import {mxgraph} from 'mxgraph-factory';
 import {
   BehaviorSubject,
+  Observable,
+  Subscription,
   catchError,
   delay,
   delayWhen,
   filter,
   first,
   map,
-  Observable,
   of,
   retry,
-  Subscription,
   switchMap,
   tap,
   throwError,
@@ -77,7 +75,6 @@ import {ConfirmDialogEnum} from './models/confirm-dialog.enum';
   providedIn: 'root',
 })
 export class EditorService {
-  private config: AppConfig = inject(APP_CONFIG);
   private filtersService: FiltersService = inject(FiltersService);
   private filterAttributes: FilterAttributesService = inject(FILTER_ATTRIBUTES);
   private configurationService: ConfigurationService = inject(ConfigurationService);
@@ -108,11 +105,9 @@ export class EditorService {
     private mxGraphSetupService: MxGraphSetupService,
     private notificationsService: NotificationsService,
     private modelApiService: ModelApiService,
-    private logService: LogService,
     private modelService: ModelService,
     private alertService: AlertService,
     private rdfService: RdfService,
-    private namespaceCacheService: NamespacesCacheService,
     private sammLangService: SammLanguageSettingsService,
     private modelElementNamingService: ModelElementNamingService,
     private mxGraphShapeOverlayService: MxGraphShapeOverlayService,
@@ -181,7 +176,8 @@ export class EditorService {
 
             const sourceElement = MxGraphHelper.getModelElement<NamedElement>(edgeParent.source);
             if (sourceElement && !sourceElement?.isExternalReference()) {
-              sourceElement.delete(MxGraphHelper.getModelElement(cell));
+              // TODO update delete functionality
+              // sourceElement.delete(MxGraphHelper.getModelElement(cell));
             }
           });
         });
@@ -236,7 +232,8 @@ export class EditorService {
   }
 
   // @TODO move this function and redo it
-  loadExternalAspectModel(extRefAbsoluteAspectModelFileName: string): CachedFile {
+  // :CachedFile {
+  loadExternalAspectModel(extRefAbsoluteAspectModelFileName: string): any {
     // const extRdfModel = this.rdfService.externalRdfModels.find(
     //   extRef => extRef.absoluteAspectModelFileName === extRefAbsoluteAspectModelFileName,
     // );
@@ -319,7 +316,7 @@ export class EditorService {
 
   private loadCurrentModel(loadedRdfModel: RdfModel, rdfAspectModel: string, namespaceFileName: string, editElementUrn?: string): void {
     const [namespace, version, fileName] = namespaceFileName.split(':');
-    this.namespaceCacheService.removeFile(`urn:samm:${namespace}:${version}#`, fileName);
+    this.loadedFilesService.removeFile(`urn:samm:${namespace}:${version}: ${fileName}`);
 
     this.modelService
       .loadRdfModel(loadedRdfModel, rdfAspectModel, namespaceFileName)
@@ -331,7 +328,7 @@ export class EditorService {
           this.titleService.updateTitle(namespaceFileName || aspect?.aspectModelUrn);
         }),
         catchError(error => {
-          this.logService.logError('Error on loading aspect model', error);
+          console.error('Error on loading aspect model', error);
           this.notificationsService.error({title: 'Error on loading the aspect model', message: error});
           // TODO: Use 'null' instead of empty object (requires thorough testing)
           return of({} as null);
@@ -349,7 +346,7 @@ export class EditorService {
       const rdfModel = this.modelService.currentRdfModel;
       const mxGraphRenderer = new MxGraphRenderer(this.mxGraphService, this.mxGraphShapeOverlayService, this.sammLangService, rdfModel);
 
-      const elements = this.namespaceCacheService.currentCachedFile.getAllElements();
+      const elements = this.currentLoadedFile.cachedFile.getKeys().map(key => this.currentLoadedFile.cachedFile.get<NamedElement>(key));
       this.prepareGraphUpdate(mxGraphRenderer, elements, editElementUrn);
     } catch (error) {
       console.groupCollapsed('editor.service', error);
@@ -434,14 +431,14 @@ export class EditorService {
       let newInstance = null;
       switch (elementType) {
         case 'aspect':
-          if (this.modelService.loadedAspect) {
+          if (this.currentLoadedFile.aspect) {
             this.notificationsService.warning({title: 'An AspectModel can contain only one Aspect element.'});
             return;
           }
-          newInstance = new DefaultAspect({name: '', aspectModelUrn: '', metaModelVersion: ''});
+          newInstance = createEmptyElement(DefaultAspect);
           break;
         default:
-          newInstance = sammElements[elementType].class.createInstance();
+          newInstance = createEmptyElement(sammElements[elementType].class, elementType.includes('abstract'));
       }
 
       if (newInstance instanceof DefaultAspect) {
@@ -458,10 +455,10 @@ export class EditorService {
         : this.openAlertBox();
 
       if (metaModelElement instanceof NamedElement) {
-        this.namespaceCacheService.currentCachedFile.resolveElement(metaModelElement);
+        this.currentLoadedFile.cachedFile.resolveInstance(metaModelElement);
       }
     } else {
-      const element: NamedElement = this.namespaceCacheService.findElementOnExtReference(aspectModelUrn);
+      const element: NamedElement = this.loadedFilesService.findElementOnExtReferences(aspectModelUrn);
       if (!this.mxGraphService.resolveCellByModelElement(element)) {
         const renderer = new MxGraphRenderer(this.mxGraphService, this.mxGraphShapeOverlayService, this.sammLangService, null);
 
@@ -496,20 +493,9 @@ export class EditorService {
         if (confirm === ConfirmDialogEnum.cancel) {
           return;
         }
-        // const rdfModel = this.rdfService.currentRdfModel;
-        // this.modelService.addAspect(aspectInstance);
 
-        // @TODO recheck functionality
         const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(aspectInstance);
-        this.currentLoadedFile.name = `${metaModelElement.name}.ttl`;
-
-        // this.currentLoadedFile.absoluteAspectModelFileName = `${rdfModel.getAspectModelUrn()}${metaModelElement.name}.ttl`;
-
-        // if (!rdfModel.originalAbsoluteFileName) {
-        //   rdfModel.originalAbsoluteFileName = `${rdfModel.getAspectModelUrn().replace('urn:samm:', '').replace('#', ':')}${
-        //     metaModelElement.name
-        //   }.ttl`;
-        // }
+        this.loadedFilesService.updateFileNaming(this.currentLoadedFile, {aspect: metaModelElement, name: `${metaModelElement.name}.ttl`});
 
         metaModelElement
           ? this.mxGraphService.renderModelElement(this.filtersService.createNode(aspectInstance), {
@@ -685,13 +671,13 @@ export class EditorService {
   autoValidateModel(): Observable<ViolationError[]> {
     return of({}).pipe(
       delayWhen(() => timer(this.settings.validationTimerSeconds * 1000)),
-      switchMap(() => (this.namespaceCacheService.currentCachedFile.hasCachedElements() ? this.validate().pipe(first()) : of([]))),
+      switchMap(() => (this.currentLoadedFile.cachedFile.getKeys().length ? this.validate().pipe(first()) : of([]))),
       tap(() => localStorage.removeItem(ValidateStatus.validating)),
       tap(() => this.enableAutoValidation()),
       retry({
         delay: error => {
           if (!Object.values(SaveValidateErrorsCodes).includes(error?.type)) {
-            this.logService.logError(`Error occurred while validating the current model (${error})`);
+            console.error(`Error occurred while validating the current model (${error})`);
             this.notificationsService.error({
               title: this.translate.language.NOTIFICATION_SERVICE.VALIDATION_ERROR_TITLE,
               message: this.translate.language.NOTIFICATION_SERVICE.VALIDATION_ERROR_MESSAGE,
@@ -744,7 +730,7 @@ export class EditorService {
     return of({}).pipe(
       delayWhen(() => timer(this.settings.saveTimerSeconds * 1000)),
       switchMap(() =>
-        this.namespaceCacheService.currentCachedFile.hasCachedElements() && !this.currentLoadedFile.name.includes('empty.ttl')
+        this.currentLoadedFile.cachedFile.getKeys().length && !this.currentLoadedFile.name.includes('empty.ttl')
           ? this.saveModel().pipe(first())
           : of([]),
       ),
@@ -760,7 +746,7 @@ export class EditorService {
       tap(() => {
         this.modelSavingTracker.updateSavedModel();
         this.notificationsService.info({title: this.translate.language.NOTIFICATION_SERVICE.ASPECT_SAVED_SUCCESS});
-        this.logService.logInfo('Aspect model was saved to the local folder');
+        console.info('Aspect model was saved to the local folder');
         this.sidebarService.workspace.refresh();
       }),
       catchError(error => {
@@ -768,7 +754,7 @@ export class EditorService {
         console.groupCollapsed('editor-service -> saveModel', error);
         console.groupEnd();
 
-        this.logService.logError('Error on saving aspect model', error);
+        console.error('Error on saving aspect model', error);
         this.notificationsService.error({title: this.translate.language.NOTIFICATION_SERVICE.ASPECT_SAVED_ERROR});
         return of({});
       }),

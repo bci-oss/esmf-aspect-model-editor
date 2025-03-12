@@ -16,7 +16,7 @@ import {EditorService} from '@ame/editor';
 import {APP_CONFIG, AppConfig, ElectronSignals, ElectronSignalsService} from '@ame/shared';
 import {CdkScrollable} from '@angular/cdk/scrolling';
 import {KeyValuePipe} from '@angular/common';
-import {Component, Inject, inject, NgZone, OnInit} from '@angular/core';
+import {Component, Inject, NgZone, OnInit, inject} from '@angular/core';
 import {MatButton} from '@angular/material/button';
 import {MatDialogActions, MatDialogContent, MatDialogTitle} from '@angular/material/dialog';
 import {MatIcon} from '@angular/material/icon';

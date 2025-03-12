@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {
   AASXGenerationModalComponent,
   EditorService,
@@ -36,7 +36,11 @@ import {PreviewDialogComponent} from '../../preview-dialog';
 })
 export class GenerateHandlingService {
   private get currentCachedFile() {
-    return this.namespaceCacheService.currentCachedFile;
+    return this.currentFile.cachedFile;
+  }
+
+  private get currentFile() {
+    return this.loadedFilesService.currentLoadedFile;
   }
 
   constructor(
@@ -45,9 +49,9 @@ export class GenerateHandlingService {
     private modelService: ModelService,
     private notificationsService: NotificationsService,
     private loadingScreenService: LoadingScreenService,
-    private namespaceCacheService: NamespacesCacheService,
     private translate: LanguageTranslationService,
     private fileHandlingService: FileHandlingService,
+    private loadedFilesService: LoadedFilesService,
   ) {
     if (!environment.production) {
       window['angular.generateHandlingService'] = this;
@@ -113,7 +117,7 @@ export class GenerateHandlingService {
         this.openPreview(
           this.translate.language.GENERATE_HANDLING.JSON_PAYLOAD_PREVIEW,
           this.formatStringToJson(data),
-          !this.modelService.loadedAspect ? this.currentCachedFile.fileName : `${this.modelService.loadedAspect.name}-sample.json`,
+          !this.modelService.loadedAspect ? this.currentFile.name : `${this.modelService.loadedAspect.name}-sample.json`,
         );
       }),
       finalize(() => this.loadingScreenService.close()),
@@ -155,7 +159,7 @@ export class GenerateHandlingService {
               this.openPreview(
                 this.translate.language.GENERATE_HANDLING.JSON_SCHEMA_PREVIEW,
                 this.formatStringToJson(data),
-                !this.modelService.loadedAspect ? this.currentCachedFile.fileName : `${this.modelService.loadedAspect.name}-schema.json`,
+                !this.modelService.loadedAspect ? this.currentFile.name : `${this.modelService.loadedAspect.name}-schema.json`,
               );
             }),
           ),

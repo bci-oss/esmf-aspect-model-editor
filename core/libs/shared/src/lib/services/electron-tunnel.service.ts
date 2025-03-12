@@ -12,7 +12,7 @@
  */
 
 import {ModelApiService} from '@ame/api';
-import {NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {ShapeConnectorService} from '@ame/connection';
 import {
   EditorService,
@@ -44,10 +44,15 @@ import {NotificationsService} from './notifications.service';
 @Injectable({providedIn: 'root'})
 export class ElectronTunnelService {
   private electronSignalsService: ElectronSignals = inject(ElectronSignalsService);
+  private loadedFiles: LoadedFilesService = inject(LoadedFilesService);
   private lockedFiles$ = new BehaviorSubject<LockUnlockPayload[]>([]);
 
   public ipcRenderer: IpcRenderer = window.require?.('electron').ipcRenderer;
   public startUpData$ = new BehaviorSubject<{isFirstWindow: boolean; model: string}>(null);
+
+  public get currentFile() {
+    return this.loadedFiles.currentLoadedFile;
+  }
 
   constructor(
     private notificationsService: NotificationsService,
@@ -55,7 +60,6 @@ export class ElectronTunnelService {
     private saveModelDialogService: SaveModelDialogService,
     private mxGraphService: MxGraphService,
     private shapeSettingsService: ShapeSettingsService,
-    private namespaceCacheService: NamespacesCacheService,
     private namespacesManagerService: NamespacesManagerService,
     private sidebarService: SidebarStateService,
     private modelApiService: ModelApiService,
@@ -275,7 +279,7 @@ export class ElectronTunnelService {
         return;
       }
 
-      const element = this.namespaceCacheService.currentCachedFile.getElement<NamedElement>(modelUrn);
+      const element = this.currentFile.cachedFile.get<NamedElement>(modelUrn);
       if (element) {
         this.shapeSettingsService.editModel(element);
         requestAnimationFrame(() => {

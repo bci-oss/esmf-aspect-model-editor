@@ -44,11 +44,7 @@ export class DefaultAspect extends StructureElement implements Aspect {
       children.push(...this.events);
     }
 
-    if (this.properties?.length) {
-      children.push(...this.properties);
-    }
-
-    return children;
+    return [...super.children, ...children];
   }
 
   constructor(props: AspectProps) {

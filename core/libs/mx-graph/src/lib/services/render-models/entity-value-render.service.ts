@@ -51,16 +51,16 @@ export class EntityValueRenderService extends BaseRenderService {
 
     this.removeChildrenEntityValuesIfNecessary(cell);
 
-    for (const property of modelElement.properties || []) {
-      if (!(property.value instanceof DefaultEntityInstance)) {
+    for (const [, value] of modelElement.getTuples() || []) {
+      if (!(value instanceof DefaultEntityInstance)) {
         continue;
       }
 
-      if (this.isChildOf(cell, property.value)) {
+      if (this.isChildOf(cell, value)) {
         continue;
       }
 
-      this.connectEntityValues(modelElement, property.value);
+      this.connectEntityValues(modelElement, value);
     }
 
     super.update({cell});
@@ -114,13 +114,13 @@ export class EntityValueRenderService extends BaseRenderService {
   }
 
   private connectEntityValueWithChildren(modelElement: DefaultEntityInstance) {
-    for (const property of modelElement.properties || []) {
-      if (!(property.value instanceof DefaultEntityInstance)) {
+    for (const property of modelElement.assertions.values() || []) {
+      if (!(property instanceof DefaultEntityInstance)) {
         continue;
       }
 
-      this.connectEntityValues(modelElement, property.value);
-      this.connectEntityValueWithChildren(property.value);
+      this.connectEntityValues(modelElement, property);
+      this.connectEntityValueWithChildren(property);
     }
   }
 
@@ -183,7 +183,8 @@ export class EntityValueRenderService extends BaseRenderService {
           return parentModelElement.aspectModelUrn !== modelElement.aspectModelUrn;
         });
         const childModelElement = MxGraphHelper.getModelElement(child);
-        const isPartOfTheModel = modelElement.properties.some((prop: EntityInstanceProperty) => prop.value === childModelElement);
+        const entityValues: DefaultEntityInstance[] = modelElement.getValues<DefaultEntityInstance[]>();
+        const isPartOfTheModel = entityValues.some(entityValue => entityValue.aspectModelUrn === childModelElement.aspectModelUrn);
         if (!isLinkedToOtherEntityValues && !childModelElement.parents?.length && !isPartOfTheModel) {
           this.delete(child);
         } else if (!isLinkedToOtherEntityValues && childModelElement.parents?.length > 0 && !isPartOfTheModel && connectingEdge) {

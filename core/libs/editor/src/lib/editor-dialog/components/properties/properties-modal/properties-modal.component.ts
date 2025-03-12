@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
+import {CacheUtils, LoadedFilesService} from '@ame/cache';
 import {AfterViewInit, Component, Inject, OnInit, ViewChild} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup} from '@angular/forms';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
@@ -53,9 +53,9 @@ export class PropertiesModalComponent implements OnInit, AfterViewInit {
   }
 
   constructor(
+    private loadedFiles: LoadedFilesService,
     private formBuilder: FormBuilder,
     private dialogRef: MatDialogRef<PropertiesModalComponent>,
-    private cacheService: NamespacesCacheService,
     @Inject(MAT_DIALOG_DATA) public data: PropertiesDialogData,
   ) {}
 
@@ -109,7 +109,7 @@ export class PropertiesModalComponent implements OnInit, AfterViewInit {
 
     this.headers = this.standardHeaders;
     if (this.data.metaModelElement instanceof DefaultEntity) {
-      const entityValues = this.cacheService.currentCachedFile.getCachedEntityValues();
+      const entityValues = CacheUtils.getCachedElements(this.loadedFiles.currentLoadedFile.cachedFile, DefaultEntityInstance);
       entityValues.forEach((entityValue: DefaultEntityInstance) => {
         if (entityValue.type.aspectModelUrn === this.data.metaModelElement.aspectModelUrn) {
           this.headers = this.enumerationEntityHeaders;

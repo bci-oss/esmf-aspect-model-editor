@@ -95,7 +95,7 @@ export class OperationModelService extends BaseModelService {
 
   private addInputProperties(cell: mxgraph.mxCell, input: Array<DefaultProperty>) {
     input.forEach(property => {
-      const cachedProperty = this.namespacesCacheService.resolveCachedElement(property);
+      const cachedProperty = this.currentCachedFile.resolveInstance(property);
       const operation = MxGraphHelper.getModelElement(cell);
       const resolvedCell = this.mxGraphService.resolveCellByModelElement(cachedProperty);
       const propertyCell = resolvedCell
@@ -106,7 +106,7 @@ export class OperationModelService extends BaseModelService {
   }
 
   private addOutputProperties(cell: mxgraph.mxCell, property: DefaultProperty) {
-    const cachedProperty = this.namespacesCacheService.resolveCachedElement(property);
+    const cachedProperty = this.currentCachedFile.resolveInstance(property);
     const operation = MxGraphHelper.getModelElement(cell);
     const resolvedCell = this.mxGraphService.resolveCellByModelElement(cachedProperty);
     const propertyCell = resolvedCell

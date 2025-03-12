@@ -12,11 +12,11 @@
  */
 
 import {AsyncApi, OpenApi, ViolationError} from '@ame/editor';
-import {APP_CONFIG, AppConfig, BrowserService, FileContentModel, HttpHeaderBuilder, LogService} from '@ame/shared';
+import {APP_CONFIG, AppConfig, BrowserService, FileContentModel, HttpHeaderBuilder} from '@ame/shared';
 import {removeCommentsFromTTL} from '@ame/utils';
 import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
-import {inject, Injectable} from '@angular/core';
-import {forkJoin, Observable, of, throwError} from 'rxjs';
+import {Injectable, inject} from '@angular/core';
+import {Observable, forkJoin, of, throwError} from 'rxjs';
 import {catchError, map, mergeMap, retry, tap, timeout} from 'rxjs/operators';
 import {ModelValidatorService} from './model-validator.service';
 
@@ -38,7 +38,6 @@ export class ModelApiService {
 
   constructor(
     private http: HttpClient,
-    private loggerService: LogService,
     private browserService: BrowserService,
     private modelValidatorService: ModelValidatorService,
   ) {
@@ -375,7 +374,7 @@ export class ModelApiService {
 
         fs.writeFile(printFilePath, documentation, err => {
           if (err) {
-            this.loggerService.logError('Write error:  ' + err.message);
+            console.error('Write error:  ' + err.message);
           } else {
             electronBrowserWindow.loadFile(printFilePath);
             electronBrowserWindow.reload();

@@ -12,7 +12,7 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {RdfService} from '@ame/rdf/services';
+import {getPreferredNamesLocales} from '@ame/utils';
 import {Injectable} from '@angular/core';
 import {DefaultUnit, Samm} from '@esmf/aspect-model-loader';
 import {DataFactory, Store} from 'n3';
@@ -32,9 +32,8 @@ export class UnitVisitor extends BaseVisitor<DefaultUnit> {
   constructor(
     private rdfNodeService: RdfNodeService,
     private loadedFilesService: LoadedFilesService,
-    rdfService: RdfService,
   ) {
-    super(rdfService);
+    super(loadedFilesService);
   }
 
   visit(unit: DefaultUnit): DefaultUnit {
@@ -53,7 +52,7 @@ export class UnitVisitor extends BaseVisitor<DefaultUnit> {
     }
 
     this.rdfNodeService.update(unit, {
-      preferredName: unit.getAllLocalesPreferredNames().map(language => ({
+      preferredName: getPreferredNamesLocales(unit).map(language => ({
         language,
         value: unit.getPreferredName(language),
       })),

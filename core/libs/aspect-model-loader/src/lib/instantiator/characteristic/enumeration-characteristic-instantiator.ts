@@ -10,17 +10,18 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {Literal, Quad, Util} from 'n3';
+import {Literal, Quad, Quad_Object, Util} from 'n3';
 import {Type} from '../../aspect-meta-model';
 import {DefaultEnumeration, Enumeration} from '../../aspect-meta-model/characteristic/default-enumeration';
 import {DefaultEntityInstance} from '../../aspect-meta-model/default-entity-instance';
 import {ScalarValue} from '../../aspect-meta-model/scalar-value';
 import {Value} from '../../aspect-meta-model/value';
+import {getElementsCache} from '../../shared/model-element-cache.service';
 import {getRdfModel, getStore} from '../../shared/rdf-model';
 import {Samm} from '../../vocabulary';
 import {createEntity} from '../entity-instantiator';
 import {generateCharacteristic, getDataType} from './characteristic-instantiator';
-import {CharacteristicInstantiatorUtil, MultiLanguageText} from './characteristic-instantiator-util';
+import {CharacteristicInstantiatorUtil} from './characteristic-instantiator-util';
 
 export function createEnumerationCharacteristic(quad: Quad): Enumeration {
   return generateCharacteristic(quad, (baseProperties, propertyQuads) => {
@@ -59,6 +60,7 @@ export function getEnumerationValues(quad: Quad, dataType: Type): Value[] {
 export function resolveEntityInstance(quad: Quad): DefaultEntityInstance {
   const store = getStore();
   const rdfModel = getRdfModel();
+  const cache = getElementsCache();
   const {samm} = rdfModel;
 
   const entityInstanceQuads = store.getQuads(quad.object, null, null, null);
@@ -95,22 +97,28 @@ export function resolveEntityInstance(quad: Quad): DefaultEntityInstance {
         rdfModel.store.getQuads(null, rdfModel.samm.property(), quad.predicate, null).length
       ) {
         // multiple language quads -> push into an array
-        const predicateKey = CharacteristicInstantiatorUtil.getPredicateKey(quad);
+        const predicateKey = quad.predicate.value;
+
         if (entityInstance.assertions.has(predicateKey)) {
           const value = entityInstance.assertions.get(predicateKey);
-          value.value = Array.isArray(value.value) ? [...value.value, resolveQuadObject(quad)] : [value.value, resolveQuadObject(quad)];
+          const values = isEntityInstance(quad.object) ? [resolveEntityInstance(quad)] : resolveQuadObject(quad);
+          entityInstance.assertions.set(predicateKey, Array.isArray(value) ? [...value, ...values] : values);
         } else {
-          entityInstance.assertions.set(predicateKey, new ScalarValue({value: resolveQuadObject(quad), type: entity}));
+          entityInstance.assertions.set(
+            predicateKey,
+            isEntityInstance(quad.object) ? [resolveEntityInstance(quad)] : resolveQuadObject(quad),
+          );
         }
       }
     });
 
-    return entityInstance;
+    return cache.resolveInstance(entityInstance);
   }
+
   throw new Error(`Could resolve Entity instance ${entityTypeQuad.subject.value}`);
 }
 
-function resolveQuadObject(quad: Quad): MultiLanguageText | Array<MultiLanguageText> | string {
+function resolveQuadObject(quad: Quad): Value[] {
   const rdfModel = getRdfModel();
 
   if (Util.isBlankNode(quad.object)) {
@@ -122,8 +130,21 @@ function resolveQuadObject(quad: Quad): MultiLanguageText | Array<MultiLanguageT
     (quad.object as Literal).datatypeString === Samm.RDF_LANG_STRING ||
     (quad.object as Literal).datatypeString === Samm.XML_LANG_STRING
   ) {
-    return CharacteristicInstantiatorUtil.createLanguageObject(quad);
+    return [CharacteristicInstantiatorUtil.createLanguageObject(quad)];
   }
 
-  return quad.object.value;
+  return [new Value(quad.object.value)];
+}
+
+function isEntityInstance(object: Quad_Object) {
+  const store = getStore();
+  const {samm} = getRdfModel();
+  const entityInstanceQuads = store.getQuads(object, null, null, null);
+  const instanceTypeQuad = entityInstanceQuads.find(q => q.predicate.value === `${Samm.RDF_URI}#type`);
+  if (!instanceTypeQuad) return false;
+
+  const entityQuads = store.getQuads(instanceTypeQuad.object, null, null, null);
+  const entityTypeQuad = entityQuads.find(q => q.predicate.value === `${Samm.RDF_URI}#type`);
+
+  return samm.Entity().equals(entityTypeQuad.object);
 }

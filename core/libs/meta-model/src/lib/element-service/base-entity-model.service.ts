@@ -59,6 +59,6 @@ export class BaseEntityModelService {
       );
     }
 
-    metaModelElement._extends = extendedElement;
+    metaModelElement.extends_ = extendedElement;
   }
 }

@@ -12,13 +12,11 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {ModelService} from '@ame/rdf/services';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
-import {LogService} from '@ame/shared';
 import {ChangeDetectorRef, Component, EventEmitter, HostListener, Input, OnChanges, OnDestroy, OnInit, Output} from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
-import {Characteristic, DefaultCharacteristic, DefaultConstraint, NamedElement, Unit} from '@esmf/aspect-model-loader';
+import {DefaultCharacteristic, DefaultConstraint, NamedElement, Unit} from '@esmf/aspect-model-loader';
 import {Subscription} from 'rxjs';
 import {EditorModelService} from '../../editor-model.service';
 
@@ -31,7 +29,7 @@ export class ShapeSettingsComponent implements OnInit, OnChanges, OnDestroy {
   public metaModelClassName: string;
   public metaModelElement: NamedElement;
   public selectedMetaModelElement: NamedElement;
-  public tmpCharacteristic: Characteristic;
+  public tmpCharacteristic: DefaultCharacteristic | DefaultConstraint;
   public units: Unit[] = [];
   public formGroup: FormGroup = new FormGroup({
     changedMetaModel: new FormControl(null),
@@ -54,8 +52,6 @@ export class ShapeSettingsComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(
     public metaModelDialogService: EditorModelService,
-    private modelService: ModelService,
-    private loggerService: LogService,
     private languageSettings: SammLanguageSettingsService,
     private changeDetector: ChangeDetectorRef,
     private loadedFilesService: LoadedFilesService,
@@ -116,7 +112,7 @@ export class ShapeSettingsComponent implements OnInit, OnChanges, OnDestroy {
         this.metaModelClassName = selectedModelElement.className.replace('Default', '');
       }
     } else {
-      this.loggerService.logWarn('Selected element is null. The dialog will not shown.');
+      console.warn('Selected element is null. The dialog will not shown.');
     }
   }
 
@@ -124,8 +120,8 @@ export class ShapeSettingsComponent implements OnInit, OnChanges, OnDestroy {
     if (this.languageSettings.getSammLanguageCodes()) {
       this.languageSettings.getSammLanguageCodes().forEach(languageCode => {
         if (!metaModelElement.getPreferredName(languageCode) && !metaModelElement.getDescription(languageCode)) {
-          metaModelElement.addPreferredName(languageCode, '');
-          metaModelElement.addDescription(languageCode, '');
+          metaModelElement.preferredNames.set(languageCode, '');
+          metaModelElement.descriptions.set(languageCode, '');
         }
       });
     }

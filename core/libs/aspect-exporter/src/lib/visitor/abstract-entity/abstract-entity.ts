@@ -11,7 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {RdfService} from '@ame/rdf/services';
+import {LoadedFilesService} from '@ame/cache';
+import {getDescriptionsLocales, getPreferredNamesLocales} from '@ame/utils';
 import {Injectable} from '@angular/core';
 import {DefaultEntity, Samm} from '@esmf/aspect-model-loader';
 import {DataFactory, Store} from 'n3';
@@ -27,9 +28,9 @@ export class AbstractEntityVisitor extends BaseVisitor<DefaultEntity> {
   constructor(
     public rdfNodeService: RdfNodeService,
     public rdfListService: RdfListService,
-    public rdfService: RdfService,
+    public loadedFiles: LoadedFilesService,
   ) {
-    super(rdfService);
+    super(loadedFiles);
   }
 
   visit(abstractEntity: DefaultEntity): DefaultEntity {
@@ -37,8 +38,8 @@ export class AbstractEntityVisitor extends BaseVisitor<DefaultEntity> {
       return null;
     }
 
-    this.store = this.rdfService.currentRdfModel.store;
-    this.samm = this.rdfService.currentRdfModel.samm;
+    this.store = this.loadedFiles.currentLoadedFile.rdfModel.store;
+    this.samm = this.loadedFiles.currentLoadedFile.rdfModel.samm;
     this.setPrefix(abstractEntity.aspectModelUrn);
     const newAspectModelUrn = `${abstractEntity.aspectModelUrn.split('#')[0]}#${abstractEntity.name}`;
     abstractEntity.aspectModelUrn = newAspectModelUrn;
@@ -49,15 +50,15 @@ export class AbstractEntityVisitor extends BaseVisitor<DefaultEntity> {
 
   private updateProperties(abstractEntity: DefaultEntity) {
     this.rdfNodeService.update(abstractEntity, {
-      preferredName: abstractEntity.preferredNames.keys()?.map(language => ({
+      preferredName: getPreferredNamesLocales(abstractEntity)?.map(language => ({
         language,
         value: abstractEntity.getPreferredName(language),
       })),
-      description: abstractEntity.getAllLocalesDescriptions()?.map(language => ({
+      description: getDescriptionsLocales(abstractEntity)?.map(language => ({
         language,
         value: abstractEntity.getDescription(language),
       })),
-      see: abstractEntity.getSeeReferences() || [],
+      see: abstractEntity.see || [],
     });
 
     if (abstractEntity.properties?.length) {

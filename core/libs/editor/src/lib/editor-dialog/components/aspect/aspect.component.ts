@@ -14,7 +14,7 @@
 import {Component, Input} from '@angular/core';
 import {FormControl} from '@angular/forms';
 import {DefaultAspect} from '@esmf/aspect-model-loader';
-import {ModelElementEditorComponent} from '..';
+import {ModelElementEditorComponent} from '../model-element-editor-component';
 import {UpdatedProperties} from '../properties';
 
 @Component({

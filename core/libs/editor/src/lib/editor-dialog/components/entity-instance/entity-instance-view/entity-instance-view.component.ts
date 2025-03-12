@@ -15,7 +15,7 @@ import {SelectionModel} from '@angular/cdk/collections';
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
-import {DefaultEntityInstance, DefaultEnumeration} from '@esmf/aspect-model-loader';
+import {DefaultEntityInstance, DefaultEnumeration, DefaultProperty, EntityInstanceProperty} from '@esmf/aspect-model-loader';
 import {filter} from 'rxjs/operators';
 import {EntityInstanceModalComponent} from '..';
 import {DataType, FormFieldHelper} from '../../../../helpers/form-field.helper';
@@ -80,9 +80,8 @@ export class EntityInstanceViewComponent implements OnInit, OnDestroy {
     this.parentForm.removeControl('newEntityValues');
     this.complexValues = [];
   }
-
-  trackProperty(_index: number, item: EntityInstanceProperty): string {
-    return `${item?.key.property.name}`;
+  trackProperty(_index: number, [property]: EntityInstanceProperty<DefaultProperty>): string {
+    return `${property.name}`;
   }
 
   trackValue(_index: number, item: DefaultEntityInstance): string {
@@ -128,11 +127,6 @@ export class EntityInstanceViewComponent implements OnInit, OnDestroy {
   }
 
   private checkInnerComplexValues(newValue: DefaultEntityInstance[]) {
-    newValue.forEach(value =>
-      value?.assertions.forEach(innerVal => {
-        innerVal.isComplex = innerVal.value instanceof DefaultEntityInstance;
-      }),
-    );
     return newValue.filter(value => value instanceof DefaultEntityInstance);
   }
 }

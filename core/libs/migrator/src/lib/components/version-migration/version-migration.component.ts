@@ -15,7 +15,7 @@ import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {EditorService} from '@ame/editor';
 import {RdfService} from '@ame/rdf/services';
 import {RdfModelUtil} from '@ame/rdf/utils';
-import {APP_CONFIG, AppConfig, ElectronSignals, ElectronSignalsService, LogService} from '@ame/shared';
+import {APP_CONFIG, AppConfig, ElectronSignals, ElectronSignalsService} from '@ame/shared';
 import {CdkScrollable} from '@angular/cdk/scrolling';
 import {KeyValuePipe} from '@angular/common';
 import {Component, NgZone, OnInit, inject} from '@angular/core';
@@ -57,7 +57,6 @@ export class VersionMigrationComponent implements OnInit {
     private modelApiService: ModelApiService,
     private migratorApiService: MigratorApiService,
     private editorService: EditorService,
-    private logService: LogService,
     private router: Router,
     private ngZone: NgZone,
     private loadedFilesService: LoadedFilesService,
@@ -73,7 +72,7 @@ export class VersionMigrationComponent implements OnInit {
       )
       .subscribe({
         complete: () => this.navigateToMigrationSuccess(),
-        error: err => this.logService.logError('Error when migration to new version', err),
+        error: err => console.error('Error when migration to new version', err),
       });
   }
 
@@ -94,7 +93,7 @@ export class VersionMigrationComponent implements OnInit {
       tap(() =>
         this.deleteModels(modelsTobeDeleted).subscribe({
           complete: () => this.electronSignalsService.call('requestRefreshWorkspaces'),
-          error: err => this.logService.logError('Error when deleting old Aspect Model to new version', err),
+          error: err => console.error('Error when deleting old Aspect Model to new version', err),
         }),
       ),
     );

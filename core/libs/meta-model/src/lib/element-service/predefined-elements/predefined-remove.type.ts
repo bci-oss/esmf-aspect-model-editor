@@ -10,10 +10,10 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
+import {NamedElement} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
-import {NamedNode} from '../../aspect-meta-model';
 
 export interface PredefinedRemove {
   delete(cell: mxgraph.mxCell): boolean;
-  decouple(edge: mxgraph.mxCell, source: NamedNode): boolean;
+  decouple(edge: mxgraph.mxCell, source: NamedElement): boolean;
 }

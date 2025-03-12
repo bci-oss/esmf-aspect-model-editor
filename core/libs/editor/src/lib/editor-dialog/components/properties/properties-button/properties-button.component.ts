@@ -13,7 +13,7 @@
 
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
-import {DefaultAbstractEntity, DefaultAspect, DefaultEntity, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
+import {DefaultAspect, DefaultEntity, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
 import {first} from 'rxjs/operators';
 import {PropertiesModalComponent} from '..';
 import {EditorModelService} from '../../../editor-model.service';
@@ -32,7 +32,7 @@ export class PropertiesButtonComponent implements OnInit {
 
   private propertiesClone: DefaultProperty[];
 
-  public metaModelElement: DefaultEntity | DefaultAspect | DefaultAbstractEntity;
+  public metaModelElement: DefaultEntity | DefaultAspect;
   public get isPredefined(): boolean {
     return this.metaModelElement?.isPredefined;
   }
@@ -44,11 +44,7 @@ export class PropertiesButtonComponent implements OnInit {
 
   ngOnInit(): void {
     this.metaModelDialogService.getMetaModelElement().subscribe((metaModelElement: NamedElement) => {
-      if (
-        metaModelElement instanceof DefaultEntity ||
-        metaModelElement instanceof DefaultAbstractEntity ||
-        metaModelElement instanceof DefaultAspect
-      ) {
+      if (metaModelElement instanceof DefaultEntity || metaModelElement instanceof DefaultAspect) {
         this.metaModelElement = metaModelElement;
       }
     });
@@ -74,7 +70,7 @@ export class PropertiesButtonComponent implements OnInit {
         }
 
         // @TODO clone this property
-        this.propertiesClone = this.metaModelElement.properties.map(({property, keys}) => ({property, keys: {...keys}}));
+        this.propertiesClone = []; // this.metaModelElement.properties.map(({property, keys}) => ({property, keys: {...keys}}));
         for (const property of this.propertiesClone) {
           if (!data[property.aspectModelUrn]) {
             continue;

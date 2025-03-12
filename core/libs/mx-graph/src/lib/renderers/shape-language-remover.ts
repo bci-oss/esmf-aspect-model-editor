@@ -11,7 +11,6 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {LogService} from '@ame/shared';
 import {NamedElement} from '@esmf/aspect-model-loader';
 import {MxGraphHelper} from '../helpers';
 import {MxGraphAttributeService, MxGraphService, MxGraphShapeSelectorService} from '../services';
@@ -21,7 +20,6 @@ export class ShapeLanguageRemover {
     private locals: Array<string>,
     private mxGraphService: MxGraphService,
     private mxGraphShapeSelectorService: MxGraphShapeSelectorService,
-    private logService: LogService,
     private mxGraphAttributeService: MxGraphAttributeService,
   ) {}
 
@@ -41,10 +39,10 @@ export class ShapeLanguageRemover {
   private removeLanguageInformation(element: NamedElement) {
     this.locals.forEach(locale => {
       if (element.getPreferredName(locale)) {
-        this.logService.logInfo(`Delete '${element.getPreferredName(locale)}@${locale}' from ${element.aspectModelUrn}`);
+        console.info(`Delete '${element.getPreferredName(locale)}@${locale}' from ${element.aspectModelUrn}`);
       }
       if (element.getDescription(locale)) {
-        this.logService.logInfo(`Delete '${element.getDescription(locale)}@${locale}' from ${element.aspectModelUrn}`);
+        console.info(`Delete '${element.getDescription(locale)}@${locale}' from ${element.aspectModelUrn}`);
       }
       element.preferredNames.delete(locale);
       element.descriptions.delete(locale);

@@ -15,7 +15,7 @@ import {Injectable} from '@angular/core';
 
 import {LoadedFilesService} from '@ame/cache';
 import {MxGraphService} from '@ame/mx-graph';
-import {RdfService} from '@ame/rdf/services';
+import {getDescriptionsLocales, getPreferredNamesLocales} from '@ame/utils';
 import {
   DefaultConstraint,
   DefaultEncodingConstraint,
@@ -27,7 +27,6 @@ import {
   DefaultRegularExpressionConstraint,
   DefaultTrait,
   SammC,
-  Type,
 } from '@esmf/aspect-model-loader';
 import {ComplexType} from 'libs/aspect-model-loader/src/lib/aspect-meta-model/complex-type';
 import {DataFactory, NamedNode, Store} from 'n3';
@@ -45,7 +44,7 @@ export class ConstraintVisitor extends BaseVisitor<DefaultConstraint> {
   }
 
   private readonly constraintCallbacks = {
-    DefaultRangeConstraint: (constraint: DefaultRangeConstraint, characteristicType: Type) =>
+    DefaultRangeConstraint: (constraint: DefaultRangeConstraint, characteristicType: ComplexType) =>
       this.updateRange(constraint, characteristicType),
     DefaultFixedPointConstraint: (constraint: DefaultFixedPointConstraint) => this.updateFixedPoint(constraint),
     DefaultLengthConstraint: (constraint: DefaultLengthConstraint) => this.updateLength(constraint),
@@ -59,9 +58,9 @@ export class ConstraintVisitor extends BaseVisitor<DefaultConstraint> {
     public rdfNodeService: RdfNodeService,
     public mxGraphService: MxGraphService,
     private loadedFilesService: LoadedFilesService,
-    rdfService: RdfService,
+    loadedFiles: LoadedFilesService,
   ) {
-    super(rdfService);
+    super(loadedFiles);
   }
 
   visit(constraint: DefaultConstraint): DefaultConstraint {
@@ -81,11 +80,11 @@ export class ConstraintVisitor extends BaseVisitor<DefaultConstraint> {
 
   private updateProperties(constraint: DefaultConstraint) {
     this.rdfNodeService.update(constraint, {
-      preferredName: constraint.getAllLocalesPreferredNames()?.map(language => ({
+      preferredName: getPreferredNamesLocales(constraint)?.map(language => ({
         language,
         value: constraint.getPreferredName(language),
       })),
-      description: constraint.getAllLocalesDescriptions()?.map(language => ({
+      description: getDescriptionsLocales(constraint)?.map(language => ({
         language,
         value: constraint.getDescription(language),
       })),

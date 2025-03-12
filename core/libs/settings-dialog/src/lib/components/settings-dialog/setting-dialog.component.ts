@@ -10,10 +10,10 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {LoadedFilesService, NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {MxGraphAttributeService, MxGraphService, MxGraphShapeSelectorService, ShapeLanguageRemover} from '@ame/mx-graph';
 import {ModelService} from '@ame/rdf/services';
-import {AlertService, LoadingScreenService, LogService, TitleService} from '@ame/shared';
+import {AlertService, LoadingScreenService, TitleService} from '@ame/shared';
 import {FlatTreeControl} from '@angular/cdk/tree';
 import {Component} from '@angular/core';
 import {FormGroup} from '@angular/forms';
@@ -137,7 +137,6 @@ export class SettingDialogComponent {
     private settingDialogComponentMatDialogRef: MatDialogRef<SettingDialogComponent>,
     private formService: SettingsFormService,
     private alertService: AlertService,
-    private logService: LogService,
     private modelService: ModelService,
     private mxGraphService: MxGraphService,
     private sammLangService: SammLanguageSettingsService,
@@ -145,7 +144,6 @@ export class SettingDialogComponent {
     private mxGraphShapeSelectorService: MxGraphShapeSelectorService,
     private loadingScreen: LoadingScreenService,
     private titleService: TitleService,
-    private namespaceCacheService: NamespacesCacheService,
     private loadedFilesService: LoadedFilesService,
   ) {
     this.initializeComponent();
@@ -219,9 +217,10 @@ export class SettingDialogComponent {
   }
 
   private updateAllNamespacesFromCurrentCachedFile(oldValue: string, newValue: string, rdfModel: RdfModel): void {
-    const currentCachedFile = this.namespaceCacheService.currentCachedFile;
+    const currentCachedFile = this.currentLoadedFile.cachedFile;
 
-    currentCachedFile.updateCachedElementsNamespace(oldValue, newValue);
+    currentCachedFile.updateElementsNamespace(oldValue, newValue);
+    this.currentLoadedFile.namespace = newValue;
     rdfModel.updatePrefix('', oldValue, newValue);
   }
 
@@ -234,9 +233,8 @@ export class SettingDialogComponent {
   }
   //@TODO check if this updates are not duplicates
   private updateNamespaceKey(newNamespace: string, newVersion: string, rdfModel: RdfModel): void {
-    const newUrn = `urn:samm:${newNamespace}:${newVersion}#`;
-
-    this.namespaceCacheService.addFile(newUrn, this.currentLoadedFile.name);
+    // const newUrn = `urn:samm:${newNamespace}:${newVersion}#`;
+    // this.namespaceCacheService.addFile(newUrn, this.currentLoadedFile.name);
     // if (this.currentLoadedFile) {
     //   const [, aspectName] = rdfModel.aspect.value.split('#');
     //   rdfModel.namespaceHasChanged = true;
@@ -290,7 +288,6 @@ export class SettingDialogComponent {
             this.formService.getLanguagesToBeRemove().map((entry: string) => entry),
             this.mxGraphService,
             this.mxGraphShapeSelectorService,
-            this.logService,
             this.mxGraphAttributeService,
           ).removeUnnecessaryLanguages();
         });

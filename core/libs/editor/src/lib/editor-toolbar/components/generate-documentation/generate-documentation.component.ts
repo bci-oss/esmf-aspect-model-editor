@@ -12,7 +12,7 @@
  */
 
 import {ModelApiService} from '@ame/api';
-import {NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {ModelService} from '@ame/rdf/services';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {LanguageTranslateModule} from '@ame/translation';
@@ -54,17 +54,17 @@ export class GenerateDocumentationComponent {
   languageControl: FormControl;
   isGenerating = false;
 
-  private get currentCachedFile() {
-    return this.namespaceCacheService.currentCachedFile;
+  private get currentFile() {
+    return this.loadedFiles.currentLoadedFile;
   }
 
   constructor(
     private dialogRef: MatDialogRef<GenerateDocumentationComponent>,
     private languageService: SammLanguageSettingsService,
-    private namespaceCacheService: NamespacesCacheService,
     private modelService: ModelService,
     private modelApiService: ModelApiService,
     private editorService: EditorService,
+    private loadedFiles: LoadedFilesService,
   ) {
     this.languages = this.languageService.getSammLanguageCodes().map(tag => locale.getByTag(tag));
     this.languageControl = new FormControl(this.languages[0].tag);
@@ -97,7 +97,7 @@ export class GenerateDocumentationComponent {
             new Blob([data], {
               type: 'text/html',
             }),
-            !this.modelService.loadedAspect ? this.currentCachedFile.fileName : `${this.modelService.loadedAspect.name}-documentation.html`,
+            !this.modelService.loadedAspect ? this.currentFile.name : `${this.modelService.loadedAspect.name}-documentation.html`,
           ),
         ),
         finalize(() => {

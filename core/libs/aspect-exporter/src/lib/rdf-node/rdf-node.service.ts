@@ -14,9 +14,8 @@
 import {LoadedFilesService} from '@ame/cache';
 import {ModelService} from '@ame/rdf/services';
 import {RdfModelUtil} from '@ame/rdf/utils';
-import {LogService} from '@ame/shared';
 import {Injectable} from '@angular/core';
-import {DefaultEncodingConstraint, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
+import {DefaultEncodingConstraint, NamedElement, RdfModel, Type} from '@esmf/aspect-model-loader';
 import {BlankNode, DataFactory, Quad} from 'n3';
 import {PropertyEnum} from './enums/property.enum';
 import {BasePropertiesInterface, LocaleInterface} from './interfaces';
@@ -26,7 +25,6 @@ import {BasePropertiesInterface, LocaleInterface} from './interfaces';
 })
 export class RdfNodeService {
   constructor(
-    public loggerService: LogService,
     public modelService: ModelService,
     private loadedFilesService: LoadedFilesService,
   ) {}
@@ -60,7 +58,7 @@ export class RdfNodeService {
         .filter(quad => quad); // filter null/undefined
     }
     this.rdfModel.store.removeQuads(quadsToBeRemoved);
-    this.loggerService.logInfo(`Removed quads ${JSON.stringify(quadsToBeRemoved)}`);
+    console.info(`Removed quads ${JSON.stringify(quadsToBeRemoved)}`);
   }
 
   /**

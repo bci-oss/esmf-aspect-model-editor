@@ -19,7 +19,9 @@ import {DefaultEntityInstance} from '@esmf/aspect-model-loader';
   name: 'entityInstance',
 })
 export class EntityInstancePipe implements PipeTransform {
-  transform(value: DefaultEntityInstance[], search: string): DefaultEntityInstance[] {
+  // TODO restore this after fixes
+  transform(value: DefaultEntityInstance[], search: string): any[] {
+    //DefaultEntityInstance[] {
     if (!value || value.length === 0) {
       return null;
     }

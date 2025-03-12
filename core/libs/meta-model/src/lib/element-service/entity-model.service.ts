@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {CacheUtils} from '@ame/cache';
 import {EntityInstanceService} from '@ame/editor';
 import {
   EntityRenderService,
@@ -59,15 +60,15 @@ export class EntityModelService extends BaseModelService {
         property.payloadName = newKeys.payloadName;
       }
 
-      this.namespacesCacheService.currentCachedFile
-        .getCachedEntityValues()
+      CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntityInstance)
         ?.filter((entityValue: DefaultEntityInstance) => entityValue.type.aspectModelUrn === modelElement.aspectModelUrn)
         ?.forEach((entityValue: DefaultEntityInstance) => {
-          for (const entityValueProperty of entityValue.properties) {
-            const property = modelElement.properties.find(prop => prop.property.name === entityValueProperty.key.property.name);
-            entityValueProperty.key.keys.optional = property.keys.optional;
-            entityValueProperty.key.keys.notInPayload = property.keys.notInPayload;
-            entityValueProperty.key.keys.payloadName = property.keys.payloadName;
+          for (const entityValueProperty of entityValue.assertions) {
+            // TODO update this functionality with the new structure from entityInstance
+            // const property = modelElement.properties.find(prop => prop.property.name === entityValueProperty.key.property.name);
+            // entityValueProperty.key.keys.optional = property.keys.optional;
+            // entityValueProperty.key.keys.notInPayload = property.keys.notInPayload;
+            // entityValueProperty.key.keys.payloadName = property.keys.payloadName;
           }
         });
     }
@@ -97,7 +98,8 @@ export class EntityModelService extends BaseModelService {
         const sourceModelElement = MxGraphHelper.getModelElement<NamedElement>(edge.source);
         if (sourceModelElement && !sourceModelElement.isExternalReference()) {
           this.currentCachedFile.removeElement(modelElement.aspectModelUrn);
-          sourceModelElement.delete(modelElement);
+          // TODO update delete functionality
+          // sourceModelElement.delete(modelElement);
         }
 
         if (sourceModelElement instanceof DefaultEnumeration) {

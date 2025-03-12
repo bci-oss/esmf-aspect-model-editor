@@ -12,7 +12,7 @@
  */
 
 import {ModelApiService} from '@ame/api';
-import {CachedFile, LoadedFilesService, NamespaceFile, NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {
   ConfirmDialogService,
   DialogOptions,
@@ -30,9 +30,9 @@ import {RdfModelUtil} from '@ame/rdf/utils';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {
   ElectronSignalsService,
+  GeneralConfig,
   LoadingScreenOptions,
   LoadingScreenService,
-  LogService,
   ModelSavingTrackerService,
   NotificationsService,
   SaveValidateErrorsCodes,
@@ -40,11 +40,11 @@ import {
 import {SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
 import {decodeText, readFile} from '@ame/utils';
-import {inject, Injectable} from '@angular/core';
-import {RdfModel} from '@esmf/aspect-model-loader';
+import {Injectable, inject} from '@angular/core';
+import {ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {saveAs} from 'file-saver';
-import {BlankNode, NamedNode} from 'n3';
-import {forkJoin, from, Observable, of, throwError} from 'rxjs';
+import {BlankNode, NamedNode, Store} from 'n3';
+import {Observable, forkJoin, from, of, throwError} from 'rxjs';
 import {catchError, finalize, first, map, switchMap, tap} from 'rxjs/operators';
 import {environment} from '../../../../../../environments/environment';
 import {ConfirmDialogEnum} from '../../models/confirm-dialog.enum';
@@ -84,7 +84,6 @@ export class FileHandlingService {
   private loadedFilesService = inject(LoadedFilesService);
 
   constructor(
-    private logService: LogService,
     private editorService: EditorService,
     private modelService: ModelService,
     private rdfService: RdfService,
@@ -92,7 +91,6 @@ export class FileHandlingService {
     private confirmDialogService: ConfirmDialogService,
     private notificationsService: NotificationsService,
     private loadingScreenService: LoadingScreenService,
-    private namespaceCacheService: NamespacesCacheService,
     private migratorService: MigratorService,
     private sidebarService: SidebarStateService,
     private translate: LanguageTranslationService,
@@ -198,8 +196,8 @@ export class FileHandlingService {
   }
 
   createEmptyModel() {
-    this.namespaceCacheService.removeAll();
-    const currentRdfModel = this.rdfService.currentRdfModel;
+    this.loadedFilesService.removeAll();
+    const currentRdfModel = this.loadedFilesService.currentLoadedFile?.rdfModel;
     let fileStatus;
     if (currentRdfModel) {
       const [namespace, version, file] = this.loadedFilesService.currentLoadedFile.absoluteName;
@@ -213,32 +211,43 @@ export class FileHandlingService {
     }
 
     // @ TODO rethink creation of empty file
-    const emptyNamespace = 'urn:samm:org.eclipse.esmf:1.0.0#';
-    const fileName = 'empty.ttl';
+    const emptyNamespace = 'urn:samm:org.eclipse.esmf:1.0.0';
+    const rdfModel = new RdfModel(new Store(), GeneralConfig.sammVersion, emptyNamespace);
+
+    this.loadedFilesService.addFile({
+      rdfModel,
+      cachedFile: new ModelElementCache(),
+      aspect: null,
+      absoluteName: 'org.eclipse.esmf:1.0.0:empty.ttl',
+      rendered: true,
+      fromWorkspace: false,
+    });
+
     // const newRdfModel = new RdfModel() //.initRdfModel(new Store(), {'': emptyNamespace as any}, 'empty');
-    const oldFile = this.namespaceCacheService.currentCachedFile;
+    // const oldFile = this.loadedFilesService.currentCachedFile;
 
     this.sidebarService.sammElements.open();
 
     // newRdfModel.absoluteAspectModelFileName = `${emptyNamespace}:${fileName}`;
     // this.rdfService.currentRdfModel = newRdfModel;
-    if (oldFile) {
-      this.namespaceCacheService.removeFile(oldFile.namespace, oldFile.fileName);
-    }
+    // if (oldFile) {
+    //   this.namespaceCacheService.removeFile(oldFile.namespace, oldFile.fileName);
+    // }
 
-    this.namespaceCacheService.currentCachedFile = new CachedFile(fileName, emptyNamespace);
+    // TODO here should be the new cached file
+    // this.namespaceCacheService.currentCachedFile = new CachedFile(fileName, emptyNamespace);
 
     if (this.mxGraphService.graph?.model) {
       this.mxGraphService.deleteAllShapes();
     }
 
-    this.modelService.addAspect(null);
-    this.modelSaveTracker.updateSavedModel(true);
+    // this.modelService.addAspect(null);
+    // this.modelSaveTracker.updateSavedModel(true);
 
-    const loadExternalModels$ = this.editorService
-      .loadExternalModels()
-      .pipe(finalize(() => loadExternalModels$.unsubscribe()))
-      .subscribe();
+    //   const loadExternalModels$ = this.editorService
+    //     .loadExternalModels()
+    //     .pipe(finalize(() => loadExternalModels$.unsubscribe()))
+    //     .subscribe();
   }
 
   onCopyToClipboard() {
@@ -248,7 +257,7 @@ export class FileHandlingService {
   copyToClipboard(): Observable<any> {
     if (!this.modelService.currentRdfModel) {
       return throwError(() => {
-        this.logService.logError('No Rdf model available. ');
+        console.error('No Rdf model available. ');
         return 'No Rdf model available. ';
       });
     }
@@ -278,7 +287,7 @@ export class FileHandlingService {
   exportAsAspectModelFile(): Observable<string> {
     if (!this.modelService.getLoadedAspectModel().rdfModel) {
       return throwError(() => {
-        this.logService.logError('No Rdf model available. ');
+        console.error('No Rdf model available. ');
         return 'No Rdf model available. ';
       });
     }
@@ -301,7 +310,7 @@ export class FileHandlingService {
         );
       }),
       catchError(error => {
-        this.logService.logError(`Error while exporting the Aspect Model. ${JSON.stringify(error)}.`);
+        console.error(`Error while exporting the Aspect Model. ${JSON.stringify(error)}.`);
         this.notificationsService.error({
           title: this.translate.language.NOTIFICATION_SERVICE.EXPORTING_TITLE_ERROR,
           message: `${error?.error?.message || error}`,
@@ -433,7 +442,7 @@ export class FileHandlingService {
       }),
       switchMap(() => this.editorService.handleFileVersionConflicts(newModelAbsoluteFileName, newModelContent)),
       catchError(error => {
-        this.logService.logError(`'Error adding file to namespaces. ${JSON.stringify(error)}.`);
+        console.error(`'Error adding file to namespaces. ${JSON.stringify(error)}.`);
         if (uploadOptions.showNotifications) {
           this.notificationsService.error({
             title: this.translate.language.NOTIFICATION_SERVICE.FILE_ADDED_ERROR_TITLE,
@@ -451,7 +460,7 @@ export class FileHandlingService {
       .synchronizeModelToRdf()
       .pipe(finalize(() => subscription$.unsubscribe()))
       .subscribe((): void => {
-        if (!this.namespaceCacheService.currentCachedFile.hasCachedElements()) {
+        if (!this.loadedFilesService.currentLoadedFile.cachedFile.getKeys().length) {
           this.notificationsService.info({
             title: this.translate.language.NOTIFICATION_DIALOG?.NO_ASPECT_TITLE,
             timeout: 5000,
@@ -488,7 +497,7 @@ export class FileHandlingService {
           message: this.translate.language.NOTIFICATION_SERVICE.VALIDATION_ERROR_MESSAGE,
           timeout: 5000,
         });
-        this.logService.logError(`Error occurred while validating the current model (${JSON.stringify(error)})`);
+        console.error(`Error occurred while validating the current model (${JSON.stringify(error)})`);
         return throwError(() => 'Validation completed with errors');
       }),
       finalize(() => localStorage.removeItem('validating')),
@@ -601,7 +610,7 @@ export class FileHandlingService {
   }
 
   public updateAffectedQuads(originalModelName: string, originalNamespace: string, newNamespace: string): NamespaceFile[] {
-    const subjects = this.rdfService.currentRdfModel.store.getSubjects(null, null, null);
+    const subjects = this.loadedFilesService.currentLoadedFile.rdfModel.store.getSubjects(null, null, null);
     const models = Object.values(this.loadedFilesService.files).filter(model => model.absoluteName !== originalModelName);
     const affectedModels: NamespaceFile[] = [];
 

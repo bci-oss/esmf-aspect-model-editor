@@ -12,29 +12,23 @@
  */
 
 import {ModelApiService} from '@ame/api';
-import {LoadedFilesService, NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {EditorService} from '@ame/editor';
 import {MxGraphHelper} from '@ame/mx-graph';
 import {ModelService, RdfService} from '@ame/rdf/services';
 import {inject} from '@angular/core';
-import {DefaultAspect, DefaultEntityInstance, DefaultEnumeration, NamedElement} from '@esmf/aspect-model-loader';
+import {DefaultAspect, DefaultEntityInstance, DefaultEnumeration, HasExtends, NamedElement} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
-import {CanExtend} from '../aspect-meta-model';
 
 export abstract class BaseModelService {
   protected rdfService: RdfService = inject(RdfService);
-  protected namespacesCacheService: NamespacesCacheService = inject(NamespacesCacheService);
   protected modelService: ModelService = inject(ModelService);
   protected editorService: EditorService = inject(EditorService);
   protected modelApiService: ModelApiService = inject(ModelApiService);
   protected loadedFilesService: LoadedFilesService = inject(LoadedFilesService);
 
   get currentCachedFile() {
-    return this.namespacesCacheService.currentCachedFile;
-  }
-
-  get currentRdfModel() {
-    return this.rdfService.currentRdfModel;
+    return this.loadedFile.cachedFile;
   }
 
   get loadedFile() {
@@ -54,7 +48,7 @@ export abstract class BaseModelService {
     const aspect: DefaultAspect = Object.assign({}, this.loadedFile.aspect);
     const aspectModelUrn = this.loadedFile.rdfModel.getAspectModelUrn();
 
-    this.currentCachedFile.updateCachedElementKey(`${aspectModelUrn}${modelElement.name}`, `${aspectModelUrn}${form.name}`);
+    this.currentCachedFile.updateElementKey(`${aspectModelUrn}${modelElement.name}`, `${aspectModelUrn}${form.name}`);
 
     modelElement.name = form.name;
     modelElement.aspectModelUrn = `${aspectModelUrn}${form.name}`;
@@ -80,7 +74,8 @@ export abstract class BaseModelService {
       const sourceNode = MxGraphHelper.getModelElement<NamedElement>(edge.source);
       if (sourceNode && !(sourceNode instanceof DefaultEnumeration) && !sourceNode.isExternalReference()) {
         this.currentCachedFile.removeElement(modeElement.aspectModelUrn);
-        sourceNode.delete(modeElement);
+        // TODO make functionality for delete
+        // sourceNode.delete(modeElement);
       }
     }
 
@@ -91,14 +86,14 @@ export abstract class BaseModelService {
 
   protected updateSee(modelElement: NamedElement, form: {[key: string]: any}) {
     const newSeeValue = form.see instanceof Array ? form.see : form.see?.split(',');
-    if (modelElement instanceof CanExtend) {
-      if (newSeeValue?.join(',') !== modelElement.extendedSee?.join(',')) {
-        modelElement.setSeeReferences(form.see ? newSeeValue : null);
+    if (modelElement instanceof HasExtends) {
+      if (newSeeValue?.join(',') !== modelElement.extends_?.see?.join(',')) {
+        modelElement.see = form.see ? newSeeValue : null;
       } else {
-        modelElement.setSeeReferences([]);
+        modelElement.see = [];
       }
     } else {
-      modelElement.setSeeReferences(form.see ? newSeeValue : null);
+      modelElement.see = form.see ? newSeeValue : null;
     }
   }
 
@@ -109,14 +104,14 @@ export abstract class BaseModelService {
       }
 
       const locale = key.replace('description', '');
-      if (modelElement instanceof CanExtend) {
-        if (form[key] !== modelElement.extendedDescription?.get(locale)) {
-          modelElement.addDescription(locale, form[key]);
+      if (modelElement instanceof HasExtends) {
+        if (form[key] !== modelElement.extends_?.descriptions?.get(locale)) {
+          modelElement.descriptions.set(locale, form[key]);
         } else {
-          modelElement.addDescription(locale, '');
+          modelElement.descriptions.set(locale, '');
         }
       } else {
-        modelElement.addDescription(locale, form[key]);
+        modelElement.descriptions.set(locale, form[key]);
       }
     });
   }
@@ -127,14 +122,14 @@ export abstract class BaseModelService {
         return;
       }
       const locale = key.replace('preferredName', '');
-      if (modelElement instanceof CanExtend) {
-        if (form[key] !== modelElement.extendedPreferredName?.get(locale)) {
-          modelElement.addPreferredName(locale, form[key]);
+      if (modelElement instanceof HasExtends) {
+        if (form[key] !== modelElement.extends_?.preferredNames?.get(locale)) {
+          modelElement.preferredNames.set(locale, form[key]);
         } else {
-          modelElement.addPreferredName(locale, '');
+          modelElement.preferredNames.set(locale, '');
         }
       } else {
-        modelElement.addPreferredName(locale, form[key]);
+        modelElement.preferredNames.set(locale, form[key]);
       }
     });
   }
@@ -142,16 +137,17 @@ export abstract class BaseModelService {
   protected addNewEntityValues(newEntityValues: DefaultEntityInstance[], parent: NamedElement) {
     for (const entityValue of newEntityValues) {
       MxGraphHelper.establishRelation(parent, entityValue);
-      this.currentCachedFile.resolveElement(entityValue);
+      this.currentCachedFile.resolveInstance(entityValue);
     }
   }
 
   protected deleteEntityValue(entityValue: DefaultEntityInstance, parent: NamedElement) {
     MxGraphHelper.removeRelation(parent, entityValue);
     // delete the element
-    this.namespacesCacheService.currentCachedFile.removeElement(entityValue.aspectModelUrn);
+    this.loadedFile.cachedFile.removeElement(entityValue.aspectModelUrn);
     // now delete other underlying entity values that don't belong to an enumeration
-    entityValue.properties.forEach((property: EntityInstanceProperty) => {
+    // TODO update this with the new structure from entityInstance
+    entityValue.assertions.forEach((property: any) => {
       if (property.value instanceof DefaultEntityInstance) {
         // this is another complex value, check if it belongs to an enumeration
         if (!property.value.parents?.length) {

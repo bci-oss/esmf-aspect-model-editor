@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespacesCacheService} from '@ame/cache';
+import {CacheUtils} from '@ame/cache';
 import {DataTypeService} from '@ame/shared';
 import {ENTER} from '@angular/cdk/keycodes';
 import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
@@ -41,15 +41,8 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
     return this.enumValues as DefaultEntityInstance[];
   }
 
-  constructor(
-    public namespacesCacheService: NamespacesCacheService,
-    private dataTypeService: DataTypeService,
-  ) {
+  constructor(private dataTypeService: DataTypeService) {
     super();
-  }
-
-  get currentCachedFile() {
-    return this.namespacesCacheService.currentCachedFile;
   }
 
   ngOnInit(): void {
@@ -152,11 +145,13 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
     this.parentForm.get('values').setValue([]);
     this.enumValueChange([]);
 
-    this.currentCachedFile.getCachedEntities().forEach(entity => {
-      if (entity.name === dataType) {
-        this.hasComplexValues = true;
-      }
-    });
+    CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntity)
+      .filter(e => !e.isAbstractEntity())
+      .forEach(entity => {
+        if (entity.name === dataType) {
+          this.hasComplexValues = true;
+        }
+      });
   }
 
   private handleNextModelElement(modelElement: NamedElement): void {

@@ -11,7 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {RdfService} from '@ame/rdf/services';
+import {LoadedFilesService} from '@ame/cache';
+import {getDescriptionsLocales, getPreferredNamesLocales} from '@ame/utils';
 import {Injectable, inject} from '@angular/core';
 import {DefaultProperty} from '@esmf/aspect-model-loader';
 import {DataFactory, Store} from 'n3';
@@ -26,8 +27,8 @@ export class AbstractPropertyVisitor extends BaseVisitor<DefaultProperty> {
     return this.rdfNodeService.modelService.currentRdfModel.store;
   }
 
-  constructor(rdfService: RdfService) {
-    super(rdfService);
+  constructor(loadedFiles: LoadedFilesService) {
+    super(loadedFiles);
   }
 
   visit(abstractProperty: DefaultProperty): DefaultProperty {
@@ -48,11 +49,11 @@ export class AbstractPropertyVisitor extends BaseVisitor<DefaultProperty> {
   private addProperties(abstractProperty: DefaultProperty) {
     this.rdfNodeService.update(abstractProperty, {
       exampleValue: abstractProperty.exampleValue,
-      preferredName: abstractProperty.getAllLocalesPreferredNames().map(language => ({
+      preferredName: getPreferredNamesLocales(abstractProperty).map(language => ({
         language,
         value: abstractProperty.getPreferredName(language),
       })),
-      description: abstractProperty.getAllLocalesDescriptions().map(language => ({
+      description: getDescriptionsLocales(abstractProperty).map(language => ({
         language,
         value: abstractProperty.getDescription(language),
       })),
@@ -68,7 +69,7 @@ export class AbstractPropertyVisitor extends BaseVisitor<DefaultProperty> {
     this.setPrefix(abstractProperty.getExtends().aspectModelUrn);
     this.store.addQuad(
       DataFactory.namedNode(abstractProperty.aspectModelUrn),
-      this.rdfService.currentRdfModel.samm.Extends(),
+      this.loadedFiles.currentLoadedFile.rdfModel.samm.Extends(),
       DataFactory.namedNode(abstractProperty.getExtends().aspectModelUrn),
     );
   }

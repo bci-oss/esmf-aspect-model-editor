@@ -11,6 +11,5 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-export * from './lib/cached-file';
+export * from './lib/cache-utils';
 export * from './lib/loaded-files.service';
-export * from './lib/namespaces-cache.service';

@@ -13,7 +13,7 @@
 
 import {MigratorApiService} from '@ame/api';
 import {LanguageTranslateModule, LanguageTranslationService} from '@ame/translation';
-import {ComponentFixture, fakeAsync, flush, TestBed, tick} from '@angular/core/testing';
+import {ComponentFixture, TestBed, fakeAsync, flush, tick} from '@angular/core/testing';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {Router} from '@angular/router';

@@ -13,6 +13,7 @@ import {Component, inject} from '@angular/core';
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {LoadedFilesService} from '@ame/cache';
 import {ConfirmDialogService, ShapeSettingsService} from '@ame/editor';
 import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
 import {
@@ -65,6 +66,7 @@ export class ElementsSearchComponent {
     private confirmDialogService: ConfirmDialogService,
     private searchService: SearchService,
     private translate: LanguageTranslationService,
+    private loadedFiles: LoadedFilesService,
   ) {
     this.searchControl.valueChanges.pipe(startWith(''), throttleTime(150)).subscribe(value => {
       this.elements = this.searchService
@@ -85,7 +87,7 @@ export class ElementsSearchComponent {
         .subscribe(confirm => {
           confirm !== ConfirmDialogEnum.cancel
             ? this.electronSignalsService.call('openWindow', {
-                file: element.fileName,
+                file: this.loadedFiles.getFileFromElement(element),
                 namespace: element.aspectModelUrn.replace('urn:samm:', '').split('#')[0],
                 editElement: element.aspectModelUrn,
                 fromWorkspace: true,

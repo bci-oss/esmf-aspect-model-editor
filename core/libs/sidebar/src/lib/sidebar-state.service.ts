@@ -12,11 +12,11 @@
  */
 
 import {ModelApiService} from '@ame/api';
-import {LoadedFilesService, NamespacesCacheService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {ExporterHelper} from '@ame/migrator';
 import {APP_CONFIG, AppConfig, BrowserService, ElectronSignals, ElectronSignalsService, NotificationsService} from '@ame/shared';
-import {inject, Injectable} from '@angular/core';
-import {BehaviorSubject, catchError, map, of, Subscription, throwError} from 'rxjs';
+import {Injectable, inject} from '@angular/core';
+import {BehaviorSubject, Subscription, catchError, map, of, throwError} from 'rxjs';
 import {environment} from '../../../../environments/environment';
 
 class SidebarState {
@@ -84,13 +84,16 @@ export class FileStatus {
 }
 
 class NamespacesManager {
-  public namespacesCacheService: NamespacesCacheService = inject(NamespacesCacheService);
-
+  private loadedFilesService = inject(LoadedFilesService);
   public namespaces: {[key: string]: FileStatus[]} = {};
   public hasOutdatedFiles = false;
 
   public get namespacesKeys(): string[] {
     return Object.keys(this.namespaces);
+  }
+
+  public get currentFile() {
+    return this.loadedFilesService.currentLoadedFile;
   }
 
   setFile(namespace: string, file: string) {
@@ -111,7 +114,7 @@ class NamespacesManager {
   lockFiles(files: {namespace: string; file: string}[]) {
     for (const namespace of this.namespacesKeys) {
       for (const fileStatus of this.namespaces[namespace]) {
-        if (fileStatus.name !== this.namespacesCacheService.currentCachedFile?.fileName) {
+        if (fileStatus.name !== this.currentFile.name) {
           fileStatus.locked = files.some(file => file.namespace === namespace && file.file === fileStatus.name);
         }
       }
@@ -126,7 +129,6 @@ class NamespacesManager {
 @Injectable({providedIn: 'root'})
 export class SidebarStateService {
   private electronSignalsService: ElectronSignals = inject(ElectronSignalsService);
-  private namespacesCacheService: NamespacesCacheService = inject(NamespacesCacheService);
   private config: AppConfig = inject(APP_CONFIG);
   private loadedFilesService = inject(LoadedFilesService);
 
@@ -137,7 +139,6 @@ export class SidebarStateService {
   public namespacesState = new NamespacesManager();
 
   constructor(
-    // private rdfService: RdfService,
     private modelApiService: ModelApiService,
     private notificationService: NotificationsService,
     private browserService: BrowserService,

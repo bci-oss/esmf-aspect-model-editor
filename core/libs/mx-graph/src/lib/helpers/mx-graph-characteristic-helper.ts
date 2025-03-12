@@ -44,7 +44,8 @@ export class MxGraphCharacteristicHelper {
 
   static getChildEntityValuesToDelete(entityValue: DefaultEntityInstance, notInclude: DefaultEntityInstance[]): DefaultEntityInstance[] {
     let entityValues = [];
-    entityValue.properties.forEach((prop: EntityInstanceProperty) => {
+    // TODO update this functionality with the new structure from DefaultEntityInstance
+    entityValue.assertions.forEach((prop: any) => {
       if (
         prop.value instanceof DefaultEntityInstance &&
         (prop.value.parents.length === 0 || !prop.value.parents) &&

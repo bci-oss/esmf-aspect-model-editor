@@ -11,12 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {RdfService} from '@ame/rdf/services';
+import {CacheUtils} from '@ame/cache';
 import {ENTER} from '@angular/cdk/keycodes';
 import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {FormControl} from '@angular/forms';
 import {ErrorStateMatcher} from '@angular/material/core';
-import {DefaultOperation, DefaultProperty, Property} from '@esmf/aspect-model-loader';
+import {DefaultOperation, DefaultProperty, Property, RdfModel} from '@esmf/aspect-model-loader';
 import {Observable} from 'rxjs';
 import {EditorDialogValidators} from '../../../../validators';
 import {InputFieldComponent} from '../../input-field.component';
@@ -37,10 +37,11 @@ export class InputChiplistFieldComponent extends InputFieldComponent<DefaultOper
   public chipControl = new FormControl();
   public searchControl: FormControl<string>;
 
-  constructor(
-    public rdfService: RdfService,
-    private validators: EditorDialogValidators,
-  ) {
+  get currentRdfModel(): RdfModel {
+    return this.loadedFiles.currentLoadedFile.rdfModel;
+  }
+
+  constructor(private validators: EditorDialogValidators) {
     super();
   }
 
@@ -62,7 +63,7 @@ export class InputChiplistFieldComponent extends InputFieldComponent<DefaultOper
   }
 
   setInputControl() {
-    const inputValueList = this.metaModelElement?.input.map(value => value.property);
+    const inputValueList = this.metaModelElement?.input;
 
     if (inputValueList) {
       this.inputValues.push(...inputValueList);
@@ -94,9 +95,11 @@ export class InputChiplistFieldComponent extends InputFieldComponent<DefaultOper
       return;
     }
 
-    let property = this.currentCachedFile.getCachedProperties().find(p => p.aspectModelUrn === newValue.urn);
+    let property = CacheUtils.getCachedElements(this.currentCachedFile, DefaultProperty)
+      .filter(p => !p.isAbstract)
+      .find(p => p.aspectModelUrn === newValue.urn);
     if (!property) {
-      property = this.namespacesCacheService.findElementOnExtReference<Property>(newValue.urn);
+      property = this.loadedFiles.findElementOnExtReferences<Property>(newValue.urn);
     }
 
     this.addProperty(property);
@@ -108,7 +111,11 @@ export class InputChiplistFieldComponent extends InputFieldComponent<DefaultOper
     }
 
     const urn = `${this.metaModelElement.aspectModelUrn.split('#')?.[0]}#${propertyName}`;
-    const newProperty = new DefaultProperty(this.metaModelElement.metaModelVersion, urn, propertyName, null);
+    const newProperty = new DefaultProperty({
+      metaModelVersion: this.metaModelElement.metaModelVersion,
+      aspectModelUrn: urn,
+      name: propertyName,
+    });
     this.addProperty(newProperty);
   }
 

@@ -28,6 +28,7 @@ export function createMeasurementCharacteristic(quad: Quad): DefaultMeasurement 
     for (const propertyQuad of propertyQuads) {
       if (sammC.isUnitProperty(propertyQuad.predicate.value)) {
         characteristic.unit = createUnit(propertyQuad.object.value);
+        characteristic.unit && characteristic.unit.addParent(characteristic);
       }
     }
     return characteristic;

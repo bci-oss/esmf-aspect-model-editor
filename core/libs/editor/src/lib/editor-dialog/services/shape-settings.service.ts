@@ -11,10 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {LoadedFilesService} from '@ame/cache';
 import {MxGraphAttributeService, MxGraphHelper, MxGraphService, MxGraphShapeSelectorService, mxEvent, mxUtils} from '@ame/mx-graph';
-import {BindingsService, NotificationsService} from '@ame/shared';
-import {LanguageTranslationService} from '@ame/translation';
+import {BindingsService} from '@ame/shared';
 import {Injectable, NgZone} from '@angular/core';
 import {NamedElement} from '@esmf/aspect-model-loader';
 import {BehaviorSubject} from 'rxjs';
@@ -33,13 +31,10 @@ export class ShapeSettingsService {
     private mxGraphAttributeService: MxGraphAttributeService,
     private mxGraphService: MxGraphService,
     private mxGraphShapeSelectorService: MxGraphShapeSelectorService,
-    private notificationsService: NotificationsService,
     private bindingsService: BindingsService,
     private editorService: EditorService,
     private shapeSettingsStateService: ShapeSettingsStateService,
     private openReferencedElementService: OpenReferencedElementService,
-    private translate: LanguageTranslationService,
-    private loadedFiles: LoadedFilesService,
     private ngZone: NgZone,
   ) {}
 
@@ -116,19 +111,5 @@ export class ShapeSettingsService {
   editModel(elementModel: NamedElement) {
     this.shapeSettingsStateService.openShapeSettings();
     this.modelElement = elementModel;
-  }
-
-  editModelByUrn(elementUrn: string) {
-    const element = this.loadedFiles.currentLoadedFile.cachedFile.get<NamedElement>(elementUrn);
-    if (!element) {
-      this.notificationsService.error({
-        title: this.translate.language.EDITOR_CANVAS.SHAPE_SETTING.NOTIFICATION.EDIT_VIEW_UNAVAILABLE,
-        message: this.translate.language.EDITOR_CANVAS.SHAPE_SETTING.NOTIFICATION.EDIT_VIEW_UNAVAILABLE_MESSAGE,
-      });
-
-      return;
-    }
-
-    this.editModel(element);
   }
 }

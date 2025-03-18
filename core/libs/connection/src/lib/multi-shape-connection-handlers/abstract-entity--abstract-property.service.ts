@@ -39,8 +39,7 @@ export class AbstractEntityAbstractPropertyConnectionHandler implements MultiSha
     if (!parentMetaModel.properties.find(property => property.aspectModelUrn === childMetaModel.aspectModelUrn)) {
       const overWrittenProperty = {property: childMetaModel, keys: {}};
       parentMetaModel.properties.push(overWrittenProperty as any);
-      // TODO solve the children <-> parents relationship
-      // parentMetaModel.children.push(childMetaModel);
+      parentMetaModel.children.push(childMetaModel);
       this.entityInstanceService.onNewProperty(overWrittenProperty as any, parentMetaModel);
     }
 
@@ -61,14 +60,12 @@ export class AbstractEntityAbstractPropertyConnectionHandler implements MultiSha
 
       const [namespace, name] = childMetaModel.aspectModelUrn.split('#');
 
-      // TODO solve the children <-> parents relationship
       const property = new DefaultProperty({
         name: `[${name}]`,
         aspectModelUrn: `${namespace}#[${name}]`,
         metaModelVersion: childMetaModel.metaModelVersion,
         extends_: childMetaModel,
       });
-      property.children.push(childMetaModel);
 
       MxGraphHelper.establishRelation(property, childMetaModel);
 

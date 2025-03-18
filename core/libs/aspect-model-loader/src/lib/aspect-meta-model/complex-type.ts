@@ -13,10 +13,10 @@
  */
 
 import {use} from 'typescript-mix';
+import {ElementsSet} from '../shared/elements-set';
 import {EntityProps} from '../shared/props';
 import {Property} from './default-property';
 import {HasExtends} from './has-extends';
-import {NamedElement} from './named-element';
 import {StructureElement} from './structure-element';
 import {Type} from './type';
 
@@ -28,13 +28,13 @@ export abstract class ComplexType extends StructureElement implements ComplexTyp
   extends_: ComplexType = null;
   extendingElements: ComplexType[] = [];
 
-  override get children(): NamedElement[] {
+  override get children(): ElementsSet {
     const children = [];
     if (this.extends_) {
       children.push(this.extends_);
     }
 
-    return [...super.children, ...children];
+    return super.children.append(children);
   }
 
   constructor(props: EntityProps) {

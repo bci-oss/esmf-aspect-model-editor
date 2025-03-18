@@ -13,6 +13,7 @@
  */
 
 import {use} from 'typescript-mix';
+import {ElementsSet} from '../shared/elements-set';
 import {StructuredElementProps} from '../shared/props';
 import {HasProperties} from './has-properties';
 import {NamedElement} from './named-element';
@@ -21,8 +22,8 @@ export interface StructureElement extends HasProperties, NamedElement {}
 export abstract class StructureElement extends NamedElement {
   @use(HasProperties) _: StructureElement;
 
-  override get children(): NamedElement[] {
-    return [...this.properties];
+  override get children(): ElementsSet {
+    return new ElementsSet(...this.properties);
   }
 
   constructor(props: StructuredElementProps) {

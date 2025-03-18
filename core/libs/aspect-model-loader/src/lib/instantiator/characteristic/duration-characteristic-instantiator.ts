@@ -25,6 +25,9 @@ export function createDurationCharacteristic(quad: Quad): DefaultDuration {
     for (const propertyQuad of propertyQuads) {
       if (sammC.isUnitProperty(propertyQuad.predicate.value)) {
         characteristic.unit = createUnit(quad.object.value);
+        if (characteristic.unit) {
+          characteristic.unit.addParent(characteristic);
+        }
       } else if (samm.isDataTypeProperty(propertyQuad.predicate.value)) {
         characteristic.dataType = getDataType(propertyQuad);
       }

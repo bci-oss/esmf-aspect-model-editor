@@ -14,6 +14,7 @@
  */
 
 import {use} from 'typescript-mix';
+import {ElementsSet} from '../shared/elements-set';
 import {EntityInstanceProps} from '../shared/props';
 import {ModelVisitor} from '../visitor/model-visitor';
 import {Enumeration} from './characteristic/default-enumeration';
@@ -34,7 +35,7 @@ export interface EntityInstance extends NamedElement, Value {
   removeAssertion(propertyUrn: PropertyUrn, value: Value): void;
 }
 
-export interface DefaultEntityInstance extends EntityInstance, Value {}
+export interface DefaultEntityInstance extends EntityInstance {}
 export class DefaultEntityInstance extends NamedElement implements EntityInstance {
   @use(Value) _: DefaultEntityInstance;
 
@@ -42,9 +43,9 @@ export class DefaultEntityInstance extends NamedElement implements EntityInstanc
   assertions: Map<PropertyUrn, Value[]> = new Map();
   type: Entity;
 
-  override parents: Enumeration[] = [];
-  override get children(): DefaultEntityInstance[] {
-    const children = [];
+  override parents: ElementsSet<Enumeration> = new ElementsSet();
+  override get children(): ElementsSet<DefaultEntityInstance> {
+    const children = new ElementsSet<DefaultEntityInstance>();
     Array.from(this.assertions.values())
       .flat()
       .forEach(value => {

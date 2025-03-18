@@ -23,7 +23,12 @@ import {getProperties} from './property-instantiator';
 
 export function createAspect(aspectModelUrn?: string): Aspect {
   const elementsCache = getElementsCache();
-  const aspectQuad = getAspectQuad(aspectModelUrn);
+  let aspectQuad: Quad;
+  try {
+    aspectQuad = getAspectQuad(aspectModelUrn);
+  } catch {
+    return null;
+  }
   const aspectNode = aspectQuad.subject;
 
   if (elementsCache.get(aspectNode.value)) {

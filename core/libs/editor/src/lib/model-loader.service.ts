@@ -15,13 +15,14 @@ import {ModelApiService} from '@ame/api';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {InstantiatorService} from '@ame/instantiator';
 import {RdfModelUtil} from '@ame/rdf/utils';
-import {FileContentModel, NotificationsService} from '@ame/shared';
+import {BrowserService, ElectronSignalsService, FileContentModel, ModelSavingTrackerService, NotificationsService} from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
 import {Injectable, inject} from '@angular/core';
 import {ModelElementCache, NamedElement, RdfModel, destroyRdfModel, destroyStore, loadAspectModel} from '@esmf/aspect-model-loader';
 import {RdfLoader} from 'libs/aspect-model-loader/src/lib/shared/rdf-loader';
 import {NamedNode} from 'n3';
 import {Observable, catchError, forkJoin, map, of, switchMap, tap, throwError} from 'rxjs';
+import {ModelRendererService} from './model-renderer.service';
 import {LoadModelPayload} from './models/load-model-payload.interface';
 import {LoadingCodeErrors} from './models/loading-errors';
 
@@ -32,6 +33,10 @@ export class ModelLoaderService {
   private modelApiService = inject(ModelApiService);
   private notificationsService = inject(NotificationsService);
   private instantiatorService = inject(InstantiatorService);
+  private modelRenderer = inject(ModelRendererService);
+  private modelSavingTracker = inject(ModelSavingTrackerService);
+  private browserService = inject(BrowserService);
+  private electronSignalsService = inject(ElectronSignalsService);
 
   createRdfModelFromContent(rdfContent: string, absoluteFileName: string): Observable<NamespaceFile> {
     return this.parseRdfModel([rdfContent]).pipe(
@@ -68,89 +73,37 @@ export class ModelLoaderService {
               filesContent: [payload.rdfAspectModel, ...Object.values(files)],
               // aspectModelUrn: undefined, // @TODO search it in store
             }).pipe(
-              tap(loadedFile => {
+              // using switchMap to force an this functionality to run before any tap after this
+              switchMap(loadedFile => {
                 // registering all loaded files
                 this.registerFiles(rdfModels, loadedFile, payload);
                 // loading all isolated elements
                 this.instantiatorService.instantiateRemainingElements(loadedFile.rdfModel, loadedFile.cachedElements);
                 // filtering and registering the elements by their location in files
                 this.moveElementsToTheirCacheFile(rdfModels, loadedFile);
+
+                return of(this.loadedFilesService.currentLoadedFile);
               }),
-              map(() => this.loadedFilesService.currentLoadedFile),
               catchError(error => throwError(() => ({code: LoadingCodeErrors.LOADING_ASPECT_MODEL, error}))),
             ),
           ),
-          tap(data => {
-            console.log(data);
-            console.log(this.loadedFilesService.files);
+          switchMap(() => this.modelRenderer.renderModel(payload.editElementUrn)),
+          tap(() => {
+            this.modelSavingTracker.updateSavedModel();
+            if (this.browserService.isStartedAsElectronApp() || window.require) {
+              const currentFile = this.loadedFilesService.currentLoadedFile;
+              this.electronSignalsService.call('updateWindowInfo', {
+                namespace: currentFile.namespace,
+                fromWorkspace: payload.fromWorkspace,
+                file: currentFile.name,
+              });
+            }
+            if (!payload.isDefault) {
+              this.notificationsService.info({title: 'Aspect Model loaded', timeout: 3000});
+            }
           }),
         )
     );
-  }
-
-  /**
-   * Loads a model into memory along with it's dependencies, instantiate and renders it
-   * @param payload
-   * @returns {Observable<NamespaceFile>}
-   */
-  renderRdfModel(payload: LoadModelPayload): Observable<NamespaceFile | void> {
-    this.sidebarService.workspace.refresh();
-    this.notificationsService.info({title: 'Loading model', timeout: 2000});
-
-    this.loadSingleModel(payload)
-      .pipe(
-        // -> save the comment before from the row file
-        // -> render the model
-        catchError(error => throwError(() => ({code: LoadingCodeErrors.LOAD_NEW_MODEL, error}))),
-      )
-      .subscribe(x => {
-        console.log(x);
-      });
-
-    return null;
-
-    // this.loadFile(payload.rdfAspectModel, payload.namespaceFileName, true).pipe(
-    //   switchMap((file: NamespaceFile) =>
-    //     this.modelApiService.getAllNamespacesFilesContent().pipe(
-    //       map(() => RdfModelUtil.resolveExternalNamespaces(file.rdfModel)),
-    //       map(namespaces => {
-    //         console.log(namespaces);
-    //         return file;
-    //       }),
-    //     ),
-    //   ),
-    // );
-
-    // return this.rdfService.loadModel(payload.rdfAspectModel, payload.namespaceFileName || '').pipe(
-    //   tap(() => this.namespaceCacheService.removeAll()),
-    //   tap(loadedRdfModel => (rdfModel = loadedRdfModel)),
-    //   switchMap(() => this.loadExternalModels()),
-    //   tap(() =>
-    //     this.loadCurrentModel(
-    //       rdfModel,
-    //       payload.rdfAspectModel,
-    //       payload.namespaceFileName || rdfModel.absoluteAspectModelFileName,
-    //       payload.editElementUrn,
-    //     ),
-    //   ),
-    //   tap(() => {
-    //     this.modelSavingTracker.updateSavedModel();
-    //     const [namespace, version, file] = (payload.namespaceFileName || this.rdfService.currentRdfModel.absoluteAspectModelFileName).split(
-    //       ':',
-    //     );
-
-    //     if (this.browserService.isStartedAsElectronApp() || window.require) {
-    //       this.electronSignalsService.call('updateWindowInfo', {
-    //         namespace: `${namespace}:${version}`,
-    //         fromWorkspace: payload.fromWorkspace,
-    //         file,
-    //       });
-    //     }
-    //     if (!payload.isDefault) {
-    //       this.notificationsService.info({title: 'Aspect Model loaded', timeout: 3000});
-    //     }
-    //   }),
-    // );
   }
 
   parseRdfModel(rdfModels: string[]) {
@@ -224,6 +177,12 @@ export class ModelLoaderService {
   private registerFiles(rdfModels: Record<string, RdfModel>, loadedFile: any, payload: LoadModelPayload) {
     for (const [key, rdfModel] of Object.entries(rdfModels)) {
       const isCurrentFile = key === 'current';
+
+      if (isCurrentFile) {
+        const currentFile = this.loadedFilesService.currentLoadedFile;
+        currentFile && (currentFile.rendered = false);
+      }
+
       this.loadedFilesService.addFile({
         rdfModel,
         sharedRdfModel: isCurrentFile ? loadedFile.rdfModel : null,

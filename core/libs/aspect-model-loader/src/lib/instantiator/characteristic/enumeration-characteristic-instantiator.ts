@@ -36,6 +36,7 @@ export function createEnumerationCharacteristic(quad: Quad): Enumeration {
       if (samm.isValueProperty(propertyQuad.predicate.value) || sammC.isValuesProperty(propertyQuad.predicate.value)) {
         if (Util.isBlankNode(propertyQuad.object)) {
           characteristic.values = getEnumerationValues(propertyQuad, characteristic.dataType);
+          characteristic.values.forEach(value => value instanceof DefaultEntityInstance && value.addParent(characteristic));
         }
       }
     }

@@ -41,7 +41,7 @@ export class NamespaceFile {
   fromWorkspace: boolean;
 
   get namespace() {
-    return this._namespace || this.aspect.namespace;
+    return this._namespace || this.aspect?.namespace || this.rdfModel.getPrefixes()[''].replace('#', '').replace('urn:samm:', '') || '';
   }
 
   set namespace(value) {
@@ -57,7 +57,7 @@ export class NamespaceFile {
       return this.nameBasedOnAspect;
     }
 
-    return this._name || null;
+    return this._name || 'shared-file.ttl';
   }
 
   get absoluteName() {

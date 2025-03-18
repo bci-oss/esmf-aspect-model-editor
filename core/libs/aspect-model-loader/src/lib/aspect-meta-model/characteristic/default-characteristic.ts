@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ElementsSet} from '../../shared/elements-set';
 import {CharacteristicProps} from '../../shared/props';
 import {ModelVisitor} from '../../visitor/model-visitor';
 import {DefaultEntity} from '../default-entity';
@@ -26,10 +27,10 @@ export class DefaultCharacteristic extends NamedElement implements Characteristi
   override className = 'DefaultCharacteristic';
   dataType?: Type;
 
-  get children(): NamedElement[] {
-    const children = [];
+  get children(): ElementsSet {
+    const children = new ElementsSet();
     if (this.dataType instanceof DefaultEntity) {
-      children.push(this.dataType);
+      children.push(this.dataType as any);
     }
 
     return children;

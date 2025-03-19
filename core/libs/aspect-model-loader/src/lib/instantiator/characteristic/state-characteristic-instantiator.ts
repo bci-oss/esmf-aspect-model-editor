@@ -12,6 +12,7 @@
  */
 
 import {Quad, Util} from 'n3';
+import {DefaultEntityInstance} from '../../aspect-meta-model';
 import {DefaultState} from '../../aspect-meta-model/characteristic/default-state';
 import {ScalarValue} from '../../aspect-meta-model/scalar-value';
 import {getRdfModel} from '../../shared/rdf-model';
@@ -32,11 +33,14 @@ export function createStateCharacteristic(quad: Quad): DefaultState {
       if (samm.isValueProperty(propertyQuad.predicate.value) || sammC.isValuesProperty(propertyQuad.predicate.value)) {
         if (Util.isBlankNode(propertyQuad.object)) {
           characteristic.values = getEnumerationValues(propertyQuad, characteristic.dataType);
+          characteristic.values.forEach(value => value instanceof DefaultEntityInstance && value.addParent(characteristic));
         }
       } else if (sammC.isDefaultValueProperty(quad.predicate.value)) {
         characteristic.defaultValue = Util.isLiteral(quad.object)
           ? new ScalarValue({value: `${quad.object.value}`, type: characteristic.dataType})
           : resolveEntityInstance(quad);
+
+        characteristic.defaultValue instanceof DefaultEntityInstance && characteristic.defaultValue.addParent(characteristic);
       }
     }
     return characteristic;

@@ -37,7 +37,7 @@ import {
   NotificationsService,
   SaveValidateErrorsCodes,
 } from '@ame/shared';
-import {SidebarStateService} from '@ame/sidebar';
+import {FileStatus, SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
 import {decodeText, readFile} from '@ame/utils';
 import {Injectable, inject} from '@angular/core';
@@ -83,6 +83,10 @@ export class FileHandlingService {
   private modelLoaderService = inject(ModelLoaderService);
   private loadedFilesService = inject(LoadedFilesService);
 
+  get currentLoadedFile() {
+    return this.loadedFilesService.currentLoadedFile;
+  }
+
   constructor(
     private editorService: EditorService,
     private modelService: ModelService,
@@ -110,8 +114,6 @@ export class FileHandlingService {
     this.loadModel(decodeText(fileInfo.content)).pipe(first()).subscribe();
   }
 
-  // TODO: update return
-  // TODO: update with the new load function from the new service
   loadModel(modelContent: string): Observable<any> {
     if (!modelContent) return of(null);
 
@@ -126,7 +128,7 @@ export class FileHandlingService {
     return this.modelApiService.validate(migratedModel).pipe(
       switchMap(validations => {
         const found = validations.find(({errorCode}) => errorCode === 'ERR_PROCESSING');
-        return found ? throwError(() => found.message) : this.modelLoaderService.loadSingleModel({rdfAspectModel: migratedModel}); // this.editorService.loadNewAspectModel({rdfAspectModel: migratedModel});
+        return found ? throwError(() => found.message) : this.modelLoaderService.loadSingleModel({rdfAspectModel: migratedModel});
       }),
       catchError(error => {
         this.notificationsService.info({
@@ -162,35 +164,31 @@ export class FileHandlingService {
           };
           this.loadingScreenService.open(loadingScreenOptions);
         }),
-        switchMap(rdfAspectModel =>
-          // this.editorService
-          //   .loadNewAspectModel({
-          //     rdfAspectModel,
-          //     namespaceFileName: absoluteFileName,
-          //     fromWorkspace: true,
-          //   })
-          // TODO: update with the new load function from the new service
-          of(null).pipe(
-            first(),
-            catchError(error => {
-              console.groupCollapsed('sidebar.component -> loadNamespaceFile', error);
-              console.groupEnd();
-
-              this.notificationsService.error({
-                title: this.translate.language.NOTIFICATION_SERVICE.LOADING_ERROR,
-                message: `${error}`,
-                timeout: 5000,
-              });
-              return throwError(() => error);
-            }),
-            finalize(() => {
-              this.loadingScreenService.close();
-              if (this.shapeSettingsStateService.isShapeSettingOpened) {
-                this.shapeSettingsStateService.closeShapeSettings();
-              }
-            }),
-          ),
+        switchMap((rdfAspectModel: string) =>
+          this.modelLoaderService.loadSingleModel({
+            rdfAspectModel,
+            namespaceFileName: absoluteFileName,
+            fromWorkspace: true,
+          }),
         ),
+        first(),
+        catchError(error => {
+          console.groupCollapsed('sidebar.component -> loadNamespaceFile', error);
+          console.groupEnd();
+
+          this.notificationsService.error({
+            title: this.translate.language.NOTIFICATION_SERVICE.LOADING_ERROR,
+            message: `${error?.message || error?.error?.message || error}`,
+            timeout: 5000,
+          });
+          return throwError(() => error);
+        }),
+        finalize(() => {
+          this.loadingScreenService.close();
+          if (this.shapeSettingsStateService.isShapeSettingOpened) {
+            this.shapeSettingsStateService.closeShapeSettings();
+          }
+        }),
       )
       .subscribe();
   }
@@ -198,7 +196,8 @@ export class FileHandlingService {
   createEmptyModel() {
     this.loadedFilesService.removeAll();
     const currentRdfModel = this.loadedFilesService.currentLoadedFile?.rdfModel;
-    let fileStatus;
+    let fileStatus: FileStatus;
+
     if (currentRdfModel) {
       const [namespace, version, file] = this.loadedFilesService.currentLoadedFile.absoluteName;
       const namespaceVersion = `${namespace}:${version}`;
@@ -440,7 +439,7 @@ export class FileHandlingService {
         }
         this.sidebarService.workspace.refresh();
       }),
-      switchMap(() => this.editorService.handleFileVersionConflicts(newModelAbsoluteFileName, newModelContent)),
+      switchMap(() => this.handleFileVersionConflicts(newModelAbsoluteFileName, newModelContent)),
       catchError(error => {
         console.error(`'Error adding file to namespaces. ${JSON.stringify(error)}.`);
         if (uploadOptions.showNotifications) {
@@ -453,6 +452,32 @@ export class FileHandlingService {
       }),
       finalize(() => (uploadOptions.showLoading ? this.loadingScreenService.close() : null)),
     );
+  }
+
+  private handleFileVersionConflicts(fileName: string, fileContent: string): Observable<RdfModel> {
+    const currentModel = this.currentLoadedFile;
+
+    if (!currentModel.fromWorkspace || fileName !== this.currentLoadedFile.absoluteName) return of(this.currentLoadedFile.rdfModel);
+
+    return this.rdfService.isSameModelContent(fileName, fileContent, currentModel).pipe(
+      switchMap(isSameModelContent => (!isSameModelContent ? this.openReloadConfirmationDialog(currentModel.absoluteName) : of(false))),
+      switchMap(isApprove => (isApprove ? this.modelLoaderService.createRdfModelFromContent(fileContent, fileName) : of(null))),
+      map((file: NamespaceFile) => file.rdfModel),
+    );
+  }
+
+  private openReloadConfirmationDialog(fileName: string): Observable<boolean> {
+    return this.confirmDialogService
+      .open({
+        phrases: [
+          `${this.translate.language.CONFIRM_DIALOG.RELOAD_CONFIRMATION.VERSION_CHANGE_NOTICE} ${fileName} ${this.translate.language.CONFIRM_DIALOG.RELOAD_CONFIRMATION.WORKSPACE_LOAD_NOTICE}`,
+          this.translate.language.CONFIRM_DIALOG.RELOAD_CONFIRMATION.RELOAD_WARNING,
+        ],
+        title: this.translate.language.CONFIRM_DIALOG.RELOAD_CONFIRMATION.TITLE,
+        closeButtonText: this.translate.language.CONFIRM_DIALOG.RELOAD_CONFIRMATION.CLOSE_BUTTON,
+        okButtonText: this.translate.language.CONFIRM_DIALOG.RELOAD_CONFIRMATION.OK_BUTTON,
+      })
+      .pipe(map(confirm => confirm === ConfirmDialogEnum.ok));
   }
 
   onValidateFile() {

@@ -31,6 +31,9 @@ export function createCollectionCharacteristic(quad: Quad, characteristicCreator
         characteristic.ordered = Boolean(propertyQuad.object.value);
       } else if (sammC.isElementCharacteristicProperty(propertyQuad.predicate.value)) {
         characteristic.elementCharacteristic = characteristicCreator(propertyQuad);
+        if (characteristic.elementCharacteristic) {
+          characteristic.elementCharacteristic.addParent(characteristic);
+        }
       }
     }
 

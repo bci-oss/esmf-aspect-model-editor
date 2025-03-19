@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ElementsSet} from '../shared/elements-set';
 import {NamedElementProps} from '../shared/props';
 import {ModelElement} from './model-element';
 
@@ -26,7 +27,7 @@ export abstract class NamedElement extends ModelElement {
   preferredNames: Map<LangString, string> = new Map();
   descriptions: Map<LangString, string> = new Map();
   see: string[] = [];
-  parents: NamedElement[] = [];
+  parents: ElementsSet = new ElementsSet();
 
   constructor(props: NamedElementProps) {
     super(props);
@@ -44,7 +45,7 @@ export abstract class NamedElement extends ModelElement {
     return this.aspectModelUrn?.split('#')?.[0];
   }
 
-  abstract get children(): NamedElement[];
+  abstract get children(): ElementsSet;
 
   // TODO make this functionality work
   isExternalReference(): boolean {

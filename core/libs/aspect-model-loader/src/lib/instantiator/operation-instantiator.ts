@@ -21,7 +21,6 @@ import {createProperty} from './property-instantiator';
 export function createOperation(quad: Quad): DefaultOperation {
   const rdfModel = getRdfModel();
   const {samm} = rdfModel;
-  const store = getStore();
   const modelElementCache = getElementsCache();
 
   if (modelElementCache.get(quad.subject.value)) {

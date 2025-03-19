@@ -26,8 +26,7 @@ export class TraitWithCharacteristicOrConstraintConnectionHandler
   constructor(private mxGraphService: MxGraphService) {}
 
   public connect(parentMetaModel: DefaultTrait, childMetaModel: DefaultCharacteristic, parent: mxgraph.mxCell, child: mxgraph.mxCell) {
-    // TODO replace the update function
-    // parentMetaModel.update(childMetaModel);
+    parentMetaModel.baseCharacteristic = childMetaModel;
     this.mxGraphService.assignToParent(child, parent);
   }
 }

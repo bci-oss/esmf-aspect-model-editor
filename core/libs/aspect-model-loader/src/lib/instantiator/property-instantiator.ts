@@ -16,7 +16,6 @@ import {Property} from '../aspect-meta-model';
 import {DefaultProperty} from '../aspect-meta-model/default-property';
 import {getElementsCache} from '../shared/model-element-cache.service';
 import {getRdfModel, getStore} from '../shared/rdf-model';
-import {Samm} from '../vocabulary';
 import {detectAndCreateCharacteristic} from './characteristic';
 import {getBaseProperties} from './meta-model-element-instantiator';
 
@@ -106,12 +105,7 @@ function isDefinedInline(propertyQuad: Quad) {
     return false;
   }
 
-  // try to resolve property quads and check if a full defined property quad is there for Property
-  return (
-    store
-      .getQuads(propertyQuad.subject, null, null, null)
-      .find(quad => samm.Property().value !== quad.predicate.value && quad.predicate.value.startsWith(Samm.getBaseUri())) !== undefined
-  );
+  return Boolean(store.getQuads(null, samm.property().value, propertyQuad.subject, null).length);
 }
 
 function getExtends(quads: Array<Quad>) {
@@ -133,4 +127,6 @@ function getExtends(quads: Array<Quad>) {
       return modelElementCache.resolveInstance(extendedAbstractProperty);
     }
   }
+
+  return null;
 }

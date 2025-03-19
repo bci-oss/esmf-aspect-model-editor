@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ElementsSet} from '../shared/elements-set';
 import {QuantityKindProps} from '../shared/props';
 import {ModelVisitor} from '../visitor/model-visitor';
 import {NamedElement} from './named-element';
@@ -21,8 +22,8 @@ export interface QuantityKind extends NamedElement {
 
 export class DefaultQuantityKind extends NamedElement {
   override className = 'DefaultQuantityKind';
-  override get children(): NamedElement[] {
-    return [];
+  override get children(): ElementsSet {
+    return new ElementsSet();
   }
 
   label: string;

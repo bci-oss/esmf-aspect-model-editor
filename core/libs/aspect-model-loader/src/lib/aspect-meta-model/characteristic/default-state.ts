@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ElementsSet} from '../../shared/elements-set';
 import {StateProps} from '../../shared/props';
 import {NamedElement} from '../named-element';
 import {Value} from '../value';
@@ -24,13 +25,13 @@ export interface State extends Enumeration {
 export class DefaultState extends DefaultEnumeration implements State {
   override className = 'DefaultState';
 
-  override get children(): NamedElement[] {
+  override get children(): ElementsSet {
     const children = [];
     if (this.defaultValue instanceof NamedElement) {
       children.push(this.defaultValue);
     }
 
-    return [...super.children, ...children];
+    return super.children.append(children);
   }
 
   defaultValue: Value;

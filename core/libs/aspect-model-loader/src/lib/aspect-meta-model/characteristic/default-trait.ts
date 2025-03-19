@@ -11,9 +11,9 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ElementsSet} from '../../shared/elements-set';
 import {TraitProps} from '../../shared/props';
 import {Constraint} from '../constraint/default-constraint';
-import {NamedElement} from '../named-element';
 import {Type} from '../type';
 import {Characteristic, DefaultCharacteristic} from './default-characteristic';
 
@@ -27,7 +27,7 @@ export interface Trait extends Characteristic {
 export class DefaultTrait extends DefaultCharacteristic implements Trait {
   override className = 'DefaultTrait';
 
-  override get children(): NamedElement[] {
+  override get children(): ElementsSet {
     const children = [];
     if (this.baseCharacteristic) {
       children.push(this.baseCharacteristic);
@@ -37,7 +37,7 @@ export class DefaultTrait extends DefaultCharacteristic implements Trait {
       children.push(...this.constraints);
     }
 
-    return [...super.children, ...children];
+    return super.children.append(children);
   }
 
   baseCharacteristic?: Characteristic;

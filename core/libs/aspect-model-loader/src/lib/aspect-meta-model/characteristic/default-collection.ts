@@ -11,8 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ElementsSet} from '../../shared/elements-set';
 import {CollectionProps} from '../../shared/props';
-import {NamedElement} from '../named-element';
 import {Characteristic, DefaultCharacteristic} from './default-characteristic';
 
 export enum CollectionType {
@@ -34,12 +34,12 @@ export class DefaultCollection extends DefaultCharacteristic implements Collecti
   ordered: boolean;
   elementCharacteristic?: Characteristic;
 
-  override get children(): NamedElement[] {
-    const children = [];
+  override get children(): ElementsSet {
+    const children = new ElementsSet();
     if (this.elementCharacteristic) {
       children.push(this.elementCharacteristic);
     }
-    return [...super.children, ...children];
+    return super.children.append(children);
   }
 
   constructor(props: CollectionProps) {

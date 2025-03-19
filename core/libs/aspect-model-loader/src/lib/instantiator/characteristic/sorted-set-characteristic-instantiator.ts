@@ -31,6 +31,7 @@ export function createSortedSetCharacteristic(quad: Quad, characteristicCreator:
         characteristic.ordered = Boolean(propertyQuad.object.value);
       } else if (sammC.isElementCharacteristicProperty(propertyQuad.predicate.value)) {
         characteristic.elementCharacteristic = characteristicCreator(propertyQuad);
+        characteristic.elementCharacteristic && characteristic.elementCharacteristic.addParent(characteristic);
       }
     }
     return characteristic;

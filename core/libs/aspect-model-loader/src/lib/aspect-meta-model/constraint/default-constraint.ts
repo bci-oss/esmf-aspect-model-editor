@@ -12,6 +12,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ElementsSet} from '../../shared/elements-set';
 import {ConstraintProps} from '../../shared/props';
 import {ModelVisitor} from '../../visitor/model-visitor';
 import {NamedElement} from '../named-element';
@@ -20,8 +21,8 @@ export interface Constraint extends NamedElement {}
 
 export class DefaultConstraint extends NamedElement implements Constraint {
   className = 'DefaultConstraint';
-  override get children(): NamedElement[] {
-    return [];
+  override get children(): ElementsSet {
+    return new ElementsSet();
   }
 
   constructor(props: ConstraintProps) {

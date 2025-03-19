@@ -12,7 +12,7 @@
  */
 
 import {ModelApiService} from '@ame/api';
-import {LoadedFilesService, NamespaceFile} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {FILTER_ATTRIBUTES, FilterAttributesService, FiltersService} from '@ame/loader-filters';
 import {ElementModelService, ModelElementNamingService} from '@ame/meta-model';
 import {
@@ -56,7 +56,6 @@ import {
   delayWhen,
   filter,
   first,
-  map,
   of,
   retry,
   switchMap,
@@ -68,7 +67,6 @@ import {ConfirmDialogService} from './confirm-dialog/confirm-dialog.service';
 import {ShapeSettingsService, ShapeSettingsStateService} from './editor-dialog';
 import {AsyncApi, OpenApi, ViolationError} from './editor-toolbar';
 import {LargeFileWarningService} from './large-file-warning-dialog/large-file-warning-dialog.service';
-import {ModelLoaderService} from './model-loader.service';
 import {ConfirmDialogEnum} from './models/confirm-dialog.enum';
 
 @Injectable({
@@ -78,7 +76,6 @@ export class EditorService {
   private filtersService: FiltersService = inject(FiltersService);
   private filterAttributes: FilterAttributesService = inject(FILTER_ATTRIBUTES);
   private configurationService: ConfigurationService = inject(ConfigurationService);
-  private modelLoaderService: ModelLoaderService = inject(ModelLoaderService);
 
   private validateModelSubscription$: Subscription;
   private saveModelSubscription$: Subscription;
@@ -103,6 +100,9 @@ export class EditorService {
   constructor(
     private mxGraphService: MxGraphService,
     private mxGraphSetupService: MxGraphSetupService,
+    private mxGraphShapeOverlayService: MxGraphShapeOverlayService,
+    private mxGraphShapeSelectorService: MxGraphShapeSelectorService,
+    private mxGraphAttributeService: MxGraphAttributeService,
     private notificationsService: NotificationsService,
     private modelApiService: ModelApiService,
     private modelService: ModelService,
@@ -110,9 +110,6 @@ export class EditorService {
     private rdfService: RdfService,
     private sammLangService: SammLanguageSettingsService,
     private modelElementNamingService: ModelElementNamingService,
-    private mxGraphShapeOverlayService: MxGraphShapeOverlayService,
-    private mxGraphShapeSelectorService: MxGraphShapeSelectorService,
-    private mxGraphAttributeService: MxGraphAttributeService,
     private confirmDialogService: ConfirmDialogService,
     private elementModelService: ElementModelService,
     private titleService: TitleService,
@@ -203,32 +200,6 @@ export class EditorService {
       return;
     }
     this.mxGraphAttributeService.editor.addAction(actionName, callback);
-  }
-
-  handleFileVersionConflicts(fileName: string, fileContent: string): Observable<RdfModel> {
-    const currentModel = this.currentLoadedFile;
-
-    if (!currentModel.fromWorkspace || fileName !== this.currentLoadedFile.absoluteName) return of(this.currentLoadedFile.rdfModel);
-
-    return this.rdfService.isSameModelContent(fileName, fileContent, currentModel).pipe(
-      switchMap(isSameModelContent => (!isSameModelContent ? this.openReloadConfirmationDialog(currentModel.absoluteName) : of(false))),
-      switchMap(isApprove => (isApprove ? this.modelLoaderService.createRdfModelFromContent(fileContent, fileName) : of(null))),
-      map((file: NamespaceFile) => file.rdfModel),
-    );
-  }
-
-  openReloadConfirmationDialog(fileName: string): Observable<boolean> {
-    return this.confirmDialogService
-      .open({
-        phrases: [
-          `${this.translate.language.CONFIRM_DIALOG.RELOAD_CONFIRMATION.VERSION_CHANGE_NOTICE} ${fileName} ${this.translate.language.CONFIRM_DIALOG.RELOAD_CONFIRMATION.WORKSPACE_LOAD_NOTICE}`,
-          this.translate.language.CONFIRM_DIALOG.RELOAD_CONFIRMATION.RELOAD_WARNING,
-        ],
-        title: this.translate.language.CONFIRM_DIALOG.RELOAD_CONFIRMATION.TITLE,
-        closeButtonText: this.translate.language.CONFIRM_DIALOG.RELOAD_CONFIRMATION.CLOSE_BUTTON,
-        okButtonText: this.translate.language.CONFIRM_DIALOG.RELOAD_CONFIRMATION.OK_BUTTON,
-      })
-      .pipe(map(confirm => confirm === ConfirmDialogEnum.ok));
   }
 
   // @TODO move this function and redo it
@@ -404,7 +375,7 @@ export class EditorService {
 
   private handleEditOrCenterView(editElementUrn: string | null): void {
     if (editElementUrn) {
-      this.shapeSettingsService.editModelByUrn(editElementUrn);
+      // this.shapeSettingsService.editModelByUrn(editElementUrn);
       this.mxGraphService.navigateToCellByUrn(editElementUrn);
     } else {
       this.mxGraphSetupService.centerGraph();

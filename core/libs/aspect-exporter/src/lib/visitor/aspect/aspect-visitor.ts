@@ -31,7 +31,6 @@ export class AspectVisitor extends BaseVisitor<DefaultAspect> {
 
   visit(aspect: DefaultAspect): DefaultAspect {
     this.setPrefix(aspect.aspectModelUrn);
-    aspect.aspectModelUrn = `${aspect.aspectModelUrn.split('#')[0]}#${aspect.name}`;
     this.updateProperties(aspect);
     return aspect;
   }

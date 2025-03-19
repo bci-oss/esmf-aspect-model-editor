@@ -12,6 +12,7 @@
  */
 
 import {Quad, Util} from 'n3';
+import {DefaultProperty} from '../../aspect-meta-model';
 import {DefaultStructuredValue} from '../../aspect-meta-model/characteristic/default-structured-value';
 import {getRdfModel} from '../../shared/rdf-model';
 import {createProperty} from '../property-instantiator';
@@ -35,6 +36,8 @@ export function createStructuredValueCharacteristic(quad: Quad): DefaultStructur
         characteristic.elements = rdfModel
           .resolveBlankNodes(propertyQuad.object.value)
           .map((elementQuad: Quad) => (Util.isNamedNode(elementQuad.object) ? createProperty(elementQuad) : elementQuad.object.value));
+
+        characteristic.elements.forEach(element => element instanceof DefaultProperty && element.addParent(characteristic));
       }
     }
     return characteristic;

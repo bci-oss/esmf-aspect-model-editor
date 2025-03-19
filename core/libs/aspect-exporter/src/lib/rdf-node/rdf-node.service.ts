@@ -151,8 +151,6 @@ export class RdfNodeService {
 
   public updateBlankNode(element: BlankNode, metaModelElement: NamedElement, properties: BasePropertiesInterface) {
     for (const key in properties) {
-      const rdfModel = this.modelService.currentRdfModel;
-
       if (!properties[key] && properties[key] !== 0) {
         // in case of null, undefined or false, don't add the quads
         continue;

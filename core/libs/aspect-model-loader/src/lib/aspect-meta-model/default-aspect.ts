@@ -11,9 +11,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ElementsSet} from '../shared/elements-set';
 import {AspectProps} from '../shared/props';
 import {ModelVisitor} from '../visitor/model-visitor';
-import {Event, NamedElement, Operation} from './index';
+import {Event, Operation} from './index';
 import {StructureElement} from './structure-element';
 
 export interface Aspect extends StructureElement {
@@ -34,7 +35,7 @@ export class DefaultAspect extends StructureElement implements Aspect {
   events: Event[];
   isCollectionAspect: boolean;
 
-  override get children(): NamedElement[] {
+  override get children(): ElementsSet {
     const children = [];
     if (this.operations?.length) {
       children.push(...this.operations);
@@ -44,7 +45,7 @@ export class DefaultAspect extends StructureElement implements Aspect {
       children.push(...this.events);
     }
 
-    return [...super.children, ...children];
+    return super.children.append(children);
   }
 
   constructor(props: AspectProps) {

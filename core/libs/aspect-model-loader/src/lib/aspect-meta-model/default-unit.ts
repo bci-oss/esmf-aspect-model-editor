@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ElementsSet} from '../shared/elements-set';
 import {UnitProps} from '../shared/props';
 import {ModelVisitor} from '../visitor/model-visitor';
 import {QuantityKind} from './default-quantity-kind';
@@ -29,12 +30,12 @@ export interface Unit extends NamedElement {
 
 export class DefaultUnit extends NamedElement implements Unit {
   override className = 'DefaultUnit';
-  override get children(): NamedElement[] {
+  override get children(): ElementsSet {
     if (this.referenceUnit instanceof NamedElement) {
-      return [this.referenceUnit];
+      return new ElementsSet(this.referenceUnit);
     }
 
-    return [];
+    return new ElementsSet();
   }
 
   symbol?: string;

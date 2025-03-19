@@ -29,7 +29,9 @@ export function createEitherCharacteristic(quad: Quad, characteristicCreator: (q
     for (const propertyQuad of propertyQuads) {
       if (sammC.isEitherLeftProperty(propertyQuad.predicate.value)) {
         characteristic.left = characteristicCreator(propertyQuad);
+        characteristic.left && characteristic.left.addParent(characteristic);
       } else if (sammC.isEitherRightProperty(propertyQuad.predicate.value)) {
+        characteristic.right && characteristic.right.addParent(characteristic);
         characteristic.right = characteristicCreator(propertyQuad);
       }
     }

@@ -100,7 +100,7 @@ export class ShapeSettingsComponent implements OnInit, OnChanges, OnDestroy {
       this.metaModelElement = selectedModelElement;
       this.selectedMetaModelElement = selectedModelElement;
       this.addLanguageSettings(selectedModelElement);
-      this.metaModelDialogService._updateMetaModelElement(this.metaModelElement);
+      this.metaModelDialogService.updateMetaModelElement(this.metaModelElement);
       if (this.metaModelElement instanceof DefaultCharacteristic || this.metaModelElement instanceof DefaultConstraint) {
         this.tmpCharacteristic = this.metaModelElement;
       }

@@ -109,8 +109,8 @@ export abstract class DropdownFieldComponent<T extends DefaultCharacteristic | D
   }
 
   public updateFields(modelElement: T) {
-    this.metaModelElement.metaModelVersion = this.modelService.currentRdfModel.getMetaModelVersion();
-    this.editorModelService._updateMetaModelElement(this.metaModelElement);
+    this.metaModelElement.metaModelVersion = this.loadedFilesService.currentLoadedFile.rdfModel.getMetaModelVersion();
+    this.editorModelService.updateMetaModelElement(this.metaModelElement);
     this.parentForm.get('changedMetaModel').setValue(modelElement);
   }
 

@@ -36,6 +36,7 @@ import {
   SammE,
   SammU,
   Type,
+  Value,
 } from '@esmf/aspect-model-loader';
 import {DataFactory, NamedNode, Quad, Util} from 'n3';
 import {getSammNamespaces} from './rdf-samm-namespaces';
@@ -55,7 +56,7 @@ export class RdfModelUtil {
     return urn && urn.includes(sammU.getNamespace());
   }
 
-  static getValueWithoutUrnDefinition(value: any): string {
+  static getValueWithoutUrnDefinition(value: Value | string): string {
     if (!value) {
       return '';
     }
@@ -70,7 +71,7 @@ export class RdfModelUtil {
     return `${value}`;
   }
 
-  static getValuesWithoutUrnDefinition(values: Array<DefaultEntityInstance | string | number | boolean>): string {
+  static getValuesWithoutUrnDefinition(values: Array<Value | string>): string {
     return values.map(value => this.getValueWithoutUrnDefinition(value)).join(', ');
   }
 

@@ -13,60 +13,62 @@
 
 import {Quad, Quad_Subject} from 'n3';
 import {DefaultOperation, Operation} from '../aspect-meta-model/default-operation';
-import {getElementsCache} from '../shared/model-element-cache.service';
-import {getRdfModel, getStore} from '../shared/rdf-model';
+import {BaseInitProps} from '../shared/base-init-props';
 import {getBaseProperties} from './meta-model-element-instantiator';
 import {createProperty} from './property-instantiator';
 
-export function createOperation(quad: Quad): DefaultOperation {
-  const rdfModel = getRdfModel();
-  const {samm} = rdfModel;
-  const modelElementCache = getElementsCache();
+export function createOperation(initProps: BaseInitProps) {
+  return (quad: Quad): DefaultOperation => {
+    const rdfModel = initProps.rdfModel;
+    const {samm} = rdfModel;
+    const modelElementCache = initProps.cache;
 
-  if (modelElementCache.get(quad.subject.value)) {
-    return modelElementCache.get(quad.subject.value);
-  }
-
-  const quads = rdfModel.findAnyProperty(quad);
-  const baseProperties = getBaseProperties(quad.subject);
-  const operation = new DefaultOperation({
-    ...baseProperties,
-    input: [],
-    output: null,
-  });
-
-  for (const quad of quads) {
-    if (samm.isInputProperty(quad.predicate.value)) {
-      const inputQuads = rdfModel.resolveBlankNodes(quad.object.value);
-      operation.input = inputQuads.map(input => {
-        const property = createProperty(input);
-        property.addParent(operation);
-        return property;
-      });
-      continue;
+    if (modelElementCache.get(quad.subject.value)) {
+      return modelElementCache.get(quad.subject.value);
     }
 
-    if (samm.isOutputProperty(quad.predicate.value)) {
-      operation.output = createProperty(quad);
-      operation.output?.addParent(operation);
-    }
-  }
+    const quads = rdfModel.findAnyProperty(quad);
+    const baseProperties = getBaseProperties(quad.subject);
+    const operation = new DefaultOperation({
+      ...baseProperties,
+      input: [],
+      output: null,
+    });
 
-  return modelElementCache.resolveInstance(operation);
+    for (const quad of quads) {
+      if (samm.isInputProperty(quad.predicate.value)) {
+        const inputQuads = rdfModel.resolveBlankNodes(quad.object.value);
+        operation.input = inputQuads.map(input => {
+          const property = createProperty(input);
+          property.addParent(operation);
+          return property;
+        });
+        continue;
+      }
+
+      if (samm.isOutputProperty(quad.predicate.value)) {
+        operation.output = createProperty(quad);
+        operation.output?.addParent(operation);
+      }
+    }
+
+    return modelElementCache.resolveInstance(operation);
+  };
 }
 
-export function getOperations(subject: Quad_Subject): Array<Operation> {
-  const operations: Array<Operation> = [];
+export function getOperations(initProps: BaseInitProps) {
+  return (subject: Quad_Subject): Array<Operation> => {
+    const operations: Array<Operation> = [];
 
-  const rdfModel = getRdfModel();
-  const store = getStore();
-  const {samm} = rdfModel;
+    const rdfModel = initProps.rdfModel;
+    const {samm, store} = rdfModel;
 
-  store.getQuads(subject, samm.OperationsProperty(), null, null).forEach(operationQuad => {
-    rdfModel
-      .resolveBlankNodes(operationQuad.object.value)
-      .forEach(resolvedOperationQuad => operations.push(createOperation(resolvedOperationQuad)));
-  });
+    store.getQuads(subject, samm.OperationsProperty(), null, null).forEach(operationQuad => {
+      rdfModel
+        .resolveBlankNodes(operationQuad.object.value)
+        .forEach(resolvedOperationQuad => operations.push(createOperation(initProps)(resolvedOperationQuad)));
+    });
 
-  return operations;
+    return operations;
+  };
 }

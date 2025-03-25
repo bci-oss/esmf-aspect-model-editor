@@ -14,73 +14,108 @@
 import {NamedNode, Quad, Quad_Subject, Util} from 'n3';
 import {Property} from '../aspect-meta-model';
 import {DefaultProperty} from '../aspect-meta-model/default-property';
-import {getElementsCache} from '../shared/model-element-cache.service';
-import {getRdfModel, getStore} from '../shared/rdf-model';
+import {BaseInitProps} from '../shared/base-init-props';
 import {detectAndCreateCharacteristic} from './characteristic';
 import {getBaseProperties} from './meta-model-element-instantiator';
 
-export function createProperty(quad: Quad): Property {
-  const rdfModel = getRdfModel();
-  const samm = rdfModel.samm;
-  const modelElementCache = getElementsCache();
-
-  if (modelElementCache.get(quad.object.value)) {
-    return modelElementCache.get(quad.object.value);
-  }
-
-  const baseProperties = getBaseProperties(quad.object as NamedNode);
-  let propertyQuads: Quad[];
-
-  if (samm.property().equals(quad.predicate)) {
-    const [_, name] = quad.object.value.split('#');
-    name && (baseProperties.name = name);
-    name && (baseProperties.aspectModelUrn = quad.object.value);
-    propertyQuads = [...rdfModel.store.getQuads(quad.object, null, null, null), ...rdfModel.store.getQuads(quad.subject, null, null, null)];
-  } else if (samm.Extends().equals(quad.predicate)) {
-    const [_, name] = quad.object.value.split('#');
-    baseProperties.name = `${name}_property_${Math.floor(Math.random() * 5000)}`;
-    baseProperties.aspectModelUrn = `${baseProperties.aspectModelUrn.split('#')?.[0]}#${baseProperties.name}`;
-    baseProperties.hasSyntheticName = true;
-    propertyQuads = rdfModel.store.getQuads(quad.subject, null, null, null);
-  } else {
-    propertyQuads = rdfModel.store.getQuads(quad.object, null, null, null);
-  }
-
-  const property = new DefaultProperty({
-    ...baseProperties,
-    isAnonymous: isDefinedInline(quad),
-  });
-  modelElementCache.resolveInstance(property);
-
-  for (const propertyQuad of propertyQuads) {
-    if (samm.isCharacteristicProperty(propertyQuad.predicate.value)) {
-      property.characteristic = detectAndCreateCharacteristic(propertyQuad);
-      property.characteristic?.addParent(property);
-    } else if (samm.isExampleValueProperty(propertyQuad.predicate.value)) {
-      property.exampleValue = propertyQuad.object.value;
-    } else if (samm.isNotInPayloadProperty(propertyQuad.predicate.value)) {
-      property.notInPayload = propertyQuad.object.value === 'true';
-    } else if (samm.isOptionalProperty(propertyQuad.predicate.value)) {
-      property.optional = propertyQuad.object.value === 'true';
-    } else if (samm.isPayloadNameProperty(propertyQuad.predicate.value)) {
-      property.payloadName = propertyQuad.object.value;
+export function getPropertyInstantiator(initProps: BaseInitProps) {
+  function isDefinedInline(propertyQuad: Quad) {
+    const {samm, store} = initProps.rdfModel;
+    // check if the property is fully defined as separate definition
+    if (
+      (propertyQuad.object.id === samm.Property().id || propertyQuad.object.id === samm.AbstractProperty().id) &&
+      !Util.isBlankNode(propertyQuad.subject)
+    ) {
+      return false;
     }
+
+    return Boolean(store.getQuads(null, samm.property().value, propertyQuad.subject, null).length);
   }
 
-  property.extends_ = getExtends(propertyQuads);
-  property.extends_?.addParent(property);
+  function getExtends(quads: Array<Quad>) {
+    const {samm, store} = initProps.rdfModel;
+    const modelElementCache = initProps.cache;
 
-  return property;
-}
+    for (const value of quads) {
+      if (samm.isExtends(value.predicate.value)) {
+        const cachedProperty = modelElementCache.get<Property>(value.object.value);
+        if (cachedProperty) {
+          return cachedProperty;
+        }
 
-export function getProperties(subject: Quad_Subject): Array<Property> {
-  const rdfModel = getRdfModel();
-  const samm = rdfModel.samm;
-  const properties: Array<Property> = [];
+        const quadsAbstractProperty = store.getQuads(value.object, null, null, null);
+        const extendedAbstractProperty = createProperty(store.getQuads(null, null, quadsAbstractProperty[0].subject, null)[0]);
+        extendedAbstractProperty.isAbstract = quadsAbstractProperty.some(quad => samm.AbstractProperty().equals(quad.object));
+        return modelElementCache.resolveInstance(extendedAbstractProperty);
+      }
+    }
 
-  getStore()
-    .getQuads(subject, samm.PropertiesProperty(), null, null)
-    .forEach(propertyQuad => {
+    return null;
+  }
+
+  function createProperty(quad: Quad): Property {
+    const rdfModel = initProps.rdfModel;
+    const samm = rdfModel.samm;
+    const modelElementCache = initProps.cache;
+
+    if (modelElementCache.get(quad.object.value)) {
+      return modelElementCache.get(quad.object.value);
+    }
+
+    const baseProperties = getBaseProperties(quad.object as NamedNode);
+    let propertyQuads: Quad[];
+
+    if (samm.property().equals(quad.predicate)) {
+      const [, name] = quad.object.value.split('#');
+      name && (baseProperties.name = name);
+      name && (baseProperties.aspectModelUrn = quad.object.value);
+      propertyQuads = [
+        ...rdfModel.store.getQuads(quad.object, null, null, null),
+        ...rdfModel.store.getQuads(quad.subject, null, null, null),
+      ];
+    } else if (samm.Extends().equals(quad.predicate)) {
+      const [, name] = quad.object.value.split('#');
+      baseProperties.name = `${name}_property_${Math.floor(Math.random() * 5000)}`;
+      baseProperties.aspectModelUrn = `${baseProperties.aspectModelUrn.split('#')?.[0]}#${baseProperties.name}`;
+      baseProperties.hasSyntheticName = true;
+      propertyQuads = rdfModel.store.getQuads(quad.subject, null, null, null);
+    } else {
+      propertyQuads = rdfModel.store.getQuads(quad.object, null, null, null);
+    }
+
+    const property = new DefaultProperty({
+      ...baseProperties,
+      isAnonymous: isDefinedInline(quad),
+    });
+    modelElementCache.resolveInstance(property);
+
+    for (const propertyQuad of propertyQuads) {
+      if (samm.isCharacteristicProperty(propertyQuad.predicate.value)) {
+        property.characteristic = detectAndCreateCharacteristic(propertyQuad);
+        property.characteristic?.addParent(property);
+      } else if (samm.isExampleValueProperty(propertyQuad.predicate.value)) {
+        property.exampleValue = propertyQuad.object.value;
+      } else if (samm.isNotInPayloadProperty(propertyQuad.predicate.value)) {
+        property.notInPayload = propertyQuad.object.value === 'true';
+      } else if (samm.isOptionalProperty(propertyQuad.predicate.value)) {
+        property.optional = propertyQuad.object.value === 'true';
+      } else if (samm.isPayloadNameProperty(propertyQuad.predicate.value)) {
+        property.payloadName = propertyQuad.object.value;
+      }
+    }
+
+    property.extends_ = getExtends(propertyQuads);
+    property.extends_?.addParent(property);
+
+    return property;
+  }
+
+  function createProperties(subject: Quad_Subject): Array<Property> {
+    const rdfModel = initProps.rdfModel;
+    const {samm, store} = rdfModel;
+    const properties: Array<Property> = [];
+
+    store.getQuads(subject, samm.PropertiesProperty(), null, null).forEach(propertyQuad => {
       rdfModel
         .resolveBlankNodes(propertyQuad.object.value)
         .filter(
@@ -90,43 +125,11 @@ export function getProperties(subject: Quad_Subject): Array<Property> {
         .forEach(quad => properties.push(createProperty(quad)));
     });
 
-  return properties;
-}
-
-function isDefinedInline(propertyQuad: Quad) {
-  const rdfModel = getRdfModel();
-  const samm = rdfModel.samm;
-  const store = getStore();
-  // check if the property is fully defined as separate definition
-  if (
-    (propertyQuad.object.id === samm.Property().id || propertyQuad.object.id === samm.AbstractProperty().id) &&
-    !Util.isBlankNode(propertyQuad.subject)
-  ) {
-    return false;
+    return properties;
   }
 
-  return Boolean(store.getQuads(null, samm.property().value, propertyQuad.subject, null).length);
-}
-
-function getExtends(quads: Array<Quad>) {
-  const rdfModel = getRdfModel();
-  const samm = rdfModel.samm;
-  const store = getStore();
-  const modelElementCache = getElementsCache();
-
-  for (const value of quads) {
-    if (samm.isExtends(value.predicate.value)) {
-      const cachedProperty = modelElementCache.get<Property>(value.object.value);
-      if (cachedProperty) {
-        return cachedProperty;
-      }
-
-      const quadsAbstractProperty = store.getQuads(value.object, null, null, null);
-      const extendedAbstractProperty = createProperty(store.getQuads(null, null, quadsAbstractProperty[0].subject, null)[0]);
-      extendedAbstractProperty.isAbstract = quadsAbstractProperty.some(quad => samm.AbstractProperty().equals(quad.object));
-      return modelElementCache.resolveInstance(extendedAbstractProperty);
-    }
-  }
-
-  return null;
+  return {
+    createProperty,
+    createProperties,
+  };
 }

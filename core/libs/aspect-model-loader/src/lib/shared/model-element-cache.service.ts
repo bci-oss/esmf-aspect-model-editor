@@ -183,24 +183,24 @@ export class ModelElementCache implements CacheStrategy {
   }
 }
 
-let modelElementsCache: CacheStrategy;
+// let modelElementsCache: CacheStrategy;
 
-export function createCacheInstance() {
-  return new ModelElementCache();
-}
+// export function createCacheInstance() {
+//   return new ModelElementCache();
+// }
 
-export function useElementsCache(cache: CacheStrategy) {
-  modelElementsCache = cache;
-}
+// export function useElementsCache(cache: CacheStrategy) {
+//   modelElementsCache = cache;
+// }
 
-export function initElementCache() {
-  return (modelElementsCache = createCacheInstance());
-}
+// export function initElementCache() {
+//   return (modelElementsCache = createCacheInstance());
+// }
 
-export function getElementsCache() {
-  return modelElementsCache;
-}
+// export function getElementsCache() {
+//   return modelElementsCache;
+// }
 
-export function destroyElementCache() {
-  modelElementsCache = null;
-}
+// export function destroyElementCache() {
+//   modelElementsCache = null;
+// }

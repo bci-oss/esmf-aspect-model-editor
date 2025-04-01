@@ -12,11 +12,11 @@
  */
 
 import {CacheUtils, LoadedFilesService} from '@ame/cache';
-import {ConfirmDialogService} from '@ame/editor';
+import {ConfirmDialogService, EntityInstanceUtil} from '@ame/editor';
 import {MxGraphHelper} from '@ame/mx-graph';
-import {NotificationsService} from '@ame/shared';
+import {NotificationsService, config} from '@ame/shared';
 import {Injectable} from '@angular/core';
-import {DefaultEntity, DefaultEntityInstance, DefaultEnumeration, DefaultProperty, Entity} from '@esmf/aspect-model-loader';
+import {DefaultEntity, DefaultEntityInstance, DefaultEnumeration, DefaultProperty, Entity, Value} from '@esmf/aspect-model-loader';
 import {ConfirmDialogEnum} from '../../../../models/confirm-dialog.enum';
 
 @Injectable({
@@ -34,11 +34,9 @@ export class EntityInstanceService {
   ) {}
 
   onPropertyRemove(property: DefaultProperty, acceptCallback: Function) {
-    const entityValues = [];
-    // TODO check this functionality
-    //  = CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntityInstance).filter(({assertions}) =>
-    //   assertions.some(({key}) => key.property.name === property.name),
-    // );
+    const entityValues = CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntityInstance).filter(eInstance => {
+      eInstance.getTuples().some(([propertyUrn]) => property.aspectModelUrn === propertyUrn);
+    });
 
     if (!entityValues.length) {
       acceptCallback?.();
@@ -55,8 +53,7 @@ export class EntityInstanceService {
     this.confirmDialogService.open({title, phrases, closeButtonText: 'No', okButtonText: 'Yes'}).subscribe(confirm => {
       if (confirm !== ConfirmDialogEnum.cancel) {
         for (const entityValue of entityValues) {
-          // TODO check this function
-          // entityValue.removeProperty(property);
+          entityValue.getAssertion(property.aspectModelUrn).forEach(value => entityValue.removeAssertion(property.aspectModelUrn, value));
         }
         acceptCallback?.();
       }
@@ -67,16 +64,28 @@ export class EntityInstanceService {
     const entityValues = CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntityInstance).filter(
       entityValue => entityValue.type.name === entity.name,
     );
+
     if (!entityValues.length) {
       return;
     }
 
+    // TODO see if the entity instances should be created on a deeper level
     for (const entityValue of entityValues) {
-      // TODO check this function
-      // entityValue.addProperty(property);
-      MxGraphHelper.establishRelation(entityValue, property);
+      const shouldBeEntityInstance = property.characteristic?.dataType instanceof DefaultEntity;
+      const newValue = shouldBeEntityInstance
+        ? new DefaultEntityInstance({
+            name: `${property.name}Value`,
+            aspectModelUrn: `${this.loadedFiles.currentLoadedFile.namespace}#${property.name}Value`,
+            metaModelVersion: config.currentSammVersion,
+            type: property.characteristic?.dataType as DefaultEntity,
+          })
+        : new Value('', property.characteristic?.dataType, EntityInstanceUtil.isDefaultPropertyWithLangString(property) ? '' : undefined);
+      entityValue.setAssertion(property.aspectModelUrn, newValue);
+
+      MxGraphHelper.establishRelation(entityValue, entity);
     }
 
+    MxGraphHelper.establishRelation(entity, property);
     this.notifications.warning({
       title: `Property ${property.name} was added to ${entity.name} instances. Make sure to add a value to them!`,
       timeout: 5000,
@@ -148,8 +157,7 @@ export class EntityInstanceService {
 
     const characteristicEntityValues = characteristic.values as DefaultEntityInstance[];
     for (const entityValue of characteristicEntityValues) {
-      // TODO check this function
-      // entityValue.removeParent(characteristic);
+      entityValue.removeParent(characteristic);
 
       // if the instance is not used by another characteristic, remove it
       if (entityValue.parents.length <= 0) {

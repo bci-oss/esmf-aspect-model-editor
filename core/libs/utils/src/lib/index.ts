@@ -12,5 +12,6 @@
  */
 
 export * from './components';
+export * from './element-updater';
 export * from './search-state.service';
 export * from './utils';

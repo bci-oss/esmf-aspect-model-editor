@@ -12,12 +12,9 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {ModelService} from '@ame/rdf/services';
-import {isDataTypeLangString} from '@ame/shared';
 import {Injectable} from '@angular/core';
-import {DefaultCollection, DefaultEntityInstance, Samm, Value} from '@esmf/aspect-model-loader';
-import {DataFactory, Literal, NamedNode} from 'n3';
-import {RdfListService} from '../../rdf-list';
+import {DefaultEntityInstance, Value} from '@esmf/aspect-model-loader';
+import {DataFactory} from 'n3';
 import {BaseVisitor} from '../base-visitor';
 
 @Injectable()
@@ -27,10 +24,8 @@ export class EntityInstanceVisitor extends BaseVisitor<DefaultEntityInstance> {
   }
 
   constructor(
-    private rdfListService: RdfListService,
     private loadedFilesService: LoadedFilesService,
-    public modelService: ModelService,
-    loadedFiles: LoadedFilesService,
+    public loadedFiles: LoadedFilesService,
   ) {
     super(loadedFiles);
   }
@@ -50,73 +45,23 @@ export class EntityInstanceVisitor extends BaseVisitor<DefaultEntityInstance> {
     const {aspectModelUrn} = entityValue;
     const rdfModel = this.loadedFilesService.currentLoadedFile.rdfModel;
 
-    const values = entityValue.getValues<any[]>();
+    const tuples = entityValue.getTuples();
+    tuples.map(([property, value]) => {
+      this.handleExternalReference(value);
 
-    // Collect all values with more than 1 value and language in one array
+      const object = value.language
+        ? DataFactory.literal(`${value.value}`, value.language)
+        : value instanceof DefaultEntityInstance
+          ? DataFactory.namedNode(value.aspectModelUrn)
+          : DataFactory.literal(value?.toString(), value.type ? DataFactory.namedNode(value.type?.getUrn()) : undefined);
 
-    // Collect all values with one value each
-    // TODO fix this code
-    const {propertyCollectionWithLangString, property} = Array.from(entityValue.assertions.values()).reduce(
-      (acc, property: any) => (
-        isDataTypeLangString(property.key.property) && property.key.property.characteristic instanceof DefaultCollection
-          ? acc.propertyCollectionWithLangString.push(property)
-          : acc.property.push(property),
-        acc
-      ),
-      {
-        propertyCollectionWithLangString: [],
-        property: [],
-      },
-    );
-
-    if (propertyCollectionWithLangString.length) {
-      const withoutEmptyLangString = propertyCollectionWithLangString.filter(prop => prop.value !== null && prop.language !== undefined);
-
-      const langStringRdfObject = withoutEmptyLangString.map(this.createObjectForCollectionLangStringRDF.bind(this));
-      this.rdfListService.pushEntityValueLangString(entityValue, ...langStringRdfObject);
-    }
-
-    if (property.length) {
-      const propertiesWithoutEmptyLangString = property.filter(prop => {
-        const urn = prop.key.property?.characteristic?.dataType?.getUrn();
-        return !(urn === `${Samm.RDF_URI}#langString` && prop.value === '');
-      });
-
-      propertiesWithoutEmptyLangString.forEach(property => {
-        const rdfObject = this.createObjectForRDF(property);
-        const {key, value} = property;
-
-        rdfModel.store.addQuad(DataFactory.namedNode(aspectModelUrn), DataFactory.namedNode(key.property.aspectModelUrn), rdfObject);
-
-        this.handleExternalReference(value, aspectModelUrn);
-      });
-    }
+      rdfModel.store.addQuad(DataFactory.namedNode(aspectModelUrn), DataFactory.namedNode(property), object);
+    });
   }
 
-  private createObjectForCollectionLangStringRDF(ev: Value): {predicate: NamedNode; literal: Literal} {
-    return null;
-    //  {
-    //   predicate: DataFactory.namedNode(ev.key.property.aspectModelUrn),
-    //   literal: DataFactory.literal(ev?.value?.toString(), ev?.language?.toString()),
-    // };
-  }
-
-  private createObjectForRDF({key, value, language}: any): NamedNode | Literal {
-    if (value instanceof DefaultEntityInstance) {
-      return DataFactory.namedNode(value.aspectModelUrn);
-    }
-
-    if (isDataTypeLangString(key.property) && language) {
-      return DataFactory.literal(value?.toString(), language?.toString());
-    }
-
-    const dataType = key.property?.getDeepLookUpDataType();
-    return DataFactory.literal(value?.toString(), dataType ? DataFactory.namedNode(dataType.getUrn()) : undefined);
-  }
-
-  private handleExternalReference(value: any, aspectModelUrn: string): void {
+  private handleExternalReference(value: Value): void {
     if (value instanceof DefaultEntityInstance && value.isExternalReference()) {
-      this.setPrefix(aspectModelUrn);
+      this.setPrefix(value.aspectModelUrn);
     }
   }
 
@@ -125,7 +70,7 @@ export class EntityInstanceVisitor extends BaseVisitor<DefaultEntityInstance> {
     rdfModel.store.addQuad(
       DataFactory.namedNode(entityValue.aspectModelUrn),
       rdfModel.samm.RdfType(),
-      DataFactory.namedNode(entityValue.type.aspectModelUrn),
+      DataFactory.namedNode(entityValue.type?.aspectModelUrn),
     );
   }
 }

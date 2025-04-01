@@ -84,7 +84,7 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
         if (!properties.size && entity.properties.length) {
           for (const property of entity.properties) {
             !this.metaModelElement.getAssertion(property.aspectModelUrn).length &&
-              this.metaModelElement.setAssertion(property.aspectModelUrn, new Value(''));
+              this.metaModelElement.setAssertion(property.aspectModelUrn, new Value('', property.characteristic?.dataType));
           }
         }
 
@@ -176,7 +176,7 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
     validators: ValidationErrors | null,
     property: DefaultProperty,
   ): void {
-    if ((propertyLanguage || propertyLanguage === '') && isDataTypeLangString(property)) {
+    if ((propertyLanguage || propertyLanguage === '') && isDataTypeLangString(property.characteristic.dataType)) {
       const languageControl = new FormControl(
         {
           value: propertyLanguage,

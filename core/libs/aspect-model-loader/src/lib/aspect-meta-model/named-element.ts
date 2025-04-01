@@ -116,6 +116,10 @@ export abstract class NamedElement extends ModelElement {
     this.parents.push(parent);
   }
 
+  removeParent(parent: NamedElement) {
+    this.parents = new ElementsSet(...this.parents.filter(p => parent.aspectModelUrn !== p.aspectModelUrn));
+  }
+
   hasParent(parent: NamedElement): boolean {
     return -1 < this.parents.findIndex(e => e.aspectModelUrn === parent.aspectModelUrn);
   }

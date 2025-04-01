@@ -24,6 +24,7 @@ import {
 } from '@ame/mx-graph';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
+import {config} from '@ame/shared';
 import {Injectable} from '@angular/core';
 import {
   Characteristic,
@@ -36,6 +37,7 @@ import {
   DefaultProperty,
   DefaultTrait,
 } from '@esmf/aspect-model-loader';
+import {ScalarValue} from 'libs/aspect-model-loader/src/lib/aspect-meta-model/scalar-value';
 import {mxgraph} from 'mxgraph-factory';
 import {SingleShapeConnector} from '../models';
 
@@ -187,12 +189,17 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
    * @returns a cell and model element for newly created Entity Value
    */
   private createEntityValue(characteristic: DefaultEnumeration, source: mxgraph.mxCell): [mxgraph.mxCell, DefaultEntityInstance] {
-    const entityValue = new DefaultEntityInstance({name: '', metaModelVersion: '', aspectModelUrn: ''});
+    const entityValue = new DefaultEntityInstance({
+      name: 'entityInstance',
+      metaModelVersion: config.currentSammVersion,
+      aspectModelUrn: `${this.loadedFiles.currentLoadedFile.namespace}#entityInstance`,
+    });
     const characteristicDataType = characteristic.dataType as DefaultEntity;
 
     entityValue.type = characteristicDataType;
-    // TODO check entityInstance for its implementation
-    characteristicDataType.properties.forEach(property => entityValue.setAssertion(property.aspectModelUrn, property as any));
+    characteristicDataType.properties.forEach(property =>
+      entityValue.setAssertion(property.aspectModelUrn, new ScalarValue({value: '', type: property.characteristic?.dataType})),
+    );
     entityValue.parents.push(characteristic);
     characteristic.values.push(entityValue);
     const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(entityValue);

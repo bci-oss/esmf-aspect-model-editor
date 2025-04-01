@@ -333,11 +333,8 @@ export class MxGraphHelper {
     title.title = isSmallShape ? '' : modelElement.name;
 
     title.innerText = modelElement.name?.length > 24 ? modelElement.name?.substring(0, 21) + '...' : modelElement.name;
-    if (cell.collapsed) {
-      const isEntityInstance = modelElement instanceof DefaultEntityInstance;
-      if (isEntityInstance) {
-        title.innerText = this.formatSmallName(modelElement.name);
-      }
+    if (cell.collapsed && modelElement instanceof DefaultEntityInstance) {
+      title.innerText = this.formatSmallName(modelElement.name);
     }
 
     title.classList.add('element-name');

@@ -11,7 +11,6 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {CacheUtils} from '@ame/cache';
 import {EntityInstanceService} from '@ame/editor';
 import {
   EntityRenderService,
@@ -22,6 +21,7 @@ import {
   MxGraphVisitorHelper,
 } from '@ame/mx-graph';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
+import {useUpdater} from '@ame/utils';
 import {Injectable} from '@angular/core';
 import {DefaultEntity, DefaultEntityInstance, DefaultEnumeration, NamedElement} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
@@ -59,18 +59,6 @@ export class EntityModelService extends BaseModelService {
         property.optional = newKeys.optional;
         property.payloadName = newKeys.payloadName;
       }
-
-      CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntityInstance)
-        ?.filter((entityValue: DefaultEntityInstance) => entityValue.type.aspectModelUrn === modelElement.aspectModelUrn)
-        ?.forEach((entityValue: DefaultEntityInstance) => {
-          for (const entityValueProperty of entityValue.assertions) {
-            // TODO update this functionality with the new structure from entityInstance
-            // const property = modelElement.properties.find(prop => prop.property.name === entityValueProperty.key.property.name);
-            // entityValueProperty.key.keys.optional = property.keys.optional;
-            // entityValueProperty.key.keys.notInPayload = property.keys.notInPayload;
-            // entityValueProperty.key.keys.payloadName = property.keys.payloadName;
-          }
-        });
     }
 
     super.update(cell, form);
@@ -98,8 +86,7 @@ export class EntityModelService extends BaseModelService {
         const sourceModelElement = MxGraphHelper.getModelElement<NamedElement>(edge.source);
         if (sourceModelElement && !sourceModelElement.isExternalReference()) {
           this.currentCachedFile.removeElement(modelElement.aspectModelUrn);
-          // TODO update delete functionality
-          // sourceModelElement.delete(modelElement);
+          useUpdater(sourceModelElement).delete(modelElement);
         }
 
         if (sourceModelElement instanceof DefaultEnumeration) {

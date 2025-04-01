@@ -19,7 +19,7 @@ import {EntityInstanceProps} from '../shared/props';
 import {ModelVisitor} from '../visitor/model-visitor';
 import {Enumeration} from './characteristic/default-enumeration';
 import {Entity} from './default-entity';
-import {NamedElement} from './named-element';
+import {LangString, NamedElement} from './named-element';
 import {Value} from './value';
 
 export type PropertyUrn = string;
@@ -44,8 +44,8 @@ export class DefaultEntityInstance extends NamedElement implements EntityInstanc
   type: Entity;
 
   override parents: ElementsSet<Enumeration> = new ElementsSet();
-  override get children(): ElementsSet<DefaultEntityInstance> {
-    const children = new ElementsSet<DefaultEntityInstance>();
+  override get children(): ElementsSet<NamedElement> {
+    const children = new ElementsSet<NamedElement>();
     Array.from(this.assertions.values())
       .flat()
       .forEach(value => {
@@ -53,6 +53,9 @@ export class DefaultEntityInstance extends NamedElement implements EntityInstanc
           children.push(value);
         }
       });
+    if (this.type) {
+      children.push(this.type);
+    }
     return children;
   }
 
@@ -78,7 +81,7 @@ export class DefaultEntityInstance extends NamedElement implements EntityInstanc
   }
 
   getAssertion(propertyUrn: PropertyUrn): Value[] {
-    return this.assertions.get(propertyUrn);
+    return this.assertions.get(propertyUrn) || [];
   }
 
   getValues<T>(): T {
@@ -94,13 +97,29 @@ export class DefaultEntityInstance extends NamedElement implements EntityInstanc
     values.push(value);
   }
 
+  removeAssertionLanguage(propertyUrn: PropertyUrn, language: LangString): boolean {
+    if (!language) return false;
+    if (!this.assertions.has(propertyUrn)) return false;
+
+    const values = this.assertions.get(propertyUrn);
+    if (!Array.isArray(values)) return false;
+
+    this.assertions.set(
+      propertyUrn,
+      values.filter(v => v.language === language),
+    );
+    return true;
+  }
+
   removeAssertion(propertyUrn: PropertyUrn, value: Value) {
     if (!value) return;
     if (!this.assertions.has(propertyUrn)) {
       return;
     }
     const values = this.assertions.get(propertyUrn);
-    const index = values.indexOf(value);
+    const index = values.findIndex(
+      v => v.value === value.value && v.language === value.language && v.type?.getUrn() === value.type.getUrn(),
+    );
     if (index > -1) {
       values.splice(index, 1);
     }

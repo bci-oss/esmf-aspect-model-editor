@@ -136,7 +136,7 @@ export {createCodeCharacteristic} from './code-characteristic-instantiator';
 export {createCollectionCharacteristic} from './collection-characteristic-instantiator';
 export {createDurationCharacteristic} from './duration-characteristic-instantiator';
 export {createEitherCharacteristic} from './either-characteristic-instantiator';
-export {createEnumerationCharacteristic} from './enumeration-characteristic-instantiator';
+export {createEnumerationCharacteristic, resolveEntityInstance} from './enumeration-characteristic-instantiator';
 export {createListCharacteristic} from './list-characteristic-instantiator';
 export {createMeasurementCharacteristic} from './measurement-characteristic-instantiator';
 export {createQuantifiableCharacteristic} from './quantifiable-characteristic-instantiator';

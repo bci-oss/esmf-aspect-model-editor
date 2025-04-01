@@ -146,13 +146,9 @@ export abstract class BaseModelService {
     // delete the element
     this.loadedFile.cachedFile.removeElement(entityValue.aspectModelUrn);
     // now delete other underlying entity values that don't belong to an enumeration
-    // TODO update this with the new structure from entityInstance
-    entityValue.assertions.forEach((property: any) => {
-      if (property.value instanceof DefaultEntityInstance) {
-        // this is another complex value, check if it belongs to an enumeration
-        if (!property.value.parents?.length) {
-          this.deleteEntityValue(property.value, entityValue);
-        }
+    entityValue.getTuples().forEach(([, value]) => {
+      if (value instanceof DefaultEntityInstance) {
+        this.deleteEntityValue(value, entityValue);
       }
     });
   }

@@ -15,6 +15,7 @@ import {LoadedFilesService} from '@ame/cache';
 import {ShapeConnectorService} from '@ame/connection';
 import {FiltersService} from '@ame/loader-filters';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
+import {useUpdater} from '@ame/utils';
 import {Injectable, inject} from '@angular/core';
 import {
   DefaultCharacteristic,
@@ -42,7 +43,7 @@ import {UnitRenderService} from './unit-render.service';
   providedIn: 'root',
 })
 export class CharacteristicRenderService extends BaseRenderService {
-  private metaModelElement;
+  private metaModelElement: DefaultCharacteristic;
   private filtersService = inject(FiltersService);
 
   constructor(
@@ -262,7 +263,9 @@ export class CharacteristicRenderService extends BaseRenderService {
   }
 
   private handleScalarDataType(newDataType: NamedElement | Type) {
-    this.metaModelElement.update(newDataType);
+    if (newDataType instanceof DefaultEntity || newDataType instanceof DefaultScalar) {
+      this.metaModelElement.dataType = newDataType;
+    }
   }
 
   private removeOutgoingComplexDataType(cell: mxgraph.mxCell) {
@@ -274,7 +277,9 @@ export class CharacteristicRenderService extends BaseRenderService {
         const modelElement = MxGraphHelper.getModelElement(edge.target);
         if (modelElement instanceof DefaultEntity) {
           MxGraphHelper.removeRelation(characteristic, modelElement);
-          this.metaModelElement.delete(modelElement);
+          const characteristicUpdater = useUpdater(this.metaModelElement);
+          characteristicUpdater.delete(modelElement);
+
           this.mxGraphService.removeCells([edge], true);
         }
       });

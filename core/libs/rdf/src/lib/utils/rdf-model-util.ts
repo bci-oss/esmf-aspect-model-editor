@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {simpleDataTypes} from '@ame/shared';
+import {config, simpleDataTypes} from '@ame/shared';
 import {getDeepLookupDataType} from '@ame/utils';
 import {
   DefaultAspect,
@@ -83,13 +83,14 @@ export class RdfModelUtil {
   ): NamedNode {
     const samm = rdfModel.samm;
     const sammC = rdfModel.sammC;
+    const metaModelVersion = config.currentSammVersion;
 
     if (
       metaModelElement instanceof DefaultLengthConstraint &&
       (sammC.isMinValueProperty(predicateUrn) || sammC.isMaxValueProperty(predicateUrn))
     ) {
       const definition = simpleDataTypes?.nonNegativeInteger;
-      return this.getDataType(new DefaultScalar({urn: definition?.isDefinedBy, scalar: true, metaModelVersion: null}));
+      return this.getDataType(new DefaultScalar({urn: definition?.isDefinedBy, scalar: true, metaModelVersion}));
     } else if (
       metaModelElement instanceof DefaultRangeConstraint &&
       (sammC.isMinValueProperty(predicateUrn) || sammC.isMaxValueProperty(predicateUrn))
@@ -97,13 +98,17 @@ export class RdfModelUtil {
       if (characteristicType) {
         return this.getDataType(characteristicType);
       }
-      return this.getDataType(new DefaultScalar({urn: simpleDataTypes?.string?.isDefinedBy, scalar: true, metaModelVersion: null}));
+      return this.getDataType(new DefaultScalar({urn: simpleDataTypes?.string?.isDefinedBy, scalar: true, metaModelVersion}));
     } else if (
       metaModelElement instanceof DefaultFixedPointConstraint &&
       (sammC.isScaleValueProperty(predicateUrn) || sammC.isIntegerValueProperty(predicateUrn))
     ) {
       return this.getDataType(
-        new DefaultScalar({urn: simpleDataTypes?.positiveInteger?.isDefinedBy, scalar: true, metaModelVersion: null}),
+        new DefaultScalar({
+          urn: simpleDataTypes?.positiveInteger?.isDefinedBy,
+          scalar: true,
+          metaModelVersion,
+        }),
       );
     } else if (metaModelElement instanceof DefaultProperty && samm.isExampleValueProperty(predicateUrn)) {
       return this.getDataType(getDeepLookupDataType(metaModelElement?.characteristic));
@@ -112,7 +117,13 @@ export class RdfModelUtil {
     } else if (metaModelElement instanceof DefaultState && sammC.isDefaultValueProperty(predicateUrn)) {
       return this.getDataType(metaModelElement.dataType);
     } else if (metaModelElement instanceof DefaultUnit && samm.isNumericConversionFactorProperty(predicateUrn)) {
-      return this.getDataType(new DefaultScalar({urn: simpleDataTypes?.double?.isDefinedBy, scalar: true, metaModelVersion: null}));
+      return this.getDataType(
+        new DefaultScalar({
+          urn: simpleDataTypes?.double?.isDefinedBy,
+          scalar: true,
+          metaModelVersion,
+        }),
+      );
     }
 
     return null;

@@ -27,11 +27,11 @@ import {
   destroyStore,
   detectAndCreateCharacteristic,
   detectAndCreateConstraint,
+  resolveEntityInstance,
   useElementsCache,
   useRdfModel,
   useStore,
 } from '@esmf/aspect-model-loader';
-import {resolveEntityInstance} from 'libs/aspect-model-loader/src/lib/instantiator/characteristic/enumeration-characteristic-instantiator';
 import {NamedNode, Triple, Util} from 'n3';
 
 @Injectable({

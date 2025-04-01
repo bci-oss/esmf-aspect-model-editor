@@ -59,6 +59,7 @@ export function createEntity(quads: Quad[], isAbstract = false, extending?: Comp
           extendsEntityQuads.some(q => samm.isAbstractEntity(q.object.value)),
           entity,
         );
+        entity.extends_?.addParent(entity);
       }
     }
   }

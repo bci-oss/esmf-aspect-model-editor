@@ -31,12 +31,21 @@ export class ElementsSet<T extends NamedElement = NamedElement> extends Array<T>
         continue;
       }
 
-      pushedItems += super.push(item);
+      item?.aspectModelUrn && (pushedItems += super.push(item));
     }
     return pushedItems;
   }
 
   append(items: T[]): ElementsSet<T> {
-    return new ElementsSet(...this, ...(items || []));
+    const set = new ElementsSet<T>();
+    for (let i = 0; i < this.length; i++) {
+      set.push(this.at(i));
+    }
+
+    for (const item of items || []) {
+      set.push(item);
+    }
+
+    return set;
   }
 }

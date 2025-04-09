@@ -14,10 +14,10 @@
 import {NamedNode, Quad, Quad_Subject} from 'n3';
 import {DefaultEvent, Event} from '../aspect-meta-model';
 import {BaseInitProps} from '../shared/base-init-props';
-import {getBaseProperties} from './meta-model-element-instantiator';
-import {createProperty} from './property-instantiator';
+import {basePropertiesFactory} from './meta-model-element-instantiator';
+import {propertyFactory} from './property-instantiator';
 
-export function createEvent(initProps: BaseInitProps) {
+export function eventFactory(initProps: BaseInitProps) {
   return (quad: Quad): Event => {
     const rdfModel = initProps.rdfModel;
     const {samm} = rdfModel;
@@ -28,7 +28,7 @@ export function createEvent(initProps: BaseInitProps) {
     }
 
     const quads = rdfModel.findAnyProperty(quad);
-    const baseProperties = getBaseProperties(quad.object as NamedNode);
+    const baseProperties = basePropertiesFactory(initProps)(quad.object as NamedNode);
     const event = new DefaultEvent({
       ...baseProperties,
       properties: [],
@@ -38,7 +38,7 @@ export function createEvent(initProps: BaseInitProps) {
       if (samm.isParametersProperty(quad.predicate.value)) {
         const parametersQuads = rdfModel.resolveBlankNodes(quad.object.value);
         event.properties = parametersQuads.map(input => {
-          const property = createProperty(input);
+          const property = propertyFactory(initProps).createProperty(input);
           property.addParent(event);
           return property;
         });
@@ -59,7 +59,7 @@ export function getEvents(initProps: BaseInitProps) {
     store.getQuads(subject, samm.EventsProperty(), null, null).forEach(eventQuad => {
       rdfModel
         .resolveBlankNodes(eventQuad.object.value)
-        .forEach(resolvedEventQuad => events.push(createEvent(initProps)(resolvedEventQuad)));
+        .forEach(resolvedEventQuad => events.push(eventFactory(initProps)(resolvedEventQuad)));
     });
 
     return events;

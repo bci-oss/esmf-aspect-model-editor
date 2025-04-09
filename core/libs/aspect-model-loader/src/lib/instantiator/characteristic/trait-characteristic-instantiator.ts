@@ -13,27 +13,34 @@
 
 import {Quad} from 'n3';
 import {Characteristic, DefaultTrait} from '../../aspect-meta-model';
-import {getRdfModel} from '../../shared/rdf-model';
-import {detectAndCreateConstraint} from '../constraint';
-import {generateCharacteristic} from './characteristic-instantiator';
+import {BaseInitProps} from '../../shared/base-init-props';
+import {allConstraintsFactory} from '../constraint';
+import {characteristicFactory} from './characteristic-instantiator';
 
-export function createTraitCharacteristic(quad: Quad, characteristicCreator: (quad: Quad) => Characteristic): DefaultTrait {
-  return generateCharacteristic(quad, (baseProperties, propertyQuads) => {
-    const {sammC} = getRdfModel();
-    const characteristic = new DefaultTrait({...baseProperties});
+export function traitCharacteristicFactory(initProps: BaseInitProps) {
+  const {
+    rdfModel: {sammC},
+  } = initProps;
+  const {generateCharacteristic} = characteristicFactory(initProps);
+  const {createConstraint} = allConstraintsFactory(initProps);
 
-    for (const propertyQuad of propertyQuads) {
-      if (sammC.isBaseCharacteristicProperty(propertyQuad.predicate.value)) {
-        characteristic.baseCharacteristic = characteristicCreator(propertyQuad);
-        characteristic.baseCharacteristic?.addParent(characteristic);
-      } else if (sammC.isConstraintProperty(propertyQuad.predicate.value)) {
-        const constraint = detectAndCreateConstraint(propertyQuad);
-        if (constraint) {
-          characteristic.constraints.push(constraint);
-          constraint?.addParent(characteristic);
+  return function createTraitCharacteristic(quad: Quad, characteristicCreator: (quad: Quad) => Characteristic): DefaultTrait {
+    return generateCharacteristic(quad, (baseProperties, propertyQuads) => {
+      const characteristic = new DefaultTrait({...baseProperties});
+
+      for (const propertyQuad of propertyQuads) {
+        if (sammC.isBaseCharacteristicProperty(propertyQuad.predicate.value)) {
+          characteristic.baseCharacteristic = characteristicCreator(propertyQuad);
+          characteristic.baseCharacteristic?.addParent(characteristic);
+        } else if (sammC.isConstraintProperty(propertyQuad.predicate.value)) {
+          const constraint = createConstraint(propertyQuad);
+          if (constraint) {
+            characteristic.constraints.push(constraint);
+            constraint?.addParent(characteristic);
+          }
         }
       }
-    }
-    return characteristic;
-  });
+      return characteristic;
+    });
+  };
 }

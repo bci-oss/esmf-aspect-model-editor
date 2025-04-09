@@ -15,13 +15,15 @@ import {NamedNode, Quad, Quad_Subject, Util} from 'n3';
 import {Property} from '../aspect-meta-model';
 import {DefaultProperty} from '../aspect-meta-model/default-property';
 import {BaseInitProps} from '../shared/base-init-props';
-import {detectAndCreateCharacteristic} from './characteristic';
-import {getBaseProperties} from './meta-model-element-instantiator';
+import {allCharacteristicsFactory} from './characteristic';
+import {basePropertiesFactory} from './meta-model-element-instantiator';
 
-export function getPropertyInstantiator(initProps: BaseInitProps) {
+export function propertyFactory(initProps: BaseInitProps) {
+  const {createCharacteristic} = allCharacteristicsFactory(initProps);
+
   function isDefinedInline(propertyQuad: Quad) {
     const {samm, store} = initProps.rdfModel;
-    // check if the property is fully defined as separate definition
+    // checks if the property is fully defined as separate definition
     if (
       (propertyQuad.object.id === samm.Property().id || propertyQuad.object.id === samm.AbstractProperty().id) &&
       !Util.isBlankNode(propertyQuad.subject)
@@ -62,7 +64,7 @@ export function getPropertyInstantiator(initProps: BaseInitProps) {
       return modelElementCache.get(quad.object.value);
     }
 
-    const baseProperties = getBaseProperties(quad.object as NamedNode);
+    const baseProperties = basePropertiesFactory(initProps)(quad.object as NamedNode);
     let propertyQuads: Quad[];
 
     if (samm.property().equals(quad.predicate)) {
@@ -91,7 +93,7 @@ export function getPropertyInstantiator(initProps: BaseInitProps) {
 
     for (const propertyQuad of propertyQuads) {
       if (samm.isCharacteristicProperty(propertyQuad.predicate.value)) {
-        property.characteristic = detectAndCreateCharacteristic(propertyQuad);
+        property.characteristic = createCharacteristic(propertyQuad);
         property.characteristic?.addParent(property);
       } else if (samm.isExampleValueProperty(propertyQuad.predicate.value)) {
         property.exampleValue = propertyQuad.object.value;

@@ -13,50 +13,53 @@
 
 import {Quad, Util} from 'n3';
 import {Constraint, DefaultConstraint} from '../../aspect-meta-model';
-import {getElementsCache} from '../../shared/model-element-cache.service';
+import {BaseInitProps} from '../../shared/base-init-props';
 import {NamedElementProps} from '../../shared/props';
-import {getRdfModel} from '../../shared/rdf-model';
-import {getBaseProperties} from '../meta-model-element-instantiator';
+import {basePropertiesFactory} from '../meta-model-element-instantiator';
 
-export function createDefaultConstraint(quad: Quad): DefaultConstraint {
-  return generateConstraint(quad, baseProperties => {
-    return new DefaultConstraint({...baseProperties});
-  });
-}
+export function constraintFactory(initProps: BaseInitProps) {
+  const {rdfModel, cache} = initProps;
 
-export function generateConstraint<C extends Constraint>(
-  quad: Quad,
-  constraintFactory: (baseProperties: NamedElementProps, propertyQuads: Quad[]) => C,
-): C {
-  const modelElementCache = getElementsCache();
-  if (modelElementCache.get(quad.subject.value)) return modelElementCache.get(quad.subject.value);
-
-  const rdfModel = getRdfModel();
-
-  const isAnonymous = Util.isBlankNode(quad.object);
-  const propertyQuads: Quad[] = rdfModel.findAnyProperty(quad);
-  const elementQuad = isAnonymous ? rdfModel.resolveBlankNodes(quad.object.value).shift() : propertyQuads.shift();
-  const baseProperties = getBaseProperties(elementQuad.subject);
-
-  const constraint: C = constraintFactory(baseProperties, propertyQuads);
-
-  constraint.anonymous = isAnonymous;
-  if (constraint.isAnonymous()) {
-    generateConstraintName(constraint);
+  function createDefaultConstraint(quad: Quad): DefaultConstraint {
+    return generateConstraint(quad, baseProperties => {
+      return new DefaultConstraint({...baseProperties});
+    });
   }
 
-  return modelElementCache.resolveInstance(constraint);
-}
+  function generateConstraint<C extends Constraint>(
+    quad: Quad,
+    constraintFactory: (baseProperties: NamedElementProps, propertyQuads: Quad[]) => C,
+  ): C {
+    if (cache.get(quad.subject.value)) return cache.get(quad.subject.value);
 
-export function generateConstraintName(constraint: Constraint) {
-  const modelElementCache = getElementsCache();
-  const rdfModel = getRdfModel();
+    const isAnonymous = Util.isBlankNode(quad.object);
+    const propertyQuads: Quad[] = rdfModel.findAnyProperty(quad);
+    const elementQuad = isAnonymous ? rdfModel.resolveBlankNodes(quad.object.value).shift() : propertyQuads.shift();
+    const baseProperties = basePropertiesFactory(initProps)(elementQuad.subject);
 
-  const initialName: string = constraint.name;
+    const constraint: C = constraintFactory(baseProperties, propertyQuads);
 
-  // assign a unique random name
-  constraint.name = constraint.name ? constraint.name : 'constraint_' + Math.random().toString(36).substring(2, 9);
-  constraint.aspectModelUrn = `${rdfModel.getAspectModelUrn()}${constraint.name}`;
-  constraint.syntheticName = true;
-  modelElementCache.addElement(initialName, constraint);
+    constraint.anonymous = isAnonymous;
+    if (constraint.isAnonymous()) {
+      generateConstraintName(constraint);
+    }
+
+    return cache.resolveInstance(constraint);
+  }
+
+  function generateConstraintName(constraint: Constraint) {
+    const initialName: string = constraint.name;
+
+    // assign a unique random name
+    constraint.name = constraint.name ? constraint.name : 'constraint_' + Math.random().toString(36).substring(2, 9);
+    constraint.aspectModelUrn = `${rdfModel.getAspectModelUrn()}${constraint.name}`;
+    constraint.syntheticName = true;
+    cache.addElement(initialName, constraint);
+  }
+
+  return {
+    createDefaultConstraint,
+    generateConstraint,
+    generateConstraintName,
+  };
 }

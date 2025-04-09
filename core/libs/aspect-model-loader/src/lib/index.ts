@@ -14,6 +14,7 @@
 export * from './aspect-meta-model';
 export * from './aspect-model-loader';
 export * from './instantiator';
+export {useLoader} from './loader-factory';
 export * from './namespace-loader';
 export * from './shared/elements-set';
 export * from './shared/model-element-cache.service';

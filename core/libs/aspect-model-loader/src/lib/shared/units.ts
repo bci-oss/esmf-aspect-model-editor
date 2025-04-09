@@ -11,16 +11,14 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {getRdfModel} from './rdf-model';
-
-export function getPredefinedUnit(name: string) {
-  const {sammU} = getRdfModel();
-  return units.units[name.replace(sammU.getNamespace(), '')];
+export function getPredefinedUnit(urn: string) {
+  const [, name] = urn.includes('#') ? urn.split('#') : [null, urn];
+  return units.units[name];
 }
 
-export function getQuantityKind(name: string) {
-  const {sammU} = getRdfModel();
-  return units.quantityKinds[name.replace(sammU.getNamespace(), '')];
+export function getQuantityKind(urn: string) {
+  const [, name] = urn.includes('#') ? urn.split('#') : [null, urn];
+  return units.quantityKinds[name];
 }
 
 export function getSupportedQuantityKindsNames(): Array<string> {

@@ -14,7 +14,9 @@
 import {Observable, Subject} from 'rxjs';
 import {NamedElement} from './aspect-meta-model/named-element';
 import {BaseModelLoader} from './base-model-loader';
-import {createNamespaces} from './instantiator/namespace-instantiator';
+import {namespaceFactory} from './instantiator';
+import {BaseInitProps} from './shared/base-init-props';
+import {ModelElementCache} from './shared/model-element-cache.service';
 import {RdfLoader} from './shared/rdf-loader';
 import {RdfModel} from './shared/rdf-model';
 import {RdfModelUtil} from './shared/rdf-model-util';
@@ -31,11 +33,17 @@ export class NamespaceLoader extends BaseModelLoader {
    */
   public load(...rdfContent: string[]): Observable<Map<string, Array<NamedElement>>> {
     const subject = new Subject<Map<string, Array<NamedElement>>>();
+    const initProps: BaseInitProps = {rdfModel: null, cache: null};
+
     new RdfLoader().loadModel(rdfContent).subscribe({
       next: (rdfModel: RdfModel) => {
+        initProps.rdfModel = rdfModel;
+        initProps.cache = new ModelElementCache();
+        this.cacheService = initProps.cache;
+
         try {
           RdfModelUtil.throwErrorIfUnsupportedVersion(rdfModel);
-          subject.next(Object.freeze(createNamespaces()));
+          subject.next(Object.freeze(namespaceFactory(initProps)()));
         } catch (error: any) {
           subject.error(error);
         } finally {

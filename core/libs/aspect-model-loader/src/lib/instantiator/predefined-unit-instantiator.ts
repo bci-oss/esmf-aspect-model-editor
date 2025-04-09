@@ -14,86 +14,92 @@
 import {DataFactory} from 'n3';
 import {DefaultQuantityKind, QuantityKind} from '../aspect-meta-model/default-quantity-kind';
 import {DefaultUnit} from '../aspect-meta-model/default-unit';
-import {getRdfModel, getStore} from '../shared/rdf-model';
+import {BaseInitProps} from '../shared/base-init-props';
 import {getPredefinedUnit, getQuantityKind} from '../shared/units';
-import {getBaseProperties} from './meta-model-element-instantiator';
+import {basePropertiesFactory} from './meta-model-element-instantiator';
 
-export function createUnit(urn: string) {
-  if (!urn) {
-    return null;
-  }
+export function unitFactory(initProps: BaseInitProps) {
+  const {
+    rdfModel: {store, samm, sammU},
+  } = initProps;
 
-  const store = getStore();
-  const {sammU, samm} = getRdfModel();
+  function createUnit(urn: string) {
+    if (!urn) {
+      return null;
+    }
 
-  const quantityKindNames = new Array<string>();
-  const unit = getPredefinedUnit(urn.replace(sammU.getNamespace(), ''));
-  const defaultUnit = new DefaultUnit({
-    metaModelVersion: samm.version,
-    aspectModelUrn: '',
-    name: '',
-    quantityKinds: [],
-  });
+    const quantityKindNames = new Array<string>();
+    const unit = getPredefinedUnit(urn.replace(sammU.getNamespace(), ''));
+    const defaultUnit = new DefaultUnit({
+      metaModelVersion: samm.version,
+      aspectModelUrn: '',
+      name: '',
+      quantityKinds: [],
+    });
 
-  if (unit) {
-    defaultUnit.name = unit.name;
-    defaultUnit.preferredNames.set('en', unit.label);
-    defaultUnit.aspectModelUrn = `${sammU.getDefaultUnitUri()}#${defaultUnit.name}`;
-    defaultUnit.symbol = unit.symbol;
-    defaultUnit.code = unit.code;
-    defaultUnit.referenceUnit = unit.referenceUnit ? unit.referenceUnit().name : null;
-    defaultUnit.conversionFactor = unit.conversionFactor;
-    defaultUnit.quantityKinds = unit.quantityKinds;
-    defaultUnit.isPredefined = true;
-  } else {
-    const unitPropertyQuads = store.getQuads(DataFactory.namedNode(urn), null, null, null);
-    const baseProperties = getBaseProperties(DataFactory.namedNode(urn));
+    if (unit) {
+      defaultUnit.name = unit.name;
+      defaultUnit.preferredNames.set('en', unit.label);
+      defaultUnit.aspectModelUrn = `${sammU.getDefaultUnitUri()}#${defaultUnit.name}`;
+      defaultUnit.symbol = unit.symbol;
+      defaultUnit.code = unit.code;
+      defaultUnit.referenceUnit = unit.referenceUnit ? unit.referenceUnit().name : null;
+      defaultUnit.conversionFactor = unit.conversionFactor;
+      defaultUnit.quantityKinds = unit.quantityKinds;
+      defaultUnit.isPredefined = true;
+    } else {
+      const unitPropertyQuads = store.getQuads(DataFactory.namedNode(urn), null, null, null);
+      const baseProperties = basePropertiesFactory(initProps)(DataFactory.namedNode(urn));
 
-    defaultUnit.name = baseProperties.name;
-    defaultUnit.aspectModelUrn = baseProperties.aspectModelUrn;
-    defaultUnit.metaModelVersion = baseProperties.metaModelVersion;
-    defaultUnit.syntheticName = baseProperties.hasSyntheticName;
+      defaultUnit.name = baseProperties.name;
+      defaultUnit.aspectModelUrn = baseProperties.aspectModelUrn;
+      defaultUnit.metaModelVersion = baseProperties.metaModelVersion;
+      defaultUnit.syntheticName = baseProperties.hasSyntheticName;
 
-    for (const quad of unitPropertyQuads) {
-      if (samm.isSymbolProperty(quad.predicate.value)) {
-        defaultUnit.symbol = quad.object.value;
-      } else if (samm.isReferenceUnitProperty(quad.predicate.value)) {
-        defaultUnit.referenceUnit = createUnit(quad.object.value);
-      } else if (samm.isConversionFactorProperty(quad.predicate.value)) {
-        defaultUnit.conversionFactor = quad.object.value;
-      } else if (sammU.isCodeProperty(quad.predicate.value)) {
-        defaultUnit.code = quad.object.value;
-      } else if (samm.isQuantityKindProperty(quad.predicate.value)) {
-        quantityKindNames.push(quad.object.value);
+      for (const quad of unitPropertyQuads) {
+        if (samm.isSymbolProperty(quad.predicate.value)) {
+          defaultUnit.symbol = quad.object.value;
+        } else if (samm.isReferenceUnitProperty(quad.predicate.value)) {
+          defaultUnit.referenceUnit = createUnit(quad.object.value);
+        } else if (samm.isConversionFactorProperty(quad.predicate.value)) {
+          defaultUnit.conversionFactor = quad.object.value;
+        } else if (sammU.isCodeProperty(quad.predicate.value)) {
+          defaultUnit.code = quad.object.value;
+        } else if (samm.isQuantityKindProperty(quad.predicate.value)) {
+          quantityKindNames.push(quad.object.value);
+        }
       }
     }
+
+    quantityKindNames.forEach(quantityKindName => {
+      const quantityKind = createQuantityKind(quantityKindName);
+      if (quantityKind) {
+        defaultUnit.quantityKinds.push(quantityKind);
+      }
+    });
+    return defaultUnit;
   }
 
-  quantityKindNames.forEach(quantityKindName => {
-    const quantityKind = createQuantityKind(quantityKindName);
-    if (quantityKind) {
-      defaultUnit.quantityKinds.push(quantityKind);
+  function createQuantityKind(name: string): QuantityKind {
+    if (!name) {
+      return null;
     }
-  });
-  return defaultUnit;
-}
 
-export function createQuantityKind(name: string): QuantityKind {
-  if (!name) {
+    const quantityKind = getQuantityKind(name.replace(sammU.getNamespace(), ''));
+    if (quantityKind) {
+      return new DefaultQuantityKind({
+        metaModelVersion: samm.version,
+        aspectModelUrn: `${sammU.getDefaultQuantityKindsUri()}${quantityKind.name}`,
+        name: quantityKind.name,
+        label: quantityKind.label,
+      });
+    }
+
     return null;
   }
 
-  const {sammU, samm} = getRdfModel();
-
-  const quantityKind = getQuantityKind(name.replace(sammU.getNamespace(), ''));
-  if (quantityKind) {
-    return new DefaultQuantityKind({
-      metaModelVersion: samm.version,
-      aspectModelUrn: `${sammU.getDefaultQuantityKindsUri()}${quantityKind.name}`,
-      name: quantityKind.name,
-      label: quantityKind.label,
-    });
-  }
-
-  return null;
+  return {
+    createUnit,
+    createQuantityKind,
+  };
 }

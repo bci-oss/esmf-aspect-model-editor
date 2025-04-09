@@ -11,15 +11,20 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Store} from 'n3';
-import {finalize, map, Observable, Subject} from 'rxjs';
+import {map, Observable, Subject} from 'rxjs';
 import {Aspect} from './aspect-meta-model';
 import {BaseModelLoader} from './base-model-loader';
-import {createAspect} from './instantiator/aspect-instantiator';
-import {destroyElementCache, getElementsCache} from './shared/model-element-cache.service';
+import {aspectFactory} from './instantiator/aspect-instantiator';
+import {BaseInitProps} from './shared/base-init-props';
+import {ModelElementCache} from './shared/model-element-cache.service';
 import {RdfLoader} from './shared/rdf-loader';
-import {destroyRdfModel, destroyStore, getRdfModel, getStore, RdfModel, useStore} from './shared/rdf-model';
+import {RdfModel} from './shared/rdf-model';
 import {RdfModelUtil} from './shared/rdf-model-util';
+
+type InstantiatorResult = {
+  aspect: Aspect;
+  initProps: BaseInitProps;
+};
 
 export class AspectModelLoader extends BaseModelLoader {
   constructor() {
@@ -30,7 +35,7 @@ export class AspectModelLoader extends BaseModelLoader {
    *
    * @param rdfContent RDF/Turtle representation to load
    */
-  public loadSelfContainedModel(rdfContent: string): Observable<Aspect> {
+  public loadSelfContainedModel(rdfContent: string): Observable<InstantiatorResult> {
     return this.load('', rdfContent);
   }
 
@@ -47,13 +52,22 @@ export class AspectModelLoader extends BaseModelLoader {
    *
    * @return Observable<Aspect> Aspect including all information from the given RDF
    */
-  public load(modelAspectUrn: string, ...rdfContent: string[]): Observable<Aspect> {
-    const subject = new Subject<Aspect>();
+  public load(modelAspectUrn: string, ...rdfContent: string[]): Observable<InstantiatorResult> {
+    const subject = new Subject<InstantiatorResult>();
+    const initProps: BaseInitProps = {rdfModel: null, cache: null};
+
     new RdfLoader().loadModel(rdfContent).subscribe({
       next: (rdfModel: RdfModel) => {
+        initProps.rdfModel = rdfModel;
+        initProps.cache = new ModelElementCache();
+        this.cacheService = initProps.cache;
+
         try {
           RdfModelUtil.throwErrorIfUnsupportedVersion(rdfModel);
-          subject.next(createAspect(modelAspectUrn));
+          subject.next({
+            aspect: aspectFactory(initProps)(modelAspectUrn),
+            initProps,
+          });
         } catch (error: any) {
           subject.error(error);
         } finally {
@@ -69,24 +83,15 @@ export class AspectModelLoader extends BaseModelLoader {
   }
 }
 
-export function loadAspectModel(model: {filesContent: string[]; aspectModelUrn?: string; store?: Store}) {
+export function loadAspectModel(model: {filesContent: string[]; aspectModelUrn?: string}) {
   const aspectModelLoader = new AspectModelLoader();
 
-  if (model.store) {
-    useStore(model.store);
-  }
-
   return aspectModelLoader.load(model.aspectModelUrn || '', ...model.filesContent).pipe(
-    map(aspect => ({
+    map(({aspect, initProps}) => ({
       aspect,
-      rdfModel: getRdfModel(),
-      store: getStore(),
-      cachedElements: getElementsCache(),
+      rdfModel: initProps.rdfModel,
+      store: initProps.rdfModel.store,
+      cachedElements: initProps.cache,
     })),
-    finalize(() => {
-      destroyElementCache();
-      destroyRdfModel({keepStore: true});
-      destroyStore();
-    }),
   );
 }

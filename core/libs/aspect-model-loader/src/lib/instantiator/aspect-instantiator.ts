@@ -16,11 +16,11 @@ import {Aspect, DefaultCollection} from '../aspect-meta-model';
 import {DefaultAspect} from '../aspect-meta-model/default-aspect';
 import {BaseInitProps} from '../shared/base-init-props';
 import {getEvents} from './event-instantiator';
-import {getBaseProperties} from './meta-model-element-instantiator';
+import {basePropertiesFactory} from './meta-model-element-instantiator';
 import {getOperations} from './operation-instantiator';
-import {getPropertyInstantiator} from './property-instantiator';
+import {propertyFactory} from './property-instantiator';
 
-export function createAspect(initProps: BaseInitProps) {
+export function aspectFactory(initProps: BaseInitProps) {
   const {cache} = initProps;
 
   function getAspectQuad(aspectModelUrn?: string): Quad {
@@ -54,8 +54,8 @@ export function createAspect(initProps: BaseInitProps) {
       return cache.get(aspectNode.value);
     }
 
-    const {createProperties} = getPropertyInstantiator(initProps);
-    const baseProperties = getBaseProperties(initProps)(aspectNode);
+    const {createProperties} = propertyFactory(initProps);
+    const baseProperties = basePropertiesFactory(initProps)(aspectNode);
     const properties = createProperties(aspectNode);
     const operations = getOperations(initProps)(aspectNode);
     const events = getEvents(initProps)(aspectNode);

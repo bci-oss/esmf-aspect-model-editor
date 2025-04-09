@@ -13,77 +13,79 @@
 
 import {NamedNode, Quad, Quad_Subject, Util} from 'n3';
 import {LangString} from '../aspect-meta-model/named-element';
+import {BaseInitProps} from '../shared/base-init-props';
 import {NamedElementProps} from '../shared/props';
-import {getRdfModel} from '../shared/rdf-model';
 
-function getLangValuePair(quad: Quad) {
-  const localeCode = getRdfModel().getLocale(quad);
-  return localeCode ? {lang: localeCode, value: quad.object.value} : {lang: 'en', value: quad.object.value};
-}
-
-function getAspectModelUrn(typeQuad: Quad, quads: Array<Quad>): {aspectModelUrn: string; hasSyntheticName: boolean} {
-  const rdfModel = getRdfModel();
-  const {samm} = rdfModel;
-  if (typeQuad && !Util.isBlankNode(typeQuad.subject)) {
-    return {aspectModelUrn: `${typeQuad.subject.value}`, hasSyntheticName: false};
+export const basePropertiesFactory = (initProps: BaseInitProps) => {
+  function getLangValuePair(quad: Quad) {
+    const localeCode = initProps.rdfModel.getLocale(quad);
+    return localeCode ? {lang: localeCode, value: quad.object.value} : {lang: 'en', value: quad.object.value};
   }
 
-  if (!(quads && quads.length > 0)) {
-    return {aspectModelUrn: `${rdfModel.getAspectModelUrn()}${Math.floor(Math.random() * 5000) + 1}`, hasSyntheticName: true};
+  function getAspectModelUrn(typeQuad: Quad, quads: Array<Quad>): {aspectModelUrn: string; hasSyntheticName: boolean} {
+    const rdfModel = initProps.rdfModel;
+    const {samm} = rdfModel;
+    if (typeQuad && !Util.isBlankNode(typeQuad.subject)) {
+      return {aspectModelUrn: `${typeQuad.subject.value}`, hasSyntheticName: false};
+    }
+
+    if (!(quads && quads.length > 0)) {
+      return {aspectModelUrn: `${rdfModel.getAspectModelUrn()}${Math.floor(Math.random() * 5000) + 1}`, hasSyntheticName: true};
+    }
+
+    const propertyQuads = quads.find(quads => quads.predicate.value === samm.property().id);
+    if (propertyQuads && Util.isBlankNode(quads[0].subject)) {
+      return {aspectModelUrn: propertyQuads.object.value, hasSyntheticName: false};
+    }
+
+    return {aspectModelUrn: quads[0].subject.id, hasSyntheticName: false};
   }
 
-  const propertyQuads = quads.find(quads => quads.predicate.value === samm.property().id);
-  if (propertyQuads && Util.isBlankNode(quads[0].subject)) {
-    return {aspectModelUrn: propertyQuads.object.value, hasSyntheticName: false};
-  }
+  return (subject: Quad_Subject): NamedElementProps => {
+    const rdfModel = initProps.rdfModel;
+    const {samm} = rdfModel;
+    const baseProperties = rdfModel.findAnyProperty(subject as NamedNode);
 
-  return {aspectModelUrn: quads[0].subject.id, hasSyntheticName: false};
-}
+    const descriptions = new Map<LangString, string>();
+    const preferredNames = new Map<LangString, string>();
+    const see: string[] = [];
 
-export function getBaseProperties(subject: Quad_Subject): NamedElementProps {
-  const rdfModel = getRdfModel();
-  const {samm} = rdfModel;
-  const baseProperties = rdfModel.findAnyProperty(subject as NamedNode);
+    let typeQuad: Quad;
+    for (const quad of baseProperties) {
+      if (samm.isDescriptionProperty(quad.predicate.value)) {
+        const {lang, value} = getLangValuePair(quad);
+        descriptions.set(lang, value);
+        continue;
+      }
 
-  const descriptions = new Map<LangString, string>();
-  const preferredNames = new Map<LangString, string>();
-  const see: string[] = [];
+      if (samm.isPreferredNameProperty(quad.predicate.value)) {
+        const {lang, value} = getLangValuePair(quad);
+        preferredNames.set(lang, value);
+        continue;
+      }
 
-  let typeQuad: Quad;
-  for (const quad of baseProperties) {
-    if (samm.isDescriptionProperty(quad.predicate.value)) {
-      const {lang, value} = getLangValuePair(quad);
-      descriptions.set(lang, value);
-      continue;
+      if (samm.isSeeProperty(quad.predicate.value)) {
+        see.push(quad.object.value);
+        continue;
+      }
+
+      if (quad.predicate.value === samm.RdfType().value) {
+        typeQuad = quad;
+      }
     }
 
-    if (samm.isPreferredNameProperty(quad.predicate.value)) {
-      const {lang, value} = getLangValuePair(quad);
-      preferredNames.set(lang, value);
-      continue;
-    }
+    const {aspectModelUrn, hasSyntheticName} = getAspectModelUrn(typeQuad, baseProperties);
+    const metaModelVersion = rdfModel.samm.version;
+    const name = aspectModelUrn.split('#')?.[1];
 
-    if (samm.isSeeProperty(quad.predicate.value)) {
-      see.push(quad.object.value);
-      continue;
-    }
-
-    if (quad.predicate.value === samm.RdfType().value) {
-      typeQuad = quad;
-    }
-  }
-
-  const {aspectModelUrn, hasSyntheticName} = getAspectModelUrn(typeQuad, baseProperties);
-  const metaModelVersion = rdfModel.samm.version;
-  const name = aspectModelUrn.split('#')?.[1];
-
-  return {
-    name,
-    hasSyntheticName,
-    aspectModelUrn,
-    metaModelVersion,
-    descriptions,
-    preferredNames,
-    see,
+    return {
+      name,
+      hasSyntheticName,
+      aspectModelUrn,
+      metaModelVersion,
+      descriptions,
+      preferredNames,
+      see,
+    };
   };
-}
+};

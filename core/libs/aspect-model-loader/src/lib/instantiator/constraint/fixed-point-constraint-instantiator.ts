@@ -13,20 +13,26 @@
 
 import {Quad} from 'n3';
 import {DefaultFixedPointConstraint} from '../../aspect-meta-model';
-import {getRdfModel} from '../../shared/rdf-model';
-import {generateConstraint} from './constraint-instantiator';
+import {BaseInitProps} from '../../shared/base-init-props';
+import {constraintFactory} from './constraint-instantiator';
 
-export function createFixedPointConstraint(quad: Quad): DefaultFixedPointConstraint {
-  return generateConstraint(quad, (baseProperties, propertyQuads) => {
-    const {sammC} = getRdfModel();
-    const constraint = new DefaultFixedPointConstraint({...baseProperties, scale: null, integer: null});
-    for (const propertyQuad of propertyQuads) {
-      if (sammC.isScaleValueProperty(propertyQuad.predicate.value)) {
-        constraint.scale = Number(propertyQuad.object.value);
-      } else if (sammC.isIntegerValueProperty(propertyQuad.predicate.value)) {
-        constraint.integer = Number(propertyQuad.object.value);
+export function fixedPointConstraintFactory(initProps: BaseInitProps) {
+  const {
+    rdfModel: {sammC},
+  } = initProps;
+  const {generateConstraint} = constraintFactory(initProps);
+
+  return function createFixedPointConstraint(quad: Quad): DefaultFixedPointConstraint {
+    return generateConstraint(quad, (baseProperties, propertyQuads) => {
+      const constraint = new DefaultFixedPointConstraint({...baseProperties, scale: null, integer: null});
+      for (const propertyQuad of propertyQuads) {
+        if (sammC.isScaleValueProperty(propertyQuad.predicate.value)) {
+          constraint.scale = Number(propertyQuad.object.value);
+        } else if (sammC.isIntegerValueProperty(propertyQuad.predicate.value)) {
+          constraint.integer = Number(propertyQuad.object.value);
+        }
       }
-    }
-    return constraint;
-  });
+      return constraint;
+    });
+  };
 }

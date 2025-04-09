@@ -16,10 +16,10 @@ import {Property} from '../aspect-meta-model';
 import {ComplexType} from '../aspect-meta-model/complex-type';
 import {DefaultEntity} from '../aspect-meta-model/default-entity';
 import {BaseInitProps} from '../shared/base-init-props';
-import {getBaseProperties} from './meta-model-element-instantiator';
-import {getProperties} from './property-instantiator';
+import {basePropertiesFactory} from './meta-model-element-instantiator';
+import {propertyFactory} from './property-instantiator';
 
-export function createEntity(initProps: BaseInitProps) {
+export function entityFactory(initProps: BaseInitProps) {
   return (quads: Quad[], isAbstract = false, extending?: ComplexType) => {
     if (!quads?.length) return null;
 
@@ -35,7 +35,7 @@ export function createEntity(initProps: BaseInitProps) {
       return cachedEntity;
     }
 
-    const baseProperties = getBaseProperties(subject);
+    const baseProperties = basePropertiesFactory(initProps)(subject);
     const properties: Property[] = [];
 
     const entity = new DefaultEntity({
@@ -46,14 +46,14 @@ export function createEntity(initProps: BaseInitProps) {
 
     for (const quad of quads) {
       if (samm.isPropertiesProperty(quad.predicate.value)) {
-        properties.push(...getProperties(quad.subject as NamedNode));
+        properties.push(...propertyFactory(initProps).createProperties(quad.subject as NamedNode));
         continue;
       }
 
       if (samm.isExtends(quad.predicate.value)) {
         const extendsEntityQuads = store.getQuads(quad.object, null, null, null);
         if (extendsEntityQuads && extendsEntityQuads.length > 0) {
-          entity.extends_ = createEntity(initProps)(
+          entity.extends_ = entityFactory(initProps)(
             extendsEntityQuads,
             extendsEntityQuads.some(q => samm.isAbstractEntity(q.object.value)),
             entity,

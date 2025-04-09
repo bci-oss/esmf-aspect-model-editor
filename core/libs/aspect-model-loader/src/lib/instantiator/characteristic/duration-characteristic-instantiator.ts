@@ -13,25 +13,32 @@
 
 import {Quad} from 'n3';
 import {DefaultDuration} from '../../aspect-meta-model/characteristic/default-duration';
-import {getRdfModel} from '../../shared/rdf-model';
-import {generateCharacteristic, getDataType} from '../characteristic/characteristic-instantiator';
-import {createUnit} from '../predefined-unit-instantiator';
+import {BaseInitProps} from '../../shared/base-init-props';
+import {unitFactory} from '../predefined-unit-instantiator';
+import {characteristicFactory} from './characteristic-instantiator';
 
-export function createDurationCharacteristic(quad: Quad): DefaultDuration {
-  return generateCharacteristic(quad, (baseProperties, propertyQuads) => {
-    const {samm, sammC} = getRdfModel();
-    const characteristic = new DefaultDuration({...baseProperties});
+export function durationCharacteristicFactory(initProps: BaseInitProps) {
+  const {
+    rdfModel: {samm, sammC},
+  } = initProps;
+  const {generateCharacteristic, getDataType} = characteristicFactory(initProps);
+  const {createUnit} = unitFactory(initProps);
 
-    for (const propertyQuad of propertyQuads) {
-      if (sammC.isUnitProperty(propertyQuad.predicate.value)) {
-        characteristic.unit = createUnit(quad.object.value);
-        if (characteristic.unit) {
-          characteristic.unit.addParent(characteristic);
+  return function createDurationCharacteristic(quad: Quad): DefaultDuration {
+    return generateCharacteristic(quad, (baseProperties, propertyQuads) => {
+      const characteristic = new DefaultDuration({...baseProperties});
+
+      for (const propertyQuad of propertyQuads) {
+        if (sammC.isUnitProperty(propertyQuad.predicate.value)) {
+          characteristic.unit = createUnit(quad.object.value);
+          if (characteristic.unit) {
+            characteristic.unit.addParent(characteristic);
+          }
+        } else if (samm.isDataTypeProperty(propertyQuad.predicate.value)) {
+          characteristic.dataType = getDataType(propertyQuad);
         }
-      } else if (samm.isDataTypeProperty(propertyQuad.predicate.value)) {
-        characteristic.dataType = getDataType(propertyQuad);
       }
-    }
-    return characteristic;
-  });
+      return characteristic;
+    });
+  };
 }

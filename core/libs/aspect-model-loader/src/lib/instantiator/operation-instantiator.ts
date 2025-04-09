@@ -14,10 +14,10 @@
 import {Quad, Quad_Subject} from 'n3';
 import {DefaultOperation, Operation} from '../aspect-meta-model/default-operation';
 import {BaseInitProps} from '../shared/base-init-props';
-import {getBaseProperties} from './meta-model-element-instantiator';
-import {createProperty} from './property-instantiator';
+import {basePropertiesFactory} from './meta-model-element-instantiator';
+import {propertyFactory} from './property-instantiator';
 
-export function createOperation(initProps: BaseInitProps) {
+export function operationFactory(initProps: BaseInitProps) {
   return (quad: Quad): DefaultOperation => {
     const rdfModel = initProps.rdfModel;
     const {samm} = rdfModel;
@@ -28,7 +28,7 @@ export function createOperation(initProps: BaseInitProps) {
     }
 
     const quads = rdfModel.findAnyProperty(quad);
-    const baseProperties = getBaseProperties(quad.subject);
+    const baseProperties = basePropertiesFactory(initProps)(quad.subject);
     const operation = new DefaultOperation({
       ...baseProperties,
       input: [],
@@ -39,7 +39,7 @@ export function createOperation(initProps: BaseInitProps) {
       if (samm.isInputProperty(quad.predicate.value)) {
         const inputQuads = rdfModel.resolveBlankNodes(quad.object.value);
         operation.input = inputQuads.map(input => {
-          const property = createProperty(input);
+          const property = propertyFactory(initProps).createProperty(input);
           property.addParent(operation);
           return property;
         });
@@ -47,7 +47,7 @@ export function createOperation(initProps: BaseInitProps) {
       }
 
       if (samm.isOutputProperty(quad.predicate.value)) {
-        operation.output = createProperty(quad);
+        operation.output = propertyFactory(initProps).createProperty(quad);
         operation.output?.addParent(operation);
       }
     }
@@ -66,7 +66,7 @@ export function getOperations(initProps: BaseInitProps) {
     store.getQuads(subject, samm.OperationsProperty(), null, null).forEach(operationQuad => {
       rdfModel
         .resolveBlankNodes(operationQuad.object.value)
-        .forEach(resolvedOperationQuad => operations.push(createOperation(initProps)(resolvedOperationQuad)));
+        .forEach(resolvedOperationQuad => operations.push(operationFactory(initProps)(resolvedOperationQuad)));
     });
 
     return operations;

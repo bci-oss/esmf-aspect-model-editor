@@ -14,16 +14,48 @@
 import {
   DefaultAspect,
   DefaultCharacteristic,
+  DefaultCode,
+  DefaultCollection,
   DefaultConstraint,
+  DefaultDuration,
+  DefaultEither,
   DefaultEntity,
+  DefaultEnumeration,
   DefaultEvent,
+  DefaultList,
+  DefaultMeasurement,
   DefaultOperation,
   DefaultProperty,
+  DefaultQuantifiable,
+  DefaultSet,
+  DefaultSingleEntity,
+  DefaultSortedSet,
+  DefaultState,
+  DefaultStructuredValue,
+  DefaultTimeSeries,
   DefaultTrait,
   DefaultUnit,
   NamedElement,
 } from '@esmf/aspect-model-loader';
 import {config} from '../config';
+
+const characteristics: {new (...x: any[]): NamedElement}[] = [
+  DefaultCharacteristic,
+  DefaultCode,
+  DefaultCollection,
+  DefaultDuration,
+  DefaultEither,
+  DefaultEnumeration,
+  DefaultList,
+  DefaultMeasurement,
+  DefaultQuantifiable,
+  DefaultSet,
+  DefaultSortedSet,
+  DefaultSingleEntity,
+  DefaultState,
+  DefaultStructuredValue,
+  DefaultTimeSeries,
+];
 
 export function createEmptyElement(elementClass: {new (...x: any[]): NamedElement}, isAbstract = false): NamedElement {
   let element: NamedElement;
@@ -34,13 +66,13 @@ export function createEmptyElement(elementClass: {new (...x: any[]): NamedElemen
     case elementClass === DefaultProperty:
       element = new DefaultProperty({
         name: isAbstract ? 'abstractProperty' : 'property',
-        metaModelVersion: '',
+        metaModelVersion: config.currentSammVersion,
         aspectModelUrn: '',
         isAbstract,
       });
       break;
-    case elementClass === DefaultCharacteristic:
-      element = new DefaultCharacteristic({name: 'characteristic', metaModelVersion: config.currentSammVersion, aspectModelUrn: ''});
+    case characteristics.includes(elementClass):
+      element = new elementClass({name: 'Characteristic', metaModelVersion: config.currentSammVersion, aspectModelUrn: ''});
       break;
     case elementClass === DefaultEntity:
       element = new DefaultEntity({
@@ -54,10 +86,10 @@ export function createEmptyElement(elementClass: {new (...x: any[]): NamedElemen
       element = new DefaultUnit({name: 'unit', metaModelVersion: config.currentSammVersion, aspectModelUrn: '', quantityKinds: []});
       break;
     case elementClass === DefaultConstraint:
-      element = new DefaultConstraint({name: 'constraint', metaModelVersion: config.currentSammVersion, aspectModelUrn: ''});
+      element = new DefaultConstraint({name: 'Constraint', metaModelVersion: config.currentSammVersion, aspectModelUrn: ''});
       break;
     case elementClass === DefaultTrait:
-      element = new DefaultTrait({name: 'trait', metaModelVersion: config.currentSammVersion, aspectModelUrn: ''});
+      element = new DefaultTrait({name: 'Trait', metaModelVersion: config.currentSammVersion, aspectModelUrn: ''});
       break;
     case elementClass === DefaultOperation:
       element = new DefaultOperation({name: 'operation', metaModelVersion: config.currentSammVersion, aspectModelUrn: '', input: null});

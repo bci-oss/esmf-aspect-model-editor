@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ElementsSet} from '../../shared/elements-set';
+import {ElementSet} from '../../shared/elements-set';
 import {EitherProps} from '../../shared/props';
 import {Type} from '../type';
 import {Characteristic, DefaultCharacteristic} from './default-characteristic';
@@ -36,8 +36,8 @@ export class DefaultEither extends DefaultCharacteristic implements Either {
   left: Characteristic;
   right: Characteristic;
 
-  override get children(): ElementsSet {
-    const children = new ElementsSet();
+  override get children(): ElementSet {
+    const children = new ElementSet();
     if (this.left) {
       children.push(this.left);
     }

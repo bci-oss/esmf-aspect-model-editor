@@ -26,7 +26,7 @@ export class EditorModelService {
   public originalMetaModel: NamedElement;
 
   constructor(private modelService: ModelService) {
-    this.metaModelElementSubject.asObservable().subscribe(newMetaModelElement => {
+    this.metaModelElementSubject.subscribe(newMetaModelElement => {
       if (this.originalMetaModel && !newMetaModelElement) {
         this.originalMetaModel = null;
       }
@@ -54,7 +54,7 @@ export class EditorModelService {
     return this.metaModelElementSubject.asObservable();
   }
 
-  _updateMetaModelElement(metaModelElement: NamedElement): void {
+  updateMetaModelElement(metaModelElement: NamedElement): void {
     if (metaModelElement === null) {
       this.metaModelElementSubject.next(metaModelElement);
       return;

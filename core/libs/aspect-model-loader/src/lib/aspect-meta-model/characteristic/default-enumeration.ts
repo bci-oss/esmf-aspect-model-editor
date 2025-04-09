@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {ElementsSet} from '../../shared/elements-set';
+import {ElementSet} from '../../shared/elements-set';
 import {EnumerationProps} from '../../shared/props';
 import {DefaultEntityInstance, EntityInstance} from '../default-entity-instance';
 import {Value} from '../value';
@@ -24,7 +24,7 @@ export class DefaultEnumeration extends DefaultCharacteristic implements Enumera
   override className = 'DefaultEnumeration';
   values: (Value | DefaultEntityInstance)[];
 
-  override get children(): ElementsSet {
+  override get children(): ElementSet {
     const elementValues = this.values.filter(v => v instanceof DefaultEntityInstance);
     return super.children.append(elementValues as any[]);
   }

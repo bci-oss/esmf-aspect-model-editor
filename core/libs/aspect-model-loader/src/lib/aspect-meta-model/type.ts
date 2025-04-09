@@ -12,15 +12,15 @@
  */
 
 import {ScalarProps} from '../shared/props';
-import {ModelElement} from './model-element';
+import {NamedElement} from './named-element';
 
-export abstract class Type extends ModelElement {
+export abstract class Type extends NamedElement {
   urn: string;
   scalar: boolean;
   complexType: boolean;
 
   constructor(props: ScalarProps) {
-    super(props);
+    super({...props, aspectModelUrn: props.urn, name: ''});
     this.urn = props.urn;
     this.scalar = Boolean(props.scalar);
     this.complexType = Boolean(props.complexType);

@@ -12,10 +12,11 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
+import {config} from '@ame/shared';
 import {Component, Inject} from '@angular/core';
 import {FormArray, FormControl, FormGroup, Validators} from '@angular/forms';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
-import {DefaultEntity, DefaultEntityInstance, DefaultEnumeration, DefaultProperty} from '@esmf/aspect-model-loader';
+import {DefaultEntity, DefaultEntityInstance, DefaultEnumeration, DefaultProperty, Value} from '@esmf/aspect-model-loader';
 import {EditorModelService} from '../../../editor-model.service';
 import {EditorDialogValidators} from '../../../validators';
 import {EntityInstanceUtil} from '../utils/EntityInstanceUtil';
@@ -106,11 +107,13 @@ export class EntityInstanceModalComponent {
   }
 
   private createNewEntityValue(): DefaultEntityInstance {
-    const entityValue = new DefaultEntityInstance({name: '', aspectModelUrn: '', metaModelVersion: ''});
+    const entityValue = new DefaultEntityInstance({
+      name: this.entityValueName.value,
+      aspectModelUrn: this.getAspectModelUrnFromName(this.entityValueName.value),
+      metaModelVersion: config.currentSammVersion,
+      type: this.entity,
+    });
 
-    entityValue.name = this.entityValueName.value;
-    entityValue.aspectModelUrn = this.getAspectModelUrnFromName(this.entityValueName.value);
-    entityValue.type = this.entity;
     entityValue.addParent(this.enumeration);
 
     const propertiesForm = this.form.get('properties');
@@ -122,13 +125,11 @@ export class EntityInstanceModalComponent {
         propertyArray.controls.forEach(control => {
           const value = control.get('value').value;
           const language = control.get('language').value;
-          // TODO: Check this after entity instances are done
-          // entityValue.addProperty(propertyElement, value, language);
+          entityValue.setAssertion(propertyElement.aspectModelUrn, new Value(value, propertyElement.characteristic?.dataType, language));
         });
       } else {
         const value = propertyArray.at(0).get('value').value;
-        // TODO: Check this after entity instances are done
-        // entityValue.addProperty(propertyElement, value);
+        entityValue.setAssertion(propertyElement.aspectModelUrn, new Value(value, propertyElement.characteristic?.dataType));
       }
     });
 

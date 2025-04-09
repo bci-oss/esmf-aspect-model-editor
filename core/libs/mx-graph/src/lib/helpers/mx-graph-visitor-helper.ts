@@ -77,12 +77,10 @@ export class MxGraphVisitorHelper {
       characteristic.values?.length &&
       !characteristic.values.every(value => value instanceof DefaultEntityInstance)
     ) {
-      return null;
-      // TODO fix this whn EntityInstance is completed
-      //  {
-      //   label: `values = ${RdfModelUtil.getValuesWithoutUrnDefinition(characteristic.values)}`,
-      //   key: 'values',
-      // };
+      return {
+        label: `values = ${RdfModelUtil.getValuesWithoutUrnDefinition(characteristic.values)}`,
+        key: 'values',
+      };
     }
     return null;
   }
@@ -90,7 +88,7 @@ export class MxGraphVisitorHelper {
   static addDefaultValue(characteristic: Characteristic): ShapeAttribute {
     if (characteristic instanceof DefaultState && characteristic.defaultValue) {
       return {
-        label: `defaultValue = ${RdfModelUtil.getValuesWithoutUrnDefinition(Array(characteristic.defaultValue.value))}`,
+        label: `defaultValue = ${RdfModelUtil.getValuesWithoutUrnDefinition([characteristic.defaultValue.value.toString()])}`,
         key: 'defaultValue',
       };
     }
@@ -260,7 +258,7 @@ export class MxGraphVisitorHelper {
   }
 
   static addNumericConversionFactor(unit: Unit): ShapeAttribute {
-    if (unit.conversionFactor) {
+    if (unit.numericConversionFactor) {
       return {label: `numericConversionFactor = ${unit.numericConversionFactor}`, key: 'conversionFactor'};
     }
     return null;
@@ -494,7 +492,7 @@ export class MxGraphVisitorHelper {
         sameNamespace: elementNamespace === currentNamespace,
         sameVersionedNamespace: aspectVersionedNamespace === elementVersionedNamespace,
         fileName: file.absoluteName,
-        isAbstract: modelElement['isAbstract'],
+        isAbstract: modelElement['isAbstract'] || modelElement['isAbstractEntity_'],
       };
     } catch (error) {
       return null;

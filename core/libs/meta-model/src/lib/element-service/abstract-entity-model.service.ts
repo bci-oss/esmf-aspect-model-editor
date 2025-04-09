@@ -11,7 +11,6 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {CacheUtils} from '@ame/cache';
 import {EntityInstanceService} from '@ame/editor';
 import {
   AbstractEntityRenderService,
@@ -22,6 +21,7 @@ import {
   MxGraphVisitorHelper,
 } from '@ame/mx-graph';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
+import {useUpdater} from '@ame/utils';
 import {Injectable} from '@angular/core';
 import {DefaultEntity, DefaultEntityInstance, DefaultEnumeration, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
@@ -56,18 +56,6 @@ export class AbstractEntityModelService extends BaseModelService {
         property.optional = newKeys.optional;
         property.payloadName = newKeys.payloadName;
       }
-
-      CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntityInstance)
-        ?.filter((entityValue: DefaultEntityInstance) => entityValue.type.aspectModelUrn === metaModelElement.aspectModelUrn)
-        ?.forEach((entityValue: DefaultEntityInstance) => {
-          for (const entityValueProperty of entityValue.assertions) {
-            // TODO update this functionality with the new structure from entityInstance
-            // const property = metaModelElement.properties.find(property => property.name === entityValueProperty.key.property.name);
-            // entityValueProperty.key.keys.optional = property.optional;
-            // entityValueProperty.key.keys.notInPayload = property.notInPayload;
-            // entityValueProperty.key.keys.payloadName = property.payloadName;
-          }
-        });
     }
 
     super.update(cell, form);
@@ -117,20 +105,19 @@ export class AbstractEntityModelService extends BaseModelService {
 
       const entityValuesToDelete = [];
       for (const edge of cell.edges) {
-        const modelElement = MxGraphHelper.getModelElement(edge.source);
-        if (modelElement && !modelElement.isExternalReference()) {
-          this.currentCachedFile.removeElement(modelElement.aspectModelUrn);
-          // TODO update delete functionality
-          // (<NamedElement>modelElement).delete(modelElement);
+        const element = MxGraphHelper.getModelElement(edge.source);
+        if (element && !element.isExternalReference()) {
+          this.currentCachedFile.removeElement(element.aspectModelUrn);
+          useUpdater(modelElement).delete(element);
         }
 
-        if (modelElement instanceof DefaultEnumeration) {
+        if (element instanceof DefaultEnumeration) {
           // we need to remove and add back the + button for enumeration
           this.mxGraphShapeOverlayService.removeComplexTypeShapeOverlays(edge.source);
           this.mxGraphShapeOverlayService.addBottomShapeOverlay(edge.source);
         }
 
-        if (modelElement instanceof DefaultEntityInstance && edge.source.style.includes('entityValue')) {
+        if (element instanceof DefaultEntityInstance && edge.source.style.includes('entityValue')) {
           entityValuesToDelete.push(edge.source);
         }
       }

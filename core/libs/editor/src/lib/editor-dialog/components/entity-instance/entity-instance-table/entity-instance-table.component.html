@@ -126,7 +126,7 @@
                         }
                       }
                     </mat-autocomplete>
-                    @if (control.get('language').errors?.required) {
+                    @if (control.get('language')?.errors?.required) {
                       <mat-error>{{ 'EDITOR_CANVAS.SHAPE_SETTING.FIELD.LANGUAGE.PLEASE_DEFINE' | translate }} </mat-error>
                     }
                   </mat-form-field>

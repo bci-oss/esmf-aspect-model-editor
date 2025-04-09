@@ -53,7 +53,7 @@ export class AspectModelLoader extends BaseModelLoader {
       next: (rdfModel: RdfModel) => {
         try {
           RdfModelUtil.throwErrorIfUnsupportedVersion(rdfModel);
-          subject.next(Object.freeze(createAspect(modelAspectUrn)));
+          subject.next(createAspect(modelAspectUrn));
         } catch (error: any) {
           subject.error(error);
         } finally {

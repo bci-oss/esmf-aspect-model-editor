@@ -47,6 +47,7 @@ export function createTimeSeriesEntity(): Entity {
     name: 'TimeSeriesEntity',
     hasSyntheticName: false,
     isPredefined: true,
+    isAbstract: true,
   });
   entity.preferredNames.set('en', 'Time Series Entity');
   entity.descriptions.set(
@@ -89,6 +90,7 @@ export function create3dPointEntity(): Entity {
     name: 'ThreeDimensionalPosition',
     properties: [],
     isPredefined: true,
+    isAbstract: true,
   });
   entity.preferredNames.set('en', 'Three Dimensional Position');
   entity.descriptions.set('en', 'Defines a position in a three dimensional space.');

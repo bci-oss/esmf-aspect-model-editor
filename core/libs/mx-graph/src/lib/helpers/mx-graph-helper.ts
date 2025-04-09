@@ -25,10 +25,10 @@ import {
   DefaultProperty,
   DefaultStructuredValue,
   DefaultTrait,
+  ElementSet,
   HasExtends,
   NamedElement,
 } from '@esmf/aspect-model-loader';
-import {ElementsSet} from 'libs/aspect-model-loader/src/lib/shared/elements-set';
 import {mxgraph} from 'mxgraph-factory';
 import {ModelBaseProperties} from '../models';
 import {mxCompactTreeLayout, mxConstants, mxHierarchicalLayout} from '../providers';
@@ -187,7 +187,7 @@ export class MxGraphHelper {
       return;
     }
 
-    child.parents = new ElementsSet(...child.parents.filter(p => p.aspectModelUrn !== parent.aspectModelUrn));
+    child.parents = new ElementSet(...child.parents.filter(p => p.aspectModelUrn !== parent.aspectModelUrn));
   }
 
   private static isRemovable(element: NamedElement, elementToRemove: NamedElement) {
@@ -333,11 +333,8 @@ export class MxGraphHelper {
     title.title = isSmallShape ? '' : modelElement.name;
 
     title.innerText = modelElement.name?.length > 24 ? modelElement.name?.substring(0, 21) + '...' : modelElement.name;
-    if (cell.collapsed) {
-      const isEntityInstance = modelElement instanceof DefaultEntityInstance;
-      if (isEntityInstance) {
-        title.innerText = this.formatSmallName(modelElement.name);
-      }
+    if (cell.collapsed && modelElement instanceof DefaultEntityInstance) {
+      title.innerText = this.formatSmallName(modelElement.name);
     }
 
     title.classList.add('element-name');

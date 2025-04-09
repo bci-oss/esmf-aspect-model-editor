@@ -14,7 +14,7 @@
 import {CacheUtils} from '@ame/cache';
 import {EntityValueRenderService, MxGraphHelper} from '@ame/mx-graph';
 import {Injectable} from '@angular/core';
-import {DefaultEntity, DefaultEntityInstance, DefaultProperty, Entity, NamedElement} from '@esmf/aspect-model-loader';
+import {DefaultEntity, DefaultEntityInstance, DefaultProperty, Entity, NamedElement, Value} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
 import {BaseModelService} from './base-model-service';
 
@@ -54,43 +54,34 @@ export class EntityValueModelService extends BaseModelService {
     this.entityValueRenderService.delete(cell);
   }
 
-  private updatePropertiesEntityValues(metaModelElement: DefaultEntityInstance, form: {[key: string]: any}): void {
+  private updatePropertiesEntityValues(entityInstance: DefaultEntityInstance, form: {[key: string]: any}): void {
     const {entityValueProperties} = form;
-    // TODO update this functionality with the new structure from entityInstance
-    metaModelElement.assertions = new Map();
 
+    entityInstance.assertions = new Map();
     Object.keys(entityValueProperties).forEach(key => {
       const property = this.findPropertyInEntities(CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntity), key);
-
       if (!property) return;
 
-      const propertyValues = entityValueProperties[key].map(({value, language}) => ({
-        key: property,
-        value,
-        language,
-      }));
-
-      // TODO update this functionality with the new structure from entityInstance
-      // metaModelElement.assertions.push(...propertyValues);
+      entityValueProperties[key].map(({value, language}) => {
+        entityInstance.removeAssertionLanguage(property.aspectModelUrn, language);
+        entityInstance.setAssertion(property.aspectModelUrn, new Value(value, property.characteristic?.dataType, language));
+      });
     });
   }
 
   private findPropertyInEntities(entities: Array<Entity>, propertyName: string): DefaultProperty {
     for (const entity of entities) {
       const property = entity.properties.find(prop => prop.name === propertyName);
-      if (property) {
-        return property;
-      }
+      if (property) return property;
     }
 
     return null;
   }
 
   private removeObsoleteEntityValues(metaModelElement: DefaultEntityInstance): void {
-    // TODO Update this functionality with the new structure from entityInstance
-    metaModelElement.assertions.forEach((property: any) => {
-      if (property.value instanceof DefaultEntityInstance && !property.value.parents?.length) {
-        this.deleteEntityValue(property.value, metaModelElement);
+    metaModelElement.getTuples().forEach(([, value]) => {
+      if (value instanceof DefaultEntityInstance) {
+        this.deleteEntityValue(value, metaModelElement);
       }
     });
   }

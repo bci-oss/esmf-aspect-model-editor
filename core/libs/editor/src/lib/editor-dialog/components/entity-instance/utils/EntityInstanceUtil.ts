@@ -17,12 +17,14 @@ import {extractNamespace} from '@ame/utils';
 import {FormArray, FormControl, FormGroup} from '@angular/forms';
 import {
   CacheStrategy,
+  Characteristic,
   DefaultEntity,
   DefaultEntityInstance,
   DefaultProperty,
   DefaultTrait,
   Entity,
   EntityInstanceProperty,
+  Value,
 } from '@esmf/aspect-model-loader';
 
 export class EntityInstanceUtil {
@@ -68,7 +70,7 @@ export class EntityInstanceUtil {
     const characteristic =
       property?.characteristic instanceof DefaultTrait ? property.characteristic.baseCharacteristic : property?.characteristic;
 
-    return entityValue.type.aspectModelUrn === characteristic?.dataType?.['aspectModelUrn'];
+    return entityValue.type.aspectModelUrn === characteristic?.dataType?.getUrn?.();
   };
 
   /**
@@ -178,7 +180,7 @@ export class EntityInstanceUtil {
    * @param {any} entityValueName - The name of the new entity value.
    */
   static createNewEntityValue(form: FormGroup, property: any, entityValueName: any) {
-    const characteristic =
+    const characteristic: Characteristic =
       property?.characteristic instanceof DefaultTrait ? property.characteristic.baseCharacteristic : property.characteristic;
     const urn = `${property.aspectModelUrn.split('#')?.[0]}#${entityValueName}`;
     const newEntityValue = new DefaultEntityInstance({
@@ -186,8 +188,8 @@ export class EntityInstanceUtil {
       name: entityValueName,
       aspectModelUrn: urn,
       type: characteristic?.dataType as DefaultEntity,
-      // TODO check assertions type
-      assertions: characteristic?.dataType?.['properties'] || [],
+      // TODO check a deeper creation for assertions (entityInstance -> entityInstance)
+      assertions: new Map((characteristic?.dataType as DefaultEntity)?.properties.map(p => [p.aspectModelUrn, new Value('')])),
     });
 
     const newEntityValues = form.get('newEntityValues');
@@ -199,7 +201,7 @@ export class EntityInstanceUtil {
 
     const propertiesForm = form.get('properties');
     const entityValuePropertiesForm = form.get('entityValueProperties');
-    const formGroup = propertiesForm ? propertiesForm : entityValuePropertiesForm;
+    const formGroup = propertiesForm || entityValuePropertiesForm;
 
     if (formGroup) {
       const propertyForm = formGroup.get(property.name);
@@ -218,6 +220,6 @@ export class EntityInstanceUtil {
    * @returns {boolean} True if the property is a default property with a language string, false otherwise.
    */
   static isDefaultPropertyWithLangString(property: DefaultProperty): boolean {
-    return property instanceof DefaultProperty && isDataTypeLangString(property);
+    return property instanceof DefaultProperty && isDataTypeLangString(property.characteristic?.dataType);
   }
 }

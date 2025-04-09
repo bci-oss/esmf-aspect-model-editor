@@ -290,9 +290,7 @@ export class CharacteristicVisitor extends BaseVisitor<DefaultCharacteristic> {
   }
 
   private updateParents(characteristic: DefaultCharacteristic): string {
-    const parents = characteristic.parents;
-
-    for (const parent of parents) {
+    for (const parent of characteristic.parents) {
       if (parent instanceof DefaultTrait || parent instanceof DefaultEither) {
         continue;
       }
@@ -302,8 +300,7 @@ export class CharacteristicVisitor extends BaseVisitor<DefaultCharacteristic> {
       }
 
       if (characteristic.dataType?.isComplexType() && parent instanceof DefaultProperty && !parent.isPredefined) {
-        // remove exampleValue for complex datatype
-
+        // removing exampleValue for complex datatype
         parent.exampleValue = null;
         this.rdfNodeService.update(parent, {exampleValue: null});
       }

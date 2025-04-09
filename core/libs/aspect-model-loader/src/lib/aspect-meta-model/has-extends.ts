@@ -11,14 +11,14 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ElementsSet} from '../shared/elements-set';
+import {ElementSet} from '../shared/elements-set';
 import {ModelVisitor} from '../visitor/model-visitor';
 import {NamedElement} from './named-element';
 
 export class HasExtends<T extends NamedElement = NamedElement> extends NamedElement {
   override className = '';
-  override get children(): ElementsSet {
-    return this.extends_ instanceof NamedElement ? new ElementsSet(this.extends_) : new ElementsSet();
+  override get children(): ElementSet {
+    return this.extends_ instanceof NamedElement ? new ElementSet(this.extends_) : new ElementSet();
   }
 
   extends_: T;

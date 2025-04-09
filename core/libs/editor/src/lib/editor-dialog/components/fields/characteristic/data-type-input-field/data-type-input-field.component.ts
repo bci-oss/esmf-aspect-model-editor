@@ -14,7 +14,7 @@
 import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
 import {RdfService} from '@ame/rdf/services';
 import {RdfModelUtil} from '@ame/rdf/utils';
-import {DataTypeService} from '@ame/shared';
+import {DataTypeService, config} from '@ame/shared';
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormControl} from '@angular/forms';
 import {MatOptionSelectionChange} from '@angular/material/core';
@@ -115,7 +115,7 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
     this.filteredEntityTypes$ = this.initFilteredEntities(this.dataTypeControl, this.entitiesDisabled);
   }
 
-  onSelectionChange(fieldPath: string, newValue: any, event: MatOptionSelectionChange) {
+  onSelectionChange(fieldPath: string, newValue: DefaultScalar, event: MatOptionSelectionChange) {
     if (fieldPath !== 'dataType' || !event.isUserInput) {
       return;
     }
@@ -124,18 +124,15 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
       return; // happens on reset form
     }
 
-    if (newValue.complex) {
+    if (newValue.isComplexType()) {
       let entity = this.currentCachedFile.get(newValue.urn);
 
       if (!entity) {
         entity = this.loadedFiles.findElementOnExtReferences<Entity>(newValue.urn);
       }
-
-      this.parentForm.get('dataTypeEntity').setValue(entity);
-    } else {
-      this.parentForm.get('dataTypeEntity').setValue(new DefaultScalar(newValue.urn));
     }
 
+    this.parentForm.get('dataTypeEntity').setValue(newValue);
     this.dataTypeControl.patchValue(newValue.name);
     this.dataTypeControl.disable();
   }
@@ -172,12 +169,11 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
   private initFilteredDataTypes() {
     const types = Object.keys(this.dataTypeService.getDataTypes()).map(key => {
       const type = this.dataTypeService.getDataType(key);
-      return {
-        name: key,
-        description: type.description || '',
+      return new DefaultScalar({
         urn: type.isDefinedBy,
-        complex: false,
-      };
+        descriptions: new Map([['en', type.description || '']]),
+        metaModelVersion: config.currentSammVersion,
+      });
     });
 
     this.filteredDataTypes$ = this.dataTypeControl?.valueChanges.pipe(

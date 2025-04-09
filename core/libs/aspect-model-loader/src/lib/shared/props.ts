@@ -56,7 +56,7 @@ export interface ScalarValueProps extends Partial<NamedElementProps> {
   type: DefaultScalar;
 }
 
-export interface ScalarProps extends BaseProps {
+export interface ScalarProps extends Omit<NamedElementProps, 'aspectModelUrn' | 'name'> {
   urn: string;
   scalar?: boolean;
   complexType?: boolean;

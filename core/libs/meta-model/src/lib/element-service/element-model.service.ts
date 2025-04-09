@@ -18,6 +18,7 @@ import {ModelService} from '@ame/rdf/services';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {NotificationsService, TitleService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
+import {useUpdater} from '@ame/utils';
 import {Injectable, Injector, NgZone} from '@angular/core';
 import {
   DefaultAspect,
@@ -151,8 +152,7 @@ export class ElementModelService {
     }
 
     if (sourceModelElement instanceof DefaultStructuredValue && targetModelElement instanceof DefaultProperty) {
-      // TODO update delete functionality
-      // sourceModelElement.delete(targetModelElement);
+      useUpdater(sourceModelElement).delete(targetModelElement);
       MxGraphHelper.updateLabel(edge.source, this.mxGraphService.graph, this.sammLangService);
     }
 

@@ -15,6 +15,7 @@ export * from './aspect-meta-model';
 export * from './aspect-model-loader';
 export * from './instantiator';
 export * from './namespace-loader';
+export * from './shared/elements-set';
 export * from './shared/model-element-cache.service';
 export * from './shared/rdf-model';
 export * from './shared/rdf-model-util';

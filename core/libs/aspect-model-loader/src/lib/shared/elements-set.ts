@@ -18,7 +18,7 @@ export interface IElementsSet<T extends NamedElement = NamedElement> extends Arr
   filter<S extends T>(predicate: (value: T, index: number, array: T[]) => value is S, thisArg?: any): IElementsSet<S>;
 }
 
-export class ElementsSet<T extends NamedElement = NamedElement> extends Array<T> {
+export class ElementSet<T extends NamedElement = NamedElement> extends Array<T> {
   constructor(...items: T[]) {
     super();
     this.push(...items);
@@ -31,12 +31,21 @@ export class ElementsSet<T extends NamedElement = NamedElement> extends Array<T>
         continue;
       }
 
-      pushedItems += super.push(item);
+      item?.aspectModelUrn && (pushedItems += super.push(item));
     }
     return pushedItems;
   }
 
-  append(items: T[]): ElementsSet<T> {
-    return new ElementsSet(...this, ...(items || []));
+  append(items: T[]): ElementSet<T> {
+    const set = new ElementSet<T>();
+    for (let i = 0; i < this.length; i++) {
+      set.push(this.at(i));
+    }
+
+    for (const item of items || []) {
+      set.push(item);
+    }
+
+    return set;
   }
 }

@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ElementsSet} from '../../shared/elements-set';
+import {ElementSet} from '../../shared/elements-set';
 import {CollectionProps} from '../../shared/props';
 import {Characteristic, DefaultCharacteristic} from './default-characteristic';
 
@@ -34,8 +34,8 @@ export class DefaultCollection extends DefaultCharacteristic implements Collecti
   ordered: boolean;
   elementCharacteristic?: Characteristic;
 
-  override get children(): ElementsSet {
-    const children = new ElementsSet();
+  override get children(): ElementSet {
+    const children = new ElementSet();
     if (this.elementCharacteristic) {
       children.push(this.elementCharacteristic);
     }

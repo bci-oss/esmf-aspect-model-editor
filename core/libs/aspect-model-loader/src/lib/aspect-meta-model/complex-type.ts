@@ -13,7 +13,7 @@
  */
 
 import {use} from 'typescript-mix';
-import {ElementsSet} from '../shared/elements-set';
+import {ElementSet} from '../shared/elements-set';
 import {EntityProps} from '../shared/props';
 import {Property} from './default-property';
 import {HasExtends} from './has-extends';
@@ -28,7 +28,7 @@ export abstract class ComplexType extends StructureElement implements ComplexTyp
   extends_: ComplexType = null;
   extendingElements: ComplexType[] = [];
 
-  override get children(): ElementsSet {
+  override get children(): ElementSet {
     const children = [];
     if (this.extends_) {
       children.push(this.extends_);

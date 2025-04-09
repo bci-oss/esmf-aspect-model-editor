@@ -25,10 +25,10 @@ import {
   DefaultProperty,
   DefaultStructuredValue,
   DefaultTrait,
+  ElementSet,
   HasExtends,
   NamedElement,
 } from '@esmf/aspect-model-loader';
-import {ElementsSet} from 'libs/aspect-model-loader/src/lib/shared/elements-set';
 import {mxgraph} from 'mxgraph-factory';
 import {ModelBaseProperties} from '../models';
 import {mxCompactTreeLayout, mxConstants, mxHierarchicalLayout} from '../providers';
@@ -187,7 +187,7 @@ export class MxGraphHelper {
       return;
     }
 
-    child.parents = new ElementsSet(...child.parents.filter(p => p.aspectModelUrn !== parent.aspectModelUrn));
+    child.parents = new ElementSet(...child.parents.filter(p => p.aspectModelUrn !== parent.aspectModelUrn));
   }
 
   private static isRemovable(element: NamedElement, elementToRemove: NamedElement) {

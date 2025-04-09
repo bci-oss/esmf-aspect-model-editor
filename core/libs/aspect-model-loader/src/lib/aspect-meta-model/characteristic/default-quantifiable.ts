@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ElementsSet} from '../../shared/elements-set';
+import {ElementSet} from '../../shared/elements-set';
 import {QuantifiableProps} from '../../shared/props';
 import {Unit} from '../default-unit';
 import {Characteristic, DefaultCharacteristic} from './default-characteristic';
@@ -22,7 +22,7 @@ export interface Quantifiable extends Characteristic {
 
 export class DefaultQuantifiable extends DefaultCharacteristic implements Quantifiable {
   override className = 'DefaultQuantifiable';
-  override get children(): ElementsSet {
+  override get children(): ElementSet {
     const children = [];
     if (this.unit) {
       children.push(this.unit);

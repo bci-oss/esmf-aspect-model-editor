@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ElementsSet} from '../shared/elements-set';
+import {ElementSet} from '../shared/elements-set';
 import {PropertyProps} from '../shared/props';
 import {ModelVisitor} from '../visitor/model-visitor';
 import {Characteristic} from './characteristic/default-characteristic';
@@ -34,8 +34,8 @@ export interface Property extends NamedElement, HasExtends<Property> {
 
 export class DefaultProperty extends NamedElement implements Property {
   override className = 'DefaultProperty';
-  override get children(): ElementsSet {
-    const children = new ElementsSet();
+  override get children(): ElementSet {
+    const children = new ElementSet();
     if (this.extends_ instanceof NamedElement) {
       children.push(this.extends_);
     }

@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ElementsSet} from '../../shared/elements-set';
+import {ElementSet} from '../../shared/elements-set';
 import {ScalarProps} from '../../shared/props';
 import {ModelVisitor} from '../../visitor/model-visitor';
 import {NamedElement} from '../named-element';
@@ -19,7 +19,7 @@ import {Type} from '../type';
 
 export class DefaultScalar extends Type {
   override className: string;
-  override get children(): ElementsSet<NamedElement> {
+  override get children(): ElementSet<NamedElement> {
     throw new Error('Method not implemented.');
   }
 

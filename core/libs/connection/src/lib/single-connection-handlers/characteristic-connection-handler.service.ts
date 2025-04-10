@@ -24,7 +24,8 @@ import {
 } from '@ame/mx-graph';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
-import {config} from '@ame/shared';
+import {config, createEmptyElement} from '@ame/shared';
+import {useUpdater} from '@ame/utils';
 import {Injectable} from '@angular/core';
 import {
   Characteristic,
@@ -89,7 +90,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
 
     // add trait
     const defaultTrait: DefaultTrait = this.modelElementNamingService.resolveElementNaming(
-      new DefaultTrait({name: '', aspectModelUrn: '', metaModelVersion: ''}),
+      createEmptyElement(DefaultTrait),
       RdfModelUtil.capitalizeFirstLetter((incomingEdges.length ? incomingEdges[0].source.id : source.id)?.replace(/[[\]]/g, '')),
     );
 
@@ -116,8 +117,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
           return;
         }
 
-        // TODO replace delete functionality
-        // sourceElementModel.delete(currentMetaModel);
+        useUpdater(sourceElementModel).delete(currentMetaModel);
         MxGraphHelper.removeRelation(sourceElementModel, currentMetaModel);
         this.mxGraphService.removeCells([source.removeEdge(edge, false)]);
 
@@ -147,7 +147,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
    * @param source mxgraph shape from which the plus button was clicked
    */
   private createEntity(characteristic: Characteristic, source: mxgraph.mxCell) {
-    const defaultEntity = new DefaultEntity({name: '', aspectModelUrn: '', metaModelVersion: ''});
+    const defaultEntity = createEmptyElement(DefaultEntity);
     characteristic.dataType = defaultEntity;
 
     const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(defaultEntity);
@@ -239,17 +239,14 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
    * @param traitShape trait object
    */
   private addConstraint(defaultTrait: DefaultTrait, traitShape: mxgraph.mxCell) {
-    const defaultConstraint = this.modelElementNamingService.resolveElementNaming(
-      new DefaultConstraint({name: '', aspectModelUrn: '', metaModelVersion: defaultTrait.metaModelVersion}),
-    );
+    const defaultConstraint = this.modelElementNamingService.resolveElementNaming(createEmptyElement(DefaultConstraint));
     const constraintShape = this.mxGraphService.renderModelElement(
       this.filtersService.createNode(this.currentCachedFile.resolveInstance(defaultConstraint), {
         parent: MxGraphHelper.getModelElement(traitShape),
       }),
     );
 
-    // TODO replace update functionality
-    // defaultTrait.update(defaultConstraint);
+    useUpdater(defaultTrait).update(defaultConstraint);
     this.mxGraphService.assignToParent(constraintShape, traitShape);
   }
 }

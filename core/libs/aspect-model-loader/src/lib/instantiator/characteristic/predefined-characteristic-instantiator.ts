@@ -47,6 +47,7 @@ export function predefinedCharacteristicFactory(initProps: BaseInitProps) {
         urn: type.isDefinedBy,
         metaModelVersion: samm.version,
       }),
+      isPredefined: true,
     });
 
     characteristic.preferredNames.set('en', 'Text');
@@ -70,6 +71,7 @@ export function predefinedCharacteristicFactory(initProps: BaseInitProps) {
         urn: type.isDefinedBy,
         metaModelVersion: samm.version,
       }),
+      isPredefined: true,
     });
 
     characteristic.preferredNames.set('en', 'Timestamp');
@@ -90,6 +92,7 @@ export function predefinedCharacteristicFactory(initProps: BaseInitProps) {
         urn: type.isDefinedBy,
         metaModelVersion: samm.version,
       }),
+      isPredefined: true,
     });
 
     characteristic.preferredNames.set('en', 'Multi-Language Text');
@@ -113,6 +116,7 @@ export function predefinedCharacteristicFactory(initProps: BaseInitProps) {
         urn: type.isDefinedBy,
         metaModelVersion: samm.version,
       }),
+      isPredefined: true,
     });
 
     characteristic.preferredNames.set('en', 'Boolean');
@@ -133,6 +137,7 @@ export function predefinedCharacteristicFactory(initProps: BaseInitProps) {
         urn: type.isDefinedBy,
         metaModelVersion: samm.version,
       }),
+      isPredefined: true,
     });
 
     characteristic.preferredNames.set('en', 'Locale');
@@ -153,6 +158,7 @@ export function predefinedCharacteristicFactory(initProps: BaseInitProps) {
         urn: type.isDefinedBy,
         metaModelVersion: samm.version,
       }),
+      isPredefined: true,
     });
 
     characteristic.preferredNames.set('en', 'Language');
@@ -173,6 +179,7 @@ export function predefinedCharacteristicFactory(initProps: BaseInitProps) {
         urn: type.isDefinedBy,
         metaModelVersion: samm.version,
       }),
+      isPredefined: true,
     });
 
     characteristic.preferredNames.set('en', 'Unit Reference');
@@ -193,6 +200,7 @@ export function predefinedCharacteristicFactory(initProps: BaseInitProps) {
         urn: type.isDefinedBy,
         metaModelVersion: samm.version,
       }),
+      isPredefined: true,
     });
 
     characteristic.preferredNames.set('en', 'Resource Path');
@@ -213,6 +221,7 @@ export function predefinedCharacteristicFactory(initProps: BaseInitProps) {
         urn: type.isDefinedBy,
         metaModelVersion: samm.version,
       }),
+      isPredefined: true,
     });
 
     characteristic.preferredNames.set('en', 'MIME Type');

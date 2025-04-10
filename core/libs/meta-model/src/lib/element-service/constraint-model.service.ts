@@ -13,6 +13,7 @@
 
 import {FiltersService} from '@ame/loader-filters';
 import {ConstraintRenderService, MxGraphAttributeService, MxGraphHelper, MxGraphService, MxGraphShapeOverlayService} from '@ame/mx-graph';
+import {useUpdater} from '@ame/utils';
 import {Injectable} from '@angular/core';
 import {
   DefaultConstraint,
@@ -82,8 +83,7 @@ export class ConstraintModelService extends BaseModelService {
   private updateModelOfParent(cell: mxgraph.mxCell, value: any) {
     this.mxGraphAttributeService.graph.getIncomingEdges(cell).forEach(cellParent => {
       const parentModel = MxGraphHelper.getModelElement<NamedElement>(cellParent.source);
-      // TODO update this functionality
-      // parentModel?.update(value);
+      useUpdater(parentModel).update(value);
     });
   }
 

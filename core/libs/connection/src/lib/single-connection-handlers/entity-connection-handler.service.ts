@@ -15,6 +15,7 @@ import {EntityInstanceService} from '@ame/editor';
 import {FiltersService} from '@ame/loader-filters';
 import {ModelElementNamingService} from '@ame/meta-model';
 import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
+import {createEmptyElement} from '@ame/shared';
 import {Injectable} from '@angular/core';
 import {DefaultProperty, Entity} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
@@ -32,7 +33,7 @@ export class EntityConnectionHandler implements SingleShapeConnector<Entity> {
   ) {}
 
   public connect(entity: Entity, source: mxgraph.mxCell) {
-    const defaultProperty = new DefaultProperty({name: '', aspectModelUrn: '', metaModelVersion: ''});
+    const defaultProperty = createEmptyElement(DefaultProperty);
     const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(defaultProperty);
     const child = this.mxGraphService.renderModelElement(
       this.filtersService.createNode(metaModelElement, {parent: MxGraphHelper.getModelElement(source)}),

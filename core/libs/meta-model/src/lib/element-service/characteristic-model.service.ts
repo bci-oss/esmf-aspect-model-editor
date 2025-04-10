@@ -22,6 +22,7 @@ import {
   MxGraphShapeOverlayService,
 } from '@ame/mx-graph';
 import {RdfModelUtil} from '@ame/rdf/utils';
+import {useUpdater} from '@ame/utils';
 import {Injectable} from '@angular/core';
 import {
   DefaultCharacteristic,
@@ -188,8 +189,7 @@ export class CharacteristicModelService extends BaseModelService {
       if (modelElementParent) {
         MxGraphHelper.removeRelation(modelElementParent, oldModel);
         MxGraphHelper.establishRelation(modelElementParent, value);
-        // TODO update this functionality
-        // modelElementParent.update(value);
+        useUpdater(modelElementParent).update(value);
       }
     });
   }

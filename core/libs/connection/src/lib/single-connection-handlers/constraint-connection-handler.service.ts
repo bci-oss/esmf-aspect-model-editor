@@ -14,6 +14,8 @@
 import {FiltersService} from '@ame/loader-filters';
 import {ModelElementNamingService} from '@ame/meta-model';
 import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
+import {createEmptyElement} from '@ame/shared';
+import {useUpdater} from '@ame/utils';
 import {Injectable} from '@angular/core';
 import {DefaultCharacteristic, DefaultConstraint} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
@@ -30,13 +32,12 @@ export class ConstraintConnectionHandler implements SingleShapeConnector<Default
   ) {}
 
   public connect(constraint: DefaultConstraint, source: mxgraph.mxCell) {
-    const defaultCharacteristic = new DefaultCharacteristic({name: '', metaModelVersion: '', aspectModelUrn: ''});
+    const defaultCharacteristic = createEmptyElement(DefaultCharacteristic);
     const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(defaultCharacteristic);
     const child = this.mxGraphService.renderModelElement(
       this.filtersService.createNode(metaModelElement, {parent: MxGraphHelper.getModelElement(source)}),
     );
-    // @ TODO update functionality
-    // constraint.update(defaultCharacteristic);
+    useUpdater(constraint).update(defaultCharacteristic);
     this.mxGraphService.assignToParent(child, source);
     this.mxGraphService.formatCell(source);
     this.mxGraphService.formatShapes();

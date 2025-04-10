@@ -57,8 +57,8 @@ const characteristics: {new (...x: any[]): NamedElement}[] = [
   DefaultTimeSeries,
 ];
 
-export function createEmptyElement(elementClass: {new (...x: any[]): NamedElement}, isAbstract = false): NamedElement {
-  let element: NamedElement;
+export function createEmptyElement<T>(elementClass: {new (...x: any[]): T}, isAbstract = false): T {
+  let element: any;
   switch (true) {
     case elementClass === DefaultAspect:
       element = new DefaultAspect({name: 'Aspect', metaModelVersion: config.currentSammVersion, aspectModelUrn: ''});
@@ -71,7 +71,7 @@ export function createEmptyElement(elementClass: {new (...x: any[]): NamedElemen
         isAbstract,
       });
       break;
-    case characteristics.includes(elementClass):
+    case characteristics.includes(elementClass as any):
       element = new elementClass({name: 'Characteristic', metaModelVersion: config.currentSammVersion, aspectModelUrn: ''});
       break;
     case elementClass === DefaultEntity:
@@ -88,7 +88,7 @@ export function createEmptyElement(elementClass: {new (...x: any[]): NamedElemen
     case elementClass === DefaultConstraint:
       element = new DefaultConstraint({name: 'Constraint', metaModelVersion: config.currentSammVersion, aspectModelUrn: ''});
       break;
-    case elementClass === DefaultTrait:
+    case (elementClass as any) === DefaultTrait:
       element = new DefaultTrait({name: 'Trait', metaModelVersion: config.currentSammVersion, aspectModelUrn: ''});
       break;
     case elementClass === DefaultOperation:
@@ -100,5 +100,5 @@ export function createEmptyElement(elementClass: {new (...x: any[]): NamedElemen
     default:
       element = null;
   }
-  return element;
+  return element as T;
 }

@@ -14,29 +14,35 @@
 import {Quad} from 'n3';
 import {Characteristic} from '../../aspect-meta-model';
 import {Collection, DefaultCollection} from '../../aspect-meta-model/characteristic/default-collection';
-import {getRdfModel} from '../../shared/rdf-model';
-import {generateCharacteristic, getDataType} from '../characteristic/characteristic-instantiator';
+import {BaseInitProps} from '../../shared/base-init-props';
+import {characteristicFactory} from './characteristic-instantiator';
 
-export function createCollectionCharacteristic(quad: Quad, characteristicCreator: (quad: Quad) => Characteristic): Collection {
-  return generateCharacteristic(quad, (baseProperties, propertyQuads) => {
-    const {samm, sammC} = getRdfModel();
-    const characteristic = new DefaultCollection({...baseProperties});
+export function collectionCharacteristicFactory(initProps: BaseInitProps) {
+  const {
+    rdfModel: {samm, sammC},
+  } = initProps;
+  const {generateCharacteristic, getDataType} = characteristicFactory(initProps);
 
-    for (const propertyQuad of propertyQuads) {
-      if (samm.isDataTypeProperty(propertyQuad.predicate.value)) {
-        characteristic.dataType = getDataType(propertyQuad);
-      } else if (sammC.isAllowDuplicatesProperty(propertyQuad.predicate.value)) {
-        characteristic.allowDuplicates = Boolean(propertyQuad.object.value);
-      } else if (sammC.isOrderedProperty(propertyQuad.predicate.value)) {
-        characteristic.ordered = Boolean(propertyQuad.object.value);
-      } else if (sammC.isElementCharacteristicProperty(propertyQuad.predicate.value)) {
-        characteristic.elementCharacteristic = characteristicCreator(propertyQuad);
-        if (characteristic.elementCharacteristic) {
-          characteristic.elementCharacteristic.addParent(characteristic);
+  return function createCollectionCharacteristic(quad: Quad, characteristicCreator: (quad: Quad) => Characteristic): Collection {
+    return generateCharacteristic(quad, (baseProperties, propertyQuads) => {
+      const characteristic = new DefaultCollection({...baseProperties});
+
+      for (const propertyQuad of propertyQuads) {
+        if (samm.isDataTypeProperty(propertyQuad.predicate.value)) {
+          characteristic.dataType = getDataType(propertyQuad);
+        } else if (sammC.isAllowDuplicatesProperty(propertyQuad.predicate.value)) {
+          characteristic.allowDuplicates = Boolean(propertyQuad.object.value);
+        } else if (sammC.isOrderedProperty(propertyQuad.predicate.value)) {
+          characteristic.ordered = Boolean(propertyQuad.object.value);
+        } else if (sammC.isElementCharacteristicProperty(propertyQuad.predicate.value)) {
+          characteristic.elementCharacteristic = characteristicCreator(propertyQuad);
+          if (characteristic.elementCharacteristic) {
+            characteristic.elementCharacteristic.addParent(characteristic);
+          }
         }
       }
-    }
 
-    return characteristic;
-  });
+      return characteristic;
+    });
+  };
 }

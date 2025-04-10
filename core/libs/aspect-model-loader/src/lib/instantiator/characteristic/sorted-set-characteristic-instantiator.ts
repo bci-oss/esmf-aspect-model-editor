@@ -14,26 +14,32 @@
 import {Quad} from 'n3';
 import {Characteristic} from '../../aspect-meta-model';
 import {DefaultSortedSet} from '../../aspect-meta-model/characteristic/default-sorted-set';
-import {getRdfModel} from '../../shared/rdf-model';
-import {generateCharacteristic, getDataType} from '../characteristic/characteristic-instantiator';
+import {BaseInitProps} from '../../shared/base-init-props';
+import {characteristicFactory} from './characteristic-instantiator';
 
-export function createSortedSetCharacteristic(quad: Quad, characteristicCreator: (quad: Quad) => Characteristic): DefaultSortedSet {
-  return generateCharacteristic(quad, (baseProperties, propertyQuads) => {
-    const {samm, sammC} = getRdfModel();
-    const characteristic = new DefaultSortedSet({...baseProperties});
+export function sortedSetCharacteristicFactory(initProps: BaseInitProps) {
+  const {
+    rdfModel: {samm, sammC},
+  } = initProps;
+  const {generateCharacteristic, getDataType} = characteristicFactory(initProps);
 
-    for (const propertyQuad of propertyQuads) {
-      if (samm.isDataTypeProperty(propertyQuad.predicate.value)) {
-        characteristic.dataType = getDataType(propertyQuad);
-      } else if (sammC.isAllowDuplicatesProperty(propertyQuad.predicate.value)) {
-        characteristic.allowDuplicates = Boolean(propertyQuad.object.value);
-      } else if (sammC.isOrderedProperty(propertyQuad.predicate.value)) {
-        characteristic.ordered = Boolean(propertyQuad.object.value);
-      } else if (sammC.isElementCharacteristicProperty(propertyQuad.predicate.value)) {
-        characteristic.elementCharacteristic = characteristicCreator(propertyQuad);
-        characteristic.elementCharacteristic && characteristic.elementCharacteristic.addParent(characteristic);
+  return function createSortedSetCharacteristic(quad: Quad, characteristicCreator: (quad: Quad) => Characteristic): DefaultSortedSet {
+    return generateCharacteristic(quad, (baseProperties, propertyQuads) => {
+      const characteristic = new DefaultSortedSet({...baseProperties});
+
+      for (const propertyQuad of propertyQuads) {
+        if (samm.isDataTypeProperty(propertyQuad.predicate.value)) {
+          characteristic.dataType = getDataType(propertyQuad);
+        } else if (sammC.isAllowDuplicatesProperty(propertyQuad.predicate.value)) {
+          characteristic.allowDuplicates = Boolean(propertyQuad.object.value);
+        } else if (sammC.isOrderedProperty(propertyQuad.predicate.value)) {
+          characteristic.ordered = Boolean(propertyQuad.object.value);
+        } else if (sammC.isElementCharacteristicProperty(propertyQuad.predicate.value)) {
+          characteristic.elementCharacteristic = characteristicCreator(propertyQuad);
+          characteristic.elementCharacteristic && characteristic.elementCharacteristic.addParent(characteristic);
+        }
       }
-    }
-    return characteristic;
-  });
+      return characteristic;
+    });
+  };
 }

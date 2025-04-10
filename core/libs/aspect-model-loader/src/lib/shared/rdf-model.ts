@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {CacheStrategy, destroyElementCache, initElementCache, Samm, SammC, SammE, SammU, useElementsCache} from '@esmf/aspect-model-loader';
+import {Samm, SammC, SammE, SammU} from '@esmf/aspect-model-loader';
 import * as locale from 'locale-codes';
 import {DataFactory, NamedNode, Prefixes, Quad, Store, Util} from 'n3';
 import {KnownVersion, SammVersion} from './known-version';
@@ -152,65 +152,4 @@ export class RdfModel {
       }
     });
   }
-}
-
-let rdfModel: RdfModel;
-let store: Store;
-
-export function getRdfModel(): RdfModel {
-  return rdfModel;
-}
-
-export function useRdfModel(rdfModel_: RdfModel): RdfModel {
-  if (rdfModel_ instanceof RdfModel) {
-    return (rdfModel = rdfModel_);
-  }
-
-  throw new Error('Wrong instance of RdfModel used');
-}
-
-export function destroyRdfModel({keepStore}: {keepStore: boolean} = {keepStore: false}) {
-  !keepStore && destroyStore();
-  rdfModel = null;
-}
-
-export function useStore(_store: Store) {
-  return (store = _store);
-}
-
-export function createOrGetStore() {
-  if (!store) store = new Store();
-  return store;
-}
-
-export function getStore(): Store {
-  return rdfModel?.store || store;
-}
-
-export function destroyStore() {
-  store = null;
-  rdfModel && (rdfModel.store = null);
-}
-
-interface FactoryProps {
-  rdfModel: RdfModel;
-  store: Store<Quad, Quad, Quad, Quad>;
-  cache: CacheStrategy;
-}
-
-export function useFactory<T extends (...args: any) => any>(
-  callback: T,
-  {rdfModel, store, cache}: Partial<FactoryProps> = {},
-): ReturnType<T> {
-  const s = store ? useStore(store) : createOrGetStore();
-  rdfModel ? useRdfModel(rdfModel) : useRdfModel(new RdfModel(s));
-  cache ? useElementsCache(cache) : initElementCache();
-
-  const result = callback();
-
-  destroyRdfModel();
-  destroyStore();
-  destroyElementCache();
-
-  return result;
 }

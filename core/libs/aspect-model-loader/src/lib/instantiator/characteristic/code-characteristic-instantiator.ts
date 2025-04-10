@@ -13,15 +13,20 @@
 
 import {Quad} from 'n3';
 import {DefaultCode} from '../../aspect-meta-model/characteristic/default-code';
-import {getRdfModel} from '../../shared/rdf-model';
-import {generateCharacteristic, getDataType} from '../characteristic/characteristic-instantiator';
+import {BaseInitProps} from '../../shared/base-init-props';
+import {characteristicFactory} from './characteristic-instantiator';
 
-export function createCodeCharacteristic(quad: Quad): DefaultCode {
-  const {samm} = getRdfModel();
-  return generateCharacteristic<DefaultCode>(quad, (baseProperties, propertyQuads) => {
-    return new DefaultCode({
-      ...baseProperties,
-      dataType: getDataType(propertyQuads.find(propertyQuad => samm.isDataTypeProperty(propertyQuad.predicate.value))),
+export function codeCharacteristicFactory(initProps: BaseInitProps) {
+  const {rdfModel} = initProps;
+  const {generateCharacteristic, getDataType} = characteristicFactory(initProps);
+
+  return function createCodeCharacteristic(quad: Quad): DefaultCode {
+    const {samm} = rdfModel;
+    return generateCharacteristic<DefaultCode>(quad, (baseProperties, propertyQuads) => {
+      return new DefaultCode({
+        ...baseProperties,
+        dataType: getDataType(propertyQuads.find(propertyQuad => samm.isDataTypeProperty(propertyQuad.predicate.value))),
+      });
     });
-  });
+  };
 }

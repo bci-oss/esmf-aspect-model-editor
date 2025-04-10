@@ -13,15 +13,21 @@
 
 import {Quad} from 'n3';
 import {DefaultSingleEntity} from '../../aspect-meta-model/characteristic/default-single-entity';
-import {getRdfModel} from '../../shared/rdf-model';
-import {generateCharacteristic, getDataType} from '../characteristic/characteristic-instantiator';
+import {BaseInitProps} from '../../shared/base-init-props';
+import {characteristicFactory} from './characteristic-instantiator';
 
-export function createSingleEntityCharacteristic(quad: Quad): DefaultSingleEntity {
-  return generateCharacteristic(quad, (baseProperties, propertyQuads) => {
-    const {samm} = getRdfModel();
-    return new DefaultSingleEntity({
-      ...baseProperties,
-      dataType: getDataType(propertyQuads.find(propertyQuad => samm.isDataTypeProperty(propertyQuad.predicate.value))),
+export function singleEntityCharacteristicFactory(initProps: BaseInitProps) {
+  const {
+    rdfModel: {samm},
+  } = initProps;
+  const {generateCharacteristic, getDataType} = characteristicFactory(initProps);
+
+  return function createSingleEntityCharacteristic(quad: Quad): DefaultSingleEntity {
+    return generateCharacteristic(quad, (baseProperties, propertyQuads) => {
+      return new DefaultSingleEntity({
+        ...baseProperties,
+        dataType: getDataType(propertyQuads.find(propertyQuad => samm.isDataTypeProperty(propertyQuad.predicate.value))),
+      });
     });
-  });
+  };
 }

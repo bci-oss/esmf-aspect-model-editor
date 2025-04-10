@@ -18,7 +18,7 @@ import {RdfModelUtil} from '@ame/rdf/utils';
 import {BrowserService, ElectronSignalsService, FileContentModel, ModelSavingTrackerService, NotificationsService} from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
 import {Injectable, inject} from '@angular/core';
-import {ModelElementCache, NamedElement, RdfModel, destroyRdfModel, destroyStore, loadAspectModel} from '@esmf/aspect-model-loader';
+import {ModelElementCache, NamedElement, RdfModel, loadAspectModel} from '@esmf/aspect-model-loader';
 import {RdfLoader} from 'libs/aspect-model-loader/src/lib/shared/rdf-loader';
 import {NamedNode} from 'n3';
 import {Observable, catchError, forkJoin, map, of, switchMap, tap, throwError} from 'rxjs';
@@ -84,7 +84,10 @@ export class ModelLoaderService {
 
                 return of(this.loadedFilesService.currentLoadedFile);
               }),
-              catchError(error => throwError(() => ({code: LoadingCodeErrors.LOADING_ASPECT_MODEL, error}))),
+              catchError(error => {
+                console.error(error);
+                return throwError(() => ({code: LoadingCodeErrors.LOADING_ASPECT_MODEL, error}));
+              }),
             ),
           ),
           switchMap(() => this.modelRenderer.renderModel(payload.editElementUrn)),
@@ -106,14 +109,10 @@ export class ModelLoaderService {
     );
   }
 
-  parseRdfModel(rdfModels: string[]) {
-    return new RdfLoader().loadModel(rdfModels).pipe(
-      tap(() => {
-        destroyRdfModel({keepStore: true});
-        destroyStore();
-      }),
-      catchError(error => throwError(() => ({code: LoadingCodeErrors.PARSING_RDF_MODEL, error}))),
-    );
+  parseRdfModel(models: string[]) {
+    return new RdfLoader()
+      .loadModel(models)
+      .pipe(catchError(error => throwError(() => ({code: LoadingCodeErrors.PARSING_RDF_MODEL, error}))));
   }
 
   private getNamespacesDependencies(rdf: string, allNamespaces: FileContentModel[], previousNamespaces: Record<string, string> = {}) {

@@ -16,7 +16,7 @@ import {RdfService} from '@ame/rdf/services';
 import {NotificationsService} from '@ame/shared';
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormControl} from '@angular/forms';
-import {DefaultEntity, Entity, getAllPredefinedEntities, useFactory} from '@esmf/aspect-model-loader';
+import {DefaultEntity, Entity, useLoader} from '@esmf/aspect-model-loader';
 import {Observable, combineLatest, map, of} from 'rxjs';
 import {EditorDialogValidators} from '../../../../validators';
 import {InputFieldComponent} from '../../input-field.component';
@@ -61,7 +61,8 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
 
   ngOnInit(): void {
     this.subscription = this.getMetaModelData().subscribe(() => this.setExtendsControl());
-    const predefinedEntities = useFactory(() => getAllPredefinedEntities(), {rdfModel: this.currentFile.rdfModel});
+    const {getAllPredefinedEntities} = useLoader({rdfModel: this.currentFile.rdfModel});
+    const predefinedEntities = getAllPredefinedEntities();
     this.predefinedEntities = Object.values(predefinedEntities)
       .map(value => {
         const entity = value;

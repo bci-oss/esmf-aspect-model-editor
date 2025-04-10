@@ -13,20 +13,10 @@
 
 import {DefaultProperty} from './aspect-meta-model';
 import {NamedElement} from './aspect-meta-model/named-element';
-import {CacheStrategy, FilterPredicate, initElementCache} from './shared/model-element-cache.service';
+import {CacheStrategy, FilterPredicate} from './shared/model-element-cache.service';
 
 export abstract class BaseModelLoader {
   protected cacheService: CacheStrategy;
-
-  /**
-   * Creates a AspectModelLoader instance.
-   *
-   * @param cacheService cache strategy to cache created elements to ensure uniqueness and a fast lookup of it.
-   *                     The default cache strategy ignores inline defined elements.
-   */
-  protected constructor() {
-    this.cacheService = initElementCache();
-  }
 
   /**
    * Find a specific model element, and returns it or undefined.

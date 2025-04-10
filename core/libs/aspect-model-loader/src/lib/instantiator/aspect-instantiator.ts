@@ -14,64 +14,67 @@
 import {Quad} from 'n3';
 import {Aspect, DefaultCollection} from '../aspect-meta-model';
 import {DefaultAspect} from '../aspect-meta-model/default-aspect';
-import {getElementsCache} from '../shared/model-element-cache.service';
-import {getRdfModel, getStore} from '../shared/rdf-model';
+import {BaseInitProps} from '../shared/base-init-props';
 import {getEvents} from './event-instantiator';
-import {getBaseProperties} from './meta-model-element-instantiator';
+import {basePropertiesFactory} from './meta-model-element-instantiator';
 import {getOperations} from './operation-instantiator';
-import {getProperties} from './property-instantiator';
+import {propertyFactory} from './property-instantiator';
 
-export function createAspect(aspectModelUrn?: string): Aspect {
-  const elementsCache = getElementsCache();
-  let aspectQuad: Quad;
-  try {
-    aspectQuad = getAspectQuad(aspectModelUrn);
-  } catch {
-    return null;
-  }
-  const aspectNode = aspectQuad.subject;
+export function aspectFactory(initProps: BaseInitProps) {
+  const {cache} = initProps;
 
-  if (elementsCache.get(aspectNode.value)) {
-    return elementsCache.get(aspectNode.value);
-  }
+  function getAspectQuad(aspectModelUrn?: string): Quad {
+    const {rdfModel} = initProps;
+    const {samm, store} = rdfModel;
 
-  const baseProperties = getBaseProperties(aspectNode);
-  const properties = getProperties(aspectNode);
-  const operations = getOperations(aspectNode);
-  const events = getEvents(aspectNode);
+    const aspectQuad = store.getQuads(null, samm.RdfType(), samm.Aspect(), null).find((quad, index, foundQuads) => {
+      if (foundQuads.length > 1 && aspectModelUrn == undefined) {
+        throw new Error('More than one aspect found. Please provide the aspectModelUrn to load the desired one.');
+      }
+      return foundQuads.length == 1 || (aspectModelUrn && quad.subject.value === aspectModelUrn);
+    });
 
-  const aspect = new DefaultAspect({
-    metaModelVersion: baseProperties.metaModelVersion,
-    aspectModelUrn: baseProperties.aspectModelUrn,
-    hasSyntheticName: baseProperties.hasSyntheticName,
-    properties,
-    operations,
-    events,
-    name: baseProperties.name,
-    isCollectionAspect: properties.some(property => property.characteristic instanceof DefaultCollection),
-  });
-
-  properties.forEach(property => property.addParent(aspect));
-  operations.forEach(operation => operation.addParent(aspect));
-  events.forEach(event => event.addParent(aspect));
-
-  return elementsCache.resolveInstance(aspect);
-}
-
-function getAspectQuad(aspectModelUrn?: string): Quad {
-  const {samm} = getRdfModel();
-  const store = getStore();
-
-  const aspectQuad = store.getQuads(null, samm.RdfType(), samm.Aspect(), null).find((quad, index, foundQuads) => {
-    if (foundQuads.length > 1 && aspectModelUrn == undefined) {
-      throw new Error('More than one aspect found. Please provide the aspectModelUrn to load the desired one.');
+    if (!aspectQuad) {
+      throw new Error('No aspect found. Please verify if the aspectModelUrn is correct and the ttl includes an aspect definition.');
     }
-    return foundQuads.length == 1 || (aspectModelUrn && quad.subject.value === aspectModelUrn);
-  });
 
-  if (!aspectQuad) {
-    throw new Error('No aspect found. Please verify if the aspectModelUrn is correct and the ttl includes an aspect definition.');
+    return aspectQuad;
   }
 
-  return aspectQuad;
+  return (aspectModelUrn?: string): Aspect => {
+    let aspectQuad: Quad;
+    try {
+      aspectQuad = getAspectQuad(aspectModelUrn);
+    } catch {
+      return null;
+    }
+    const aspectNode = aspectQuad.subject;
+
+    if (cache.get(aspectNode.value)) {
+      return cache.get(aspectNode.value);
+    }
+
+    const {createProperties} = propertyFactory(initProps);
+    const baseProperties = basePropertiesFactory(initProps)(aspectNode);
+    const properties = createProperties(aspectNode);
+    const operations = getOperations(initProps)(aspectNode);
+    const events = getEvents(initProps)(aspectNode);
+
+    const aspect = new DefaultAspect({
+      metaModelVersion: baseProperties.metaModelVersion,
+      aspectModelUrn: baseProperties.aspectModelUrn,
+      hasSyntheticName: baseProperties.hasSyntheticName,
+      properties,
+      operations,
+      events,
+      name: baseProperties.name,
+      isCollectionAspect: properties.some(property => property.characteristic instanceof DefaultCollection),
+    });
+
+    properties.forEach(property => property.addParent(aspect));
+    operations.forEach(operation => operation.addParent(aspect));
+    events.forEach(event => event.addParent(aspect));
+
+    return cache.resolveInstance(aspect);
+  };
 }

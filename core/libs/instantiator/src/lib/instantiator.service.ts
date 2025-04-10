@@ -13,54 +13,39 @@
 
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {Injectable} from '@angular/core';
-import {
-  CacheStrategy,
-  NamedElement,
-  RdfModel,
-  createEntity,
-  createEvent,
-  createOperation,
-  createProperty,
-  createUnit,
-  destroyElementCache,
-  destroyRdfModel,
-  destroyStore,
-  detectAndCreateCharacteristic,
-  detectAndCreateConstraint,
-  resolveEntityInstance,
-  useElementsCache,
-  useRdfModel,
-  useStore,
-} from '@esmf/aspect-model-loader';
+import {CacheStrategy, NamedElement, RdfModel, useLoader} from '@esmf/aspect-model-loader';
 import {NamedNode, Triple, Util} from 'n3';
 
 @Injectable({
   providedIn: 'root',
 })
 export class InstantiatorService {
-  public instantiateRemainingElements(rdfModel: RdfModel, cachedFile: CacheStrategy) {
-    useRdfModel(rdfModel);
-    useStore(rdfModel.store);
-    useElementsCache(cachedFile);
-
+  public instantiateRemainingElements(rdfModel: RdfModel, cache: CacheStrategy) {
     const uniqueSubjects: string[] = rdfModel.store
       .getSubjects(null, null, null)
       .reduce(
-        (subjects, subject) => (!Util.isBlankNode(subject) && !cachedFile.get(subject.value) ? [...subjects, subject.value] : subjects),
+        (subjects, subject) => (!Util.isBlankNode(subject) && !cache.get(subject.value) ? [...subjects, subject.value] : subjects),
         [],
       );
 
     for (const subject of uniqueSubjects) {
-      const element = this.instantiateElement(rdfModel, subject);
-      if (element) cachedFile.resolveInstance(element);
+      const element = this.instantiateElement(rdfModel, cache, subject);
+      if (element) cache.resolveInstance(element);
     }
-
-    destroyElementCache();
-    destroyRdfModel({keepStore: true});
-    destroyStore();
   }
 
-  public instantiateElement(rdfModel: RdfModel, subject: string): NamedElement {
+  public instantiateElement(rdfModel: RdfModel, cache: CacheStrategy, subject: string): NamedElement {
+    const {
+      createProperty,
+      createOperation,
+      createEvent,
+      createUnit,
+      createEntity,
+      createConstraint,
+      createCharacteristic,
+      resolveEntityInstance,
+    } = useLoader({rdfModel, cache});
+
     const {samm, sammC} = rdfModel;
     const elementType = rdfModel.store.getObjects(subject, rdfModel.samm.RdfType(), null)?.[0]?.value;
     if (samm.Property().value === elementType) {
@@ -74,11 +59,11 @@ export class InstantiatorService {
     }
 
     if (elementType.endsWith('Constraint')) {
-      return detectAndCreateConstraint(new Triple(null, null, new NamedNode(subject)));
+      return createConstraint(new Triple(null, null, new NamedNode(subject)));
     }
 
     if (sammC.isStandardCharacteristic(elementType) || samm.Characteristic().value === elementType) {
-      return detectAndCreateCharacteristic(new Triple(null, null, new NamedNode(subject)));
+      return createCharacteristic(new Triple(null, null, new NamedNode(subject)));
     }
 
     if (samm.Operation().value === elementType) {

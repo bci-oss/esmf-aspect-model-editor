@@ -15,34 +15,41 @@ import {Quad, Util} from 'n3';
 import {DefaultEntityInstance} from '../../aspect-meta-model';
 import {DefaultState} from '../../aspect-meta-model/characteristic/default-state';
 import {ScalarValue} from '../../aspect-meta-model/scalar-value';
-import {getRdfModel} from '../../shared/rdf-model';
-import {generateCharacteristic, getDataType} from '../characteristic/characteristic-instantiator';
-import {getEnumerationValues, resolveEntityInstance} from './enumeration-characteristic-instantiator';
+import {BaseInitProps} from '../../shared/base-init-props';
+import {characteristicFactory} from './characteristic-instantiator';
+import {enumerationCharacteristicFactory} from './enumeration-characteristic-instantiator';
 
-export function createStateCharacteristic(quad: Quad): DefaultState {
-  return generateCharacteristic(quad, (baseProperties, propertyQuads) => {
-    const {samm, sammC} = getRdfModel();
-    const characteristic = new DefaultState({
-      ...baseProperties,
-      dataType: getDataType(propertyQuads.find(propertyQuad => samm.isDataTypeProperty(propertyQuad.predicate.value))),
-      values: [],
-      defaultValue: null,
-    });
+export function stateCharacteristicFactory(initProps: BaseInitProps) {
+  const {
+    rdfModel: {samm, sammC},
+  } = initProps;
+  const {generateCharacteristic, getDataType} = characteristicFactory(initProps);
+  const {getEnumerationValues, resolveEntityInstance} = enumerationCharacteristicFactory(initProps);
 
-    for (const propertyQuad of propertyQuads) {
-      if (samm.isValueProperty(propertyQuad.predicate.value) || sammC.isValuesProperty(propertyQuad.predicate.value)) {
-        if (Util.isBlankNode(propertyQuad.object)) {
-          characteristic.values = getEnumerationValues(propertyQuad, characteristic.dataType);
-          characteristic.values.forEach(value => value instanceof DefaultEntityInstance && value.addParent(characteristic));
+  return function createStateCharacteristic(quad: Quad): DefaultState {
+    return generateCharacteristic(quad, (baseProperties, propertyQuads) => {
+      const characteristic = new DefaultState({
+        ...baseProperties,
+        dataType: getDataType(propertyQuads.find(propertyQuad => samm.isDataTypeProperty(propertyQuad.predicate.value))),
+        values: [],
+        defaultValue: null,
+      });
+
+      for (const propertyQuad of propertyQuads) {
+        if (samm.isValueProperty(propertyQuad.predicate.value) || sammC.isValuesProperty(propertyQuad.predicate.value)) {
+          if (Util.isBlankNode(propertyQuad.object)) {
+            characteristic.values = getEnumerationValues(propertyQuad, characteristic.dataType);
+            characteristic.values.forEach(value => value instanceof DefaultEntityInstance && value.addParent(characteristic));
+          }
+        } else if (sammC.isDefaultValueProperty(quad.predicate.value)) {
+          characteristic.defaultValue = Util.isLiteral(quad.object)
+            ? new ScalarValue({value: `${quad.object.value}`, type: characteristic.dataType})
+            : resolveEntityInstance(quad);
+
+          characteristic.defaultValue instanceof DefaultEntityInstance && characteristic.defaultValue.addParent(characteristic);
         }
-      } else if (sammC.isDefaultValueProperty(quad.predicate.value)) {
-        characteristic.defaultValue = Util.isLiteral(quad.object)
-          ? new ScalarValue({value: `${quad.object.value}`, type: characteristic.dataType})
-          : resolveEntityInstance(quad);
-
-        characteristic.defaultValue instanceof DefaultEntityInstance && characteristic.defaultValue.addParent(characteristic);
       }
-    }
-    return characteristic;
-  });
+      return characteristic;
+    });
+  };
 }

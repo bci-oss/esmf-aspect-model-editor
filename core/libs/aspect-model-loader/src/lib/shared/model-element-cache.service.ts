@@ -182,25 +182,3 @@ export class ModelElementCache implements CacheStrategy {
     return [...this.instanceCache.values()] as T[];
   }
 }
-
-let modelElementsCache: CacheStrategy;
-
-export function createCacheInstance() {
-  return new ModelElementCache();
-}
-
-export function useElementsCache(cache: CacheStrategy) {
-  modelElementsCache = cache;
-}
-
-export function initElementCache() {
-  return (modelElementsCache = createCacheInstance());
-}
-
-export function getElementsCache() {
-  return modelElementsCache;
-}
-
-export function destroyElementCache() {
-  modelElementsCache = null;
-}

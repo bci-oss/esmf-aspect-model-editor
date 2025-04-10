@@ -13,24 +13,31 @@
 
 import {Quad} from 'n3';
 import {DefaultMeasurement} from '../../aspect-meta-model/characteristic/default-measurement';
-import {getRdfModel} from '../../shared/rdf-model';
-import {generateCharacteristic, getDataType} from '../characteristic/characteristic-instantiator';
-import {createUnit} from '../predefined-unit-instantiator';
+import {BaseInitProps} from '../../shared/base-init-props';
+import {unitFactory} from '../predefined-unit-instantiator';
+import {characteristicFactory} from './characteristic-instantiator';
 
-export function createMeasurementCharacteristic(quad: Quad): DefaultMeasurement {
-  return generateCharacteristic(quad, (baseProperties, propertyQuads) => {
-    const {samm, sammC} = getRdfModel();
-    const characteristic = new DefaultMeasurement({
-      ...baseProperties,
-      dataType: getDataType(propertyQuads.find(propertyQuad => samm.isDataTypeProperty(propertyQuad.predicate.value))),
-    });
+export function measurementCharacteristicFactory(initProps: BaseInitProps) {
+  const {
+    rdfModel: {samm, sammC},
+  } = initProps;
+  const {generateCharacteristic, getDataType} = characteristicFactory(initProps);
+  const {createUnit} = unitFactory(initProps);
 
-    for (const propertyQuad of propertyQuads) {
-      if (sammC.isUnitProperty(propertyQuad.predicate.value)) {
-        characteristic.unit = createUnit(propertyQuad.object.value);
-        characteristic.unit && characteristic.unit.addParent(characteristic);
+  return function createMeasurementCharacteristic(quad: Quad): DefaultMeasurement {
+    return generateCharacteristic(quad, (baseProperties, propertyQuads) => {
+      const characteristic = new DefaultMeasurement({
+        ...baseProperties,
+        dataType: getDataType(propertyQuads.find(propertyQuad => samm.isDataTypeProperty(propertyQuad.predicate.value))),
+      });
+
+      for (const propertyQuad of propertyQuads) {
+        if (sammC.isUnitProperty(propertyQuad.predicate.value)) {
+          characteristic.unit = createUnit(propertyQuad.object.value);
+          characteristic.unit && characteristic.unit.addParent(characteristic);
+        }
       }
-    }
-    return characteristic;
-  });
+      return characteristic;
+    });
+  };
 }

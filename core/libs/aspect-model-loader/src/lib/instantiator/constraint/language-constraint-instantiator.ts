@@ -13,18 +13,24 @@
 
 import {Quad} from 'n3';
 import {DefaultLanguageConstraint} from '../../aspect-meta-model';
-import {getRdfModel} from '../../shared/rdf-model';
-import {generateConstraint} from './constraint-instantiator';
+import {BaseInitProps} from '../../shared/base-init-props';
+import {constraintFactory} from './constraint-instantiator';
 
-export function createLanguageConstraint(quad: Quad): DefaultLanguageConstraint {
-  return generateConstraint(quad, (baseProperties, propertyQuads) => {
-    const {sammC} = getRdfModel();
-    const constraint = new DefaultLanguageConstraint({...baseProperties, languageCode: null});
-    for (const propertyQuad of propertyQuads) {
-      if (sammC.isLanguageCodeProperty(propertyQuad.predicate.value)) {
-        constraint.languageCode = propertyQuad.object.value;
+export function languageConstraintFactory(initProps: BaseInitProps) {
+  const {
+    rdfModel: {sammC},
+  } = initProps;
+  const {generateConstraint} = constraintFactory(initProps);
+
+  return function createLanguageConstraint(quad: Quad): DefaultLanguageConstraint {
+    return generateConstraint(quad, (baseProperties, propertyQuads) => {
+      const constraint = new DefaultLanguageConstraint({...baseProperties, languageCode: null});
+      for (const propertyQuad of propertyQuads) {
+        if (sammC.isLanguageCodeProperty(propertyQuad.predicate.value)) {
+          constraint.languageCode = propertyQuad.object.value;
+        }
       }
-    }
-    return constraint;
-  });
+      return constraint;
+    });
+  };
 }

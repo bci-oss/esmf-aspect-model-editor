@@ -14,6 +14,7 @@
 import {FiltersService} from '@ame/loader-filters';
 import {ModelElementNamingService} from '@ame/meta-model';
 import {MxGraphService} from '@ame/mx-graph';
+import {createEmptyElement} from '@ame/shared';
 import {Injectable} from '@angular/core';
 import {Aspect, DefaultProperty} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
@@ -30,7 +31,7 @@ export class AspectConnectionHandler implements SingleShapeConnector<Aspect> {
   ) {}
 
   public connect(aspect: Aspect, source: mxgraph.mxCell) {
-    const defaultProperty = new DefaultProperty({name: '', aspectModelUrn: '', metaModelVersion: ''});
+    const defaultProperty = createEmptyElement(DefaultProperty);
     const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(defaultProperty);
     const child = this.mxGraphService.renderModelElement(this.filtersService.createNode(metaModelElement, {parent: aspect}));
     aspect.properties.push(defaultProperty);

@@ -59,7 +59,7 @@ export class InstantiatorService {
     }
 
     if (elementType.endsWith('Constraint')) {
-      return createConstraint(new Triple(null, null, new NamedNode(subject)));
+      return createConstraint(new Triple(new NamedNode(subject), null, null));
     }
 
     if (sammC.isStandardCharacteristic(elementType) || samm.Characteristic().value === elementType) {
@@ -67,7 +67,7 @@ export class InstantiatorService {
     }
 
     if (samm.Operation().value === elementType) {
-      createOperation(new Triple(null, null, new NamedNode(subject)));
+      createOperation(new Triple(new NamedNode(subject), null, null));
     }
 
     if (samm.Event().value === elementType) {

@@ -128,7 +128,7 @@ export class FileHandlingService {
     return this.modelApiService.validate(migratedModel).pipe(
       switchMap(validations => {
         const found = validations.find(({errorCode}) => errorCode === 'ERR_PROCESSING');
-        return found ? throwError(() => found.message) : this.modelLoaderService.loadSingleModel({rdfAspectModel: migratedModel});
+        return found ? throwError(() => found.message) : this.modelLoaderService.renderModel({rdfAspectModel: migratedModel});
       }),
       catchError(error => {
         this.notificationsService.info({
@@ -165,7 +165,7 @@ export class FileHandlingService {
           this.loadingScreenService.open(loadingScreenOptions);
         }),
         switchMap((rdfAspectModel: string) =>
-          this.modelLoaderService.loadSingleModel({
+          this.modelLoaderService.renderModel({
             rdfAspectModel,
             namespaceFileName: absoluteFileName,
             fromWorkspace: true,

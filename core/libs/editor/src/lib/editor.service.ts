@@ -43,6 +43,7 @@ import {
 } from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
+import {useUpdater} from '@ame/utils';
 import {Injectable, Injector, NgZone, inject} from '@angular/core';
 import {Aspect, DefaultAspect, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
 import {environment} from 'environments/environment';
@@ -173,8 +174,7 @@ export class EditorService {
 
             const sourceElement = MxGraphHelper.getModelElement<NamedElement>(edgeParent.source);
             if (sourceElement && !sourceElement?.isExternalReference()) {
-              // TODO update delete functionality
-              // sourceElement.delete(MxGraphHelper.getModelElement(cell));
+              useUpdater(sourceElement).delete(MxGraphHelper.getModelElement(cell));
             }
           });
         });
@@ -200,23 +200,6 @@ export class EditorService {
       return;
     }
     this.mxGraphAttributeService.editor.addAction(actionName, callback);
-  }
-
-  // @TODO move this function and redo it
-  // :CachedFile {
-  loadExternalAspectModel(extRefAbsoluteAspectModelFileName: string): any {
-    // const extRdfModel = this.rdfService.externalRdfModels.find(
-    //   extRef => extRef.absoluteAspectModelFileName === extRefAbsoluteAspectModelFileName,
-    // );
-    // const fileName = extRdfModel.aspectModelFileName;
-    // let foundCachedFile = this.namespaceCacheService.getFile([extRdfModel.getAspectModelUrn(), fileName]);
-    // if (!foundCachedFile) {
-    //   foundCachedFile = this.namespaceCacheService.addFile(extRdfModel.getAspectModelUrn(), fileName);
-    //   // @TODO check rdfModel
-    //   foundCachedFile = this.instantiatorService.instantiateFile(extRdfModel as any, foundCachedFile, fileName);
-    // }
-
-    return null; //foundCachedFile;
   }
 
   // @TODO move this function to model-loader service and use the new rdf loader

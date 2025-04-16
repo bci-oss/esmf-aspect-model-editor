@@ -121,6 +121,27 @@ export class ModelLoaderService {
     );
   }
 
+  /**
+   * Loads all the models from workspace and returns a list of RdfModels.
+   * By default the functions looks if the model is already loaded and will not load it again.
+   *
+   * @param force Default value is false. Set it to true if the reload of file is necessary
+   */
+  loadWorkspaceModels(force = false): Observable<NamespaceFile[]> {
+    return this.modelApiService.getAllNamespacesFilesContent().pipe(
+      switchMap(files =>
+        forkJoin(
+          files.map(file => {
+            const loadedFile = this.loadedFilesService.getFile(file.fileName);
+            return !force && loadedFile
+              ? of(loadedFile)
+              : this.loadSingleModel({rdfAspectModel: file.aspectMetaModel, namespaceFileName: file.fileName, fromWorkspace: true});
+          }),
+        ),
+      ),
+    );
+  }
+
   private getNamespacesDependencies(rdf: string, allNamespaces: FileContentModel[], previousNamespaces: Record<string, string> = {}) {
     return this.parseRdfModel([rdf]).pipe(
       map(rdfModel => RdfModelUtil.resolveExternalNamespaces(rdfModel).map(external => external.replace(/urn:samm:|#/gi, ''))),

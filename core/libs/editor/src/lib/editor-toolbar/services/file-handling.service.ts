@@ -195,10 +195,9 @@ export class FileHandlingService {
 
   createEmptyModel() {
     this.loadedFilesService.removeAll();
-    const currentRdfModel = this.loadedFilesService.currentLoadedFile?.rdfModel;
     let fileStatus: FileStatus;
 
-    if (currentRdfModel) {
+    if (this.loadedFilesService.currentLoadedFile) {
       const [namespace, version, file] = this.loadedFilesService.currentLoadedFile.absoluteName;
       const namespaceVersion = `${namespace}:${version}`;
       fileStatus = this.sidebarService.namespacesState.getFile(namespaceVersion, file);
@@ -209,7 +208,6 @@ export class FileHandlingService {
       }
     }
 
-    // @ TODO rethink creation of empty file
     const emptyNamespace = 'urn:samm:org.eclipse.esmf:1.0.0';
     const rdfModel = new RdfModel(new Store(), GeneralConfig.sammVersion, emptyNamespace);
 
@@ -222,31 +220,17 @@ export class FileHandlingService {
       fromWorkspace: false,
     });
 
-    // const newRdfModel = new RdfModel() //.initRdfModel(new Store(), {'': emptyNamespace as any}, 'empty');
-    // const oldFile = this.loadedFilesService.currentCachedFile;
-
     this.sidebarService.sammElements.open();
-
-    // newRdfModel.absoluteAspectModelFileName = `${emptyNamespace}:${fileName}`;
-    // this.rdfService.currentRdfModel = newRdfModel;
-    // if (oldFile) {
-    //   this.namespaceCacheService.removeFile(oldFile.namespace, oldFile.fileName);
-    // }
-
-    // TODO here should be the new cached file
-    // this.namespaceCacheService.currentCachedFile = new CachedFile(fileName, emptyNamespace);
 
     if (this.mxGraphService.graph?.model) {
       this.mxGraphService.deleteAllShapes();
     }
 
-    // this.modelService.addAspect(null);
-    // this.modelSaveTracker.updateSavedModel(true);
-
-    //   const loadExternalModels$ = this.editorService
-    //     .loadExternalModels()
-    //     .pipe(finalize(() => loadExternalModels$.unsubscribe()))
-    //     .subscribe();
+    this.modelSaveTracker.updateSavedModel(true);
+    const loadExternalModels$ = this.modelLoaderService
+      .loadWorkspaceModels(true)
+      .pipe(finalize(() => loadExternalModels$.unsubscribe()))
+      .subscribe();
   }
 
   onCopyToClipboard() {
@@ -334,7 +318,7 @@ export class FileHandlingService {
       switchMap(() => this.handleNamespaceChange(modelState)),
       switchMap(confirm => (confirm !== ConfirmDialogEnum.cancel ? this.editorService.saveModel() : of(null))),
       tap(rdfModel => this.handleRdfModel(rdfModel, modelState)),
-      switchMap(() => this.editorService.loadExternalModels()),
+      switchMap(() => this.modelLoaderService.loadWorkspaceModels(true)),
       finalize(() => {
         this.modelSaveTracker.updateSavedModel();
         this.loadingScreenService.close();

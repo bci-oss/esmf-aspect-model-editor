@@ -12,7 +12,7 @@
  */
 
 import {NamespaceStatus} from '@ame/api';
-import {EditorService} from '@ame/editor';
+import {ModelLoaderService} from '@ame/editor';
 import {APP_CONFIG, AppConfig, ElectronSignals, ElectronSignalsService} from '@ame/shared';
 import {CdkScrollable} from '@angular/cdk/scrolling';
 import {KeyValuePipe} from '@angular/common';
@@ -62,7 +62,7 @@ export class MigrationStatusComponent implements OnInit {
 
   constructor(
     public migratorService: MigratorService,
-    private editorService: EditorService,
+    private modelLoader: ModelLoaderService,
     private router: Router,
     private ngZone: NgZone,
     @Inject(APP_CONFIG) public config: AppConfig,
@@ -72,7 +72,8 @@ export class MigrationStatusComponent implements OnInit {
     this.migrationStatus = history.state.data?.namespaces || [];
     this.hasErrors = this.migrationStatus.length <= 0;
 
-    this.editorService.loadExternalModels().subscribe(rdfModels => {
+    this.modelLoader.loadWorkspaceModels().subscribe(files => {
+      const rdfModels = files.map(({rdfModel}) => rdfModel);
       // @todo check this functionality
       const erroredModels = rdfModels.filter(rdfModel => rdfModel); //?.hasErrors);
       this.hasErrors ||= erroredModels.length > 0;

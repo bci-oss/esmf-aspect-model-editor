@@ -11,8 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {LoadedFilesService} from '@ame/cache';
-import {EditorService} from '@ame/editor';
+import {LoadedFilesService, NamespaceFile} from '@ame/cache';
+import {ModelLoaderService} from '@ame/editor';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {APP_CONFIG, AppConfig} from '@ame/shared';
 import {LanguageTranslateModule} from '@ame/translation';
@@ -24,7 +24,6 @@ import {MatDialogModule} from '@angular/material/dialog';
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {Router} from '@angular/router';
-import {RdfModel} from '@esmf/aspect-model-loader';
 import {Prefixes} from 'n3';
 import {first} from 'rxjs';
 import {tap} from 'rxjs/operators';
@@ -63,18 +62,18 @@ export class SelectNamespacesComponent implements OnInit {
 
   constructor(
     private namespacesManager: NamespacesManagerService,
-    private editorService: EditorService,
     private router: Router,
     private loadedFilesService: LoadedFilesService,
+    private modelLoader: ModelLoaderService,
     @Inject(APP_CONFIG) public config: AppConfig,
   ) {}
 
   ngOnInit(): void {
-    this.editorService
-      .loadModels()
+    this.modelLoader
+      .loadWorkspaceModels()
       .pipe(
         first(),
-        tap(models => (this.namespacesDependencies = this.getNamespacesDependencies(models))),
+        tap(files => (this.namespacesDependencies = this.getNamespacesDependencies(files))),
       )
       .subscribe();
   }
@@ -94,11 +93,10 @@ export class SelectNamespacesComponent implements OnInit {
     this.router.navigate([{outlets: {'export-namespaces': 'validate'}}]);
   }
 
-  private getNamespacesDependencies(models: RdfModel[]): NamespacesDependencies {
-    const currentLoadedFile = this.loadedFilesService.currentLoadedFile;
-    return models.reduce((acc, rdfModel) => {
-      const versionedNamespace = RdfModelUtil.getNamespaceFromRdf(currentLoadedFile.absoluteName);
-      const fileName = RdfModelUtil.getFileNameFromRdf(currentLoadedFile.absoluteName);
+  private getNamespacesDependencies(models: NamespaceFile[]): NamespacesDependencies {
+    return models.reduce((acc, file) => {
+      const versionedNamespace = RdfModelUtil.getNamespaceFromRdf(file.absoluteName);
+      const fileName = RdfModelUtil.getFileNameFromRdf(file.absoluteName);
 
       let nDependency = acc[versionedNamespace];
       if (!nDependency) {
@@ -111,7 +109,9 @@ export class SelectNamespacesComponent implements OnInit {
         nDependency = acc[versionedNamespace];
       }
 
-      nDependency.dependencies = Array.from(new Set([...nDependency.dependencies, ...this.getDependentNamespaces(rdfModel.getPrefixes())]));
+      nDependency.dependencies = Array.from(
+        new Set([...nDependency.dependencies, ...this.getDependentNamespaces(file.rdfModel.getPrefixes())]),
+      );
       nDependency.files = Array.from(new Set([...nDependency.files, fileName]));
       return acc;
     }, {});

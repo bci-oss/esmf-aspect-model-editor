@@ -12,11 +12,11 @@
  */
 
 import {NamespaceFile} from '@ame/cache';
-import {EditorService} from '@ame/editor';
+import {ModelLoaderService} from '@ame/editor';
+import {ExporterHelper} from '@ame/migrator';
 import {APP_CONFIG, AppConfig, BrowserService} from '@ame/shared';
 import {HttpClient} from '@angular/common/http';
 import {Injectable, inject} from '@angular/core';
-import {RdfModel} from '@esmf/aspect-model-loader';
 import {Observable, map, switchMap} from 'rxjs';
 import {ModelApiService} from './model-api.service';
 
@@ -46,7 +46,7 @@ export class MigratorApiService {
     private http: HttpClient,
     private browserService: BrowserService,
     private modelApiService: ModelApiService,
-    private editorService: EditorService,
+    private modelLoader: ModelLoaderService,
   ) {
     if (this.browserService.isStartedAsElectronApp() && !window.location.search.includes('?e2e=true')) {
       const remote = window.require('@electron/remote');
@@ -57,12 +57,11 @@ export class MigratorApiService {
   public hasFilesToMigrate(): Observable<boolean> {
     this.rdfModelsToMigrate = [];
 
-    return this.editorService.loadExternalModels().pipe(
-      map((rdfModels: RdfModel[]) => {
-        // @TODO populate with files
-        // this.rdfModelsToMigrate = rdfModels.filter(rdfModel =>
-        //   ExporterHelper.isVersionOutdated(rdfModel?.samm.version, this.config.currentSammVersion),
-        // );
+    return this.modelLoader.loadWorkspaceModels(true).pipe(
+      map((files: NamespaceFile[]) => {
+        this.rdfModelsToMigrate = files.filter(file =>
+          ExporterHelper.isVersionOutdated(file.rdfModel?.samm.version, this.config.currentSammVersion),
+        );
 
         return this.rdfModelsToMigrate.length > 0;
       }),

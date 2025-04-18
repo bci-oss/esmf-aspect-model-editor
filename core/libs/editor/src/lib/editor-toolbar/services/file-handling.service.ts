@@ -111,7 +111,6 @@ export class FileHandlingService {
   }
 
   onLoadModel(fileInfo?: FileInfo) {
-    console.log('ON LOADED CALLED');
     this.loadModel(decodeText(fileInfo.content)).pipe(first()).subscribe();
   }
 

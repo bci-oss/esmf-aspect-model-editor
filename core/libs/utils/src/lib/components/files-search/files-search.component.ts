@@ -81,7 +81,6 @@ export class FilesSearchComponent {
 
     this.searchControl.valueChanges.pipe(startWith(''), throttleTime(150)).subscribe(value => {
       this.searchableFiles = value === '' ? this.files : this.searchService.search(value, this.files, filesSearchOption);
-      console.log(this.searchableFiles);
     });
   }
 
@@ -93,8 +92,7 @@ export class FilesSearchComponent {
         filter(result => result),
         switchMap(result => (result === 'open-in' ? this.loadModel(file, namespace) : this.openWindow(file, namespace))),
       )
-
-      .subscribe(console.log);
+      .subscribe();
     this.searchControl.patchValue('');
     this.closeSearch();
   }

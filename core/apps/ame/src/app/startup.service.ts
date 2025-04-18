@@ -84,17 +84,16 @@ export class StartupService {
     return this.electronSignalsService.call('requestWindowData').pipe(
       tap(data => (options = data.options)),
       switchMap(() =>
-        this.ngZone.run(() => {
-          console.log(model, options);
-          return model
+        this.ngZone.run(() =>
+          model
             ? this.modelLoaderService.renderModel({
                 rdfAspectModel: model,
                 namespaceFileName: options ? `${options.namespace}:${options.file}` : '',
                 fromWorkspace: options?.fromWorkspace,
                 editElementUrn: options?.editElement,
               })
-            : of(this.fileHandlingService.createEmptyModel());
-        }),
+            : of(this.fileHandlingService.createEmptyModel()),
+        ),
       ),
       tap(() => {
         this.modelSaveTracker.updateSavedModel();

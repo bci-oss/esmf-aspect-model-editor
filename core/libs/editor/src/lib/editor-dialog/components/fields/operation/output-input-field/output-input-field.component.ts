@@ -56,7 +56,7 @@ export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperat
       new FormControl(
         {
           value,
-          disabled: !!value || this.metaModelElement.isExternalReference(),
+          disabled: !!value || this.loadedFiles.isElementExtern(this.metaModelElement),
         },
         [this.validators.duplicateNameWithDifferentType(this.metaModelElement, DefaultProperty)],
       ),
@@ -67,7 +67,7 @@ export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperat
       'outputValue',
       new FormControl({
         value: property,
-        disabled: this.metaModelElement?.isExternalReference(),
+        disabled: this.loadedFiles.isElementExtern(this.metaModelElement),
       }),
     );
 

@@ -110,10 +110,10 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
   }
 
   initForm() {
-    this.parentForm.setControl('values', new FormControl({value: '', disabled: this.metaModelElement?.isExternalReference()}));
+    this.parentForm.setControl('values', new FormControl({value: '', disabled: this.loadedFiles.isElementExtern(this.metaModelElement)}));
     this.parentForm.setControl(
       'chipList',
-      new FormControl({value: this.enumValues, disabled: this.metaModelElement?.isExternalReference()}, Validators.required),
+      new FormControl({value: this.enumValues, disabled: this.loadedFiles.isElementExtern(this.metaModelElement)}, Validators.required),
     );
 
     if (this.parentForm.get('dataTypeEntity').value instanceof DefaultEntity) {

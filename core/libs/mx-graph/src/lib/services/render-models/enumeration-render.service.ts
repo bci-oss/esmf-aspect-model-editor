@@ -120,7 +120,7 @@ export class EnumerationRenderService extends BaseRenderService {
           return edge;
         }
 
-        if (!modelElement.isExternalReference()) {
+        if (!this.loadedFilesService.isElementExtern(modelElement)) {
           this.loadedFilesService.currentLoadedFile.cachedFile.removeElement(modelElement.aspectModelUrn);
         }
         return edge.target;

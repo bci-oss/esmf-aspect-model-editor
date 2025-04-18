@@ -30,7 +30,7 @@ export class NumericConversionFactorInputFieldComponent extends InputFieldCompon
       'numericConversionFactor',
       new FormControl({
         value: this.metaModelElement?.numericConversionFactor,
-        disabled: this.metaModelDialogService.isReadOnly() || this.metaModelElement?.isExternalReference(),
+        disabled: this.metaModelDialogService.isReadOnly() || this.loadedFiles.isElementExtern(this.metaModelElement),
       }),
     );
   }

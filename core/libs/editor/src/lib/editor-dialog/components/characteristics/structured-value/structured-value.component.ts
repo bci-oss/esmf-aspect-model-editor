@@ -92,7 +92,7 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
       new FormControl(
         {
           value: this.deconstructionRule || '',
-          disabled: !this.customRuleActive || this.metaModelElement?.isExternalReference(),
+          disabled: !this.customRuleActive || this.loadedFiles.isElementExtern(this.metaModelElement),
         },
         {validators: [Validators.required, EditorDialogValidators.regexValidator]},
       ),
@@ -101,7 +101,7 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
 
     this.parentForm.setControl(
       'elements',
-      new FormControl({value: [...this.elements], disabled: this.metaModelElement?.isExternalReference()}),
+      new FormControl({value: [...this.elements], disabled: this.loadedFiles.isElementExtern(this.metaModelElement)}),
     );
 
     this.rebuildElements();

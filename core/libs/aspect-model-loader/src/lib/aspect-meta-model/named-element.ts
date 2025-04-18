@@ -47,11 +47,6 @@ export abstract class NamedElement extends ModelElement {
 
   abstract get children(): ElementSet;
 
-  // TODO make this functionality work
-  isExternalReference(): boolean {
-    return false;
-  }
-
   getAspectModelUrn(): string {
     return this.aspectModelUrn;
   }

@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {LoadedFilesService} from '@ame/cache';
 import {EdgeStyles, MxGraphHelper} from '@ame/mx-graph';
 import {ShapeGeometry, basicShapeGeometry, circleShapeGeometry, smallBasicShapeGeometry} from '@ame/shared';
 import {
@@ -69,6 +70,8 @@ export class DefaultFilter implements FilterLoader {
     DefaultUnit,
   ];
 
+  constructor(public loadedFiles: LoadedFilesService) {}
+
   filter(rootElements: NamedElement[]): ModelTree<NamedElement>[] {
     return rootElements.map(element => this.generateTree(element));
   }
@@ -87,7 +90,7 @@ export class DefaultFilter implements FilterLoader {
     };
 
     for (const child of element.children) {
-      if (child.isExternalReference() && element.isExternalReference()) {
+      if (this.loadedFiles.isElementExtern(child) && this.loadedFiles.isElementExtern(element)) {
         continue;
       }
 

@@ -45,7 +45,7 @@ export class DefaultValueEntityInputFieldComponent extends InputFieldComponent<D
       this.fieldName,
       new FormControl({
         value: defaultValueString || this.metaModelElement?.defaultValue?.['name'] || '',
-        disabled: this.metaModelElement?.isExternalReference(),
+        disabled: this.loadedFiles.isElementExtern(this.metaModelElement),
       }),
     );
 

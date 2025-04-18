@@ -10,6 +10,7 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
+import {LoadedFilesService} from '@ame/cache';
 import {ModelService} from '@ame/rdf/services';
 import {Injectable} from '@angular/core';
 import {NamedElement} from '@esmf/aspect-model-loader';
@@ -25,7 +26,10 @@ export class EditorModelService {
   private saveButtonEnabled = true;
   public originalMetaModel: NamedElement;
 
-  constructor(private modelService: ModelService) {
+  constructor(
+    private modelService: ModelService,
+    private loadedFiles: LoadedFilesService,
+  ) {
     this.metaModelElementSubject.subscribe(newMetaModelElement => {
       if (this.originalMetaModel && !newMetaModelElement) {
         this.originalMetaModel = null;
@@ -47,7 +51,7 @@ export class EditorModelService {
   }
 
   isReadOnly(): boolean {
-    return this.metaModelElement?.isPredefined || this.metaModelElement?.isExternalReference();
+    return this.metaModelElement?.isPredefined || this.loadedFiles.isElementExtern(this.metaModelElement);
   }
 
   getMetaModelElement(): Observable<NamedElement> {

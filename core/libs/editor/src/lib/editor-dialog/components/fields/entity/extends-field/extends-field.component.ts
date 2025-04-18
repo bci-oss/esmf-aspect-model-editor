@@ -98,7 +98,7 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
       new FormControl(
         {
           value,
-          disabled: !!value || this.metaModelElement.isExternalReference() || this.metaModelElement.isPredefined,
+          disabled: !!value || this.loadedFiles.isElementExtern(this.metaModelElement) || this.metaModelElement.isPredefined,
         },
         {
           validators: [this.validators.duplicateNameWithDifferentType(this.metaModelElement, DefaultEntity)],
@@ -110,7 +110,7 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
       'extends',
       new FormControl({
         value: extendsElement,
-        disabled: this.metaModelElement?.isExternalReference(),
+        disabled: this.loadedFiles.isElementExtern(this.metaModelElement),
       }),
     );
 

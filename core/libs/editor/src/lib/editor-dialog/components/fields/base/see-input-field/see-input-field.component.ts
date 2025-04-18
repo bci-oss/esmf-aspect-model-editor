@@ -108,7 +108,8 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
       new FormControl(
         {
           value: this.decodeUriComponent(this.getCurrentValue()),
-          disabled: this.metaModelDialogService.isReadOnly() || this.metaModelElement?.isExternalReference() || this.isDisabled(),
+          disabled:
+            this.metaModelDialogService.isReadOnly() || this.loadedFiles.isElementExtern(this.metaModelElement) || this.isDisabled(),
         },
         {
           validators: [EditorDialogValidators.seeURI],

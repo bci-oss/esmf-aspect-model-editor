@@ -95,7 +95,7 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
       new FormControl(
         {
           value,
-          disabled: !!value || this.metaModelElement?.isExternalReference() || this.isDisabled,
+          disabled: !!value || this.loadedFiles.isElementExtern(this.metaModelElement) || this.isDisabled,
         },
         [this.validators.duplicateNameWithDifferentType(this.metaModelElement, DefaultEntity)],
       ),
@@ -105,7 +105,7 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
       'dataTypeEntity',
       new FormControl({
         value: dataType,
-        disabled: this.metaModelElement?.isExternalReference(),
+        disabled: this.loadedFiles.isElementExtern(this.metaModelElement),
       }),
     );
     this.dataTypeControl = this.parentForm.get('dataType') as FormControl;

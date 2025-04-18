@@ -69,7 +69,7 @@ export class ElementCharacteristicInputFieldComponent extends InputFieldComponen
       new FormControl(
         {
           value,
-          disabled: !!value || this.metaModelElement.isExternalReference() || this.isDisabled,
+          disabled: !!value || this.loadedFiles.isElementExtern(this.metaModelElement) || this.isDisabled,
         },
         [this.validators.duplicateNameWithDifferentType(this.metaModelElement, DefaultCharacteristic)],
       ),
@@ -79,7 +79,7 @@ export class ElementCharacteristicInputFieldComponent extends InputFieldComponen
       'elementCharacteristic',
       new FormControl({
         value: elementCharacteristic,
-        disabled: this.metaModelElement?.isExternalReference() || this.isDisabled,
+        disabled: this.loadedFiles.isElementExtern(this.metaModelElement) || this.isDisabled,
       }),
     );
 

@@ -80,19 +80,21 @@ export class StartupService {
         content: this.translate.language.LOADING_SCREEN_DIALOG.MODEL_LOADING_WAIT,
       }),
     );
+
     return this.electronSignalsService.call('requestWindowData').pipe(
       tap(data => (options = data.options)),
       switchMap(() =>
-        this.ngZone.run(() =>
-          model
-            ? this.modelLoaderService.loadSingleModel({
+        this.ngZone.run(() => {
+          console.log(model, options);
+          return model
+            ? this.modelLoaderService.renderModel({
                 rdfAspectModel: model,
                 namespaceFileName: options ? `${options.namespace}:${options.file}` : '',
                 fromWorkspace: options?.fromWorkspace,
                 editElementUrn: options?.editElement,
               })
-            : of(this.fileHandlingService.createEmptyModel()),
-        ),
+            : of(this.fileHandlingService.createEmptyModel());
+        }),
       ),
       tap(() => {
         this.modelSaveTracker.updateSavedModel();

@@ -14,7 +14,7 @@
 <mat-form-field [floatLabel]="getControl('unit')?.disabled ? 'always' : 'auto'" appearance="fill" subscriptSizing="dynamic">
   <mat-label for="unit">unit</mat-label>
   <input #unit [matAutocomplete]="auto" [formControl]="unitDisplayControl" matInput name="unit" data-cy="unit" />
-  @if (unitDisplayControl?.disabled && !metaModelElement?.isExternalReference()) {
+  @if (unitDisplayControl?.disabled && !loadedFiles.isElementExtern(metaModelElement)) {
     <button (click)="unlockUnit()" data-cy="clear-unit-button" matSuffix mat-icon-button tabindex="-1">
       <mat-icon>close</mat-icon>
     </button>

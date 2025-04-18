@@ -42,7 +42,10 @@ export class DefaultValueInputFieldComponent extends InputFieldComponent<Default
     this.parentForm.setControl(
       this.fieldName,
       new FormControl(
-        {value: defaultValueString || this.metaModelElement.defaultValue, disabled: this.metaModelElement?.isExternalReference()},
+        {
+          value: defaultValueString || this.metaModelElement.defaultValue,
+          disabled: this.loadedFiles.isElementExtern(this.metaModelElement),
+        },
         Validators.required,
       ),
     );

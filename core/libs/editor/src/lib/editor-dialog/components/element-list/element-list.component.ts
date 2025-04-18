@@ -10,6 +10,7 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
+import {LoadedFilesService} from '@ame/cache';
 import {MxGraphService} from '@ame/mx-graph';
 import {sammElements} from '@ame/shared';
 import {Component, Input, OnInit} from '@angular/core';
@@ -33,6 +34,7 @@ export class ElementListComponent implements OnInit {
     private shapeSettingsService: ShapeSettingsService,
     private shapeSettingsStateService: ShapeSettingsStateService,
     private openReferencedElementService: OpenReferencedElementService,
+    public loadedFiles: LoadedFilesService,
   ) {}
 
   ngOnInit() {

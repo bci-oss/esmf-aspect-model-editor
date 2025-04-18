@@ -52,9 +52,9 @@ export class ShapeSettingsComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(
     public metaModelDialogService: EditorModelService,
+    public loadedFilesService: LoadedFilesService,
     private languageSettings: SammLanguageSettingsService,
     private changeDetector: ChangeDetectorRef,
-    private loadedFilesService: LoadedFilesService,
   ) {}
 
   ngOnChanges(): void {

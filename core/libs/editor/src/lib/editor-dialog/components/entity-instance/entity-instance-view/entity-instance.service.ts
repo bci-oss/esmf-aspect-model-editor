@@ -151,7 +151,7 @@ export class EntityInstanceService {
   }
 
   private removeEntityValuesFromCharacteristic(characteristic: DefaultEnumeration) {
-    if (characteristic.isExternalReference()) {
+    if (this.loadedFiles.isElementExtern(characteristic)) {
       return;
     }
 

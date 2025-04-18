@@ -11,8 +11,9 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {LoadedFilesService} from '@ame/cache';
 import {SelectionModel} from '@angular/cdk/collections';
-import {Component, effect, input, OnDestroy, OnInit, output, signal} from '@angular/core';
+import {Component, effect, inject, input, OnDestroy, OnInit, output, signal} from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
 import {DefaultEntityInstance, DefaultEnumeration, EntityInstanceProperty, Value} from '@esmf/aspect-model-loader';
@@ -48,6 +49,8 @@ export class EntityInstanceViewComponent implements OnInit, OnDestroy {
       values?.length > 0 && values.some(val => val instanceof DefaultEntityInstance) ? this.checkInnerComplexValues(values) : [],
     alias: 'complexValues',
   });
+
+  public loadedFiles = inject(LoadedFilesService);
 
   constructor(private matDialog: MatDialog) {
     effect(() => {

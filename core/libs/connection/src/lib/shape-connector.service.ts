@@ -14,6 +14,7 @@ import {Injectable} from '@angular/core';
 import {mxgraph} from 'mxgraph-factory';
 import {ShapeConnectorUtil} from './shape-connector-util';
 
+import {LoadedFilesService} from '@ame/cache';
 import {ModelInfo, MxGraphAttributeService, MxGraphHelper, MxGraphShapeOverlayService} from '@ame/mx-graph';
 import {NotificationsService, cellRelations} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
@@ -117,6 +118,7 @@ export class ShapeConnectorService {
     private characteristicUnitConnectionHandler: CharacteristicUnitConnectionHandler,
     private structuredValuePropertyConnectionHandler: StructuredValueCharacteristicPropertyConnectionHandler,
     private translate: LanguageTranslationService,
+    private loadedFiles: LoadedFilesService,
   ) {
     if (!environment.production) {
       window['angular.shapeConnectorService'] = this;
@@ -143,7 +145,7 @@ export class ShapeConnectorService {
       selectedCells.reverse();
     }
 
-    if (modelElements[0]?.isExternalReference()) {
+    if (this.loadedFiles.isElementExtern(modelElements[0])) {
       return this.notificationsService.error({title: this.translate.language.NOTIFICATION_SERVICE.REFERNECE_CONNECTION_ERROR});
     }
 

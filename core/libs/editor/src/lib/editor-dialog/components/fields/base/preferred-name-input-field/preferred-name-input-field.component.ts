@@ -88,7 +88,8 @@ export class PreferredNameInputFieldComponent extends InputFieldComponent<NamedE
         key,
         new FormControl({
           value: this.getCurrentValue(key, locale),
-          disabled: this.metaModelDialogService.isReadOnly() || this.metaModelElement?.isExternalReference() || this.isDisabled(),
+          disabled:
+            this.metaModelDialogService.isReadOnly() || this.loadedFiles.isElementExtern(this.metaModelElement) || this.isDisabled(),
         }),
       );
     });

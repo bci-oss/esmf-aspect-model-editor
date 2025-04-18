@@ -25,7 +25,7 @@
     name="elementCharacteristic"
     data-cy="elementCharacteristic"
   />
-  @if (!frozen && elementCharacteristicDisplayControl?.disabled && !metaModelElement?.isExternalReference()) {
+  @if (!frozen && elementCharacteristicDisplayControl?.disabled && loadedFiles.isElementInCurrentFile(metaModelElement)) {
     <button (click)="unlockElementCharacteristic()" data-cy="clear-element-characteristic-button" matSuffix mat-icon-button tabindex="-1">
       <mat-icon>close</mat-icon>
     </button>

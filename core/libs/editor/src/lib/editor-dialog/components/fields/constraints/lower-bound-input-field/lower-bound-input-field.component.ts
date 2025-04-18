@@ -55,7 +55,7 @@ export class LowerBoundInputFieldComponent extends InputFieldComponent<DefaultCo
       this.fieldName,
       new FormControl({
         value: this.getCurrentValue(this.fieldName),
-        disabled: this.metaModelElement.isExternalReference(),
+        disabled: this.loadedFiles.isElementExtern(this.metaModelElement),
       }),
     );
   }

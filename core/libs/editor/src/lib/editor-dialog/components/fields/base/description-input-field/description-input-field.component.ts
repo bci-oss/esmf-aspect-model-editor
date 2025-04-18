@@ -96,7 +96,8 @@ export class DescriptionInputFieldComponent extends InputFieldComponent<NamedEle
         key,
         new FormControl({
           value: this.getCurrentValue(key, locale) || this.metaModelElement?.getDescription(locale),
-          disabled: this.metaModelDialogService.isReadOnly() || this.metaModelElement?.isExternalReference() || this.isDisabled(),
+          disabled:
+            this.metaModelDialogService.isReadOnly() || this.loadedFiles.isElementExtern(this.metaModelElement) || this.isDisabled(),
         }),
       );
     });

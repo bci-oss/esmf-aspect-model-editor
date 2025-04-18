@@ -14,13 +14,13 @@
 import {DomainModelToRdfService} from '@ame/aspect-exporter';
 import {FileHandlingService} from '@ame/editor';
 import {MigratorService} from '@ame/migrator';
-import {ThemeService} from '@ame/mx-graph';
+import {MxGraphHelper, ThemeService} from '@ame/mx-graph';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {BrowserService, ElectronTunnelService, TitleService} from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
 import {SearchesStateService} from '@ame/utils';
-import {Component, HostListener, OnInit} from '@angular/core';
+import {Component, HostListener, Injector, OnInit} from '@angular/core';
 import {Router, RouterOutlet} from '@angular/router';
 import {StartupService} from './startup.service';
 
@@ -48,8 +48,10 @@ export class AppComponent implements OnInit {
     private translate: LanguageTranslationService,
     private searchesStateService: SearchesStateService,
     private router: Router,
+    private injector: Injector,
   ) {
     this.domainModelToRdf.listenForStoreUpdates();
+    MxGraphHelper.injector = this.injector;
   }
 
   ngOnInit(): void {

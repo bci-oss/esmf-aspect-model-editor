@@ -169,7 +169,7 @@ export class MxGraphService {
     let cellStyle = node.shape.mxGraphStyle || '';
 
     cellStyle = this.themeService.generateThemeStyle(cellStyle);
-    if (node.element.isExternalReference()) {
+    if (this.loadedFiles.isElementExtern(node.element)) {
       cellStyle = mxUtils.setStyle(cellStyle, mxConstants.STYLE_FILL_OPACITY, 80);
     }
 
@@ -179,7 +179,7 @@ export class MxGraphService {
 
     this.mxGraphShapeOverlayService.checkComplexEnumerationOverlays(node.element, modelShape);
 
-    if (!node.element.isExternalReference()) {
+    if (this.loadedFiles.isElementInCurrentFile(node.element)) {
       this.mxGraphShapeOverlayService.addBottomShapeOverlay(modelShape);
       this.mxGraphShapeOverlayService.addTopShapeOverlay(modelShape);
     }
@@ -195,7 +195,7 @@ export class MxGraphService {
    * @param selectedModelElement - EntityValue meta model which will be deleted
    */
   public updateEnumerationsWithEntityValue(selectedModelElement: DefaultEntityInstance): void {
-    if (selectedModelElement.isExternalReference()) {
+    if (this.loadedFiles.isElementExtern(selectedModelElement)) {
       return;
     }
 
@@ -489,20 +489,20 @@ export class MxGraphService {
         if (cell.source && cell.target) {
           const parent = MxGraphHelper.getModelElement(cell.source);
           const child = MxGraphHelper.getModelElement(cell.target);
-          if (!parent.isExternalReference()) MxGraphHelper.removeRelation(parent, child);
+          if (this.loadedFiles.isElementInCurrentFile(parent)) MxGraphHelper.removeRelation(parent, child);
         }
         continue;
       }
 
       const modelElement = MxGraphHelper.getModelElement(cell);
-      if (modelElement.isExternalReference()) continue;
+      if (this.loadedFiles.isElementExtern(modelElement)) continue;
 
       for (const child of modelElement.children) {
         MxGraphHelper.removeRelation(modelElement, child);
       }
 
       for (const parent of modelElement.parents) {
-        if (!parent.isExternalReference()) MxGraphHelper.removeRelation(parent, modelElement);
+        if (this.loadedFiles.isElementInCurrentFile(parent)) MxGraphHelper.removeRelation(parent, modelElement);
       }
     }
     this.graph.removeCells(cells, includeEdges);
@@ -530,7 +530,7 @@ export class MxGraphService {
    * @param deletedEntityValue - EntityValueProperty.value that needs to be cleared.
    */
   public updateEntityValuesWithReference(deletedEntityValue: DefaultEntityInstance): void {
-    if (deletedEntityValue.isExternalReference()) {
+    if (this.loadedFiles.isElementExtern(deletedEntityValue)) {
       return;
     }
 

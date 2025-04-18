@@ -36,7 +36,7 @@ export class ExampleValueInputFieldComponent extends InputFieldComponent<Default
       new FormControl({
         value: this.metaModelElement?.exampleValue || '',
         disabled:
-          this.metaModelElement.isExternalReference() ||
+          this.loadedFiles.isElementExtern(this.metaModelElement) ||
           this.hasComplexDataType ||
           this.metaModelElement.isPredefined ||
           this.isExtending(),

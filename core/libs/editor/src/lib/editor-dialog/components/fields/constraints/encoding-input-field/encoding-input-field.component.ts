@@ -57,7 +57,7 @@ export class EncodingInputFieldComponent extends InputFieldComponent<DefaultEnco
       new FormControl(
         {
           value: RdfModelUtil.getValueWithoutUrnDefinition(this.getCurrentValue(this.fieldName)),
-          disabled: this.metaModelElement.isExternalReference(),
+          disabled: this.loadedFiles.isElementExtern(this.metaModelElement),
         },
         Validators.required,
       ),

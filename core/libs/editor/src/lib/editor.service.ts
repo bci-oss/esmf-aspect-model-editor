@@ -158,7 +158,7 @@ export class EditorService {
             }
 
             const sourceElement = MxGraphHelper.getModelElement<NamedElement>(edgeParent.source);
-            if (sourceElement && !sourceElement?.isExternalReference()) {
+            if (sourceElement && this.loadedFilesService.isElementInCurrentFile(sourceElement)) {
               useUpdater(sourceElement).delete(MxGraphHelper.getModelElement(cell));
             }
           });
@@ -320,7 +320,7 @@ export class EditorService {
 
     this.deleteElements(result);
 
-    if (result.some((cell: mxgraph.mxCell) => MxGraphHelper.getModelElement(cell)?.isExternalReference())) {
+    if (result.some((cell: mxgraph.mxCell) => this.loadedFilesService.isElementExtern(MxGraphHelper.getModelElement(cell)))) {
       result.forEach((element: any) => {
         this.deletePrefixForExternalNamespaceReference(element);
       });

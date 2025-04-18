@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {NamespaceFile} from '@ame/cache';
+import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {
@@ -471,6 +471,8 @@ export class MxGraphVisitorHelper {
   }
 
   static getModelInfo(modelElement: NamedElement, file: NamespaceFile): ModelBaseProperties {
+    const loadedFile = MxGraphHelper.injector ? MxGraphHelper.injector.get(LoadedFilesService) : null;
+
     try {
       const [currentNamespace] = file.rdfModel.getAspectModelUrn().replace('urn:samm:', '').split(':');
       const [, elementNamespace] = MxGraphHelper.getNamespaceFromElement(modelElement);
@@ -487,7 +489,7 @@ export class MxGraphVisitorHelper {
         version: RdfModelUtil.getNamespaceVersionFromRdf(file.absoluteName),
         sammVersion: metaModelVersion,
         namespace: elementNamespace,
-        external: modelElement.isExternalReference(),
+        external: loadedFile?.isElementExtern(modelElement),
         predefined: !!(modelElement as DefaultCharacteristic)?.isPredefined,
         sameNamespace: elementNamespace === currentNamespace,
         sameVersionedNamespace: aspectVersionedNamespace === elementVersionedNamespace,

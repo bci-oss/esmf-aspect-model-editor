@@ -60,7 +60,7 @@ export class EntityInstanceVisitor extends BaseVisitor<DefaultEntityInstance> {
   }
 
   private handleExternalReference(value: Value): void {
-    if (value instanceof DefaultEntityInstance && value.isExternalReference()) {
+    if (value instanceof DefaultEntityInstance && this.loadedFiles.isElementExtern(value)) {
       this.setPrefix(value.aspectModelUrn);
     }
   }

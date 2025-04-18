@@ -40,6 +40,8 @@ export class ModelLoaderService {
    * Loads a model with it's dependencies and renders it
    */
   renderModel(payload: LoadModelPayload) {
+    this.loadedFilesService.removeAll();
+
     return this.loadSingleModel(payload, true).pipe(
       switchMap(() => this.modelRenderer.renderModel(payload.editElementUrn)),
       tap(() => {
@@ -65,11 +67,6 @@ export class ModelLoaderService {
    * @param absoluteFileName
    */
   loadSingleModel(payload: LoadModelPayload, render = false) {
-    const preloadedFile = this.loadedFilesService.getFile(payload.namespaceFileName);
-    if (preloadedFile) {
-      return of(preloadedFile);
-    }
-
     return (
       this.modelApiService
         // getting all files from server
@@ -94,7 +91,7 @@ export class ModelLoaderService {
                 // loading all isolated elements
                 this.instantiatorService.instantiateRemainingElements(loadedFile.rdfModel, loadedFile.cachedElements);
                 // filtering and registering the elements by their location in files
-                this.moveElementsToTheirCacheFile(rdfModels, loadedFile);
+                this.moveElementsToTheirCacheFile(rdfModels, loadedFile, payload.namespaceFileName);
 
                 return of(render ? this.loadedFilesService.currentLoadedFile : this.loadedFilesService.getFile(payload.namespaceFileName));
               }),
@@ -221,12 +218,12 @@ export class ModelLoaderService {
     }
   }
 
-  private moveElementsToTheirCacheFile(rdfModels: Record<string, RdfModel>, loadedFile: any) {
-    const rdfModelsEntries = Object.entries(rdfModels).filter(([key]) => key !== 'current');
+  private moveElementsToTheirCacheFile(rdfModels: Record<string, RdfModel>, loadedFile: any, currentLoadingFile: string) {
+    const rdfModelsEntries = Object.entries(rdfModels).filter(([key]) => key !== 'current' && key !== currentLoadingFile);
     for (const urn of loadedFile.cachedElements.getKeys()) {
       const namedNode = new NamedNode(urn);
       const [key, rdfModel] = rdfModelsEntries.find(([, rdfModel]) => rdfModel.store.countQuads(namedNode, null, null, null) > 0) || [];
-      if (key && key !== 'current' && rdfModel) {
+      if (key && key !== 'current' && key !== currentLoadingFile && rdfModel) {
         const fileCache = this.loadedFilesService.files[key].cachedFile;
         fileCache.resolveInstance<NamedElement>(loadedFile.cachedElements.get(urn));
         loadedFile.cachedElements.removeElement(urn);

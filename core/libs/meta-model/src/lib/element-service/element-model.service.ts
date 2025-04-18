@@ -107,7 +107,7 @@ export class ElementModelService {
 
     MxGraphHelper.removeRelation(sourceModelElement, targetModelElement);
 
-    if (sourceModelElement.isExternalReference()) {
+    if (this.loadedFilesService.isElementExtern(sourceModelElement)) {
       return;
     }
 

@@ -34,11 +34,6 @@ export class SharedSettingsTitleComponent implements OnInit {
     this.elementName = this.getTitle();
   }
 
-  @Input() set metaModelClassNameInput(value: string) {
-    this.metaModelClassName = value;
-    this.elementName = this.getTitle();
-  }
-
   elementName: string;
 
   constructor(

@@ -12,7 +12,6 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {RdfModelUtil} from '@ame/rdf/utils';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {ChangeDetectorRef, Component, EventEmitter, HostListener, Input, OnChanges, OnDestroy, OnInit, Output} from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
@@ -103,13 +102,6 @@ export class ShapeSettingsComponent implements OnInit, OnChanges, OnDestroy {
       this.metaModelDialogService.updateMetaModelElement(this.metaModelElement);
       if (this.metaModelElement instanceof DefaultCharacteristic || this.metaModelElement instanceof DefaultConstraint) {
         this.tmpCharacteristic = this.metaModelElement;
-      }
-      if (
-        RdfModelUtil.isCharacteristicInstance(selectedModelElement.aspectModelUrn, this.loadedFilesService.currentLoadedFile.rdfModel.sammC)
-      ) {
-        this.metaModelClassName = selectedModelElement.aspectModelUrn.split('#')[1].replace('Default', '');
-      } else {
-        this.metaModelClassName = selectedModelElement.className.replace('Default', '');
       }
     } else {
       console.warn('Selected element is null. The dialog will not shown.');

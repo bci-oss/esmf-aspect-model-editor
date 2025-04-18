@@ -97,13 +97,6 @@ export const sammElements: ElementInfo = {
     description: 'ELEMENT_MODEL_DESCRIPTION.ABSTRACT_PROPERTY',
     class: DefaultProperty,
   },
-  characteristic: {
-    name: 'Characteristic',
-    symbol: 'C',
-    plural: 'Characteristics',
-    description: 'ELEMENT_MODEL_DESCRIPTION.CHARACTERISTIC',
-    class: DefaultCharacteristic,
-  },
   entity: {
     name: 'Entity',
     symbol: 'E',
@@ -138,5 +131,12 @@ export const sammElements: ElementInfo = {
     plural: 'Traits',
     description: 'ELEMENT_MODEL_DESCRIPTION.TRAIT',
     class: DefaultTrait,
+  },
+  characteristic: {
+    name: 'Characteristic',
+    symbol: 'C',
+    plural: 'Characteristics',
+    description: 'ELEMENT_MODEL_DESCRIPTION.CHARACTERISTIC',
+    class: DefaultCharacteristic,
   },
 };

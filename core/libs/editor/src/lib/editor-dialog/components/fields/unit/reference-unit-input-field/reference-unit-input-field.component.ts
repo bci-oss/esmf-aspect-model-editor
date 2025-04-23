@@ -59,14 +59,14 @@ export class ReferenceUnitInputFieldComponent extends InputFieldComponent<Defaul
 
     this.unitDisplayControl = new FormControl({
       value: referenceUnit?.name,
-      disabled: !!referenceUnit || this.metaModelElement.isExternalReference(),
+      disabled: !!referenceUnit || this.loadedFiles.isElementExtern(this.metaModelElement),
     });
 
     this.parentForm.setControl(
       'referenceUnit',
       new FormControl({
         value: this.metaModelElement?.referenceUnit,
-        disabled: this.metaModelDialogService.isReadOnly() || this.metaModelElement?.isExternalReference(),
+        disabled: this.metaModelDialogService.isReadOnly() || this.loadedFiles.isElementExtern(this.metaModelElement),
       }),
     );
 

@@ -12,7 +12,7 @@
  */
 import {MigratorApiService, ModelApiService} from '@ame/api';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
-import {EditorService} from '@ame/editor';
+import {ModelLoaderService} from '@ame/editor';
 import {RdfService} from '@ame/rdf/services';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {APP_CONFIG, AppConfig, ElectronSignals, ElectronSignalsService} from '@ame/shared';
@@ -56,15 +56,15 @@ export class VersionMigrationComponent implements OnInit {
     private rdfService: RdfService,
     private modelApiService: ModelApiService,
     private migratorApiService: MigratorApiService,
-    private editorService: EditorService,
+    private modelLoader: ModelLoaderService,
     private router: Router,
     private ngZone: NgZone,
     private loadedFilesService: LoadedFilesService,
   ) {}
 
   ngOnInit(): void {
-    this.editorService
-      .loadExternalModels()
+    this.modelLoader
+      .loadWorkspaceModels()
       .pipe(
         tap(() => this.prepareNamespaces(this.migratorApiService.rdfModelsToMigrate)),
         switchMap(() => this.rewriteStores()),

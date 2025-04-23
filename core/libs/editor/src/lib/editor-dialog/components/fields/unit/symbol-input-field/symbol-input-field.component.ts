@@ -35,7 +35,7 @@ export class SymbolInputFieldComponent extends InputFieldComponent<DefaultUnit> 
       'symbol',
       new FormControl({
         value: this.metaModelElement?.symbol,
-        disabled: this.metaModelDialogService.isReadOnly() || this.metaModelElement?.isExternalReference(),
+        disabled: this.metaModelDialogService.isReadOnly() || this.loadedFiles.isElementExtern(this.metaModelElement),
       }),
     );
   }

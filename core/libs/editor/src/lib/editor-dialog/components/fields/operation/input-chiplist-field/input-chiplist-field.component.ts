@@ -72,7 +72,7 @@ export class InputChiplistFieldComponent extends InputFieldComponent<DefaultOper
     this.searchControl = new FormControl(
       {
         value: '',
-        disabled: this.metaModelElement.isExternalReference(),
+        disabled: this.loadedFiles.isElementExtern(this.metaModelElement),
       },
       [this.validators.duplicateNameWithDifferentType(this.metaModelElement, DefaultProperty)],
     );
@@ -81,11 +81,11 @@ export class InputChiplistFieldComponent extends InputFieldComponent<DefaultOper
       'inputChipList',
       new FormControl({
         value: this.inputValues,
-        disabled: this.metaModelElement?.isExternalReference(),
+        disabled: this.loadedFiles.isElementExtern(this.metaModelElement),
       }),
     );
 
-    if (this.metaModelElement?.isExternalReference()) this.chipControl.disable();
+    if (this.loadedFiles.isElementExtern(this.metaModelElement)) this.chipControl.disable();
 
     this.filteredPropertyTypes$ = this.initFilteredPropertyTypes(this.searchControl);
   }

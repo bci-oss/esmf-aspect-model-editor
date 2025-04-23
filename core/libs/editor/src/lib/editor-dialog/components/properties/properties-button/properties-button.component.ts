@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {LoadedFilesService} from '@ame/cache';
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {DefaultAspect, DefaultEntity, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
@@ -40,6 +41,7 @@ export class PropertiesButtonComponent implements OnInit {
   constructor(
     private matDialog: MatDialog,
     private metaModelDialogService: EditorModelService,
+    private loadedFiles: LoadedFilesService,
   ) {}
 
   ngOnInit(): void {
@@ -56,7 +58,7 @@ export class PropertiesButtonComponent implements OnInit {
         data: {
           name: this.metaModelElement.name,
           properties: this.propertiesClone || this.metaModelElement.properties,
-          isExternalRef: this.metaModelElement.isExternalReference(),
+          isExternalRef: this.loadedFiles.isElementExtern(this.metaModelElement),
           metaModelElement: this.metaModelElement,
           isPredefined: this.isPredefined,
         },

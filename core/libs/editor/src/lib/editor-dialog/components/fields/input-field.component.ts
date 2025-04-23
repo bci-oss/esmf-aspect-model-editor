@@ -273,7 +273,7 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
     return this.searchExtElement(value)
       ?.map((cell: mxgraph.mxCell) => {
         const modelElement = MxGraphHelper.getModelElement(cell);
-        if (modelElement.isExternalReference() && modelElement instanceof DefaultProperty) {
+        if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultProperty) {
           return {
             name: modelElement.name,
             description: modelElement.getDescription('en') || '',
@@ -290,7 +290,7 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
     return this.searchExtElement(value)
       ?.map((cell: mxgraph.mxCell) => {
         const modelElement = MxGraphHelper.getModelElement(cell);
-        if (modelElement.isExternalReference() && modelElement instanceof DefaultCharacteristic) {
+        if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultCharacteristic) {
           return {
             name: modelElement.name,
             description: modelElement.getDescription('en') || '',
@@ -307,7 +307,7 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
     return this.searchExtElement(value)
       ?.map((cell: mxgraph.mxCell) => {
         const modelElement = MxGraphHelper.getModelElement(cell);
-        if (modelElement.isExternalReference() && modelElement instanceof DefaultEntity) {
+        if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultEntity) {
           return {
             name: modelElement.name,
             description: modelElement.getDescription('en') || '',
@@ -325,7 +325,7 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
     return this.searchExtElement(value)
       ?.map((cell: mxgraph.mxCell) => {
         const modelElement = MxGraphHelper.getModelElement(cell);
-        if (modelElement.isExternalReference() && modelElement instanceof DefaultEntity && modelElement.isAbstractEntity()) {
+        if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultEntity && modelElement.isAbstractEntity()) {
           return {
             name: modelElement.name,
             description: modelElement.getDescription('en') || '',

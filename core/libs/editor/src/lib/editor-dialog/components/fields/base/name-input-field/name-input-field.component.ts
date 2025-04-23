@@ -64,7 +64,8 @@ export class NameInputFieldComponent extends InputFieldComponent<NamedElement> i
       new FormControl(
         {
           value: this.getCurrentValue('name'),
-          disabled: this.metaModelDialogService.isReadOnly() || this.metaModelElement?.isExternalReference() || this.isDisabled(),
+          disabled:
+            this.metaModelDialogService.isReadOnly() || this.loadedFiles.isElementExtern(this.metaModelElement) || this.isDisabled(),
         },
         {
           validators: this.getNameValidators(),

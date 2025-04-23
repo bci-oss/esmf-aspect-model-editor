@@ -64,7 +64,7 @@ export class RightInputFieldComponent extends InputFieldComponent<DefaultEither>
       new FormControl(
         {
           value,
-          disabled: !!value || this.metaModelElement.isExternalReference(),
+          disabled: !!value || this.loadedFiles.isElementExtern(this.metaModelElement),
         },
         {
           validators: [
@@ -79,7 +79,7 @@ export class RightInputFieldComponent extends InputFieldComponent<DefaultEither>
       'rightCharacteristic',
       new FormControl({
         value: eitherRight,
-        disabled: this.metaModelElement?.isExternalReference(),
+        disabled: this.loadedFiles.isElementExtern(this.metaModelElement),
       }),
     );
 

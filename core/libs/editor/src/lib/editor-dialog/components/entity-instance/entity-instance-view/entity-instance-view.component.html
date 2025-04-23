@@ -13,7 +13,7 @@
 
 <ame-entity-instance-search-bar
   [count]="(complexValues() | entityInstance: searchFilter)?.length"
-  [disableAddNewEntityValue]="enumeration()?.isExternalReference()"
+  [disableAddNewEntityValue]="loadedFiles.isElementExtern(enumeration())"
   (add)="onNew()"
   (newSearch)="searchFilter = $event"
 ></ame-entity-instance-search-bar>
@@ -24,7 +24,7 @@
       <mat-panel-title class="complex-value-bar">
         <span class="value-name">{{ complexValue.name }}</span>
         <div class="complex-value-toolbox">
-          @if (!enumeration()?.isExternalReference()) {
+          @if (loadedFiles.isElementInCurrentFile(enumeration())) {
             <mat-icon
               (click)="onDelete(complexValue, $event)"
               matTooltip="Delete complex value {{ complexValue.name }}"

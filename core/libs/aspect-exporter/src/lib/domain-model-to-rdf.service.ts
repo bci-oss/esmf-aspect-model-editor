@@ -109,7 +109,7 @@ export class DomainModelToRdfService {
   }
 
   private exportElement(element: NamedElement) {
-    if (element?.isExternalReference()) {
+    if (this.loadedFiles.isElementExtern(element)) {
       return;
     }
 

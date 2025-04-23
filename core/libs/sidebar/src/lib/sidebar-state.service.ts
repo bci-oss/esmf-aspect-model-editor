@@ -154,8 +154,12 @@ export class SidebarStateService {
   }
 
   public isCurrentFile(namespace: string, fileName: string): boolean {
-    const {namespace: currentNamespace, name} = this.loadedFilesService.currentLoadedFile;
-    return currentNamespace === namespace && name === fileName;
+    if (this.isCurrentFileLoaded()) {
+      const {namespace: currentNamespace, name} = this.loadedFilesService.currentLoadedFile;
+      return currentNamespace === namespace && name === fileName;
+    }
+
+    return false;
   }
 
   public requestGetNamespaces() {

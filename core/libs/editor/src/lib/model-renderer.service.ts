@@ -126,7 +126,7 @@ export class ModelRendererService {
   }
 
   private editModelByUrn(elementUrn: string) {
-    const element = this.cachedFile.get<NamedElement>(elementUrn);
+    const element = this.cachedFile?.get<NamedElement>(elementUrn);
     if (!element) {
       this.notificationsService.error({
         title: this.translate.language.EDITOR_CANVAS.SHAPE_SETTING.NOTIFICATION.EDIT_VIEW_UNAVAILABLE,

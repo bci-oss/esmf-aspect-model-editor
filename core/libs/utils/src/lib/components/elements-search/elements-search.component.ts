@@ -66,7 +66,7 @@ export class ElementsSearchComponent {
     private confirmDialogService: ConfirmDialogService,
     private searchService: SearchService,
     private translate: LanguageTranslationService,
-    private loadedFiles: LoadedFilesService,
+    public loadedFiles: LoadedFilesService,
   ) {
     this.searchControl.valueChanges.pipe(startWith(''), throttleTime(150)).subscribe(value => {
       this.elements = this.searchService
@@ -76,7 +76,7 @@ export class ElementsSearchComponent {
   }
 
   openElement(element: NamedElement) {
-    if (element.isExternalReference() && !element.isPredefined) {
+    if (this.loadedFiles.isElementExtern(element) && !element.isPredefined) {
       this.confirmDialogService
         .open({
           phrases: [this.translate.translateService.instant('CONFIRM_DIALOG.NEW_WINDOW_ELEMENT.PHRASE1', {elementName: element.name})],

@@ -14,7 +14,6 @@
 import {LoadedFilesService} from '@ame/cache';
 import {ShapeConnectorService} from '@ame/connection';
 import {DefaultFilter, FiltersService} from '@ame/loader-filters';
-import {RdfService} from '@ame/rdf/services';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {Injectable, inject} from '@angular/core';
 import {DefaultEntity, DefaultProperty, PredefinedEntitiesEnum, SammE} from '@esmf/aspect-model-loader';
@@ -36,7 +35,6 @@ export class BaseEntityRendererService {
     private sammLangService: SammLanguageSettingsService,
     private shapeConnectorService: ShapeConnectorService,
     private mxGraphShapeOverlayService: MxGraphShapeOverlayService,
-    private rdfService: RdfService,
   ) {}
 
   public handleExtendsElement(cell: mxgraph.mxCell) {
@@ -75,7 +73,7 @@ export class BaseEntityRendererService {
         return;
       }
 
-      const [filteredElement] = new DefaultFilter().filter([extendsElement]);
+      const [filteredElement] = new DefaultFilter(this.loadedFiles).filter([extendsElement]);
       mxGraphSetupVisitor.render(filteredElement, cell);
       predefinedCell = this.mxGraphService.resolveCellByModelElement(extendsElement);
 

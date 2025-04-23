@@ -84,7 +84,7 @@ export class EntityModelService extends BaseModelService {
       const entityValuesToDelete = [];
       for (const edge of cell.edges) {
         const sourceModelElement = MxGraphHelper.getModelElement<NamedElement>(edge.source);
-        if (sourceModelElement && !sourceModelElement.isExternalReference()) {
+        if (sourceModelElement && this.loadedFilesService.isElementInCurrentFile(sourceModelElement)) {
           this.currentCachedFile.removeElement(modelElement.aspectModelUrn);
           useUpdater(sourceModelElement).delete(modelElement);
         }

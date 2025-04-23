@@ -43,7 +43,6 @@ export class FiltersService {
     [ModelFilter.PROPERTIES]: () => this.selectPropertiesFilter(),
   };
   public filteredTree: Partial<FilteredTrees> = {};
-  // TODO: To check why is behaving weirdly with BaseMetaModel instead of any
   public currentFilter: FilterLoader<any>;
 
   constructor(
@@ -57,7 +56,7 @@ export class FiltersService {
   }
 
   selectDefaultFilter() {
-    this.currentFilter = new DefaultFilter();
+    this.currentFilter = new DefaultFilter(this.injector.get(LoadedFilesService));
     this.filterAttributesService.activeFilter = ModelFilter.DEFAULT;
   }
 

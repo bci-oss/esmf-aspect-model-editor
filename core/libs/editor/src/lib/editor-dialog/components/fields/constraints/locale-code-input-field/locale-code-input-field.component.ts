@@ -71,7 +71,7 @@ export class LocaleCodeInputFieldComponent extends InputFieldComponent<DefaultLo
       new FormControl(
         {
           value: RdfModelUtil.getValueWithoutUrnDefinition(this.getCurrentValue(this.fieldName)),
-          disabled: this.metaModelElement.isExternalReference(),
+          disabled: this.loadedFiles.isElementExtern(this.metaModelElement),
         },
         Validators.required,
       ),

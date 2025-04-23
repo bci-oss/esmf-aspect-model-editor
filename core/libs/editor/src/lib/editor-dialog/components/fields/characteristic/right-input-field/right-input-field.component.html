@@ -14,7 +14,7 @@
 <mat-form-field [floatLabel]="getControl('right')?.disabled ? 'always' : 'auto'" appearance="fill" subscriptSizing="dynamic">
   <mat-label for="right">right</mat-label>
   <input #right [matAutocomplete]="auto" [formControl]="getControl('right')" matInput name="right" data-cy="right" />
-  @if (rightControl?.disabled && !metaModelElement?.isExternalReference()) {
+  @if (rightControl?.disabled && !loadedFiles.isElementExtern(metaModelElement)) {
     <button (click)="unlockRight()" data-cy="clear-right-button" matSuffix mat-icon-button tabindex="-1">
       <mat-icon>close</mat-icon>
     </button>

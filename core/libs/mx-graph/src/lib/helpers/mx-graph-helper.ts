@@ -10,10 +10,12 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
+import {LoadedFilesService} from '@ame/cache';
 import {filterRelations, ModelFilter, ModelTree} from '@ame/loader-filters';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {basicShapeGeometry, ModelCompactTreeLayout, ModelHierarchicalLayout} from '@ame/shared';
+import {Injector} from '@angular/core';
 import {
   DefaultAspect,
   DefaultCharacteristic,
@@ -36,6 +38,7 @@ import {MxGraphVisitorHelper, ShapeAttribute} from './mx-graph-visitor-helper';
 
 export class MxGraphHelper {
   static filterMode: ModelFilter = ModelFilter.DEFAULT;
+  static injector: Injector;
 
   /**
    * Gets the node element for a cell
@@ -182,8 +185,9 @@ export class MxGraphHelper {
    * @param child child for parent
    */
   static removeRelation(parent: NamedElement, child: NamedElement) {
+    const loadedFiles = this.injector ? this.injector.get(LoadedFilesService) : null;
     const isRemovable = this.isRemovable(parent, child);
-    if (!isRemovable || (parent.isExternalReference() && child.isPredefined)) {
+    if (!isRemovable || (loadedFiles?.isElementExtern(parent) && child.isPredefined)) {
       return;
     }
 
@@ -191,10 +195,13 @@ export class MxGraphHelper {
   }
 
   private static isRemovable(element: NamedElement, elementToRemove: NamedElement) {
+    const loadedFiles = this.injector ? this.injector.get(LoadedFilesService) : null;
     const elementNamespace = element.aspectModelUrn.split('#')[0];
     const toRemoveNamespace = elementToRemove.aspectModelUrn.split('#')[0];
 
-    return elementNamespace !== toRemoveNamespace || !(element.isExternalReference() || elementToRemove.isExternalReference());
+    return (
+      elementNamespace !== toRemoveNamespace || !(loadedFiles?.isElementExtern(element) || loadedFiles?.isElementExtern(elementToRemove))
+    );
   }
 
   static isEntityCycleInheritance(child: mxgraph.mxCell, parent: NamedElement, graph: mxgraph.mxGraph): boolean {

@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {LoadedFilesService} from '@ame/cache';
 import {ShapeSettingsStateService} from '@ame/editor';
 import {MxGraphHelper} from '@ame/mx-graph';
 import {ShapeGeometry, basicShapeGeometry, smallCircleShapeGeometry} from '@ame/shared';
@@ -35,7 +36,11 @@ export class PropertiesFilterLoader implements FilterLoader {
   filterType: ModelFilter = ModelFilter.PROPERTIES;
   visibleElements = [DefaultAspect, DefaultProperty];
 
-  constructor(private injector: Injector) {}
+  private loadedFiles: LoadedFilesService;
+
+  constructor(private injector: Injector) {
+    this.loadedFiles = this.injector.get(LoadedFilesService);
+  }
 
   filter(rootElements: NamedElement[]): ModelTree<NamedElement>[] {
     const shapeSettingsStateService = this.injector.get(ShapeSettingsStateService);
@@ -69,7 +74,7 @@ export class PropertiesFilterLoader implements FilterLoader {
     }
 
     for (const child of element.children) {
-      if (child.isExternalReference() && element.isExternalReference()) {
+      if (this.loadedFiles.isElementExtern(child) && this.loadedFiles.isElementExtern(element)) {
         continue;
       }
 

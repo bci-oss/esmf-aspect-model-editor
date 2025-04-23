@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {LoadedFilesService} from '@ame/cache';
 import {sammElements} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
@@ -43,6 +44,7 @@ export class SharedSettingsTitleComponent implements OnInit {
   constructor(
     private cd: ChangeDetectorRef,
     private translate: LanguageTranslationService,
+    public loadedFilesService: LoadedFilesService,
   ) {}
 
   ngOnInit(): void {
@@ -64,7 +66,7 @@ export class SharedSettingsTitleComponent implements OnInit {
     } else {
       let name = `${this.metaModelElement.getPreferredName('en') || this.metaModelElement.name}`;
       name = name.length > 150 ? `${name.substring(0, 100)}...` : name;
-      return this.metaModelElement.isExternalReference()
+      return this.loadedFilesService.isElementExtern(this.metaModelElement)
         ? name
         : this.translate.translateService.instant('EDITOR_CANVAS.SHAPE_SETTING.EDIT', {value: 'element'});
     }

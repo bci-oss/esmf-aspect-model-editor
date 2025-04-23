@@ -27,7 +27,7 @@ export class StructuredValuePropertyFieldComponent implements OnInit {
   @Input() public defaultProperty: DefaultProperty = null;
   @Input() public fieldControl: FormControl;
 
-  private loadedFiles = inject(LoadedFilesService);
+  public loadedFiles = inject(LoadedFilesService);
 
   public filteredProperties$: Observable<any>;
   public control: FormControl;
@@ -44,7 +44,7 @@ export class StructuredValuePropertyFieldComponent implements OnInit {
     this.control = new FormControl(
       {
         value: this.defaultProperty?.name || '',
-        disabled: !!this.defaultProperty?.name || this.defaultProperty?.isExternalReference(),
+        disabled: !!this.defaultProperty?.name || this.loadedFiles.isElementExtern(this.defaultProperty),
       },
       [Validators.required, EditorDialogValidators.namingLowerCase],
     );

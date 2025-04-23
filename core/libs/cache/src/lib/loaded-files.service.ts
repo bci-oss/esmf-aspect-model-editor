@@ -111,6 +111,20 @@ export class LoadedFilesService {
     window['loadedFiles'] = this;
   }
 
+  isElementInCurrentFile(element: NamedElement): boolean {
+    if (!element) return false;
+
+    if (!this.currentLoadedFile) return false;
+
+    if (!this.currentLoadedFile.cachedFile) return false;
+
+    return Boolean(this.currentLoadedFile.cachedFile.get(element.aspectModelUrn));
+  }
+
+  isElementExtern(element: NamedElement): boolean {
+    return !this.isElementInCurrentFile(element);
+  }
+
   addFile(fileInfo: LoadedFilePayload): NamespaceFile {
     const newFile = new NamespaceFile(fileInfo.rdfModel, fileInfo.cachedFile, fileInfo.aspect);
     if (fileInfo.absoluteName) {
@@ -179,7 +193,7 @@ export class LoadedFilesService {
   getFileFromElement(element: NamedElement): string {
     for (const file of Object.values(this.files)) {
       if (file.cachedFile?.get(element.aspectModelUrn)) {
-        return file.absoluteName;
+        return file.name;
       }
     }
 

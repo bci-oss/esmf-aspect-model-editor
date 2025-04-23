@@ -13,7 +13,6 @@
 
 export * from './base';
 export * from './bound-definition';
-export * from './external-reference';
 export * from './has-properties';
 export * from './is-described';
 export * from './is-named';

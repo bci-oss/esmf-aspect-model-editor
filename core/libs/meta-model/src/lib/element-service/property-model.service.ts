@@ -14,6 +14,7 @@
 import {EntityInstanceService} from '@ame/editor';
 import {MxGraphAttributeService, MxGraphHelper, MxGraphService, MxGraphVisitorHelper, PropertyRenderService} from '@ame/mx-graph';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
+import {useUpdater} from '@ame/utils';
 import {Injectable} from '@angular/core';
 import {DefaultProperty, DefaultStructuredValue, HasExtends, NamedElement} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
@@ -56,8 +57,7 @@ export class PropertyModelService extends BaseModelService {
     for (const parent of parents) {
       const parentModel = MxGraphHelper.getModelElement(parent);
       if (parentModel instanceof DefaultStructuredValue) {
-        // TODO create functionality for delete
-        // parentModel.delete(node);
+        useUpdater(parent).delete(node);
         MxGraphHelper.updateLabel(parent, this.mxGraphService.graph, this.sammLangService);
       }
     }

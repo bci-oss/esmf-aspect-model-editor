@@ -87,7 +87,7 @@ export class TraitModelService extends BaseModelService {
   private getSourceTargetPairForReconnect(cell: mxgraph.mxCell) {
     const sourceTargetPair = new Map();
     const elementModel = MxGraphHelper.getModelElement(cell);
-    if (!elementModel.isExternalReference()) {
+    if (this.loadedFilesService.isElementInCurrentFile(elementModel)) {
       const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell);
       const outgoingEdges = this.mxGraphAttributeService.graph.getOutgoingEdges(cell);
 

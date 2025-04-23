@@ -88,7 +88,7 @@ export class UnitInputFieldComponent
       new FormControl(
         {
           value: unit,
-          disabled: this.metaModelElement?.isExternalReference(),
+          disabled: this.loadedFiles.isElementExtern(this.metaModelElement),
         },
         this.unitRequired ? Validators.required : null,
       ),

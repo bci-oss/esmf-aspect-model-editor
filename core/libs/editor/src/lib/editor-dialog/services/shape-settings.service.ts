@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {LoadedFilesService} from '@ame/cache';
 import {MxGraphAttributeService, MxGraphHelper, MxGraphService, MxGraphShapeSelectorService, mxEvent, mxUtils} from '@ame/mx-graph';
 import {BindingsService} from '@ame/shared';
 import {Injectable, NgZone} from '@angular/core';
@@ -35,6 +36,7 @@ export class ShapeSettingsService {
     private editorService: EditorService,
     private shapeSettingsStateService: ShapeSettingsStateService,
     private openReferencedElementService: OpenReferencedElementService,
+    public loadedFiles: LoadedFilesService,
     private ngZone: NgZone,
   ) {}
 
@@ -100,7 +102,7 @@ export class ShapeSettingsService {
     }
 
     this.modelElement = MxGraphHelper.getModelElement(selectedElement);
-    if (this.modelElement.isExternalReference() && !this.modelElement.isPredefined) {
+    if (this.loadedFiles.isElementExtern(this.modelElement) && !this.modelElement.isPredefined) {
       this.openReferencedElementService.openReferencedElement(this.modelElement);
       return;
     }

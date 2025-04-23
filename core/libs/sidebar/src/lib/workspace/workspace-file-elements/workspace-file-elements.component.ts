@@ -11,13 +11,15 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {EditorService} from '@ame/editor';
+import {ModelApiService} from '@ame/api';
+import {LoadedFilesService, NamespaceFile} from '@ame/cache';
+import {ModelLoaderService} from '@ame/editor';
 import {MxGraphService} from '@ame/mx-graph';
 import {ElementType, sammElements} from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
 import {ChangeDetectorRef, Component, OnInit, inject} from '@angular/core';
 import {NamedElement} from '@esmf/aspect-model-loader';
-import {filter} from 'rxjs';
+import {filter, first, switchMap} from 'rxjs';
 
 @Component({
   selector: 'ame-workspace-file-elements',
@@ -48,9 +50,11 @@ export class WorkspaceFileElementsComponent implements OnInit {
   private searchThrottle: NodeJS.Timeout;
 
   constructor(
-    private editorService: EditorService,
     private mxGraphService: MxGraphService,
     private changeDetector: ChangeDetectorRef,
+    private modelApiService: ModelApiService,
+    private modelLoaderService: ModelLoaderService,
+    private loadedFilesService: LoadedFilesService,
   ) {}
 
   ngOnInit(): void {
@@ -68,11 +72,9 @@ export class WorkspaceFileElementsComponent implements OnInit {
         this.searched[element] = this.elements[element].elements;
       }
 
-      const cachedFile = this.editorService.loadExternalAspectModel(`${namespace}:${file}`);
-      const sections = Object.values(this.elements);
-      for (const element of cachedFile.getAllElements()) {
-        sections.find(e => element instanceof e.class)?.elements?.push?.(element);
-      }
+      if (this.loadedFilesService.getFile(`${namespace}:${file}`)) {
+        this.updateElements(this.loadedFilesService.getFile(`${namespace}:${file}`));
+      } else this.requestFile(`${namespace}:${file}`);
     });
   }
 
@@ -108,6 +110,31 @@ export class WorkspaceFileElementsComponent implements OnInit {
       }
       this.changeDetector.detectChanges();
     }, 100);
+  }
+
+  private updateElements(file: NamespaceFile) {
+    const cachedFile = file.cachedFile;
+    const sections = Object.values(this.elements);
+    for (const element of cachedFile.getAllElements()) {
+      sections.find(e => element instanceof e.class)?.elements?.push?.(element);
+    }
+    this.changeDetector.detectChanges();
+  }
+
+  private requestFile(absoluteName: string) {
+    this.modelApiService
+      .getAspectMetaModel(absoluteName)
+      .pipe(
+        switchMap(content =>
+          this.modelLoaderService.loadSingleModel({
+            rdfAspectModel: content,
+            fromWorkspace: true,
+            namespaceFileName: absoluteName,
+          }),
+        ),
+        first(),
+      )
+      .subscribe(file => this.updateElements(file));
   }
 
   protected readonly sammElements = sammElements;

@@ -19,7 +19,7 @@
         [metaModelClassNameInput]="metaModelClassName"
       ></ame-shared-settings-title>
     </h3>
-    @if (metaModelElement?.isExternalReference()) {
+    @if (loadedFilesService.isElementExtern(metaModelElement)) {
       <p class="shape-settings__header-description">
         {{ metaModelElement?.aspectModelUrn?.split('#')[0] }}
       </p>
@@ -88,7 +88,7 @@
   }
   @if (metaModelDialogService.isSaveButtonEnabled()) {
     <button
-      [disabled]="!formGroup.valid || metaModelElement?.isExternalReference()"
+      [disabled]="!formGroup.valid || loadedFilesService.isElementExtern(metaModelElement)"
       (click)="onSave()"
       mat-flat-button
       color="primary"

@@ -80,12 +80,13 @@ export class StartupService {
         content: this.translate.language.LOADING_SCREEN_DIALOG.MODEL_LOADING_WAIT,
       }),
     );
+
     return this.electronSignalsService.call('requestWindowData').pipe(
       tap(data => (options = data.options)),
       switchMap(() =>
         this.ngZone.run(() =>
           model
-            ? this.modelLoaderService.loadSingleModel({
+            ? this.modelLoaderService.renderModel({
                 rdfAspectModel: model,
                 namespaceFileName: options ? `${options.namespace}:${options.file}` : '',
                 fromWorkspace: options?.fromWorkspace,

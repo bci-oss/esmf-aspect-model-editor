@@ -43,26 +43,12 @@ import {
 } from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
+import {useUpdater} from '@ame/utils';
 import {Injectable, Injector, NgZone, inject} from '@angular/core';
-import {Aspect, DefaultAspect, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
+import {DefaultAspect, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
 import {environment} from 'environments/environment';
 import {mxgraph} from 'mxgraph-factory';
-import {
-  BehaviorSubject,
-  Observable,
-  Subscription,
-  catchError,
-  delay,
-  delayWhen,
-  filter,
-  first,
-  of,
-  retry,
-  switchMap,
-  tap,
-  throwError,
-  timer,
-} from 'rxjs';
+import {BehaviorSubject, Observable, Subscription, catchError, delayWhen, first, of, retry, switchMap, tap, throwError, timer} from 'rxjs';
 import {ConfirmDialogService} from './confirm-dialog/confirm-dialog.service';
 import {ShapeSettingsService, ShapeSettingsStateService} from './editor-dialog';
 import {AsyncApi, OpenApi, ViolationError} from './editor-toolbar';
@@ -172,9 +158,8 @@ export class EditorService {
             }
 
             const sourceElement = MxGraphHelper.getModelElement<NamedElement>(edgeParent.source);
-            if (sourceElement && !sourceElement?.isExternalReference()) {
-              // TODO update delete functionality
-              // sourceElement.delete(MxGraphHelper.getModelElement(cell));
+            if (sourceElement && this.loadedFilesService.isElementInCurrentFile(sourceElement)) {
+              useUpdater(sourceElement).delete(MxGraphHelper.getModelElement(cell));
             }
           });
         });
@@ -200,60 +185,6 @@ export class EditorService {
       return;
     }
     this.mxGraphAttributeService.editor.addAction(actionName, callback);
-  }
-
-  // @TODO move this function and redo it
-  // :CachedFile {
-  loadExternalAspectModel(extRefAbsoluteAspectModelFileName: string): any {
-    // const extRdfModel = this.rdfService.externalRdfModels.find(
-    //   extRef => extRef.absoluteAspectModelFileName === extRefAbsoluteAspectModelFileName,
-    // );
-    // const fileName = extRdfModel.aspectModelFileName;
-    // let foundCachedFile = this.namespaceCacheService.getFile([extRdfModel.getAspectModelUrn(), fileName]);
-    // if (!foundCachedFile) {
-    //   foundCachedFile = this.namespaceCacheService.addFile(extRdfModel.getAspectModelUrn(), fileName);
-    //   // @TODO check rdfModel
-    //   foundCachedFile = this.instantiatorService.instantiateFile(extRdfModel as any, foundCachedFile, fileName);
-    // }
-
-    return null; //foundCachedFile;
-  }
-
-  // @TODO move this function to model-loader service and use the new rdf loader
-  loadExternalModels(): Observable<Array<RdfModel>> {
-    // this.rdfService.externalRdfModels = [];
-    // return this.modelApiService.getAllNamespacesFilesContent().pipe(
-    //   first(),
-    //   mergeMap((fileContentModels: Array<FileContentModel>) =>
-    //     fileContentModels.length
-    //       ? forkJoin(fileContentModels.map(fileContent => this.rdfService.loadExternalReferenceModelIntoStore(fileContent)))
-    //       : of([] as Array<RdfModel>),
-    //   ),
-    //   tap(extRdfModel => {
-    //     extRdfModel.forEach(extRdfModel => this.loadExternalAspectModel(extRdfModel.absoluteAspectModelFileName));
-    //   }),
-    // );
-    return null;
-  }
-
-  // @todo see if this funcion is still relevant
-  loadModels(): Observable<RdfModel[]> {
-    // return this.modelApiService
-    //   .getAllNamespacesFilesContent()
-    //   .pipe(
-    //     mergeMap((fileContentModels: FileContentModel[]) =>
-    //       fileContentModels.length ? this.rdfService.parseModels(fileContentModels) : of([]),
-    //     ),
-    //   );
-    return null;
-  }
-
-  // TODO see if is still relevant
-  removeAspectModelFileFromStore(aspectModelFileName: string) {
-    // const index = this.rdfService.externalRdfModels.findIndex(
-    //   extRdfModel => extRdfModel.absoluteAspectModelFileName === aspectModelFileName,
-    // );
-    // this.rdfService.externalRdfModels.splice(index, 1);
   }
 
   generateJsonSample(rdfModel: RdfModel): Observable<string> {
@@ -283,103 +214,6 @@ export class EditorService {
   generateAsyncApiSpec(rdfModel: RdfModel, asyncApi: AsyncApi): Observable<string> {
     const serializedModel = this.rdfService.serializeModel(rdfModel);
     return this.modelApiService.generateAsyncApiSpec(serializedModel, asyncApi);
-  }
-
-  private loadCurrentModel(loadedRdfModel: RdfModel, rdfAspectModel: string, namespaceFileName: string, editElementUrn?: string): void {
-    const [namespace, version, fileName] = namespaceFileName.split(':');
-    this.loadedFilesService.removeFile(`urn:samm:${namespace}:${version}: ${fileName}`);
-
-    this.modelService
-      .loadRdfModel(loadedRdfModel, rdfAspectModel, namespaceFileName)
-      .pipe(
-        first(),
-        tap((aspect: Aspect) => {
-          this.removeOldGraph();
-          this.initializeNewGraph(editElementUrn);
-          this.titleService.updateTitle(namespaceFileName || aspect?.aspectModelUrn);
-        }),
-        catchError(error => {
-          console.error('Error on loading aspect model', error);
-          this.notificationsService.error({title: 'Error on loading the aspect model', message: error});
-          // TODO: Use 'null' instead of empty object (requires thorough testing)
-          return of({} as null);
-        }),
-      )
-      .subscribe();
-  }
-
-  private removeOldGraph() {
-    this.mxGraphService.deleteAllShapes();
-  }
-
-  private initializeNewGraph(editElementUrn?: string): void {
-    try {
-      const rdfModel = this.modelService.currentRdfModel;
-      const mxGraphRenderer = new MxGraphRenderer(this.mxGraphService, this.mxGraphShapeOverlayService, this.sammLangService, rdfModel);
-
-      const elements = this.currentLoadedFile.cachedFile.getKeys().map(key => this.currentLoadedFile.cachedFile.get<NamedElement>(key));
-      this.prepareGraphUpdate(mxGraphRenderer, elements, editElementUrn);
-    } catch (error) {
-      console.groupCollapsed('editor.service', error);
-      console.groupEnd();
-      throwError(() => error);
-    }
-  }
-
-  private prepareGraphUpdate(mxGraphRenderer: MxGraphRenderer, elements: NamedElement[], editElementUrn?: string): void {
-    this.largeFileWarningService
-      .openDialog(elements.length)
-      .pipe(
-        first(),
-        filter(response => response !== 'cancel'),
-        tap(() => this.toggleLoadingScreen()),
-        delay(500), // Wait for modal animation
-        switchMap(() => this.graphUpdateWorkflow(mxGraphRenderer, elements)),
-      )
-      .subscribe({
-        next: () => this.finalizeGraphUpdate(editElementUrn),
-        error: () => this.loadingScreenService.close(),
-      });
-  }
-
-  private toggleLoadingScreen(): void {
-    this.loadingScreenService.close();
-    requestAnimationFrame(() => {
-      this.loadingScreenService.open({title: this.translate.language.LOADING_SCREEN_DIALOG.MODEL_GENERATION});
-    });
-  }
-
-  private graphUpdateWorkflow(mxGraphRenderer: MxGraphRenderer, elements: NamedElement[]): Observable<boolean> {
-    return this.mxGraphService.updateGraph(() => {
-      this.mxGraphService.firstTimeFold = true;
-      MxGraphHelper.filterMode = this.filtersService.currentFilter.filterType;
-      const rootElements = elements.filter(e => !e.parents.length);
-      const filtered = this.filtersService.filter(rootElements);
-
-      for (const elementTree of filtered) {
-        mxGraphRenderer.render(elementTree, null);
-      }
-
-      if (this.mxGraphAttributeService.inCollapsedMode) {
-        this.mxGraphService.foldCells();
-      }
-    });
-  }
-
-  private finalizeGraphUpdate(editElementUrn?: string): void {
-    this.mxGraphService.formatShapes(true);
-    this.handleEditOrCenterView(editElementUrn);
-    localStorage.removeItem(ValidateStatus.validating);
-    this.loadingScreenService.close();
-  }
-
-  private handleEditOrCenterView(editElementUrn: string | null): void {
-    if (editElementUrn) {
-      // this.shapeSettingsService.editModelByUrn(editElementUrn);
-      this.mxGraphService.navigateToCellByUrn(editElementUrn);
-    } else {
-      this.mxGraphSetupService.centerGraph();
-    }
   }
 
   makeDraggable(element: HTMLDivElement, dragElement: HTMLDivElement) {
@@ -486,7 +320,7 @@ export class EditorService {
 
     this.deleteElements(result);
 
-    if (result.some((cell: mxgraph.mxCell) => MxGraphHelper.getModelElement(cell)?.isExternalReference())) {
+    if (result.some((cell: mxgraph.mxCell) => this.loadedFilesService.isElementExtern(MxGraphHelper.getModelElement(cell)))) {
       result.forEach((element: any) => {
         this.deletePrefixForExternalNamespaceReference(element);
       });

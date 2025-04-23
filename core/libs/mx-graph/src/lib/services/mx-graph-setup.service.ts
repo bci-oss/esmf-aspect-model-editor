@@ -16,6 +16,7 @@
  * https://github.com/jgraph/mxgraph/blob/master/javascript/examples/extendcanvas.html
  */
 
+import {LoadedFilesService} from '@ame/cache';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {APP_CONFIG, AppConfig, AssetsPath, BindingsService, BrowserService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
@@ -47,6 +48,7 @@ export class MxGraphSetupService {
     private mxGraphShapeSelectorService: MxGraphShapeSelectorService,
     private mxGraphAttributeService: MxGraphAttributeService,
     private translate: LanguageTranslationService,
+    private loadedFiles: LoadedFilesService,
     private ngZone: NgZone,
   ) {}
 
@@ -349,7 +351,7 @@ export class MxGraphSetupService {
       const modelElement = MxGraphHelper.getModelElement(cell);
 
       menu.addItem(
-        `${this.translate.language.EDITOR_CANVAS.GRAPH_SETUP.OPEN_IN} ${modelElement.isExternalReference() ? 'new Window' : 'detail view'}`,
+        `${this.translate.language.EDITOR_CANVAS.GRAPH_SETUP.OPEN_IN} ${this.loadedFiles.isElementExtern(modelElement) ? 'new Window' : 'detail view'}`,
         this.resolveAssetsIcon(AssetsPath.OpenIcon),
         () => {
           this.bindingsService.fireAction('editElement');

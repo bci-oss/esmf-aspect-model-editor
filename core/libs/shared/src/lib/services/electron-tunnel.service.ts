@@ -325,6 +325,7 @@ export class ElectronTunnelService {
     });
 
     this.ipcRenderer.on(ElectronEvents.REQUEST_LOCK_FILE, (_: unknown, namespace: string, file: string) => {
+      if (file === 'empty.ttl') return;
       this.electronSignalsService.call('lockFile', {namespace, file}).subscribe();
     });
 

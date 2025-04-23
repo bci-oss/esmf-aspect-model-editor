@@ -12,8 +12,8 @@
  */
 
 import {ModelApiService} from '@ame/api';
+import {LoadedFilesService} from '@ame/cache';
 import {ConfirmDialogService, EditorService, FileHandlingService} from '@ame/editor';
-import {RdfService} from '@ame/rdf/services';
 import {ElectronSignals, ElectronSignalsService, NotificationsService} from '@ame/shared';
 import {FileStatus, SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
@@ -50,12 +50,12 @@ export class WorkspaceFileListComponent implements OnInit, OnDestroy {
   constructor(
     private notificationService: NotificationsService,
     private confirmDialogService: ConfirmDialogService,
-    private rdfService: RdfService,
     private editorService: EditorService,
     private modelApiService: ModelApiService,
     private fileHandlingService: FileHandlingService,
     private changeDetector: ChangeDetectorRef,
     private translate: LanguageTranslationService,
+    private loadedFiles: LoadedFilesService,
     private ngZone: NgZone,
   ) {}
 
@@ -200,7 +200,7 @@ export class WorkspaceFileListComponent implements OnInit, OnDestroy {
             this.electronSignalsService.call('requestRefreshWorkspaces');
           });
           this.sidebarService.selection.reset();
-          this.editorService.removeAspectModelFileFromStore(aspectModelFileName);
+          this.loadedFiles.removeFile(aspectModelFileName);
         }
       });
   }

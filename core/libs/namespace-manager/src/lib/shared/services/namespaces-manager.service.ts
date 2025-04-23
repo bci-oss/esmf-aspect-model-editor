@@ -12,7 +12,7 @@
  */
 
 import {ModelApiService} from '@ame/api';
-import {EditorService, FileInfo, FileTypes, FileUploadService} from '@ame/editor';
+import {FileInfo, FileTypes, FileUploadService, ModelLoaderService} from '@ame/editor';
 import {SidebarStateService} from '@ame/sidebar';
 import {createFile} from '@ame/utils';
 import {Injectable, InjectionToken} from '@angular/core';
@@ -35,9 +35,9 @@ export class NamespacesManagerService {
     private modelApiService: ModelApiService,
     private matDialog: MatDialog,
     private router: Router,
-    private editorService: EditorService,
     private fileUploadService: FileUploadService,
     private sidebarService: SidebarStateService,
+    private modelLoader: ModelLoaderService,
   ) {
     if (!environment.production) {
       window['angular.namespacesManagerService'] = this;
@@ -65,7 +65,7 @@ export class NamespacesManagerService {
     return this.session.modalRef.afterOpened().pipe(
       tap(() =>
         this.setOnClose(() => {
-          this.editorService.loadExternalModels().subscribe(() => this.sidebarService.workspace.refresh());
+          this.modelLoader.loadWorkspaceModels(true).subscribe(() => this.sidebarService.workspace.refresh());
           this.router.navigate([{outlets: {'import-namespaces': null}}]);
         }),
       ),

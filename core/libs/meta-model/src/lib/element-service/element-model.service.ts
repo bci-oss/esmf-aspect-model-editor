@@ -107,7 +107,7 @@ export class ElementModelService {
 
     MxGraphHelper.removeRelation(sourceModelElement, targetModelElement);
 
-    if (sourceModelElement.isExternalReference()) {
+    if (this.loadedFilesService.isElementExtern(sourceModelElement)) {
       return;
     }
 
@@ -283,7 +283,7 @@ export class ElementModelService {
       this.mxGraphShapeOverlayService.removeComplexTypeShapeOverlays(edge.source);
     }
     MxGraphHelper.removeRelation(source, target);
-    (source as any).delete(target);
+    useUpdater(source).delete(target);
     this.mxGraphShapeOverlayService.checkAndAddShapeActionIcon(new Array(edge), source);
     edge.target.removeEdge(edge, false);
     edge.source.removeEdge(edge, true);

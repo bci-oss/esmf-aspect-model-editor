@@ -227,10 +227,6 @@ export class FileHandlingService {
     }
 
     this.modelSaveTracker.updateSavedModel(true);
-    const loadExternalModels$ = this.modelLoaderService
-      .loadWorkspaceModels(true)
-      .pipe(finalize(() => loadExternalModels$.unsubscribe()))
-      .subscribe();
   }
 
   onCopyToClipboard() {

@@ -72,17 +72,17 @@ export class MigrationStatusComponent implements OnInit {
     this.migrationStatus = history.state.data?.namespaces || [];
     this.hasErrors = this.migrationStatus.length <= 0;
 
-    this.modelLoader.loadWorkspaceModels().subscribe(files => {
-      const rdfModels = files.map(({rdfModel}) => rdfModel);
-      // @todo check this functionality
-      const erroredModels = rdfModels.filter(rdfModel => rdfModel); //?.hasErrors);
-      this.hasErrors ||= erroredModels.length > 0;
-      this.setFilesWithError(erroredModels);
+    // @todo !important check this functionality
+    // this.modelLoader.loadWorkspaceModels().subscribe(files => {
+    //   const rdfModels = files.map(({rdfModel}) => rdfModel);
+    //   const erroredModels = rdfModels.filter(rdfModel => rdfModel); //?.hasErrors);
+    //   this.hasErrors ||= erroredModels.length > 0;
+    //   this.setFilesWithError(erroredModels);
 
-      if (!this.migratorService.increaseNamespaceVersion) {
-        this.electronSignalsService.call('requestRefreshWorkspaces');
-      }
-    });
+    //   if (!this.migratorService.increaseNamespaceVersion) {
+    //     this.electronSignalsService.call('requestRefreshWorkspaces');
+    //   }
+    // });
   }
 
   increaseVersion() {

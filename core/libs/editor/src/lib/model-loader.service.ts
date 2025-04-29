@@ -15,7 +15,7 @@ import {ModelApiService} from '@ame/api';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {InstantiatorService} from '@ame/instantiator';
 import {RdfModelUtil} from '@ame/rdf/utils';
-import {BrowserService, ElectronSignalsService, FileContentModel, ModelSavingTrackerService, NotificationsService} from '@ame/shared';
+import {BrowserService, ElectronSignalsService, ModelSavingTrackerService, NotificationsService} from '@ame/shared';
 import {Injectable, inject} from '@angular/core';
 import {ModelElementCache, NamedElement, RdfModel, loadAspectModel} from '@esmf/aspect-model-loader';
 import {RdfLoader} from 'libs/aspect-model-loader/src/lib/shared/rdf-loader';
@@ -68,40 +68,35 @@ export class ModelLoaderService {
    */
   loadSingleModel(payload: LoadModelPayload, render = false) {
     return (
-      this.modelApiService
-        // getting all files from server
-        .getAllNamespacesFilesContent()
-        .pipe(
-          // getting dependencies from the current file and filter data from server
-          switchMap(allNamespaces => this.getNamespacesDependencies(payload.rdfAspectModel, allNamespaces)),
+      // getting dependencies from the current file and filter data from server
+      this.getNamespaceDependencies(payload.rdfAspectModel).pipe(
+        // loading in sequence all RdfModels for the current file and dependencies
+        switchMap(files => this.loadRdfModelFromFiles(files, payload)),
 
-          // loading in sequence all RdfModels for the current file and dependencies
-          switchMap(files => this.loadRdfModelFromFiles(files, payload)),
+        // loading the model with all namespace dependencies
+        switchMap(({files, rdfModels}) =>
+          loadAspectModel({
+            filesContent: [payload.rdfAspectModel, ...Object.values(files)],
+            // aspectModelUrn: undefined, // @TODO search it in store
+          }).pipe(
+            // using switchMap to force an this functionality to run before any tap after this
+            switchMap(loadedFile => {
+              // registering all loaded files
+              this.registerFiles(rdfModels, loadedFile, payload, render);
+              // loading all isolated elements
+              this.instantiatorService.instantiateRemainingElements(loadedFile.rdfModel, loadedFile.cachedElements);
+              // filtering and registering the elements by their location in files
+              this.moveElementsToTheirCacheFile(rdfModels, loadedFile, payload.namespaceFileName);
 
-          // loading the model with all namespace dependencies
-          switchMap(({files, rdfModels}) =>
-            loadAspectModel({
-              filesContent: [payload.rdfAspectModel, ...Object.values(files)],
-              // aspectModelUrn: undefined, // @TODO search it in store
-            }).pipe(
-              // using switchMap to force an this functionality to run before any tap after this
-              switchMap(loadedFile => {
-                // registering all loaded files
-                this.registerFiles(rdfModels, loadedFile, payload, render);
-                // loading all isolated elements
-                this.instantiatorService.instantiateRemainingElements(loadedFile.rdfModel, loadedFile.cachedElements);
-                // filtering and registering the elements by their location in files
-                this.moveElementsToTheirCacheFile(rdfModels, loadedFile, payload.namespaceFileName);
-
-                return of(render ? this.loadedFilesService.currentLoadedFile : this.loadedFilesService.getFile(payload.namespaceFileName));
-              }),
-              catchError(error => {
-                console.error(error);
-                return throwError(() => ({code: LoadingCodeErrors.LOADING_ASPECT_MODEL, error}));
-              }),
-            ),
+              return of(render ? this.loadedFilesService.currentLoadedFile : this.loadedFilesService.getFile(payload.namespaceFileName));
+            }),
+            catchError(error => {
+              console.error(error);
+              return throwError(() => ({code: LoadingCodeErrors.LOADING_ASPECT_MODEL, error}));
+            }),
           ),
-        )
+        ),
+      )
     );
   }
 
@@ -139,21 +134,57 @@ export class ModelLoaderService {
     );
   }
 
-  private getNamespacesDependencies(rdf: string, allNamespaces: FileContentModel[], previousNamespaces: Record<string, string> = {}) {
-    return this.parseRdfModel([rdf]).pipe(
-      map(rdfModel => RdfModelUtil.resolveExternalNamespaces(rdfModel).map(external => external.replace(/urn:samm:|#/gi, ''))),
-      map(externalNamespaces => allNamespaces.filter(n => externalNamespaces.some(en => n.fileName.startsWith(en)))),
-      switchMap(filteredNamespaces => {
-        const obs = {};
-        for (const namespace of filteredNamespaces) {
-          previousNamespaces[namespace.fileName] = namespace.aspectMetaModel;
-          obs[namespace.fileName] = this.getNamespacesDependencies(namespace.aspectMetaModel, allNamespaces, previousNamespaces);
-        }
+  getRdfModelsFromWorkspace() {
+    return this.modelApiService.getAllNamespacesFilesContent().pipe(
+      switchMap(files =>
+        forkJoin<[string, RdfModel][]>(
+          files.map(file => this.parseRdfModel([file.aspectMetaModel]).pipe(map(rdfModel => [file.fileName, rdfModel]))),
+        ),
+      ),
+      map(result =>
+        result.reduce<Record<string, RdfModel>>((acc, [name, rdfModel]) => {
+          acc[name] = rdfModel;
+          return acc;
+        }, {}),
+      ),
+    );
+  }
 
-        return filteredNamespaces.length ? forkJoin(obs) : of({});
-      }),
-      map(() => previousNamespaces),
-      catchError(error => throwError(() => ({code: LoadingCodeErrors.NAMESPACE_DEPENDENCIES, error}))),
+  private getNamespaceDependencies(
+    rdf: string,
+    namespaces: Record<string, string> = {},
+    workspaceStructure: Record<string, string[]> = null,
+  ) {
+    return (workspaceStructure ? of(workspaceStructure) : this.modelApiService.getNamespacesStructure()).pipe(
+      switchMap(wStructure =>
+        this.parseRdfModel([rdf]).pipe(
+          switchMap(rdfModel => {
+            const dependencies = RdfModelUtil.resolveExternalNamespaces(rdfModel).map(external => external.replace(/urn:samm:|#/gi, ''));
+            let dependenciesRequests = {};
+            for (const dependency of dependencies) {
+              const files = (wStructure?.[dependency] || []).reduce((acc, file) => {
+                acc[`${dependency}:${file}`] = this.modelApiService.getAspectMetaModel(`${dependency}:${file}`);
+                return acc;
+              }, {});
+              dependenciesRequests = {...dependenciesRequests, ...files};
+            }
+
+            return dependencies.length ? forkJoin(dependenciesRequests) : of({});
+          }),
+          switchMap((dependencies: Record<string, string>) => {
+            const entries = Object.entries(dependencies);
+            if (entries.length === 0) return of({});
+
+            entries.forEach(([key, value]) => (namespaces[key] = value));
+            const furtherDependencies = entries.reduce((acc, [key, value]) => {
+              acc[key] = this.getNamespaceDependencies(value, namespaces, wStructure);
+              return acc;
+            }, {});
+            return forkJoin(furtherDependencies);
+          }),
+          map(() => namespaces),
+        ),
+      ),
     );
   }
 
@@ -199,9 +230,9 @@ export class ModelLoaderService {
 
   private registerFiles(rdfModels: Record<string, RdfModel>, loadedFile: any, payload: LoadModelPayload, render = false) {
     for (const [key, rdfModel] of Object.entries(rdfModels)) {
-      const isCurrentFile = render && (key === 'current' || key === payload.namespaceFileName);
+      const isCurrentFile = key === 'current' || key === payload.namespaceFileName;
 
-      if (isCurrentFile) {
+      if (render && isCurrentFile) {
         const currentFile = this.loadedFilesService.currentLoadedFile;
         currentFile && (currentFile.rendered = false);
       }

@@ -76,10 +76,10 @@ export class VersionMigrationComponent implements OnInit {
       });
   }
 
-  prepareNamespaces(loadedFiles: NamespaceFile[]): any {
+  prepareNamespaces(absoluteNames: string[]): any {
     this.namespaces = {};
-    loadedFiles.forEach(loadedFile => {
-      const [namespace, version, file] = RdfModelUtil.splitRdfIntoChunks(loadedFile.absoluteName);
+    absoluteNames.forEach(absoluteName => {
+      const [namespace, version, file] = RdfModelUtil.splitRdfIntoChunks(absoluteName);
       const namespaceKey = `${namespace}:${version}`;
       if (!this.namespaces[namespaceKey]) {
         this.namespaces[namespaceKey] = [];

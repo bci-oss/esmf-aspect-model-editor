@@ -52,7 +52,6 @@ import {BehaviorSubject, Observable, Subscription, catchError, delayWhen, first,
 import {ConfirmDialogService} from './confirm-dialog/confirm-dialog.service';
 import {ShapeSettingsService, ShapeSettingsStateService} from './editor-dialog';
 import {AsyncApi, OpenApi, ViolationError} from './editor-toolbar';
-import {LargeFileWarningService} from './large-file-warning-dialog/large-file-warning-dialog.service';
 import {ConfirmDialogEnum} from './models/confirm-dialog.enum';
 
 @Injectable({
@@ -102,7 +101,6 @@ export class EditorService {
     private sidebarService: SidebarStateService,
     private shapeSettingsStateService: ShapeSettingsStateService,
     private modelSavingTracker: ModelSavingTrackerService,
-    private largeFileWarningService: LargeFileWarningService,
     private loadingScreenService: LoadingScreenService,
     private translate: LanguageTranslationService,
     private injector: Injector,

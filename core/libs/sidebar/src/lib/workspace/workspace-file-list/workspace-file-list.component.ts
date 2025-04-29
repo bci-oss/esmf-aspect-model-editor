@@ -13,12 +13,12 @@
 
 import {ModelApiService} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
-import {ConfirmDialogService, EditorService, FileHandlingService} from '@ame/editor';
+import {ConfirmDialogService, EditorService, FileHandlingService, ModelLoaderService} from '@ame/editor';
 import {ElectronSignals, ElectronSignalsService, NotificationsService} from '@ame/shared';
 import {FileStatus, SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
 import {ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit, inject} from '@angular/core';
-import {Subscription, switchMap} from 'rxjs';
+import {Subscription, map, switchMap} from 'rxjs';
 import {ConfirmDialogEnum} from '../../../../../editor/src/lib/models/confirm-dialog.enum';
 
 @Component({
@@ -56,12 +56,16 @@ export class WorkspaceFileListComponent implements OnInit, OnDestroy {
     private changeDetector: ChangeDetectorRef,
     private translate: LanguageTranslationService,
     private loadedFiles: LoadedFilesService,
+    private modelLoader: ModelLoaderService,
     private ngZone: NgZone,
   ) {}
 
   ngOnInit(): void {
     const sub = this.sidebarService.workspace.refreshSignal$
-      .pipe(switchMap(() => this.sidebarService.requestGetNamespaces()))
+      .pipe(
+        switchMap(() => this.modelLoader.getRdfModelsFromWorkspace()),
+        map(rdfModels => this.sidebarService.requestGetNamespaces(rdfModels)),
+      )
       .subscribe(() => {
         for (const namespace in this.namespaces) {
           this.searched[namespace] = this.namespaces[namespace];

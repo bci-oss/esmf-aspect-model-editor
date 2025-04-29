@@ -11,7 +11,6 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamespaceFile} from '@ame/cache';
 import {ModelLoaderService} from '@ame/editor';
 import {ExporterHelper} from '@ame/migrator';
 import {APP_CONFIG, AppConfig, BrowserService} from '@ame/shared';
@@ -40,7 +39,7 @@ export class MigratorApiService {
   private readonly serviceUrl = this.config.serviceUrl;
   private api = this.config.api;
 
-  public rdfModelsToMigrate: NamespaceFile[] = [];
+  public rdfModelsToMigrate: string[] = [];
 
   constructor(
     private http: HttpClient,
@@ -56,11 +55,10 @@ export class MigratorApiService {
 
   public hasFilesToMigrate(): Observable<boolean> {
     this.rdfModelsToMigrate = [];
-
-    return this.modelLoader.loadWorkspaceModels(true).pipe(
-      map((files: NamespaceFile[]) => {
-        this.rdfModelsToMigrate = files.filter(file =>
-          ExporterHelper.isVersionOutdated(file.rdfModel?.samm.version, this.config.currentSammVersion),
+    return this.modelLoader.getRdfModelsFromWorkspace().pipe(
+      map(rdfModels => {
+        this.rdfModelsToMigrate = Object.keys(rdfModels).filter(absoluteName =>
+          ExporterHelper.isVersionOutdated(rdfModels[absoluteName].samm.version, this.config.currentSammVersion),
         );
 
         return this.rdfModelsToMigrate.length > 0;

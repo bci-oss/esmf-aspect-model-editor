@@ -11,9 +11,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ModelLoaderService} from '@ame/editor';
 import {SidebarStateService} from '@ame/sidebar';
 import {ChangeDetectorRef, Component, inject, OnDestroy, OnInit} from '@angular/core';
-import {finalize, Subscription} from 'rxjs';
+import {finalize, map, Subscription} from 'rxjs';
 
 @Component({
   selector: 'ame-workspace',
@@ -22,6 +23,7 @@ import {finalize, Subscription} from 'rxjs';
 })
 export class WorkspaceComponent implements OnInit, OnDestroy {
   public sidebarService = inject(SidebarStateService);
+  private modelLoader = inject(ModelLoaderService);
 
   public namespaces = this.sidebarService.namespacesState;
   public loading = false;
@@ -38,9 +40,10 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
     const namespaces$ = this.sidebarService.workspace.refreshSignal$.subscribe(() => {
       this.loading = true;
       this.changeDetector.detectChanges();
-      const refreshing$ = this.sidebarService
-        .requestGetNamespaces()
+      const refreshing$ = this.modelLoader
+        .getRdfModelsFromWorkspace()
         .pipe(
+          map(rdfModels => this.sidebarService.requestGetNamespaces(rdfModels)),
           finalize(() => {
             this.loading = false;
             this.changeDetector.detectChanges();

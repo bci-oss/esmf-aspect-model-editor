@@ -154,7 +154,7 @@ export class ModelElementCache implements CacheStrategy {
   }
 
   public getKeys(search = '') {
-    return Array.from(this.instanceCache.keys()).filter(key => key.includes(search));
+    return Array.from(this.instanceCache.keys()).filter(key => key?.includes(search));
   }
 
   public updateElementsNamespace(oldValue: string, newValue: string): void {

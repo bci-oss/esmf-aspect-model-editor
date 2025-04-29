@@ -16,7 +16,8 @@ import {LoadedFilesService} from '@ame/cache';
 import {ExporterHelper} from '@ame/migrator';
 import {APP_CONFIG, AppConfig, BrowserService, ElectronSignals, ElectronSignalsService, NotificationsService} from '@ame/shared';
 import {Injectable, inject} from '@angular/core';
-import {BehaviorSubject, Subscription, catchError, map, of, throwError} from 'rxjs';
+import {RdfModel} from '@esmf/aspect-model-loader';
+import {BehaviorSubject, Subscription, of} from 'rxjs';
 import {environment} from '../../../../environments/environment';
 
 class SidebarState {
@@ -162,32 +163,21 @@ export class SidebarStateService {
     return false;
   }
 
-  public requestGetNamespaces() {
-    return this.modelApiService.getNamespacesAppendWithFiles().pipe(
-      map((namespaces: string[]) => {
-        this.namespacesState.clear();
-        let hasOutdatedFiles = false;
-        for (const fullFile of namespaces) {
-          const [namespace, version, file] = fullFile.split(':');
-          const versionedNamespace = `${namespace}:${version}`;
-          const fileStatus = this.namespacesState.setFile(versionedNamespace, file);
-          this.setFileStatuses(fileStatus, versionedNamespace);
-          hasOutdatedFiles ||= fileStatus.outdated;
-        }
+  public requestGetNamespaces(rdfModels?: Record<string, RdfModel>) {
+    this.namespacesState.clear();
+    let hasOutdatedFiles = false;
 
-        this.namespacesState.hasOutdatedFiles = hasOutdatedFiles;
-        this.getLockedFiles(true);
-        return this.namespacesState.namespaces;
-      }),
-      catchError(err =>
-        throwError(() =>
-          this.notificationService.error({
-            title: 'Could not retrieve the namespaces!',
-            message: !err.status ? 'Please try to close and reopen the application.' : '',
-          }),
-        ),
-      ),
-    );
+    for (const absoluteName in rdfModels) {
+      const [namespace, version, file] = absoluteName.split(':');
+      const versionedNamespace = `${namespace}:${version}`;
+      const fileStatus = this.namespacesState.setFile(versionedNamespace, file);
+      this.setFileStatuses(fileStatus, versionedNamespace, rdfModels[absoluteName]);
+      hasOutdatedFiles ||= fileStatus.outdated;
+    }
+    this.namespacesState.hasOutdatedFiles = hasOutdatedFiles;
+    this.getLockedFiles(true);
+
+    return this.namespacesState.namespaces;
   }
 
   private getLockedFiles(takeOne?: boolean): Subscription {
@@ -209,18 +199,13 @@ export class SidebarStateService {
     return subscription;
   }
 
-  private setFileStatuses(file: FileStatus, namespace: string) {
+  private setFileStatuses(file: FileStatus, namespace: string, rdfModel?: RdfModel) {
     if (!file) {
       return;
     }
 
-    const loadedFile = this.loadedFilesService.files[`${namespace}:${file.name}`];
     file.loaded = this.isCurrentFile(namespace, file.name);
-
-    if (loadedFile?.rdfModel?.samm) {
-      file.sammVersion = loadedFile.rdfModel?.samm.version;
-      file.outdated = ExporterHelper.isVersionOutdated(loadedFile.rdfModel?.samm.version, this.config.currentSammVersion);
-    }
+    file.outdated = ExporterHelper.isVersionOutdated(rdfModel.samm.version, this.config.currentSammVersion);
   }
 
   private manageSidebars() {

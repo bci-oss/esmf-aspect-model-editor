@@ -234,13 +234,14 @@ export class RdfNodeService {
       return;
     }
 
-    const rdfModel = this.modelService.currentRdfModel;
-    this.rdfModel.store.addQuad(
-      DataFactory.triple(
-        DataFactory.namedNode(metaModelElement.aspectModelUrn),
-        DataFactory.namedNode(aspectModelUrn),
-        DataFactory.literal(`${value}`, RdfModelUtil.resolveAccurateType(metaModelElement, aspectModelUrn, rdfModel, characteristicType)),
-      ),
-    );
+    const rdfModel = this.loadedFilesService.currentLoadedFile?.rdfModel;
+    rdfModel &&
+      this.rdfModel.store.addQuad(
+        DataFactory.triple(
+          DataFactory.namedNode(metaModelElement.aspectModelUrn),
+          DataFactory.namedNode(aspectModelUrn),
+          DataFactory.literal(`${value}`, RdfModelUtil.resolveAccurateType(metaModelElement, aspectModelUrn, rdfModel, characteristicType)),
+        ),
+      );
   }
 }

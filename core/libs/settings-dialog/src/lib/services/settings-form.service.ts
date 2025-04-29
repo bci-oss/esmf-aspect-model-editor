@@ -130,7 +130,7 @@ export class SettingsFormService {
       }),
       namespaceConfiguration: this.formBuilder.group({
         aspectUri: [namespace, [Validators.required, namespaceValidator()]],
-        aspectName: [{value: modelName, disabled: !!this.modelService.loadedAspect}],
+        aspectName: [{value: modelName, disabled: !!this.currentLoadedFile?.aspect}],
         aspectVersion: [version, [Validators.required, versionFormatValidator()]],
         sammVersion: [{value: GeneralConfig.sammVersion, disabled: true}],
       }),

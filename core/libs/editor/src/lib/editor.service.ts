@@ -328,7 +328,7 @@ export class EditorService {
   }
 
   private deletePrefixForExternalNamespaceReference(element: any) {
-    const rdfModel = this.modelService.currentRdfModel;
+    const rdfModel = this.loadedFilesService.currentLoadedFile?.rdfModel;
 
     const aspectModelUrnToBeRemoved = MxGraphHelper.getModelElement(element).aspectModelUrn;
     const urnToBeChecked = aspectModelUrnToBeRemoved.substring(0, aspectModelUrnToBeRemoved.indexOf('#'));
@@ -508,7 +508,7 @@ export class EditorService {
       ),
       switchMap(() => {
         localStorage.setItem(ValidateStatus.validating, 'yes');
-        const rdfModel = this.modelService.currentRdfModel;
+        const rdfModel = this.loadedFilesService.currentLoadedFile?.rdfModel;
         return rdfModel
           ? this.modelApiService.validate(this.rdfService.serializeModel(rdfModel))
           : throwError(() => ({type: SaveValidateErrorsCodes.emptyModel}));
@@ -567,7 +567,7 @@ export class EditorService {
   }
 
   getSerializedModel(): string {
-    return this.rdfService.serializeModel(this.modelService.currentRdfModel);
+    return this.rdfService.serializeModel(this.loadedFilesService.currentLoadedFile?.rdfModel);
   }
 
   openAlertBox() {

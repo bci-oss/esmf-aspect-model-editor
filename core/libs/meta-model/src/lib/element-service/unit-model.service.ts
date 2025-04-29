@@ -23,7 +23,7 @@ declare const sammUDefinition: any;
 @Injectable({providedIn: 'root'})
 export class UnitModelService extends BaseModelService {
   private get sammU(): SammU {
-    return this.modelService.currentRdfModel.sammU;
+    return this.loadedFile?.rdfModel.sammU;
   }
 
   constructor(

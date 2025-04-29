@@ -252,7 +252,7 @@ export class GenerateOpenApiComponent implements OnInit, OnDestroy {
     const openApiSpec = this.form.value as OpenApi;
     this.subscriptions.add(
       this.editorService
-        .generateOpenApiSpec(this.modelService.currentRdfModel, openApiSpec)
+        .generateOpenApiSpec(this.loadedFilesService.currentLoadedFile?.rdfModel, openApiSpec)
         .pipe(
           first(),
           map(data => this.handleGeneratedSpec(data, openApiSpec)),

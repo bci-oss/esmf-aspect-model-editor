@@ -13,12 +13,11 @@
 
 import {ModelApiService} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
-import {LoadedAspectModel} from '@ame/meta-model';
 import {APP_CONFIG, AppConfig, NotificationsService, SaveValidateErrorsCodes} from '@ame/shared';
 import {Injectable, inject} from '@angular/core';
-import {Aspect, NamedElement, RdfModel, Samm} from '@esmf/aspect-model-loader';
+import {Aspect, Samm} from '@esmf/aspect-model-loader';
 import {environment} from 'environments/environment';
-import {Observable, Observer, Subject, of, throwError} from 'rxjs';
+import {Observable, Observer, Subject, throwError} from 'rxjs';
 import {first, switchMap, tap} from 'rxjs/operators';
 import {RdfService} from './rdf.service';
 
@@ -26,23 +25,10 @@ import {RdfService} from './rdf.service';
   providedIn: 'root',
 })
 export class ModelService {
-  private aspect: Aspect;
   private visitorAnnouncerSubject$ = new Subject<{observer: Observer<void>}>();
 
   get visitorAnnouncer$() {
     return this.visitorAnnouncerSubject$.asObservable();
-  }
-
-  // get currentCachedFile(): CachedFile {
-  //   return this.namespaceCacheService.currentCachedFile;
-  // }
-
-  get loadedAspect(): Aspect {
-    return this.aspect;
-  }
-
-  get currentRdfModel() {
-    return this.loadedFilesService?.currentLoadedFile?.rdfModel;
   }
 
   private config: AppConfig = inject(APP_CONFIG);
@@ -59,19 +45,11 @@ export class ModelService {
   }
 
   removeAspect() {
-    this.aspect = null;
     this.loadedFilesService.currentLoadedFile.aspect = null;
   }
 
   addAspect(aspect: Aspect) {
-    this.aspect = aspect;
-  }
-
-  getLoadedAspectModel(): LoadedAspectModel {
-    return {
-      rdfModel: this.currentRdfModel,
-      aspect: this.aspect,
-    };
+    this.loadedFilesService.currentLoadedFile.aspect = aspect;
   }
 
   getSammVersion(aspectModel: string) {
@@ -79,49 +57,6 @@ export class ModelService {
     const startVersionIndex = aspectModel.indexOf(partialSammUri);
     const endVersionIndex = aspectModel.indexOf('#', startVersionIndex);
     return aspectModel.slice(startVersionIndex + partialSammUri.length, endVersionIndex);
-  }
-
-  loadRdfModel(loadedRdfModel: RdfModel, rdfAspectModel: string, namespaceFileName: string): Observable<Aspect> {
-    // if (this.currentCachedFile) {
-    //   this.currentCachedFile.reset();
-    // }
-
-    const sammVersion: string = loadedRdfModel.samm.version;
-
-    try {
-      if (sammVersion > this.config.currentSammVersion) {
-        return throwError(
-          () => `The provided Aspect Model is using SAMM version ${sammVersion} which is too high.
-            The Aspect Model Editor is currently based on SAMM ${this.config.currentSammVersion}.`,
-        );
-      }
-
-      const rdfModel$ =
-        sammVersion < this.config.currentSammVersion ? this.migrateAspectModel(sammVersion, rdfAspectModel) : of(loadedRdfModel);
-
-      // return rdfModel$.pipe(
-      //   first(),
-      //   tap(rdfModel => (this.rdfService.currentRdfModel = rdfModel)),
-      //   tap(() => this.setCurrentCacheFile(namespaceFileName)),
-      //   map(() => this.instantiateFile(namespaceFileName)),
-      //   tap(() => this.processAnonymousElements()),
-      //   map(aspect => (this.aspect = aspect)),
-      //   catchError(error =>
-      //     throwError(() => {
-      //       // TODO add the real problem maybe ...
-      //       console.groupCollapsed('model.service -> loadRDFmodel', error);
-      //       console.groupEnd();
-      //       this.logService.logError(`Error while loading the model. ${JSON.stringify(error.message)}.`);
-      //       return error.message;
-      //     }),
-      //   ),
-      // );
-    } catch (error: any) {
-      console.groupCollapsed('model.service -> loadRDFmodel', error);
-      console.groupEnd();
-
-      return throwError(() => error.message);
-    }
   }
 
   migrateAspectModel(oldSammVersion: string, rdfAspectModel: string): Observable<string> {
@@ -141,30 +76,10 @@ export class ModelService {
     );
   }
 
-  // private setCurrentCacheFile(namespaceFileName: string) {
-  //   let fileName: string;
-  //   if (namespaceFileName) {
-  //     [, , fileName] = namespaceFileName.split(':');
-  //   }
-
-  //   this.namespaceCacheService.currentCachedFile = new CachedFile(fileName, this.rdfModel.getAspectModelUrn());
-  // }
-
-  // private instantiateFile(namespaceFileName: string) {
-  //   const [, , fileName] = namespaceFileName.split(':');
-  //   try {
-  //     return this.instantiatorService.instantiateFile(this.rdfModel, this.currentCachedFile, fileName).aspect;
-  //   } catch (error) {
-  //     console.groupCollapsed('model.service -> loadRDFmodel', error);
-  //     console.groupEnd();
-  //     throw new Error('Instantiator cannot load model!');
-  //   }
-  // }
-
   saveModel() {
     const synchronizedModel = this.synchronizeModelToRdf();
     return (synchronizedModel || throwError(() => ({type: SaveValidateErrorsCodes.desynchronized}))).pipe(
-      switchMap(() => this.rdfService.saveModel(this.currentRdfModel)),
+      switchMap(() => this.rdfService.saveModel(this.loadedFilesService?.currentLoadedFile?.rdfModel)),
     );
   }
 
@@ -174,7 +89,7 @@ export class ModelService {
   }
 
   synchronizeModelToRdf() {
-    if (!this.currentRdfModel) {
+    if (!this.loadedFilesService?.currentLoadedFile?.rdfModel) {
       return throwError(() => ({type: SaveValidateErrorsCodes.emptyModel}));
     }
 
@@ -216,8 +131,8 @@ export class ModelService {
   //   this.currentCachedFile.clearAnonymousElements();
   // }
 
-  private isElementNameUnique(modelElement: NamedElement): boolean {
-    modelElement.metaModelVersion = this.currentRdfModel.samm.version;
-    return null; // !this.currentCachedFile.getElement<NamedElement>(`${this.currentRdfModel.getAspectModelUrn()}${modelElement.name}`);
-  }
+  // private isElementNameUnique(modelElement: NamedElement): boolean {
+  //   modelElement.metaModelVersion = this.currentRdfModel.samm.version;
+  //   return null; // !this.currentCachedFile.getElement<NamedElement>(`${this.currentRdfModel.getAspectModelUrn()}${modelElement.name}`);
+  // }
 }

@@ -35,7 +35,9 @@ export class DescriptionInputFieldComponent extends InputFieldComponent<NamedEle
   }
 
   ngOnInit(): void {
-    this.subscription = this.getMetaModelData().subscribe(() => this.setDescriptionControls());
+    this.subscription = this.getMetaModelData().subscribe(() => {
+      this.setDescriptionControls();
+    });
   }
 
   getCurrentValue(key: string, locale: string) {
@@ -45,7 +47,10 @@ export class DescriptionInputFieldComponent extends InputFieldComponent<NamedEle
 
     if (this.metaModelElement['extends_']) {
       return (
-        this.previousData?.[key] || this.metaModelElement?.getDescription(locale) || this.metaModelElement['extends_']?.get(locale) || ''
+        this.previousData?.[key] ||
+        this.metaModelElement?.getDescription(locale) ||
+        this.metaModelElement['extends_']?.getDescription(locale) ||
+        ''
       );
     }
 
@@ -56,8 +61,8 @@ export class DescriptionInputFieldComponent extends InputFieldComponent<NamedEle
     const control = this.parentForm.get('description' + locale);
     return (
       this.metaModelElement instanceof HasExtends &&
-      this.metaModelElement.getExtends()?.get(locale) &&
-      control.value === this.metaModelElement.getExtends()?.get(locale)
+      this.metaModelElement.getExtends()?.getDescription(locale) &&
+      control.value === this.metaModelElement.getExtends()?.getDescription(locale)
     );
   }
 

@@ -12,7 +12,6 @@
  */
 import {LoadedFilesService} from '@ame/cache';
 import {MxGraphAttributeService, MxGraphService, MxGraphShapeSelectorService, ShapeLanguageRemover} from '@ame/mx-graph';
-import {ModelService} from '@ame/rdf/services';
 import {AlertService, LoadingScreenService, TitleService} from '@ame/shared';
 import {FlatTreeControl} from '@angular/cdk/tree';
 import {Component} from '@angular/core';
@@ -137,7 +136,6 @@ export class SettingDialogComponent {
     private settingDialogComponentMatDialogRef: MatDialogRef<SettingDialogComponent>,
     private formService: SettingsFormService,
     private alertService: AlertService,
-    private modelService: ModelService,
     private mxGraphService: MxGraphService,
     private sammLangService: SammLanguageSettingsService,
     private mxGraphAttributeService: MxGraphAttributeService,
@@ -270,7 +268,7 @@ export class SettingDialogComponent {
   }
 
   submitAndCloseDialog(): void {
-    if (this.modelService.getLoadedAspectModel().aspect !== null) {
+    if (this.loadedFilesService.currentLoadedFile?.aspect) {
       const loadingScreen = this.loadingScreen.open({
         title: 'Saving changes',
         content: 'Changing the SAMM languages in application',

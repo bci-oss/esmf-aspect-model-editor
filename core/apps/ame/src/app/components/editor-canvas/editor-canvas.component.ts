@@ -11,10 +11,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {LoadedFilesService} from '@ame/cache';
 import {EditorDialogModule, EditorService, EditorToolbarComponent, ShapeSettingsService, ShapeSettingsStateService} from '@ame/editor';
 import {ElementModelService} from '@ame/meta-model';
 import {MxGraphService} from '@ame/mx-graph';
-import {ModelService} from '@ame/rdf/services';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {SidebarModule} from '@ame/sidebar';
 import {ElementsSearchComponent, FilesSearchComponent, SearchesStateService} from '@ame/utils';
@@ -84,7 +84,7 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit, OnDestroy {
     private mxGraphService: MxGraphService,
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    private modelService: ModelService,
+    private loadedFiles: LoadedFilesService,
     private elementModelService: ElementModelService,
     private changeDetector: ChangeDetectorRef,
     private editorService: EditorService,
@@ -151,7 +151,7 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   closeShapeSettings() {
-    if (!this.modelService.currentRdfModel) {
+    if (!this.loadedFiles.currentLoadedFile?.rdfModel) {
       return;
     }
 

@@ -14,10 +14,7 @@
 <div class="shape-settings__header">
   <div class="column-container">
     <h3 class="shape-settings__header-title">
-      <ame-shared-settings-title
-        [metaModelElementInput]="metaModelElement"
-        [metaModelClassNameInput]="metaModelClassName"
-      ></ame-shared-settings-title>
+      <ame-shared-settings-title [metaModelElementInput]="metaModelElement"></ame-shared-settings-title>
     </h3>
     @if (loadedFilesService.isElementExtern(metaModelElement)) {
       <p class="shape-settings__header-description">

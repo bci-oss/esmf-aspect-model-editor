@@ -208,14 +208,14 @@ export class FileHandlingService {
       }
     }
 
-    const emptyNamespace = 'urn:samm:org.eclipse.esmf:1.0.0';
+    const emptyNamespace = 'urn:samm:com.example:1.0.0';
     const rdfModel = new RdfModel(new Store(), GeneralConfig.sammVersion, emptyNamespace);
 
     this.loadedFilesService.addFile({
       rdfModel,
       cachedFile: new ModelElementCache(),
       aspect: null,
-      absoluteName: 'org.eclipse.esmf:1.0.0:empty.ttl',
+      absoluteName: 'com.example:1.0.0:empty.ttl',
       rendered: true,
       fromWorkspace: false,
     });

@@ -12,7 +12,8 @@
  */
 
 import {NamespacesManagerService} from '@ame/namespace-manager';
-import {Component, Input} from '@angular/core';
+import {Component, input} from '@angular/core';
+import {Subject} from 'rxjs';
 
 @Component({
   selector: 'ame-workspace-empty',
@@ -20,7 +21,8 @@ import {Component, Input} from '@angular/core';
   styleUrls: ['./workspace-empty.component.scss'],
 })
 export class WorkspaceEmptyComponent {
-  @Input() loading = false;
+  loading = input(false);
+  processingFile = input<Subject<string>>(new Subject());
 
   constructor(private namespacesManagerService: NamespacesManagerService) {}
 

@@ -34,7 +34,7 @@
 </div>
 
 @if (namespacesKeys.length === 0) {
-  <ame-workspace-empty [loading]="loading"></ame-workspace-empty>
+  <ame-workspace-empty [processingFile]="signal$" [loading]="loading"></ame-workspace-empty>
 } @else {
   <ame-workspace-file-list class="list"></ame-workspace-file-list>
   @if (sidebarService.fileElements.isOpened$ | async) {

@@ -63,8 +63,8 @@ export class WorkspaceFileListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const sub = this.sidebarService.workspace.refreshSignal$
       .pipe(
-        switchMap(() => this.modelLoader.getRdfModelsFromWorkspace()),
-        map(rdfModels => this.sidebarService.requestGetNamespaces(rdfModels)),
+        switchMap(() => this.modelLoader.detectWorkspaceErrors()),
+        map(files => this.sidebarService.updateWorkspace(files)),
       )
       .subscribe(() => {
         for (const namespace in this.namespaces) {
@@ -232,7 +232,11 @@ export class WorkspaceFileListComponent implements OnInit, OnDestroy {
       }
 
       if (file.errored) {
-        return this.translate.language.TOOLTIPS.ERRORED_FILE;
+        return file.unknownSammVersion
+          ? 'Detected unknown SAMM version'
+          : file.missingDependencies.length
+            ? 'Missing dependencies ' + file.missingDependencies.join('\n')
+            : this.translate.language.TOOLTIPS.ERRORED_FILE;
       }
 
       if (file.loaded) {

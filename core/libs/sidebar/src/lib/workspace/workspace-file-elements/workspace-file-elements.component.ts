@@ -134,7 +134,7 @@ export class WorkspaceFileElementsComponent implements OnInit {
         ),
         first(),
       )
-      .subscribe(file => this.updateElements(file));
+      .subscribe({next: file => this.updateElements(file), error: e => console.log(e)});
   }
 
   protected readonly sammElements = sammElements;

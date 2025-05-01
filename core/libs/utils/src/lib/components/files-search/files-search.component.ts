@@ -30,7 +30,7 @@ import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
-import {Observable, filter, first, map, of, startWith, switchMap, tap, throttleTime} from 'rxjs';
+import {Observable, filter, first, of, startWith, switchMap, tap, throttleTime} from 'rxjs';
 import {SearchesStateService} from '../../search-state.service';
 import {OpenFileDialogComponent} from '../open-file-dialog/open-file-dialog.component';
 
@@ -46,7 +46,6 @@ import {OpenFileDialogComponent} from '../open-file-dialog/open-file-dialog.comp
     MatAutocompleteModule,
     MatFormFieldModule,
     MatIconModule,
-    OpenFileDialogComponent,
     MatDialogModule,
     LanguageTranslateModule,
   ],
@@ -75,16 +74,16 @@ export class FilesSearchComponent {
   ) {
     this.loading = true;
     this.parseFiles(this.namespaces);
-    this.modelLoader
-      .getRdfModelsFromWorkspace()
-      .pipe(
-        first(),
-        map(rdfModels => this.sidebarStateService.requestGetNamespaces(rdfModels)),
-      )
-      .subscribe(namespaces => {
-        this.parseFiles(namespaces);
-        this.loading = false;
-      });
+    // this.modelLoader
+    //   .getRdfModelsFromWorkspace()
+    //   .pipe(
+    //     first(),
+    //     map(rdfModels => this.sidebarStateService.requestGetNamespaces(rdfModels)),
+    //   )
+    //   .subscribe(namespaces => {
+    //     this.parseFiles(namespaces);
+    //     this.loading = false;
+    //   });
 
     this.searchControl.valueChanges.pipe(startWith(''), throttleTime(150)).subscribe(value => {
       this.searchableFiles = value === '' ? this.files : this.searchService.search(value, this.files, filesSearchOption);

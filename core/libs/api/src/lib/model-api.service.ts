@@ -155,8 +155,8 @@ export class ModelApiService {
       );
   }
 
-  getNamespacesStructure(): Observable<any> {
-    return this.http.get<Map<string, Array<string>>>(`${this.serviceUrl}${this.api.models}/namespaces`, {
+  getNamespacesStructure(): Observable<Record<string, string[]>> {
+    return this.http.get<Record<string, string[]>>(`${this.serviceUrl}${this.api.models}/namespaces`, {
       params: {
         shouldRefresh: true,
       },

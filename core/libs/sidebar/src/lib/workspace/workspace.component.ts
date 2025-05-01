@@ -14,7 +14,7 @@
 import {ModelLoaderService} from '@ame/editor';
 import {SidebarStateService} from '@ame/sidebar';
 import {ChangeDetectorRef, Component, inject, OnDestroy, OnInit} from '@angular/core';
-import {finalize, map, Subscription} from 'rxjs';
+import {finalize, map, Subject, Subscription} from 'rxjs';
 
 @Component({
   selector: 'ame-workspace',
@@ -27,6 +27,7 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
 
   public namespaces = this.sidebarService.namespacesState;
   public loading = false;
+  public signal$ = new Subject<string>();
 
   public get namespacesKeys(): string[] {
     return this.namespaces.namespacesKeys;
@@ -37,22 +38,25 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
   constructor(private changeDetector: ChangeDetectorRef) {}
 
   ngOnInit(): void {
+    let refreshing$: Subscription;
     const namespaces$ = this.sidebarService.workspace.refreshSignal$.subscribe(() => {
+      refreshing$?.unsubscribe();
       this.loading = true;
       this.changeDetector.detectChanges();
-      const refreshing$ = this.modelLoader
-        .getRdfModelsFromWorkspace()
+
+      refreshing$ = this.modelLoader
+        .detectWorkspaceErrors(this.signal$)
         .pipe(
-          map(rdfModels => this.sidebarService.requestGetNamespaces(rdfModels)),
+          map(files => this.sidebarService.updateWorkspace(files)),
           finalize(() => {
             this.loading = false;
             this.changeDetector.detectChanges();
           }),
         )
         .subscribe();
-      this.subscription.add(refreshing$);
     });
 
+    this.subscription.add(refreshing$);
     this.subscription.add(namespaces$);
   }
 

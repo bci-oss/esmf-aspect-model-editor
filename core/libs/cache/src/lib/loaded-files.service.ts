@@ -113,16 +113,14 @@ export class LoadedFilesService {
 
   isElementInCurrentFile(element: NamedElement): boolean {
     if (!element) return false;
-
     if (!this.currentLoadedFile) return false;
-
     if (!this.currentLoadedFile.cachedFile) return false;
 
     return Boolean(this.currentLoadedFile.cachedFile.get(element.aspectModelUrn));
   }
 
   isElementExtern(element: NamedElement): boolean {
-    return !this.isElementInCurrentFile(element);
+    return !this.isElementInCurrentFile(element) && !element.isPredefined;
   }
 
   addFile(fileInfo: LoadedFilePayload): NamespaceFile {

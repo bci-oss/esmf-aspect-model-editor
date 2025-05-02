@@ -37,7 +37,9 @@ import {
   DefaultTimeSeries,
   NamedElement,
   Unit,
+  useLoader,
 } from '@esmf/aspect-model-loader';
+import {DataFactory} from 'n3';
 import {EditorModelService} from '../../../../editor-model.service';
 import {DropdownFieldComponent} from '../../dropdown-field.component';
 
@@ -81,12 +83,6 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
 
     const oldMetaModelElement = this.metaModelElement;
     this.metaModelElement = newCharacteristicType;
-    // TODO check if it's still necessary
-    // if (!this.unitInstantiator) {
-    //   this.unitInstantiator = new UnitInstantiator(
-    //     new MetaModelElementInstantiator(this.modelService.currentRdfModel, this.namespacesCacheService.currentCachedFile),
-    //   );
-    // }
 
     if (newCharacteristicType?.isPredefined) {
       this.metaModelElement.name = newCharacteristicType.name;
@@ -156,23 +152,21 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
   }
 
   private createDefaultCharacteristic(characteristicName: string): Characteristic {
-    // TODO create characteristic
-
-    // const sammC = this.modelService.currentRdfModel.SAMMC();
-    // if (!this.defaultCharacteristicInstantiator) {
-    //   this.defaultCharacteristicInstantiator = new PredefinedCharacteristicInstantiator(
-    //     new MetaModelElementInstantiator(this.modelService.currentRdfModel, this.namespacesCacheService.currentCachedFile),
-    //   );
-    // }
-    // return this.defaultCharacteristicInstantiator.createCharacteristic(
-    //   DataFactory.namedNode(`${sammC.getNamespace()}${characteristicName}`),
-    // );
-    return null;
+    const rdfModel = this.loadedFilesService.currentLoadedFile.rdfModel;
+    const cache = this.loadedFilesService.currentLoadedFile.cachedFile;
+    const {createDefaultCharacteristic} = useLoader({rdfModel, cache});
+    return createDefaultCharacteristic(
+      DataFactory.quad(null, null, DataFactory.namedNode(`${rdfModel.sammC.getUri()}#${characteristicName}`)),
+    );
   }
 
   private migrateCommonAttributes(oldMetaModelElement: NamedElement) {
     const modelKeys = Object.keys(this.metaModelElement);
     const skipKeys = ['aspectModelUrn', 'name', 'className'];
+    const {createUnit} = useLoader({
+      rdfModel: this.loadedFilesService.currentLoadedFile.rdfModel,
+      cache: this.loadedFilesService.currentLoadedFile.cachedFile,
+    });
 
     Object.keys(oldMetaModelElement).forEach(oldKey => {
       if (modelKeys.includes(oldKey) && !skipKeys.includes(oldKey)) {
@@ -184,8 +178,7 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
               unit.name.toLowerCase().indexOf(oldMetaModelElement[oldKey].name.toLowerCase()) >= 0,
           );
           if (matchedUnit) {
-            // TODO create unit
-            // this.metaModelElement[oldKey] = this.unitInstantiator.getUnit(matchedUnit.name);
+            this.metaModelElement[oldKey] = createUnit(matchedUnit.name);
           }
         } else {
           this.metaModelElement[oldKey] = oldMetaModelElement[oldKey];
@@ -196,15 +189,14 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
 
   private setMetaModelElementAspectUrn(modelElement: NamedElement) {
     const currentRdfModel = this.loadedFilesService.currentLoadedFile.rdfModel;
-    // TODO check again this functionality
-    // if (
-    //   this.defaultCharacteristicInstantiator &&
-    //   this.defaultCharacteristicInstantiator.getSupportedCharacteristicNames().includes(modelElement.aspectModelUrn)
-    // ) {
-    //   this.metaModelElement.aspectModelUrn = modelElement.aspectModelUrn;
-    // } else {
-    this.metaModelElement.aspectModelUrn = `${currentRdfModel.getAspectModelUrn()}${modelElement.name}`;
-    // }
+    const {getSupportedCharacteristicNames} = useLoader({
+      rdfModel: currentRdfModel,
+      cache: this.loadedFilesService.currentLoadedFile.cachedFile,
+    });
+
+    if (getSupportedCharacteristicNames()?.includes(modelElement.name)) {
+      this.metaModelElement.aspectModelUrn = `${currentRdfModel.getAspectModelUrn()}${modelElement.name}`;
+    }
   }
 
   private getMetaModelElementTypeWhenChange(createInstanceFunction: Function) {

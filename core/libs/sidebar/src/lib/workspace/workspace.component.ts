@@ -11,10 +11,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelLoaderService} from '@ame/editor';
+import {ModelCheckerService} from '@ame/editor';
 import {SidebarStateService} from '@ame/sidebar';
-import {ChangeDetectorRef, Component, inject, OnDestroy, OnInit} from '@angular/core';
-import {finalize, map, Subject, Subscription} from 'rxjs';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit, inject} from '@angular/core';
+import {Subject, Subscription, finalize, map} from 'rxjs';
 
 @Component({
   selector: 'ame-workspace',
@@ -23,7 +23,7 @@ import {finalize, map, Subject, Subscription} from 'rxjs';
 })
 export class WorkspaceComponent implements OnInit, OnDestroy {
   public sidebarService = inject(SidebarStateService);
-  private modelLoader = inject(ModelLoaderService);
+  private modelChecker = inject(ModelCheckerService);
 
   public namespaces = this.sidebarService.namespacesState;
   public loading = false;
@@ -44,7 +44,7 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
       this.loading = true;
       this.changeDetector.detectChanges();
 
-      refreshing$ = this.modelLoader
+      refreshing$ = this.modelChecker
         .detectWorkspaceErrors(this.signal$)
         .pipe(
           map(files => this.sidebarService.updateWorkspace(files)),

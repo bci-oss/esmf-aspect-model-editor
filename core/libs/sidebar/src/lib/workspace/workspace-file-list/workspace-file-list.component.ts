@@ -13,7 +13,7 @@
 
 import {ModelApiService} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
-import {ConfirmDialogService, EditorService, FileHandlingService, ModelLoaderService} from '@ame/editor';
+import {ConfirmDialogService, EditorService, FileHandlingService, ModelCheckerService} from '@ame/editor';
 import {ElectronSignals, ElectronSignalsService, NotificationsService} from '@ame/shared';
 import {FileStatus, SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
@@ -56,14 +56,14 @@ export class WorkspaceFileListComponent implements OnInit, OnDestroy {
     private changeDetector: ChangeDetectorRef,
     private translate: LanguageTranslationService,
     private loadedFiles: LoadedFilesService,
-    private modelLoader: ModelLoaderService,
+    private modelChecker: ModelCheckerService,
     private ngZone: NgZone,
   ) {}
 
   ngOnInit(): void {
     const sub = this.sidebarService.workspace.refreshSignal$
       .pipe(
-        switchMap(() => this.modelLoader.detectWorkspaceErrors()),
+        switchMap(() => this.modelChecker.detectWorkspaceErrors()),
         map(files => this.sidebarService.updateWorkspace(files)),
       )
       .subscribe(() => {

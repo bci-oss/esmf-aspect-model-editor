@@ -21,10 +21,10 @@ import {ModelApiService} from './model-api.service';
 
 export interface NamespaceStatus {
   namespace: string;
-  files: FileStatus[];
+  files: MigratedFileStatus[];
 }
 
-export interface FileStatus {
+export interface MigratedFileStatus {
   name: string;
   success: boolean;
   message?: string;

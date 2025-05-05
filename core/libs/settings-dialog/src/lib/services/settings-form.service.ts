@@ -91,7 +91,7 @@ export class SettingsFormService {
       return ['', '', ''];
     }
 
-    return this.currentLoadedFile?.absoluteName.replace('.ttl', '').split(':');
+    return this.currentLoadedFile?.absoluteName.replace('.ttl', '').replace('urn:samm:', '').split(':');
   }
 
   private createForm(): void {

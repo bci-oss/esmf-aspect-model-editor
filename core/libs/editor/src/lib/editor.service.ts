@@ -555,10 +555,6 @@ export class EditorService {
         this.sidebarService.workspace.refresh();
       }),
       catchError(error => {
-        // TODO Should be refined
-        console.groupCollapsed('editor-service -> saveModel', error);
-        console.groupEnd();
-
         console.error('Error on saving aspect model', error);
         this.notificationsService.error({title: this.translate.language.NOTIFICATION_SERVICE.ASPECT_SAVED_ERROR});
         return of({});

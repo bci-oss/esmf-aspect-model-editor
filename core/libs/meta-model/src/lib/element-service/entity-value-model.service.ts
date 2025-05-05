@@ -31,7 +31,7 @@ export class EntityValueModelService extends BaseModelService {
   update(cell: mxgraph.mxCell, form: {[key: string]: any}): void {
     const modelElement = MxGraphHelper.getModelElement<DefaultEntityInstance>(cell);
     // update name
-    const aspectModelUrn = this.modelService.currentRdfModel.getAspectModelUrn();
+    const aspectModelUrn = this.loadedFile?.rdfModel?.getAspectModelUrn();
     this.currentCachedFile.updateElementKey(`${aspectModelUrn}${modelElement.name}`, `${aspectModelUrn}${form.name}`);
     modelElement.name = form.name;
     modelElement.aspectModelUrn = `${aspectModelUrn}${form.name}`;

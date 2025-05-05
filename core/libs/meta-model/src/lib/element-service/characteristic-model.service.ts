@@ -126,7 +126,7 @@ export class CharacteristicModelService extends BaseModelService {
         this.removeUnusedEntityValues(metaModelElement);
       }
 
-      if (RdfModelUtil.isCharacteristicInstance(form.changedMetaModel.aspectModelUrn, this.modelService.currentRdfModel.sammC)) {
+      if (RdfModelUtil.isCharacteristicInstance(form.changedMetaModel.aspectModelUrn, this.loadedFile?.rdfModel?.sammC)) {
         // in case this is a predefined characteristic, no need to update anything
         const children = [...(originalModelElement.children || [])];
         for (const child of children) {

@@ -153,8 +153,8 @@ export class MxGraphVisitorHelper {
   }
 
   static addExtends(element: any): ShapeAttribute {
-    if (element.extendedElement !== null && element.extendedElement !== undefined) {
-      return {label: `extends = ${element.extendedElement.name}`, key: 'extends'};
+    if (element.extends_ !== null && element.extends_ !== undefined) {
+      return {label: `extends = ${element.extends_.name}`, key: 'extends'};
     }
     return null;
   }

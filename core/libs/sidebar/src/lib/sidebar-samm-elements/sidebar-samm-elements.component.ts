@@ -11,8 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {LoadedFilesService} from '@ame/cache';
 import {MxGraphService} from '@ame/mx-graph';
-import {ModelService} from '@ame/rdf/services';
 import {ElementType, sammElements} from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
 import {Component, inject} from '@angular/core';
@@ -45,11 +45,11 @@ export class SidebarSAMMElementsComponent {
   }
 
   constructor(
-    private modelService: ModelService,
     private mxGraphService: MxGraphService,
+    private loadedFiles: LoadedFilesService,
   ) {}
 
   public isAspectAvailable(): Aspect {
-    return this.modelService.loadedAspect;
+    return this.loadedFiles.currentLoadedFile?.aspect;
   }
 }

@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelService} from '@ame/rdf/services';
+import {LoadedFilesService} from '@ame/cache';
 import {simpleDataTypes} from '@ame/shared';
 import {Injectable} from '@angular/core';
 import {RdfModel, Samm} from '@esmf/aspect-model-loader';
@@ -36,7 +36,7 @@ import {
 })
 export class RdfListService implements CreateEmptyRdfList, EmptyRdfList {
   private get rdfModel(): RdfModel {
-    return this.modelService.currentRdfModel;
+    return this.loadedFiles.currentLoadedFile?.rdfModel;
   }
 
   private get store(): Store {
@@ -49,7 +49,7 @@ export class RdfListService implements CreateEmptyRdfList, EmptyRdfList {
 
   constructor(
     private nodeService: RdfNodeService,
-    private modelService: ModelService,
+    private loadedFiles: LoadedFilesService,
   ) {
     if (!environment.production) {
       window['angular.rdfListService'] = this;

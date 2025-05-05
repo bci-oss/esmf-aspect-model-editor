@@ -103,7 +103,7 @@ export class GenerateHandlingService {
     };
 
     this.loadingScreenService.open(loadingScreenOptions);
-    return this.editorService.generateJsonSample(this.modelService.currentRdfModel).pipe(
+    return this.editorService.generateJsonSample(this.loadedFilesService.currentLoadedFile?.rdfModel).pipe(
       first(),
       catchError(() => {
         this.notificationsService.error({
@@ -117,7 +117,9 @@ export class GenerateHandlingService {
         this.openPreview(
           this.translate.language.GENERATE_HANDLING.JSON_PAYLOAD_PREVIEW,
           this.formatStringToJson(data),
-          !this.modelService.loadedAspect ? this.currentFile.name : `${this.modelService.loadedAspect.name}-sample.json`,
+          !this.loadedFilesService?.currentLoadedFile?.aspect
+            ? this.currentFile.name
+            : `${this.loadedFilesService?.currentLoadedFile?.aspect.name}-sample.json`,
         );
       }),
       finalize(() => this.loadingScreenService.close()),
@@ -144,7 +146,7 @@ export class GenerateHandlingService {
       .pipe(
         first(),
         switchMap((language: string) =>
-          this.editorService.generateJsonSchema(this.modelService.currentRdfModel, language).pipe(
+          this.editorService.generateJsonSchema(this.loadedFilesService.currentLoadedFile?.rdfModel, language).pipe(
             first(),
             catchError(() => {
               this.notificationsService.error({
@@ -159,7 +161,9 @@ export class GenerateHandlingService {
               this.openPreview(
                 this.translate.language.GENERATE_HANDLING.JSON_SCHEMA_PREVIEW,
                 this.formatStringToJson(data),
-                !this.modelService.loadedAspect ? this.currentFile.name : `${this.modelService.loadedAspect.name}-schema.json`,
+                !this.loadedFilesService?.currentLoadedFile?.aspect
+                  ? this.currentFile.name
+                  : `${this.loadedFilesService?.currentLoadedFile?.aspect.name}-schema.json`,
               );
             }),
           ),
@@ -172,7 +176,7 @@ export class GenerateHandlingService {
       .synchronizeModelToRdf()
       .pipe(finalize(() => subscription$.unsubscribe()))
       .subscribe((): void => {
-        if (!this.modelService.getLoadedAspectModel().aspect) {
+        if (!this.loadedFilesService?.currentLoadedFile?.aspect) {
           this.notificationsService.info({
             title: this.translate.language.GENERATE_HANDLING.NO_ASPECT_TITLE,
             timeout: 5000,

@@ -328,7 +328,7 @@ export class EditorService {
   }
 
   private deletePrefixForExternalNamespaceReference(element: any) {
-    const rdfModel = this.modelService.currentRdfModel;
+    const rdfModel = this.loadedFilesService.currentLoadedFile?.rdfModel;
 
     const aspectModelUrnToBeRemoved = MxGraphHelper.getModelElement(element).aspectModelUrn;
     const urnToBeChecked = aspectModelUrnToBeRemoved.substring(0, aspectModelUrnToBeRemoved.indexOf('#'));
@@ -508,7 +508,7 @@ export class EditorService {
       ),
       switchMap(() => {
         localStorage.setItem(ValidateStatus.validating, 'yes');
-        const rdfModel = this.modelService.currentRdfModel;
+        const rdfModel = this.loadedFilesService.currentLoadedFile?.rdfModel;
         return rdfModel
           ? this.modelApiService.validate(this.rdfService.serializeModel(rdfModel))
           : throwError(() => ({type: SaveValidateErrorsCodes.emptyModel}));
@@ -555,10 +555,6 @@ export class EditorService {
         this.sidebarService.workspace.refresh();
       }),
       catchError(error => {
-        // TODO Should be refined
-        console.groupCollapsed('editor-service -> saveModel', error);
-        console.groupEnd();
-
         console.error('Error on saving aspect model', error);
         this.notificationsService.error({title: this.translate.language.NOTIFICATION_SERVICE.ASPECT_SAVED_ERROR});
         return of({});
@@ -567,7 +563,7 @@ export class EditorService {
   }
 
   getSerializedModel(): string {
-    return this.rdfService.serializeModel(this.modelService.currentRdfModel);
+    return this.rdfService.serializeModel(this.loadedFilesService.currentLoadedFile?.rdfModel);
   }
 
   openAlertBox() {

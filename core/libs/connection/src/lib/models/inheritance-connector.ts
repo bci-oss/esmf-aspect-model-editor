@@ -15,7 +15,7 @@ import {MxGraphAttributeService, MxGraphHelper, MxGraphService, MxGraphVisitorHe
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {NotificationsService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
-import {NamedElement} from '@esmf/aspect-model-loader';
+import {DefaultEntity, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
 import mxCell = mxgraph.mxCell;
 
@@ -34,7 +34,10 @@ export abstract class InheritanceConnector {
       return;
     }
 
-    (parentMetaModel as any).extendedElement = childMetaModel;
+    if (parentMetaModel instanceof DefaultProperty || parentMetaModel instanceof DefaultEntity) {
+      (parentMetaModel.extends_ as any) = childMetaModel;
+    }
+
     this.checkAndRemoveExtendElement(parentCell);
     this.mxGraphService.assignToParent(childCell, parentCell);
     parentCell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(parentMetaModel, this.sammLangService);

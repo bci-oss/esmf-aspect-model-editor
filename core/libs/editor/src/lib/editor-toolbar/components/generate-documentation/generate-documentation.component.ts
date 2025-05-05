@@ -97,7 +97,9 @@ export class GenerateDocumentationComponent {
             new Blob([data], {
               type: 'text/html',
             }),
-            !this.modelService.loadedAspect ? this.currentFile.name : `${this.modelService.loadedAspect.name}-documentation.html`,
+            !this.loadedFiles.currentLoadedFile?.aspect
+              ? this.currentFile.name
+              : `${this.loadedFiles.currentLoadedFile?.aspect.name}-documentation.html`,
           ),
         ),
         finalize(() => {

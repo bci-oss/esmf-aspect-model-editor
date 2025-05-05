@@ -91,7 +91,7 @@ export class SettingsFormService {
       return ['', '', ''];
     }
 
-    return this.currentLoadedFile?.absoluteName.replace('.ttl', '').split(':');
+    return this.currentLoadedFile?.absoluteName.replace('.ttl', '').replace('urn:samm:', '').split(':');
   }
 
   private createForm(): void {
@@ -130,7 +130,7 @@ export class SettingsFormService {
       }),
       namespaceConfiguration: this.formBuilder.group({
         aspectUri: [namespace, [Validators.required, namespaceValidator()]],
-        aspectName: [{value: modelName, disabled: !!this.modelService.loadedAspect}],
+        aspectName: [{value: modelName, disabled: !!this.currentLoadedFile?.aspect}],
         aspectVersion: [version, [Validators.required, versionFormatValidator()]],
         sammVersion: [{value: GeneralConfig.sammVersion, disabled: true}],
       }),

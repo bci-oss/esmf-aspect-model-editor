@@ -22,7 +22,7 @@ import {BaseVisitor} from '../base-visitor';
 @Injectable()
 export class EventVisitor extends BaseVisitor<DefaultEvent> {
   private get store(): Store {
-    return this.rdfNodeService.modelService.currentRdfModel.store;
+    return this.loadedFiles.currentLoadedFile?.rdfModel?.store;
   }
 
   constructor(

@@ -90,7 +90,7 @@ export class ConstraintNameDropdownFieldComponent extends DropdownFieldComponent
   }
 
   private setMetaModelElementAspectUrn(modelElement: Constraint) {
-    this.metaModelElement.aspectModelUrn = `${this.modelService.currentRdfModel.getAspectModelUrn()}${modelElement.name}`;
+    this.metaModelElement.aspectModelUrn = `${this.loadedFilesService.currentLoadedFile?.rdfModel?.getAspectModelUrn()}${modelElement.name}`;
   }
 
   private initConstraintList(): void {

@@ -110,7 +110,7 @@ export class GenerateAsyncApiComponent implements OnInit, OnDestroy {
     const asyncApiSpec = this.form.value as AsyncApi;
     this.subscriptions.add(
       this.editorService
-        .generateAsyncApiSpec(this.modelService.currentRdfModel, asyncApiSpec)
+        .generateAsyncApiSpec(this.loadedFilesService.currentLoadedFile?.rdfModel, asyncApiSpec)
         .pipe(
           first(),
           map(data => this.handleGeneratedSpec(data, asyncApiSpec)),

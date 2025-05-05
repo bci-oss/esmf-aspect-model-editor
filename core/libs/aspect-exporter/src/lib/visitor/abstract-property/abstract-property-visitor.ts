@@ -24,7 +24,7 @@ export class AbstractPropertyVisitor extends BaseVisitor<DefaultProperty> {
   private rdfNodeService = inject(RdfNodeService);
 
   private get store(): Store {
-    return this.rdfNodeService.modelService.currentRdfModel.store;
+    return this.loadedFiles.currentLoadedFile?.rdfModel?.store;
   }
 
   constructor(loadedFiles: LoadedFilesService) {

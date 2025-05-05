@@ -40,6 +40,10 @@ export class EntityInheritanceConnector extends InheritanceConnector {
       return;
     }
 
+    if (!childMetaModel.isAbstractEntity()) {
+      return;
+    }
+
     const abstractProperties = childMetaModel.properties.filter(
       abstractProperty =>
         abstractProperty.isAbstract &&

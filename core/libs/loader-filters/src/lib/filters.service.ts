@@ -14,7 +14,6 @@
 import {LoadedFilesService} from '@ame/cache';
 import {EditorService} from '@ame/editor';
 import {MxGraphAttributeService, MxGraphHelper, MxGraphRenderer, MxGraphService, MxGraphShapeOverlayService} from '@ame/mx-graph';
-import {ModelService} from '@ame/rdf/services';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {LoadingScreenService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
@@ -109,7 +108,7 @@ export class FiltersService {
             mxGraphService,
             this.injector.get(MxGraphShapeOverlayService),
             this.injector.get(SammLanguageSettingsService),
-            this.injector.get(ModelService).getLoadedAspectModel().rdfModel,
+            this.injector.get(LoadedFilesService)?.currentLoadedFile?.rdfModel,
           );
 
           const cachedFile = loadedFiles.currentLoadedFile.cachedFile;

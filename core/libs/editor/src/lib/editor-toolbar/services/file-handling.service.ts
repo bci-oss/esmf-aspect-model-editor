@@ -141,7 +141,7 @@ export class FileHandlingService {
       finalize(() => {
         this.modelSaveTracker.updateSavedModel(true);
         this.loadingScreenService.close();
-        if (this.modelService.getLoadedAspectModel().rdfModel) {
+        if (this.loadedFilesService.currentLoadedFile?.rdfModel) {
           this.shapeSettingsStateService.closeShapeSettings();
         }
         this.sidebarService.workspace.close();
@@ -208,14 +208,14 @@ export class FileHandlingService {
       }
     }
 
-    const emptyNamespace = 'urn:samm:org.eclipse.esmf:1.0.0';
+    const emptyNamespace = 'urn:samm:com.example:1.0.0';
     const rdfModel = new RdfModel(new Store(), GeneralConfig.sammVersion, emptyNamespace);
 
     this.loadedFilesService.addFile({
       rdfModel,
       cachedFile: new ModelElementCache(),
       aspect: null,
-      absoluteName: 'org.eclipse.esmf:1.0.0:empty.ttl',
+      absoluteName: 'com.example:1.0.0:empty.ttl',
       rendered: true,
       fromWorkspace: false,
     });
@@ -238,7 +238,7 @@ export class FileHandlingService {
   }
 
   copyToClipboard(): Observable<any> {
-    if (!this.modelService.currentRdfModel) {
+    if (!this.loadedFilesService.currentLoadedFile?.rdfModel) {
       return throwError(() => {
         console.error('No Rdf model available. ');
         return 'No Rdf model available. ';
@@ -246,7 +246,7 @@ export class FileHandlingService {
     }
 
     return this.modelService.synchronizeModelToRdf().pipe(
-      map(() => this.rdfService.serializeModel(this.modelService.currentRdfModel)),
+      map(() => this.rdfService.serializeModel(this.loadedFilesService.currentLoadedFile?.rdfModel)),
       switchMap(serializedModel => this.modelApiService.formatModel(serializedModel)),
       switchMap(formattedModel => {
         const header = this.configurationService.getSettings().copyrightHeader.join('\n');
@@ -268,7 +268,7 @@ export class FileHandlingService {
   }
 
   exportAsAspectModelFile(): Observable<string> {
-    if (!this.modelService.getLoadedAspectModel().rdfModel) {
+    if (!this.loadedFilesService.currentLoadedFile?.rdfModel) {
       return throwError(() => {
         console.error('No Rdf model available. ');
         return 'No Rdf model available. ';
@@ -284,7 +284,7 @@ export class FileHandlingService {
     return this.modelService.synchronizeModelToRdf().pipe(
       map(() => this.loadedFilesService.currentLoadedFile.absoluteName || 'undefined.ttl'),
       switchMap(fileName => {
-        const rdfModelTtl = this.rdfService.serializeModel(this.modelService.currentRdfModel);
+        const rdfModelTtl = this.rdfService.serializeModel(this.loadedFilesService.currentLoadedFile?.rdfModel);
         return this.modelApiService.formatModel(rdfModelTtl).pipe(
           tap(formattedModel => {
             const header = this.configurationService.getSettings().copyrightHeader.join('\n');

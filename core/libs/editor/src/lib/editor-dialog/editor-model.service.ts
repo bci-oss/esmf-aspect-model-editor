@@ -43,7 +43,7 @@ export class EditorModelService {
   }
 
   getAspectModelUrn(): string {
-    return this.modelService.currentRdfModel.getAspectModelUrn();
+    return this.loadedFiles.currentLoadedFile?.rdfModel?.getAspectModelUrn();
   }
 
   isSaveButtonEnabled() {

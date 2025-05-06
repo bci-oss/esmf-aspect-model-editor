@@ -13,7 +13,7 @@
 
 import {ModelApiService} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
-import {ConfirmDialogService, EditorService, FileHandlingService, ModelCheckerService} from '@ame/editor';
+import {ConfirmDialogService, EditorService, FileHandlingService, ModelCheckerService, ModelSaverService} from '@ame/editor';
 import {ElectronSignals, ElectronSignalsService, NotificationsService} from '@ame/shared';
 import {FileStatus, SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
@@ -28,8 +28,9 @@ import {ConfirmDialogEnum} from '../../../../../editor/src/lib/models/confirm-di
 })
 export class WorkspaceFileListComponent implements OnInit, OnDestroy {
   private electronSignalsService: ElectronSignals = inject(ElectronSignalsService);
-
+  private modelSaverService = inject(ModelSaverService);
   public sidebarService = inject(SidebarStateService);
+
   public menuSelection: {namespace: string; file: FileStatus} = null;
   public foldedStatus = false;
   public searched: Record<string, FileStatus[]> = {};
@@ -179,7 +180,7 @@ export class WorkspaceFileListComponent implements OnInit, OnDestroy {
       })
       .subscribe(confirmed => {
         if (confirmed !== ConfirmDialogEnum.cancel) {
-          this.editorService.saveModel().subscribe();
+          this.modelSaverService.saveModel().subscribe();
         }
         // TODO improve this functionality
         this.loadNamespaceFile(absoluteFileName);

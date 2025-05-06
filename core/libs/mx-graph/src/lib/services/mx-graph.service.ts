@@ -144,7 +144,7 @@ export class MxGraphService {
 
     return this.graph.getChildVertices(this.graph.getDefaultParent()).find(cell => {
       const metaModel = MxGraphHelper.getModelElement(cell);
-      return metaModel?.aspectModelUrn === metaModelElement.aspectModelUrn;
+      return metaModel && metaModelElement && metaModel?.aspectModelUrn === metaModelElement?.aspectModelUrn;
     });
   }
 

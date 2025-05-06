@@ -93,6 +93,7 @@ export class ModelApiService {
       const [namespace, version, file] = absoluteModelName.split(':');
       headers = new HttpHeaderBuilder().withNamespace(`${namespace}:${version}`).withFileName(file).build();
     }
+
     return this.http
       .post(`${this.serviceUrl}${this.api.models}`, rdfContent, {
         headers,

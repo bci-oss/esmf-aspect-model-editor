@@ -41,7 +41,7 @@ export class NamespaceFile {
   fromWorkspace: boolean;
 
   get namespace() {
-    return this._namespace || this.aspect?.namespace || this.rdfModel.getPrefixes()[''].replace('#', '').replace('urn:samm:', '') || '';
+    return (this._namespace || this.aspect?.namespace || this.rdfModel.getPrefixes()['']).replace('#', '').replace('urn:samm:', '') || '';
   }
 
   set namespace(value) {

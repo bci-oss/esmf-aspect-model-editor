@@ -243,8 +243,11 @@ export class ModelLoaderService {
 
   private registerFiles(rdfModels: Record<string, RdfModel>, loadedFile: any, payload: LoadModelPayload, render = false) {
     let currentNamespaceFile: NamespaceFile;
+
     for (const [key, rdfModel] of Object.entries(rdfModels)) {
       const isCurrentFile = key === 'current' || key === payload.namespaceFileName;
+
+      console.log(render, isCurrentFile, key, payload.namespaceFileName);
 
       if (render && isCurrentFile) {
         const currentFile = this.loadedFilesService.currentLoadedFile;
@@ -257,7 +260,7 @@ export class ModelLoaderService {
         cachedFile: isCurrentFile ? loadedFile.cachedElements : new ModelElementCache(),
         aspect: isCurrentFile ? loadedFile.aspect : null,
         absoluteName: isCurrentFile ? payload.namespaceFileName || '' : key,
-        rendered: render,
+        rendered: isCurrentFile && render,
         fromWorkspace: payload.fromWorkspace,
       });
 

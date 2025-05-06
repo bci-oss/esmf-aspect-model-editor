@@ -20,7 +20,6 @@ import {
   MxGraphHelper,
   MxGraphRenderer,
   MxGraphService,
-  MxGraphSetupService,
   MxGraphShapeOverlayService,
   MxGraphShapeSelectorService,
   ShapeConfiguration,
@@ -33,7 +32,6 @@ import {ConfigurationService, SammLanguageSettingsService} from '@ame/settings-d
 import {
   AlertService,
   LoadingScreenService,
-  ModelSavingTrackerService,
   NotificationsService,
   SaveValidateErrorsCodes,
   TitleService,
@@ -41,7 +39,6 @@ import {
   createEmptyElement,
   sammElements,
 } from '@ame/shared';
-import {SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
 import {useUpdater} from '@ame/utils';
 import {Injectable, Injector, NgZone, inject} from '@angular/core';
@@ -52,6 +49,7 @@ import {BehaviorSubject, Observable, Subscription, catchError, delayWhen, first,
 import {ConfirmDialogService} from './confirm-dialog/confirm-dialog.service';
 import {ShapeSettingsService, ShapeSettingsStateService} from './editor-dialog';
 import {AsyncApi, OpenApi, ViolationError} from './editor-toolbar';
+import {ModelSaverService} from './model-saver.service';
 import {ConfirmDialogEnum} from './models/confirm-dialog.enum';
 
 @Injectable({
@@ -61,10 +59,9 @@ export class EditorService {
   private filtersService: FiltersService = inject(FiltersService);
   private filterAttributes: FilterAttributesService = inject(FILTER_ATTRIBUTES);
   private configurationService: ConfigurationService = inject(ConfigurationService);
+  private modelSaverService: ModelSaverService = inject(ModelSaverService);
 
   private validateModelSubscription$: Subscription;
-  private saveModelSubscription$: Subscription;
-
   private isAllShapesExpandedSubject = new BehaviorSubject<boolean>(true);
 
   public isAllShapesExpanded$ = this.isAllShapesExpandedSubject.asObservable();
@@ -84,7 +81,6 @@ export class EditorService {
 
   constructor(
     private mxGraphService: MxGraphService,
-    private mxGraphSetupService: MxGraphSetupService,
     private mxGraphShapeOverlayService: MxGraphShapeOverlayService,
     private mxGraphShapeSelectorService: MxGraphShapeSelectorService,
     private mxGraphAttributeService: MxGraphAttributeService,
@@ -98,9 +94,7 @@ export class EditorService {
     private confirmDialogService: ConfirmDialogService,
     private elementModelService: ElementModelService,
     private titleService: TitleService,
-    private sidebarService: SidebarStateService,
     private shapeSettingsStateService: ShapeSettingsStateService,
-    private modelSavingTracker: ModelSavingTrackerService,
     private loadingScreenService: LoadingScreenService,
     private translate: LanguageTranslationService,
     private injector: Injector,
@@ -116,7 +110,7 @@ export class EditorService {
     this.mxGraphService.initGraph();
 
     this.enableAutoValidation();
-    this.enableAutoSave();
+    this.modelSaverService.enableAutoSave();
 
     mxEvent.addMouseWheelListener(
       mxUtils.bind(this, (evt, up) => {
@@ -510,52 +504,6 @@ export class EditorService {
         return rdfModel
           ? this.modelApiService.validate(this.rdfService.serializeModel(rdfModel))
           : throwError(() => ({type: SaveValidateErrorsCodes.emptyModel}));
-      }),
-    );
-  }
-
-  enableAutoSave(): void {
-    this.settings.autoSaveEnabled ? this.startSaveModel() : this.stopSaveModel();
-  }
-
-  startSaveModel(): void {
-    this.stopSaveModel();
-    this.saveModelSubscription$ = this.autoSaveModel().subscribe();
-  }
-
-  stopSaveModel() {
-    if (this.saveModelSubscription$) {
-      this.saveModelSubscription$.unsubscribe();
-    }
-  }
-
-  autoSaveModel(): Observable<RdfModel | object> {
-    return of({}).pipe(
-      delayWhen(() => timer(this.settings.saveTimerSeconds * 1000)),
-      switchMap(() =>
-        this.currentLoadedFile.cachedFile.getKeys().length && !this.currentLoadedFile.name.includes('empty.ttl')
-          ? this.saveModel().pipe(first())
-          : of([]),
-      ),
-      tap(() => this.enableAutoSave()),
-      retry({
-        delay: () => timer(this.settings.saveTimerSeconds * 1000),
-      }),
-    );
-  }
-
-  saveModel(): Observable<RdfModel | object> {
-    return this.modelService.saveModel().pipe(
-      tap(() => {
-        this.modelSavingTracker.updateSavedModel();
-        this.notificationsService.info({title: this.translate.language.NOTIFICATION_SERVICE.ASPECT_SAVED_SUCCESS});
-        console.info('Aspect model was saved to the local folder');
-        this.sidebarService.workspace.refresh();
-      }),
-      catchError(error => {
-        console.error('Error on saving aspect model', error);
-        this.notificationsService.error({title: this.translate.language.NOTIFICATION_SERVICE.ASPECT_SAVED_ERROR});
-        return of({});
       }),
     );
   }

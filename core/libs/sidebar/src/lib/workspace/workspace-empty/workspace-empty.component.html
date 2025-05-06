@@ -11,7 +11,7 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-@if (loading) {
+@if (loading()) {
   <div class="loading">
     <mat-spinner></mat-spinner>
     <p>{{ 'SIDEBAR.EMPTY.LOADING_NAMESPACES' | translate }}</p>

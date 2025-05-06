@@ -14,7 +14,7 @@
 import {ModelCheckerService} from '@ame/editor';
 import {SidebarStateService} from '@ame/sidebar';
 import {ChangeDetectorRef, Component, OnDestroy, OnInit, inject} from '@angular/core';
-import {Subject, Subscription, finalize, map} from 'rxjs';
+import {Subscription, finalize, map} from 'rxjs';
 
 @Component({
   selector: 'ame-workspace',
@@ -27,7 +27,6 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
 
   public namespaces = this.sidebarService.namespacesState;
   public loading = false;
-  public signal$ = new Subject<string>();
 
   public get namespacesKeys(): string[] {
     return this.namespaces.namespacesKeys;
@@ -45,7 +44,7 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
       this.changeDetector.detectChanges();
 
       refreshing$ = this.modelChecker
-        .detectWorkspaceErrors(this.signal$)
+        .detectWorkspaceErrors()
         .pipe(
           map(files => this.sidebarService.updateWorkspace(files)),
           finalize(() => {

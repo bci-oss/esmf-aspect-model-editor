@@ -48,13 +48,13 @@ export function constraintFactory(initProps: BaseInitProps) {
   }
 
   function generateConstraintName(constraint: Constraint) {
-    const initialName: string = constraint.name;
+    const initialUrn: string = constraint.aspectModelUrn;
 
     // assign a unique random name
-    constraint.name = constraint.name ? constraint.name : 'constraint_' + Math.random().toString(36).substring(2, 9);
+    constraint.name = constraint.name ? constraint.name : 'Constraint_' + Math.random().toString(36).substring(2, 9);
     constraint.aspectModelUrn = `${rdfModel.getAspectModelUrn()}${constraint.name}`;
     constraint.syntheticName = true;
-    cache.addElement(initialName, constraint);
+    cache.addElement(initialUrn, constraint);
   }
 
   return {

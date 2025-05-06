@@ -18,7 +18,6 @@ import {Injectable, inject} from '@angular/core';
 import {Aspect, Samm} from '@esmf/aspect-model-loader';
 import {environment} from 'environments/environment';
 import {Observable, Observer, Subject, throwError} from 'rxjs';
-import {first, switchMap, tap} from 'rxjs/operators';
 import {RdfService} from './rdf.service';
 
 @Injectable({
@@ -57,30 +56,6 @@ export class ModelService {
     const startVersionIndex = aspectModel.indexOf(partialSammUri);
     const endVersionIndex = aspectModel.indexOf('#', startVersionIndex);
     return aspectModel.slice(startVersionIndex + partialSammUri.length, endVersionIndex);
-  }
-
-  migrateAspectModel(oldSammVersion: string, rdfAspectModel: string): Observable<string> {
-    this.notificationsService.info({
-      title: `Migrating from SAMM version ${oldSammVersion} to SAMM version ${this.config.currentSammVersion}`,
-      timeout: 5000,
-    });
-
-    return this.modelApiService.migrateAspectModel(rdfAspectModel).pipe(
-      first(),
-      tap(() =>
-        this.notificationsService.info({
-          title: `Successfully migrated from SAMM Version ${oldSammVersion} to SAMM version ${this.config.currentSammVersion} SAMM version`,
-          timeout: 5000,
-        }),
-      ),
-    );
-  }
-
-  saveModel() {
-    const synchronizedModel = this.synchronizeModelToRdf();
-    return (synchronizedModel || throwError(() => ({type: SaveValidateErrorsCodes.desynchronized}))).pipe(
-      switchMap(() => this.rdfService.saveModel(this.loadedFilesService?.currentLoadedFile?.rdfModel)),
-    );
   }
 
   finishStoreUpdate(observer: Observer<void>) {

@@ -6,7 +6,7 @@ import {config} from '@ame/shared';
 import {FileStatus} from '@ame/sidebar';
 import {Injectable, inject} from '@angular/core';
 import {Samm} from '@esmf/aspect-model-loader';
-import {Observable, Subject, forkJoin, map, switchMap} from 'rxjs';
+import {Observable, Subject, forkJoin, map, of, switchMap} from 'rxjs';
 import {ModelLoaderService} from './model-loader.service';
 
 @Injectable({
@@ -68,7 +68,7 @@ export class ModelCheckerService {
           }
         }
 
-        return forkJoin(requests);
+        return Object.keys(requests).length ? forkJoin(requests) : of({});
       }),
     );
   }

@@ -13,7 +13,6 @@
 
 import {NamespacesManagerService} from '@ame/namespace-manager';
 import {Component, input} from '@angular/core';
-import {Subject} from 'rxjs';
 
 @Component({
   selector: 'ame-workspace-empty',
@@ -22,11 +21,9 @@ import {Subject} from 'rxjs';
 })
 export class WorkspaceEmptyComponent {
   loading = input(false);
-  processingFile = input<Subject<string>>(new Subject());
+  file: File | null = null;
 
   constructor(private namespacesManagerService: NamespacesManagerService) {}
-
-  file: File | null = null;
 
   onFileInput(files: FileList | null): void {
     if (files) {

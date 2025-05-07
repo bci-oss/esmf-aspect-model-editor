@@ -54,7 +54,6 @@ export class StartupService {
         switchMap(() => this.electronTunnelService.startUpData$.asObservable()),
         sample(this.mxGraphService.graphInitialized$.pipe(filter(Boolean))),
         filter(data => {
-          console.log('STARTUP data -> ', data);
           if (data?.model) {
             return true;
           } else {
@@ -85,8 +84,6 @@ export class StartupService {
     return this.electronSignalsService.call('requestWindowData').pipe(
       tap(data => {
         options = data.options;
-        console.log(data);
-        console.log(model);
       }),
       switchMap(() =>
         this.ngZone.run(() =>

@@ -65,8 +65,6 @@ export class ModelRendererService {
       );
 
       const elements = this.cachedFile.getKeys().map(key => this.cachedFile.get<NamedElement>(key));
-      console.log(this.cachedFile);
-      console.log(elements);
       return this.prepareGraphUpdate(mxGraphRenderer, elements, editElementUrn);
     } catch (error) {
       console.groupCollapsed('editor.service', error);
@@ -129,8 +127,6 @@ export class ModelRendererService {
 
   private editModelByUrn(elementUrn: string) {
     const element = this.cachedFile?.get<NamedElement>(elementUrn);
-    console.log(elementUrn);
-    console.log(this.cachedFile);
     if (!element) {
       this.notificationsService.error({
         title: this.translate.language.EDITOR_CANVAS.SHAPE_SETTING.NOTIFICATION.EDIT_VIEW_UNAVAILABLE,

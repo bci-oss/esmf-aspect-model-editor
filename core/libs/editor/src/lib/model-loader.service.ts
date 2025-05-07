@@ -15,12 +15,12 @@ import {ModelApiService} from '@ame/api';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {InstantiatorService} from '@ame/instantiator';
 import {RdfModelUtil} from '@ame/rdf/utils';
-import {BrowserService, ElectronSignalsService, ModelSavingTrackerService, NotificationsService} from '@ame/shared';
+import {BrowserService, ElectronSignalsService, ModelSavingTrackerService, NotificationsService, config} from '@ame/shared';
 import {Injectable, inject} from '@angular/core';
 import {ModelElementCache, NamedElement, RdfModel, loadAspectModel} from '@esmf/aspect-model-loader';
 import {RdfLoader} from 'libs/aspect-model-loader/src/lib/shared/rdf-loader';
 import {NamedNode} from 'n3';
-import {Observable, catchError, forkJoin, map, of, switchMap, tap, throwError} from 'rxjs';
+import {Observable, catchError, first, forkJoin, map, of, switchMap, tap, throwError} from 'rxjs';
 import {ModelRendererService} from './model-renderer.service';
 import {LoadModelPayload} from './models/load-model-payload.interface';
 import {LoadingCodeErrors} from './models/loading-errors';
@@ -72,7 +72,6 @@ export class ModelLoaderService {
       this.getNamespaceDependencies(payload.rdfAspectModel).pipe(
         // loading in sequence all RdfModels for the current file and dependencies
         switchMap(files => this.loadRdfModelFromFiles(files, payload)),
-
         // loading the model with all namespace dependencies
         switchMap(({files, rdfModels}) =>
           loadAspectModel({
@@ -247,8 +246,6 @@ export class ModelLoaderService {
     for (const [key, rdfModel] of Object.entries(rdfModels)) {
       const isCurrentFile = key === 'current' || key === payload.namespaceFileName;
 
-      console.log(render, isCurrentFile, key, payload.namespaceFileName);
-
       if (render && isCurrentFile) {
         const currentFile = this.loadedFilesService.currentLoadedFile;
         currentFile && (currentFile.rendered = false);
@@ -281,5 +278,22 @@ export class ModelLoaderService {
         loadedFile.cachedElements.removeElement(urn);
       }
     }
+  }
+
+  private migrateAspectModel(oldSammVersion: string, rdfAspectModel: string): Observable<string> {
+    this.notificationsService.info({
+      title: `Migrating from SAMM version ${oldSammVersion} to SAMM version ${config.currentSammVersion}`,
+      timeout: 5000,
+    });
+
+    return this.modelApiService.migrateAspectModel(rdfAspectModel).pipe(
+      first(),
+      tap(() =>
+        this.notificationsService.info({
+          title: `Successfully migrated from SAMM Version ${oldSammVersion} to SAMM version ${config.currentSammVersion} SAMM version`,
+          timeout: 5000,
+        }),
+      ),
+    );
   }
 }

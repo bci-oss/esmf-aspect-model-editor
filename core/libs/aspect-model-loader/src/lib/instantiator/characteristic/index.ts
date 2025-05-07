@@ -22,6 +22,7 @@ import {eitherCharacteristicFactory} from './either-characteristic-instantiator'
 import {enumerationCharacteristicFactory} from './enumeration-characteristic-instantiator';
 import {listCharacteristicFactory} from './list-characteristic-instantiator';
 import {measurementCharacteristicFactory} from './measurement-characteristic-instantiator';
+import {predefinedCharacteristicFactory} from './predefined-characteristic-instantiator';
 import {quantifiableCharacteristicFactory} from './quantifiable-characteristic-instantiator';
 import {setCharacteristicFactory} from './set-characteristic-instantiator';
 import {singleEntityCharacteristicFactory} from './single-entity-instantiator';
@@ -46,6 +47,7 @@ export function allCharacteristicsFactory(initProps: BaseInitProps) {
   const createSortedSetCharacteristic = sortedSetCharacteristicFactory(initProps);
   const createTimeSeriesCharacteristic = timeSeriesCharacteristicFactory(initProps);
   const createTraitCharacteristic = traitCharacteristicFactory(initProps);
+  const {getSupportedCharacteristicNames} = predefinedCharacteristicFactory(initProps);
 
   const processors = [
     // CodeCharacteristic
@@ -166,5 +168,6 @@ export function allCharacteristicsFactory(initProps: BaseInitProps) {
     createTraitCharacteristic,
     createCharacteristic,
     resolveEntityInstance,
+    getSupportedCharacteristicNames,
   };
 }

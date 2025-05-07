@@ -16,6 +16,7 @@ import {
   DefaultCharacteristic,
   DefaultConstraint,
   DefaultEntity,
+  DefaultEntityInstance,
   DefaultEvent,
   DefaultOperation,
   DefaultProperty,
@@ -34,7 +35,8 @@ export type ElementType =
   | 'abstract-entity'
   | 'unit'
   | 'trait'
-  | 'constraint';
+  | 'constraint'
+  | 'entityInstance';
 
 export type ElementNames =
   | 'Aspect'
@@ -47,9 +49,10 @@ export type ElementNames =
   | 'Abstract Entity'
   | 'Constraint'
   | 'Trait'
-  | 'Unit';
+  | 'Unit'
+  | 'Entity Instance';
 
-export type ElementSymbols = 'A' | 'Ev' | 'O' | 'P' | 'AP' | 'C' | 'Co' | 'E' | 'AE' | 'T' | 'U';
+export type ElementSymbols = 'A' | 'Ev' | 'O' | 'P' | 'AP' | 'C' | 'Co' | 'E' | 'AE' | 'T' | 'U' | 'e';
 
 export type ElementInfo = {
   [K in ElementType]: {
@@ -138,5 +141,12 @@ export const sammElements: ElementInfo = {
     plural: 'Characteristics',
     description: 'ELEMENT_MODEL_DESCRIPTION.CHARACTERISTIC',
     class: DefaultCharacteristic,
+  },
+  entityInstance: {
+    name: 'Entity Instance',
+    symbol: 'e',
+    plural: 'Entity Instances',
+    description: 'ELEMENT_MODEL_DESCRIPTION.ENTITY_INSTANCE',
+    class: DefaultEntityInstance,
   },
 };

@@ -29,7 +29,7 @@ export function characteristicFactory(initProps: BaseInitProps) {
     // resolves actual element quad in case of a blank node which is most likely the case for characteristics
     const elementQuad = Util.isBlankNode(quad.object) ? rdfModel.resolveBlankNodes(quad.object.value).shift() : quad;
 
-    // checks if the found quad target a default SAMM characteristic e.g. Text or Code in this case
+    // checks if the found quad target a default SAMM-C characteristic e.g. Text or Code in this case
     // return the exiting default characteristic
     return elementQuad.object.value.startsWith(sammC.getNamespace()) ? createPredefinedCharacteristic(elementQuad.object.value) : null;
   }

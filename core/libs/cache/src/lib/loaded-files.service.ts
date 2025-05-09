@@ -53,11 +53,7 @@ export class NamespaceFile {
   }
 
   get name(): string {
-    if (this.aspect) {
-      return this.nameBasedOnAspect;
-    }
-
-    return this._name || 'shared-file.ttl';
+    return this._name || (this.aspect ? this.nameBasedOnAspect : 'shared-file.ttl');
   }
 
   get absoluteName() {

@@ -15,6 +15,7 @@ import {ModelApiService} from '@ame/api';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {InstantiatorService} from '@ame/instantiator';
 import {RdfModelUtil} from '@ame/rdf/utils';
+import {ConfigurationService} from '@ame/settings-dialog';
 import {BrowserService, ElectronSignalsService, ModelSavingTrackerService, NotificationsService, config} from '@ame/shared';
 import {Injectable, inject} from '@angular/core';
 import {ModelElementCache, NamedElement, RdfModel, loadAspectModel} from '@esmf/aspect-model-loader';
@@ -35,6 +36,11 @@ export class ModelLoaderService {
   private modelSavingTracker = inject(ModelSavingTrackerService);
   private browserService = inject(BrowserService);
   private electronSignalsService = inject(ElectronSignalsService);
+  private configurationService = inject(ConfigurationService);
+
+  private get settings() {
+    return this.configurationService.getSettings();
+  }
 
   /**
    * Loads a model with it's dependencies and renders it
@@ -67,6 +73,8 @@ export class ModelLoaderService {
    * @param absoluteFileName
    */
   loadSingleModel(payload: LoadModelPayload, render = false) {
+    this.settings.copyrightHeader = RdfModelUtil.extractCommentsFromRdfContent(payload.rdfAspectModel);
+
     return (
       // getting dependencies from the current file and filter data from server
       this.getNamespaceDependencies(payload.rdfAspectModel).pipe(

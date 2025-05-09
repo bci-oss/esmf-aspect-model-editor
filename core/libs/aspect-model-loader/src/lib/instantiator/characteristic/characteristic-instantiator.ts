@@ -66,7 +66,7 @@ export function characteristicFactory(initProps: BaseInitProps) {
     const initialUrn: string = characteristic.aspectModelUrn;
 
     // assign a unique random name
-    characteristic.name = characteristic.name ? characteristic.name : 'Characteristic_' + Math.random().toString(36).substring(2, 9);
+    characteristic.name = characteristic.name ? characteristic.name : 'Characteristic' + Math.random().toString(36).substring(2, 9);
     characteristic.aspectModelUrn = `${rdfModel.getAspectModelUrn()}${characteristic.name}`;
     characteristic.syntheticName = true;
     cache.addElement(initialUrn, characteristic);

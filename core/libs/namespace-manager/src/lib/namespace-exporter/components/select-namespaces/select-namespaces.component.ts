@@ -11,9 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {LoadedFilesService, NamespaceFile} from '@ame/cache';
-import {ModelLoaderService} from '@ame/editor';
-import {RdfModelUtil} from '@ame/rdf/utils';
+import {ModelCheckerService} from '@ame/editor';
 import {APP_CONFIG, AppConfig} from '@ame/shared';
 import {LanguageTranslateModule} from '@ame/translation';
 import {KeyValuePipe} from '@angular/common';
@@ -22,26 +20,15 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatCheckboxChange, MatCheckboxModule} from '@angular/material/checkbox';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatIconModule} from '@angular/material/icon';
+import {MatProgressSpinner} from '@angular/material/progress-spinner';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {Router} from '@angular/router';
-import {Prefixes} from 'n3';
-import {first} from 'rxjs';
-import {tap} from 'rxjs/operators';
 import {NamespacesManagerService} from '../../../shared';
-
-const nonDependentNamespaces = (sammVersion: string) => [
-  'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-  'http://www.w3.org/2000/01/rdf-schema#',
-  `urn:samm:org.eclipse.esmf.samm:meta-model:${sammVersion}#`,
-  `urn:samm:org.eclipse.esmf.samm:characteristic:${sammVersion}#`,
-  `urn:samm:org.eclipse.esmf.samm:entity:${sammVersion}#`,
-  `urn:samm:org.eclipse.esmf.samm:unit:${sammVersion}#`,
-  'http://www.w3.org/2001/XMLSchema#',
-];
 
 interface NamespacesDependencies {
   [namespace: string]: {
     disabled: boolean;
+    hasUnknownSAMM: boolean;
     dependencies: string[];
     files: string[];
     checked: boolean;
@@ -52,30 +39,53 @@ interface NamespacesDependencies {
   standalone: true,
   templateUrl: './select-namespaces.component.html',
   styleUrls: ['select-namespaces.component.scss'],
-  imports: [MatDialogModule, LanguageTranslateModule, MatCheckboxModule, KeyValuePipe, MatIconModule, MatButtonModule, MatTooltipModule],
+  imports: [
+    MatDialogModule,
+    LanguageTranslateModule,
+    MatCheckboxModule,
+    KeyValuePipe,
+    MatIconModule,
+    MatButtonModule,
+    MatTooltipModule,
+    MatProgressSpinner,
+  ],
 })
 export class SelectNamespacesComponent implements OnInit {
   selectedNamespaces: string[] = [];
   namespacesDependencies: NamespacesDependencies = {};
+  extracting = false;
 
   private visitedNamespaces: string[] = [];
 
   constructor(
     private namespacesManager: NamespacesManagerService,
     private router: Router,
-    private loadedFilesService: LoadedFilesService,
-    private modelLoader: ModelLoaderService,
+    private modelChecker: ModelCheckerService,
     @Inject(APP_CONFIG) public config: AppConfig,
   ) {}
 
   ngOnInit(): void {
-    this.modelLoader
-      .loadWorkspaceModels()
-      .pipe(
-        first(),
-        tap(files => (this.namespacesDependencies = this.getNamespacesDependencies(files))),
-      )
-      .subscribe();
+    this.extracting = true;
+    this.modelChecker.detectWorkspaceErrors().subscribe(analysis => {
+      for (const [absoluteName, status] of Object.entries(analysis)) {
+        const [namespace, version] = absoluteName.split(':');
+        const namespaceDependency = this.namespacesDependencies[`${namespace}:${version}`];
+        if (namespaceDependency) {
+          namespaceDependency.dependencies = Array.from(new Set([...namespaceDependency.dependencies, ...status.dependencies]));
+          namespaceDependency.files.push(status.name);
+          namespaceDependency.hasUnknownSAMM ||= status.unknownSammVersion;
+        } else {
+          this.namespacesDependencies[`${namespace}:${version}`] = {
+            dependencies: [...status.dependencies],
+            files: [],
+            checked: false,
+            disabled: false,
+            hasUnknownSAMM: status.unknownSammVersion,
+          };
+        }
+      }
+      this.extracting = false;
+    });
   }
 
   toggleNamespace(event: MatCheckboxChange, namespace: string): void {
@@ -93,42 +103,10 @@ export class SelectNamespacesComponent implements OnInit {
     this.router.navigate([{outlets: {'export-namespaces': 'validate'}}]);
   }
 
-  private getNamespacesDependencies(models: NamespaceFile[]): NamespacesDependencies {
-    return models.reduce((acc, file) => {
-      const versionedNamespace = RdfModelUtil.getNamespaceFromRdf(file.absoluteName);
-      const fileName = RdfModelUtil.getFileNameFromRdf(file.absoluteName);
-
-      let nDependency = acc[versionedNamespace];
-      if (!nDependency) {
-        acc[versionedNamespace] = {
-          disabled: false,
-          checked: false,
-          dependencies: [],
-          files: [],
-        };
-        nDependency = acc[versionedNamespace];
-      }
-
-      nDependency.dependencies = Array.from(
-        new Set([...nDependency.dependencies, ...this.getDependentNamespaces(file.rdfModel.getPrefixes())]),
-      );
-      nDependency.files = Array.from(new Set([...nDependency.files, fileName]));
-      return acc;
-    }, {});
-  }
-
-  private getDependentNamespaces(prefixes: Prefixes<string>): string[] {
-    return Object.entries(prefixes).reduce((acc, [key, value]) => {
-      if (!nonDependentNamespaces(this.config.currentSammVersion).includes(value) && key !== '') {
-        acc.push(value.replace('urn:samm:', '').replace('#', ''));
-      }
-
-      return acc;
-    }, []);
-  }
-
   private selectDependencies(namespace: string, checked: boolean, level = 0): void {
     const nDependency = this.namespacesDependencies[namespace];
+    if (!nDependency) return;
+
     nDependency.checked = checked;
     nDependency.disabled = level > 0 && checked;
     this.selectedNamespaces = checked ? [...this.selectedNamespaces, namespace] : this.selectedNamespaces.filter(n => n !== namespace);

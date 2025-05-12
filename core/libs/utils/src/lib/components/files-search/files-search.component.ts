@@ -13,7 +13,7 @@
 
 import {Component, inject} from '@angular/core';
 
-import {FileHandlingService, SaveModelDialogService} from '@ame/editor';
+import {FileHandlingService, ModelLoaderService, SaveModelDialogService} from '@ame/editor';
 import {
   ElectronSignals,
   ElectronSignalsService,
@@ -46,7 +46,6 @@ import {OpenFileDialogComponent} from '../open-file-dialog/open-file-dialog.comp
     MatAutocompleteModule,
     MatFormFieldModule,
     MatIconModule,
-    OpenFileDialogComponent,
     MatDialogModule,
     LanguageTranslateModule,
   ],
@@ -71,13 +70,20 @@ export class FilesSearchComponent {
     private fileHandlingService: FileHandlingService,
     private searchService: SearchService,
     private translate: LanguageTranslationService,
+    private modelLoader: ModelLoaderService,
   ) {
     this.loading = true;
     this.parseFiles(this.namespaces);
-    this.sidebarStateService.requestGetNamespaces().subscribe(namespaces => {
-      this.parseFiles(namespaces);
-      this.loading = false;
-    });
+    // this.modelLoader
+    //   .getRdfModelsFromWorkspace()
+    //   .pipe(
+    //     first(),
+    //     map(rdfModels => this.sidebarStateService.requestGetNamespaces(rdfModels)),
+    //   )
+    //   .subscribe(namespaces => {
+    //     this.parseFiles(namespaces);
+    //     this.loading = false;
+    //   });
 
     this.searchControl.valueChanges.pipe(startWith(''), throttleTime(150)).subscribe(value => {
       this.searchableFiles = value === '' ? this.files : this.searchService.search(value, this.files, filesSearchOption);

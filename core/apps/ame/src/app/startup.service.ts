@@ -82,7 +82,9 @@ export class StartupService {
     );
 
     return this.electronSignalsService.call('requestWindowData').pipe(
-      tap(data => (options = data.options)),
+      tap(data => {
+        options = data.options;
+      }),
       switchMap(() =>
         this.ngZone.run(() =>
           model

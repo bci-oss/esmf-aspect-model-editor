@@ -60,15 +60,11 @@
           <ng-container matColumnDef="value">
             <mat-header-cell *matHeaderCellDef>{{ 'ENTITY_VALUE.VALUE' | translate }}</mat-header-cell>
             <mat-cell *matCellDef="let element">
-              @switch (element.value.type?.isComplex) {
-                @case (false) {
-                  {{ element.value.value }}
-                }
-
-                @case (true) {
-                  <mat-icon class="material-icons complex-value-icon" matTooltip="Complex Data type">view_module</mat-icon>
-                  {{ element.value.name }}
-                }
+              @if (element.value.type?.isComplex) {
+                <mat-icon class="material-icons complex-value-icon" matTooltip="Complex Data type">view_module</mat-icon>
+                {{ element.value.name }}
+              } @else {
+                {{ element.value.value }}
               }
             </mat-cell>
           </ng-container>
@@ -80,8 +76,7 @@
             (click)="selection.toggle(row)"
           ></mat-row>
         </mat-table>
-      }
-      @if (!complexValue.assertions?.size) {
+      } @else {
         <div class="empty-state">
           <p>No data</p>
         </div>

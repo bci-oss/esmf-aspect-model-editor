@@ -21,6 +21,7 @@ import {
   FileUploadOptions,
   FileUploadService,
   ModelLoaderService,
+  ModelSaverService,
   ShapeSettingsStateService,
 } from '@ame/editor';
 import {MigratorService} from '@ame/migrator';
@@ -82,6 +83,7 @@ interface ModelLoaderState {
 export class FileHandlingService {
   private modelLoaderService = inject(ModelLoaderService);
   private loadedFilesService = inject(LoadedFilesService);
+  private modelSaverService = inject(ModelSaverService);
 
   get currentLoadedFile() {
     return this.loadedFilesService.currentLoadedFile;
@@ -227,10 +229,6 @@ export class FileHandlingService {
     }
 
     this.modelSaveTracker.updateSavedModel(true);
-    const loadExternalModels$ = this.modelLoaderService
-      .loadWorkspaceModels(true)
-      .pipe(finalize(() => loadExternalModels$.unsubscribe()))
-      .subscribe();
   }
 
   onCopyToClipboard() {
@@ -316,7 +314,7 @@ export class FileHandlingService {
       switchMap(() => this.getModelLoaderState()),
       tap(state => (modelState = state)),
       switchMap(() => this.handleNamespaceChange(modelState)),
-      switchMap(confirm => (confirm !== ConfirmDialogEnum.cancel ? this.editorService.saveModel() : of(null))),
+      switchMap(confirm => (confirm !== ConfirmDialogEnum.cancel ? this.modelSaverService.saveModel() : of(null))),
       tap(rdfModel => this.handleRdfModel(rdfModel, modelState)),
       switchMap(() => this.modelLoaderService.loadWorkspaceModels(true)),
       finalize(() => {

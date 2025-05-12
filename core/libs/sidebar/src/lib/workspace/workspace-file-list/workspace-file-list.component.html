@@ -49,6 +49,7 @@
           [matTooltip]="isCurrentFile(namespace.key, file)"
           (click)="selectFile(namespace.key, file)"
           (dblclick)="prepare(namespace.key, file); loadInNewWindow()"
+          matTooltipClass="tooltip-width"
           matTooltipPosition="right"
         >
           <div class="content">

@@ -116,7 +116,7 @@ export class WorkspaceFileElementsComponent implements OnInit {
     const cachedFile = file.cachedFile;
     const sections = Object.values(this.elements);
     for (const element of cachedFile.getAllElements()) {
-      sections.find(e => element instanceof e.class)?.elements?.push?.(element);
+      sections.find(e => element instanceof e.class && !element.isAnonymous())?.elements?.push?.(element);
     }
     this.changeDetector.detectChanges();
   }
@@ -134,7 +134,7 @@ export class WorkspaceFileElementsComponent implements OnInit {
         ),
         first(),
       )
-      .subscribe(file => this.updateElements(file));
+      .subscribe({next: file => this.updateElements(file), error: e => console.log(e)});
   }
 
   protected readonly sammElements = sammElements;

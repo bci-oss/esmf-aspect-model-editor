@@ -41,7 +41,7 @@ export class NamespaceFile {
   fromWorkspace: boolean;
 
   get namespace() {
-    return this._namespace || this.aspect?.namespace || this.rdfModel.getPrefixes()[''].replace('#', '').replace('urn:samm:', '') || '';
+    return (this._namespace || this.aspect?.namespace || this.rdfModel.getPrefixes()['']).replace('#', '').replace('urn:samm:', '') || '';
   }
 
   set namespace(value) {
@@ -53,11 +53,7 @@ export class NamespaceFile {
   }
 
   get name(): string {
-    if (this.aspect) {
-      return this.nameBasedOnAspect;
-    }
-
-    return this._name || 'shared-file.ttl';
+    return this._name || (this.aspect ? this.nameBasedOnAspect : 'shared-file.ttl');
   }
 
   get absoluteName() {

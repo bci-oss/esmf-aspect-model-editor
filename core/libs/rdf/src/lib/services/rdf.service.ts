@@ -13,13 +13,12 @@
 
 import {ModelApiService} from '@ame/api';
 import {NamespaceFile} from '@ame/cache';
-import {ConfigurationService, Settings} from '@ame/settings-dialog';
-import {APP_CONFIG, AppConfig, BrowserService, SaveValidateErrorsCodes} from '@ame/shared';
+import {APP_CONFIG, AppConfig, BrowserService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {Inject, Injectable} from '@angular/core';
 import {RdfModel} from '@esmf/aspect-model-loader';
 import {environment} from 'environments/environment';
-import {Observable, map, of, switchMap, throwError} from 'rxjs';
+import {Observable, map, of} from 'rxjs';
 import {RdfSerializerService} from './rdf-serializer.service';
 
 @Injectable({
@@ -27,13 +26,11 @@ import {RdfSerializerService} from './rdf-serializer.service';
 })
 export class RdfService {
   private _rdfSerializer: RdfSerializerService;
-  private _settings: Settings;
 
   public externalRdfModels: Array<RdfModel> = [];
 
   constructor(
     private modelApiService: ModelApiService,
-    private configurationService: ConfigurationService,
     private translation: LanguageTranslationService,
     private browserService: BrowserService,
     @Inject(APP_CONFIG) public config: AppConfig,
@@ -43,36 +40,10 @@ export class RdfService {
     }
 
     this._rdfSerializer = new RdfSerializerService(this.translation);
-    this._settings = this.configurationService.getSettings();
   }
 
   serializeModel(rdfModel: RdfModel): string {
     return this._rdfSerializer.serializeModel(rdfModel);
-  }
-
-  saveModel(rdfModel: RdfModel): Observable<RdfModel> {
-    const rdfContent = this.serializeModel(rdfModel);
-
-    if (!rdfContent) {
-      console.info('Model is empty. Skipping saving.');
-      return this.handleError(SaveValidateErrorsCodes.emptyModel);
-    }
-
-    return this.modelApiService.formatModel(rdfContent).pipe(
-      switchMap(content => {
-        if (!content) {
-          return this.handleError(SaveValidateErrorsCodes.emptyModel);
-        }
-
-        return this.modelApiService.saveModel(content, '@TODO check this');
-      }),
-      // @TODO reload model
-      switchMap(() => of()),
-    );
-  }
-
-  private handleError(errorCode: SaveValidateErrorsCodes): Observable<never> {
-    return throwError(() => ({type: errorCode}));
   }
 
   parseFileName(fileName: string, urn: string): string {

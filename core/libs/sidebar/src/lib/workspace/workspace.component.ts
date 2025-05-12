@@ -11,9 +11,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ModelCheckerService} from '@ame/editor';
 import {SidebarStateService} from '@ame/sidebar';
-import {ChangeDetectorRef, Component, inject, OnDestroy, OnInit} from '@angular/core';
-import {finalize, Subscription} from 'rxjs';
+import {ChangeDetectorRef, Component, OnDestroy, OnInit, inject} from '@angular/core';
+import {Subscription, finalize, map} from 'rxjs';
 
 @Component({
   selector: 'ame-workspace',
@@ -22,6 +23,7 @@ import {finalize, Subscription} from 'rxjs';
 })
 export class WorkspaceComponent implements OnInit, OnDestroy {
   public sidebarService = inject(SidebarStateService);
+  private modelChecker = inject(ModelCheckerService);
 
   public namespaces = this.sidebarService.namespacesState;
   public loading = false;
@@ -35,21 +37,25 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
   constructor(private changeDetector: ChangeDetectorRef) {}
 
   ngOnInit(): void {
+    let refreshing$: Subscription;
     const namespaces$ = this.sidebarService.workspace.refreshSignal$.subscribe(() => {
+      refreshing$?.unsubscribe();
       this.loading = true;
       this.changeDetector.detectChanges();
-      const refreshing$ = this.sidebarService
-        .requestGetNamespaces()
+
+      refreshing$ = this.modelChecker
+        .detectWorkspaceErrors()
         .pipe(
+          map(files => this.sidebarService.updateWorkspace(files)),
           finalize(() => {
             this.loading = false;
             this.changeDetector.detectChanges();
           }),
         )
         .subscribe();
-      this.subscription.add(refreshing$);
     });
 
+    this.subscription.add(refreshing$);
     this.subscription.add(namespaces$);
   }
 

@@ -311,6 +311,10 @@ export class ElectronTunnelService {
     }
 
     this.electronSignalsService.addListener('lockFile', ({namespace, file}) => {
+      if (file === 'empty.ttl') {
+        return of();
+      }
+
       return this.modelApiService.lockFile(namespace, file).pipe(
         take(1),
         tap(() => this.electronSignalsService.call('addLock', {namespace, file})),

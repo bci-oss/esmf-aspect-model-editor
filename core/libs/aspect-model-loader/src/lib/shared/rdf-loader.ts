@@ -23,7 +23,7 @@ export class RdfLoader {
   public loadModel(rdfContent: string[]): Observable<RdfModel> {
     const subject = new Subject<RdfModel>();
     const store: Store = new Store();
-    let rdfModel = null;
+    let rdfModel: RdfModel = null;
     const parsedRdf = [];
 
     rdfContent.forEach(rdf => {
@@ -40,9 +40,12 @@ export class RdfLoader {
           // content is parsed at that point. push rdf to parsed array
           if (!rdfModel) {
             rdfModel = new RdfModel(store);
+            rdfModel.setPrefixes(prefixes);
           }
 
           for (const [key, value] of Object.entries(prefixes)) {
+            // Because the original model should be always first, we take as the main urn the first one
+            if (key === '' && rdfModel.getPrefixes()[key]) continue;
             rdfModel.addPrefix(key, value);
           }
           parsedRdf.push(rdf);

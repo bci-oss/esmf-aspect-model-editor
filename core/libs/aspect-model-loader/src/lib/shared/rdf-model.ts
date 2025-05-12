@@ -92,6 +92,10 @@ export class RdfModel {
     this.prefixes[alias] = namespace;
   }
 
+  public setPrefixes(prefixes: Record<string, string>) {
+    this.prefixes = prefixes;
+  }
+
   public getLocale(quad: Quad) {
     if (quad && quad.object['language']) {
       return locale.getByTag(quad.object['language']).tag;

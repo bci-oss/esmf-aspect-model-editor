@@ -139,10 +139,13 @@ export class ModelElementCache implements CacheStrategy {
   }
 
   public addElement<T>(aspectModelUrn: string, modelElement: T, overwrite = false) {
+    aspectModelUrn = (modelElement as NamedElement)?.aspectModelUrn || aspectModelUrn;
     const cachedElement = this.instanceCache.get(aspectModelUrn);
+
     if (!overwrite && cachedElement) {
       return;
     }
+
     if (cachedElement) {
       console.info(`Element with the name ${aspectModelUrn} already exist. Overwriting existing element.`);
     }
@@ -154,7 +157,7 @@ export class ModelElementCache implements CacheStrategy {
   }
 
   public getKeys(search = '') {
-    return Array.from(this.instanceCache.keys()).filter(key => key.includes(search));
+    return Array.from(this.instanceCache.keys()).filter(key => key?.includes(search));
   }
 
   public updateElementsNamespace(oldValue: string, newValue: string): void {

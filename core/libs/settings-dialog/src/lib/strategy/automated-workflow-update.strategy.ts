@@ -11,9 +11,9 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {EditorService} from '@ame/editor';
+import {EditorService, ModelSaverService} from '@ame/editor';
 import {Settings} from '@ame/settings-dialog';
-import {Injectable} from '@angular/core';
+import {Injectable, inject} from '@angular/core';
 import {FormGroup} from '@angular/forms';
 import {SettingsUpdateStrategy} from './settings-update.strategy';
 
@@ -21,6 +21,8 @@ import {SettingsUpdateStrategy} from './settings-update.strategy';
   providedIn: 'root',
 })
 export class AutomatedWorkflowUpdateStrategy implements SettingsUpdateStrategy {
+  private modelSaverService: ModelSaverService = inject(ModelSaverService);
+
   constructor(private editorService: EditorService) {}
 
   updateSettings(form: FormGroup, settings: Settings): void {
@@ -34,6 +36,6 @@ export class AutomatedWorkflowUpdateStrategy implements SettingsUpdateStrategy {
     settings.autoFormatEnabled = automatedWorkflow.get('autoFormatEnabled')?.value;
 
     if (settings.autoValidationEnabled) this.editorService.enableAutoValidation();
-    if (settings.autoSaveEnabled) this.editorService.enableAutoSave();
+    if (settings.autoSaveEnabled) this.modelSaverService.enableAutoSave();
   }
 }

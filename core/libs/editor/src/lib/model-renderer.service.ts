@@ -90,7 +90,7 @@ export class ModelRendererService {
       this.mxGraphService.firstTimeFold = true;
       MxGraphHelper.filterMode = this.filtersService.currentFilter.filterType;
       const rootElements = elements.filter(e => !e.parents.length);
-      const filtered = this.filtersService.filter(rootElements);
+      const filtered = this.filtersService.filter(rootElements.length ? rootElements : elements);
 
       for (const elementTree of filtered) {
         mxGraphRenderer.render(elementTree, null);

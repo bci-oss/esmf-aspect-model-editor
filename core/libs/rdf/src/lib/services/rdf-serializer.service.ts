@@ -11,9 +11,13 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 import {LanguageTranslationService} from '@ame/translation';
+import {Injectable} from '@angular/core';
 import {RdfModel, RdfModelUtil, Samm} from '@esmf/aspect-model-loader';
 import {DataFactory, Quad, Util, Writer} from 'n3';
 
+@Injectable({
+  providedIn: 'root',
+})
 export class RdfSerializerService {
   private _namedNode = DataFactory.namedNode;
 

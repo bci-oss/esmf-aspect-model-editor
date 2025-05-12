@@ -12,6 +12,7 @@
  */
 
 import {DefaultProperty, DefaultStructuredValue, Type} from '@esmf/aspect-model-loader';
+import {ScalarValue} from 'libs/aspect-model-loader/src/lib/aspect-meta-model/scalar-value';
 import {DataFactory} from 'n3';
 import {ListElement, ListElementType, PropertyListElement, ResolvedListElements, SourceElementType} from '.';
 
@@ -32,13 +33,13 @@ export class RdfListHelper {
       const modelElement = property || metaModelElement;
       if (modelElement.aspectModelUrn) {
         return DataFactory.namedNode(modelElement.aspectModelUrn);
-      } else if (modelElement?.value) {
+      } else if (modelElement?.value && !(modelElement instanceof ScalarValue)) {
         return DataFactory.namedNode(modelElement?.value);
       }
 
       return DataFactory.literal(
-        modelElement,
-        source.dataType && !(source instanceof DefaultStructuredValue) ? DataFactory.namedNode(source.dataType.getUrn()) : undefined,
+        modelElement.value,
+        modelElement.type && !(source instanceof DefaultStructuredValue) ? DataFactory.namedNode(modelElement.type.getUrn()) : undefined,
       );
     });
 

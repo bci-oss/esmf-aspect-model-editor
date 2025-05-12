@@ -93,6 +93,7 @@ export class ModelApiService {
       const [namespace, version, file] = absoluteModelName.split(':');
       headers = new HttpHeaderBuilder().withNamespace(`${namespace}:${version}`).withFileName(file).build();
     }
+
     return this.http
       .post(`${this.serviceUrl}${this.api.models}`, rdfContent, {
         headers,
@@ -155,8 +156,8 @@ export class ModelApiService {
       );
   }
 
-  getNamespacesStructure(): Observable<any> {
-    return this.http.get<Map<string, Array<string>>>(`${this.serviceUrl}${this.api.models}/namespaces`, {
+  getNamespacesStructure(): Observable<Record<string, string[]>> {
+    return this.http.get<Record<string, string[]>>(`${this.serviceUrl}${this.api.models}/namespaces`, {
       params: {
         shouldRefresh: true,
       },
@@ -192,16 +193,6 @@ export class ModelApiService {
     );
   }
 
-  validateFilesForExport(files: {namespace: string; files: string[]}[]): Observable<any> {
-    return this.http.post(`${this.serviceUrl}${this.api.package}/validate-models-for-export`, files);
-  }
-
-  getExportZipFile(): Observable<any> {
-    return this.http.get(`${this.serviceUrl}${this.api.package}/export-zip`, {
-      responseType: 'blob' as 'json',
-    });
-  }
-
   getAspectMetaModel(absoluteModelName: string): Observable<string> {
     const [namespace, version, file] = absoluteModelName.split(':');
     return this.http
@@ -213,6 +204,16 @@ export class ModelApiService {
         timeout(this.requestTimeout),
         catchError(res => throwError(() => res)),
       );
+  }
+
+  validateFilesForExport(files: {namespace: string; files: string[]}[]): Observable<any> {
+    return this.http.post(`${this.serviceUrl}${this.api.package}/validate-models-for-export`, files);
+  }
+
+  getExportZipFile(): Observable<any> {
+    return this.http.get(`${this.serviceUrl}${this.api.package}/export-zip`, {
+      responseType: 'blob' as 'json',
+    });
   }
 
   generateJsonSample(rdfContent: string): Observable<string> {

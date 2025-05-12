@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {NamedNode, Quad, Quad_Subject, Util} from 'n3';
+import {NamedNode, Quad, Quad_Subject} from 'n3';
 import {Property} from '../aspect-meta-model';
 import {DefaultProperty} from '../aspect-meta-model/default-property';
 import {BaseInitProps} from '../shared/base-init-props';
@@ -20,19 +20,6 @@ import {basePropertiesFactory} from './meta-model-element-instantiator';
 
 export function propertyFactory(initProps: BaseInitProps) {
   const {createCharacteristic} = allCharacteristicsFactory(initProps);
-
-  function isDefinedInline(propertyQuad: Quad) {
-    const {samm, store} = initProps.rdfModel;
-    // checks if the property is fully defined as separate definition
-    if (
-      (propertyQuad.object.id === samm.Property().id || propertyQuad.object.id === samm.AbstractProperty().id) &&
-      !Util.isBlankNode(propertyQuad.subject)
-    ) {
-      return false;
-    }
-
-    return Boolean(store.getQuads(null, samm.property().value, propertyQuad.subject, null).length);
-  }
 
   function getExtends(quads: Array<Quad>) {
     const {samm, store} = initProps.rdfModel;
@@ -87,7 +74,6 @@ export function propertyFactory(initProps: BaseInitProps) {
 
     const property = new DefaultProperty({
       ...baseProperties,
-      isAnonymous: isDefinedInline(quad),
     });
     modelElementCache.resolveInstance(property);
 

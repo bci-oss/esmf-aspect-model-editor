@@ -11,15 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelApiService} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
-import {APP_CONFIG, AppConfig, NotificationsService, SaveValidateErrorsCodes} from '@ame/shared';
-import {Injectable, inject} from '@angular/core';
+import {SaveValidateErrorsCodes} from '@ame/shared';
+import {Injectable} from '@angular/core';
 import {Aspect, Samm} from '@esmf/aspect-model-loader';
 import {environment} from 'environments/environment';
 import {Observable, Observer, Subject, throwError} from 'rxjs';
-import {first, switchMap, tap} from 'rxjs/operators';
-import {RdfService} from './rdf.service';
 
 @Injectable({
   providedIn: 'root',
@@ -31,14 +28,7 @@ export class ModelService {
     return this.visitorAnnouncerSubject$.asObservable();
   }
 
-  private config: AppConfig = inject(APP_CONFIG);
-
-  constructor(
-    private rdfService: RdfService,
-    private modelApiService: ModelApiService,
-    private notificationsService: NotificationsService,
-    private loadedFilesService: LoadedFilesService,
-  ) {
+  constructor(private loadedFilesService: LoadedFilesService) {
     if (!environment.production) {
       window['angular.modelService'] = this;
     }
@@ -59,30 +49,6 @@ export class ModelService {
     return aspectModel.slice(startVersionIndex + partialSammUri.length, endVersionIndex);
   }
 
-  migrateAspectModel(oldSammVersion: string, rdfAspectModel: string): Observable<string> {
-    this.notificationsService.info({
-      title: `Migrating from SAMM version ${oldSammVersion} to SAMM version ${this.config.currentSammVersion}`,
-      timeout: 5000,
-    });
-
-    return this.modelApiService.migrateAspectModel(rdfAspectModel).pipe(
-      first(),
-      tap(() =>
-        this.notificationsService.info({
-          title: `Successfully migrated from SAMM Version ${oldSammVersion} to SAMM version ${this.config.currentSammVersion} SAMM version`,
-          timeout: 5000,
-        }),
-      ),
-    );
-  }
-
-  saveModel() {
-    const synchronizedModel = this.synchronizeModelToRdf();
-    return (synchronizedModel || throwError(() => ({type: SaveValidateErrorsCodes.desynchronized}))).pipe(
-      switchMap(() => this.rdfService.saveModel(this.loadedFilesService?.currentLoadedFile?.rdfModel)),
-    );
-  }
-
   finishStoreUpdate(observer: Observer<void>) {
     observer.next();
     observer.complete();
@@ -97,42 +63,4 @@ export class ModelService {
       this.visitorAnnouncerSubject$.next({observer});
     });
   }
-
-  // private processAnonymousElements() {
-  //   this.currentCachedFile.getAnonymousElements().forEach((modelElementNamePair: {element: NamedNode; name: string}) => {
-  //     this.currentCachedFile.removeElement(modelElementNamePair.element.aspectModelUrn);
-  //     if (modelElementNamePair.name) {
-  //       modelElementNamePair.element.name = modelElementNamePair.name; // assign initial name
-  //       if (this.isElementNameUnique(modelElementNamePair.element)) {
-  //         // if unique, resolve the instance
-  //         this.currentCachedFile.resolveElement(modelElementNamePair.element);
-  //       } else {
-  //         // else resolve the naming
-  //         setUniqueElementName(modelElementNamePair.element, this.rdfModel, this.namespaceCacheService, modelElementNamePair.name);
-  //         this.currentCachedFile.resolveElement(modelElementNamePair.element);
-  //         this.notificationsService.info({
-  //           title: 'Renamed anonymous element',
-  //           message: `The anonymous element ${modelElementNamePair.name} was renamed to ${modelElementNamePair.element.name}`,
-  //           link: `editor/select/${modelElementNamePair.element.aspectModelUrn}`,
-  //           timeout: 2000,
-  //         });
-  //       }
-  //     } else {
-  //       setUniqueElementName(modelElementNamePair.element, this.rdfModel, this.namespaceCacheService);
-  //       this.currentCachedFile.resolveElement(modelElementNamePair.element);
-  //       this.notificationsService.info({
-  //         title: 'Renamed anonymous element',
-  //         message: `The anonymous element was named to ${modelElementNamePair.element.name}`,
-  //         link: `editor/select/${modelElementNamePair.element.aspectModelUrn}`,
-  //         timeout: 2000,
-  //       });
-  //     }
-  //   });
-  //   this.currentCachedFile.clearAnonymousElements();
-  // }
-
-  // private isElementNameUnique(modelElement: NamedElement): boolean {
-  //   modelElement.metaModelVersion = this.currentRdfModel.samm.version;
-  //   return null; // !this.currentCachedFile.getElement<NamedElement>(`${this.currentRdfModel.getAspectModelUrn()}${modelElement.name}`);
-  // }
 }

@@ -81,6 +81,15 @@ export class NamespaceFile {
     public cachedFile: CacheStrategy,
     public aspect: Aspect,
   ) {}
+
+  resetOriginalUrn() {
+    this.originalNamespace = this.namespace;
+    this.originalName = this.name;
+  }
+
+  setExistsInWorkspace() {
+    this.fromWorkspace = true;
+  }
 }
 
 @Injectable({providedIn: 'root'})
@@ -149,7 +158,7 @@ export class LoadedFilesService {
     }
   }
 
-  updateAbsoluteName(oldAbsoluteName: string, newAbsoluteName: string) {
+  updateAbsoluteName(oldAbsoluteName: string, newAbsoluteName: string, rewriteOriginal = false) {
     if (!this.files[oldAbsoluteName]) {
       console.error(`${oldAbsoluteName} is not in the file list`);
       return;
@@ -165,10 +174,13 @@ export class LoadedFilesService {
 
     const file = this.files[newAbsoluteName];
     const [namespace, version, name] = newAbsoluteName.split(':');
-    file.originalName = name;
     file.name = name;
-    file.originalNamespace = `${namespace}:${version}`;
     file.namespace = `${namespace}:${version}`;
+
+    if (rewriteOriginal) {
+      file.originalName = name;
+      file.originalNamespace = `${namespace}:${version}`;
+    }
   }
 
   getFile(absoluteName: string): NamespaceFile {

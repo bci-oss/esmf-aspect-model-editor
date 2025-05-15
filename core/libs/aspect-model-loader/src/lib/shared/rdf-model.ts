@@ -70,6 +70,10 @@ export class RdfModel {
     return Object.keys(this.prefixes).find(key => this.prefixes[key] === namespace);
   }
 
+  public getAliasByNamespace(namespace: string): string {
+    return Object.keys(this.prefixes).find(alias => (this.prefixes[alias] as any) === namespace);
+  }
+
   public getPrefixes(): Prefixes<string> {
     return this.prefixes;
   }

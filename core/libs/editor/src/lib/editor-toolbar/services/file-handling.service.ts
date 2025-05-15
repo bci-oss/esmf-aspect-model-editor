@@ -44,7 +44,7 @@ import {decodeText, readFile} from '@ame/utils';
 import {Injectable, inject} from '@angular/core';
 import {ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {saveAs} from 'file-saver';
-import {BlankNode, NamedNode, Store} from 'n3';
+import {BlankNode, NamedNode, Quad, Quad_Graph, Quad_Object, Quad_Predicate, Quad_Subject, Store} from 'n3';
 import {Observable, forkJoin, from, of, throwError} from 'rxjs';
 import {catchError, finalize, first, map, switchMap, tap} from 'rxjs/operators';
 import {environment} from '../../../../../../environments/environment';
@@ -75,6 +75,13 @@ interface ModelLoaderState {
   isNameChanged: boolean;
   /** Boolean representing if name or version of the namespace was changed */
   isNamespaceChanged: boolean;
+}
+
+interface QuadComponents {
+  subject?: Quad_Subject;
+  predicate?: Quad_Predicate;
+  object?: Quad_Object;
+  graph?: Quad_Graph;
 }
 
 @Injectable({
@@ -316,7 +323,6 @@ export class FileHandlingService {
       switchMap(() => this.handleNamespaceChange(modelState)),
       switchMap(confirm => (confirm !== ConfirmDialogEnum.cancel ? this.modelSaverService.saveModel() : of(null))),
       tap(rdfModel => this.handleRdfModel(rdfModel, modelState)),
-      switchMap(() => this.modelLoaderService.loadWorkspaceModels(true)),
       finalize(() => {
         this.modelSaveTracker.updateSavedModel();
         this.loadingScreenService.close();
@@ -549,7 +555,7 @@ export class FileHandlingService {
   private getModelLoaderState(): Observable<ModelLoaderState> {
     const currentFile = this.loadedFilesService.currentLoadedFile;
     const response: ModelLoaderState = {
-      originalModelName: currentFile.originalName,
+      originalModelName: currentFile.originalAbsoluteName,
       newModelName: currentFile.absoluteName,
       oldFileName: currentFile.originalName?.split(':')?.pop(),
       newFileName: currentFile.absoluteName?.split(':')?.pop(),
@@ -608,6 +614,30 @@ export class FileHandlingService {
       }),
     );
   }
+  // TODO: MOVE THESE 3 FUNCTION TO A MORE RELATED SERVICE
+
+  updateQuads(query: QuadComponents, replacement: QuadComponents, rdfModel: RdfModel): number {
+    const quads: Quad[] = this.getQuads(query, rdfModel);
+    return quads.reduce((counter, quad) => {
+      this.modifyQuad(replacement, quad, rdfModel);
+      return ++counter;
+    }, 0);
+  }
+
+  getQuads(query: QuadComponents, rdfModel: RdfModel): Quad[] {
+    return rdfModel.store.getQuads(query.subject || null, query.predicate || null, query.object || null, query.graph || null);
+  }
+
+  modifyQuad(replacement: QuadComponents, quad: Quad, rdfModel: RdfModel): void {
+    const updatedQuad: [Quad_Subject, Quad_Predicate, Quad_Object, Quad_Graph] = [
+      replacement.subject || quad.subject,
+      replacement.predicate || quad.predicate,
+      replacement.object || quad.object,
+      replacement.graph || quad.graph,
+    ];
+    rdfModel.store.addQuad(...updatedQuad);
+    rdfModel.store.removeQuad(quad);
+  }
 
   private migrateAffectedModels(originalModelName: string, newModelName: string): Observable<RdfModel[]> {
     const originalNamespace = RdfModelUtil.getUrnFromFileName(originalModelName);
@@ -616,10 +646,13 @@ export class FileHandlingService {
     return this.updateAffectedModels(affectedModels, originalNamespace, newNamespace);
   }
 
-  public updateAffectedQuads(originalModelName: string, originalNamespace: string, newNamespace: string): NamespaceFile[] {
+  public updateAffectedQuads(originalModelName: string, originalNamespace: string, newNamespace: string): RdfModel[] {
     const subjects = this.loadedFilesService.currentLoadedFile.rdfModel.store.getSubjects(null, null, null);
-    const models = Object.values(this.loadedFilesService.files).filter(model => model.absoluteName !== originalModelName);
-    const affectedModels: NamespaceFile[] = [];
+    const models: RdfModel[] = Object.values(this.loadedFilesService.files)
+      .filter(model => model.absoluteName !== originalModelName)
+      .map(file => file.rdfModel);
+
+    const affectedModels: RdfModel[] = [];
 
     subjects.forEach(subject => {
       if (subject instanceof BlankNode) return;
@@ -627,51 +660,41 @@ export class FileHandlingService {
       const subjectName = subject.value.split('#').pop();
       const originalSubject = new NamedNode(`${originalNamespace}#${subjectName}`);
 
-      // models.forEach(model => {
-      //   const updatedPredicateQuadsCount = model.updateQuads({predicate: originalSubject}, {predicate: subject});
-      //   const updatedObjectQuadsCount = model.updateQuads({object: originalSubject}, {object: subject});
-      //   if (updatedPredicateQuadsCount || updatedObjectQuadsCount) affectedModels.push(model);
-      // });
+      models.forEach(model => {
+        const updatedPredicateQuadsCount = this.updateQuads({predicate: originalSubject}, {predicate: subject}, model);
+        const updatedObjectQuadsCount = this.updateQuads({object: originalSubject}, {object: subject}, model);
+        if (updatedPredicateQuadsCount || updatedObjectQuadsCount) affectedModels.push(model);
+      });
     });
 
     return affectedModels;
   }
 
-  private updateAffectedModels(models: NamespaceFile[], originalNamespace: string, newNamespace: string): Observable<RdfModel[]> {
-    // const requests = models.map(model => {
-    //   const alias = model.rdfModel.getAliasByNamespace(`${originalNamespace}#`);
-    //   alias
-    //     ? model.rdfModel.updatePrefix(alias, originalNamespace, newNamespace)
-    //     : model.rdfModel.addPrefix('ext-namespace', `${newNamespace}#`);
-    //   return this.rdfService.saveModel(model);
-    // });
-    // TODO: redo this function
-    const requests = [];
+  private updateAffectedModels(models: RdfModel[], originalNamespace: string, newNamespace: string): Observable<RdfModel[]> {
+    const requests = models.map(model => {
+      const alias = model.getAliasByNamespace(`${originalNamespace}#`);
+      alias ? model.updatePrefix(alias, originalNamespace, newNamespace) : model.addPrefix('ext-namespace', `${newNamespace}#`);
+      return this.modelSaverService.saveModel(model);
+    });
     return requests.length ? forkJoin(requests) : of([]);
   }
 
-  private handleRdfModel(rdfModel: object | RdfModel, modelState: ModelLoaderState): void {
+  private handleRdfModel(rdfModel: RdfModel, modelState: ModelLoaderState): void {
     if (!rdfModel) {
       return;
-    }
-    // TODO change functionality with the new files service
-    if (rdfModel instanceof RdfModel) {
-      // this.rdfService.currentRdfModel.namespaceHasChanged = false;
-      // this.namespaceCacheService.currentCachedFile.fileName = rdfModel.aspectModelFileName;
     }
 
     if (modelState.isNameChanged) {
       this.showFileNameChangeNotification(modelState);
     }
 
-    // this.rdfService.currentRdfModel.originalAbsoluteFileName = null;
-    // this.rdfService.currentRdfModel.loadedFromWorkspace = true;
+    this.currentLoadedFile?.resetOriginalUrn();
+    this.currentLoadedFile?.setExistsInWorkspace();
 
-    const namespace = RdfModelUtil.getNamespaceFromRdf(modelState.newModelName);
     this.electronSignalsService.call('updateWindowInfo', {
-      namespace,
+      namespace: this.currentLoadedFile?.namespace || '',
       fromWorkspace: true,
-      file: modelState.newFileName,
+      file: this.currentLoadedFile?.name,
     });
   }
 

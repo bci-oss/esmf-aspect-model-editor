@@ -13,7 +13,7 @@
 
 import {ModelApiService} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
-import {ConfirmDialogService, EditorService, FileHandlingService, ModelCheckerService, ModelSaverService} from '@ame/editor';
+import {ConfirmDialogService, FileHandlingService, ModelCheckerService, ModelSaverService} from '@ame/editor';
 import {ElectronSignals, ElectronSignalsService, NotificationsService} from '@ame/shared';
 import {FileStatus, SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
@@ -51,7 +51,6 @@ export class WorkspaceFileListComponent implements OnInit, OnDestroy {
   constructor(
     private notificationService: NotificationsService,
     private confirmDialogService: ConfirmDialogService,
-    private editorService: EditorService,
     private modelApiService: ModelApiService,
     private fileHandlingService: FileHandlingService,
     private changeDetector: ChangeDetectorRef,

@@ -17,7 +17,7 @@ import {InstantiatorService} from '@ame/instantiator';
 import {ExporterHelper} from '@ame/migrator';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {ConfigurationService} from '@ame/settings-dialog';
-import {BrowserService, ElectronSignalsService, ModelSavingTrackerService, NotificationsService, config} from '@ame/shared';
+import {BrowserService, ElectronSignalsService, ModelSavingTrackerService, NotificationsService, TitleService, config} from '@ame/shared';
 import {Injectable, inject} from '@angular/core';
 import {ModelElementCache, NamedElement, RdfModel, loadAspectModel} from '@esmf/aspect-model-loader';
 import {RdfLoader} from 'libs/aspect-model-loader/src/lib/shared/rdf-loader';
@@ -38,6 +38,7 @@ export class ModelLoaderService {
   private browserService = inject(BrowserService);
   private electronSignalsService = inject(ElectronSignalsService);
   private configurationService = inject(ConfigurationService);
+  private titleService = inject(TitleService);
 
   private get settings() {
     return this.configurationService.getSettings();
@@ -63,6 +64,7 @@ export class ModelLoaderService {
         }
         if (!payload.isDefault) {
           this.notificationsService.info({title: 'Aspect Model loaded', timeout: 3000});
+          this.titleService.updateTitle(this.loadedFilesService.currentLoadedFile?.absoluteName);
         }
       }),
     );

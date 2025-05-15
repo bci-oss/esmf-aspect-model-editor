@@ -71,7 +71,7 @@ export class DescriptionInputFieldComponent extends InputFieldComponent<NamedEle
   }
 
   getDescriptionsLocales(): string[] {
-    return Array.from(this.metaModelElement?.preferredNames?.keys());
+    return Array.from(this.metaModelElement?.descriptions?.keys());
   }
 
   private isDisabled() {

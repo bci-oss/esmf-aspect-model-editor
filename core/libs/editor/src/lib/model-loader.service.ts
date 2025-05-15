@@ -14,6 +14,7 @@
 import {ModelApiService} from '@ame/api';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {InstantiatorService} from '@ame/instantiator';
+import {ExporterHelper} from '@ame/migrator';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {BrowserService, ElectronSignalsService, ModelSavingTrackerService, NotificationsService, config} from '@ame/shared';
@@ -75,39 +76,49 @@ export class ModelLoaderService {
   loadSingleModel(payload: LoadModelPayload, render = false) {
     this.settings.copyrightHeader = RdfModelUtil.extractCommentsFromRdfContent(payload.rdfAspectModel);
 
-    return (
-      // getting dependencies from the current file and filter data from server
-      this.getNamespaceDependencies(payload.rdfAspectModel).pipe(
-        // loading in sequence all RdfModels for the current file and dependencies
-        switchMap(files => this.loadRdfModelFromFiles(files, payload)),
-        // loading the model with all namespace dependencies
-        switchMap(({files, rdfModels}) =>
-          loadAspectModel({
-            filesContent: [payload.rdfAspectModel, ...Object.values(files)],
-            // aspectModelUrn: undefined, // @TODO search it in store
-          }).pipe(
-            // using switchMap to force an this functionality to run before any tap after this
-            switchMap(loadedFile => {
-              // registering all loaded files
-              const currentFile = this.registerFiles(rdfModels, loadedFile, payload, render);
-              // loading all isolated elements
-              this.instantiatorService.instantiateRemainingElements(loadedFile.rdfModel, loadedFile.cachedElements);
-              // filtering and registering the elements by their location in files
-              this.moveElementsToTheirCacheFile(rdfModels, loadedFile, payload.namespaceFileName);
+    const migrate$ = this.parseRdfModel([payload.rdfAspectModel]).pipe(
+      switchMap((rdfModel: RdfModel) =>
+        ExporterHelper.isVersionOutdated(rdfModel.samm.version, config.currentSammVersion)
+          ? this.migrateAspectModel(rdfModel.samm.version, payload.rdfAspectModel)
+          : of(payload.rdfAspectModel),
+      ),
+    );
 
-              return of(
-                render
-                  ? this.loadedFilesService.currentLoadedFile
-                  : this.loadedFilesService.getFile(currentFile?.absoluteName || payload.namespaceFileName),
-              );
-            }),
-            catchError(error => {
-              console.error(error);
-              return throwError(() => ({code: LoadingCodeErrors.LOADING_ASPECT_MODEL, error}));
-            }),
-          ),
+    return (render ? migrate$ : of(payload.rdfAspectModel)).pipe(
+      // getting dependencies from the current file and filter data from server
+      switchMap((model: string) => {
+        payload.rdfAspectModel = model;
+        return this.getNamespaceDependencies(payload.rdfAspectModel);
+      }),
+      // loading in sequence all RdfModels for the current file and dependencies
+      switchMap(files => this.loadRdfModelFromFiles(files, payload)),
+      // loading the model with all namespace dependencies
+      switchMap(({files, rdfModels}) =>
+        loadAspectModel({
+          filesContent: [payload.rdfAspectModel, ...Object.values(files)],
+          // aspectModelUrn: undefined, // @TODO search it in store
+        }).pipe(
+          // using switchMap to force an this functionality to run before any tap after this
+          switchMap(loadedFile => {
+            // registering all loaded files
+            const currentFile = this.registerFiles(rdfModels, loadedFile, payload, render);
+            // loading all isolated elements
+            this.instantiatorService.instantiateRemainingElements(loadedFile.rdfModel, loadedFile.cachedElements);
+            // filtering and registering the elements by their location in files
+            this.moveElementsToTheirCacheFile(rdfModels, loadedFile, payload.namespaceFileName);
+
+            return of(
+              render
+                ? this.loadedFilesService.currentLoadedFile
+                : this.loadedFilesService.getFile(currentFile?.absoluteName || payload.namespaceFileName),
+            );
+          }),
+          catchError(error => {
+            console.error(error);
+            return throwError(() => ({code: LoadingCodeErrors.LOADING_ASPECT_MODEL, error}));
+          }),
         ),
-      )
+      ),
     );
   }
 

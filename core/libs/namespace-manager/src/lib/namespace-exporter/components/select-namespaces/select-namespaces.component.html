@@ -16,26 +16,37 @@
 <mat-dialog-content class="namespaces">
   <p>{{ 'EXPORT_NAMESPACE_DIALOG.INFO_CONTENT' | translate }}</p>
   <section class="namespace-list">
-    <h4 class="column-title">Namespaces</h4>
+    @if (extracting) {
+      <section class="extracting">
+        <mat-spinner class="extracting__spinner"></mat-spinner>
+        <p class="extracting__message">Extracting...</p>
+      </section>
+    } @else {
+      <h4 class="column-title">Namespaces</h4>
+    }
 
     @for (item of namespacesDependencies | keyvalue; track item) {
       <mat-checkbox
         class="namespace"
         [value]="item.key"
         [checked]="item.value.checked"
-        [disabled]="item.value.disabled"
+        [disabled]="item.value.hasUnknownSAMM || item.value.disabled"
         (change)="toggleNamespace($event, item.key)"
         data-cy="enNamespaceList"
       >
         <div class="checkbox-info">
           <span class="namespace">{{ item.key }}</span>
-          @if (item.value.dependencies.length) {
+          @if (item.value.dependencies.length && !item.value.hasUnknownSAMM) {
             <span class="dependencies"
               >Dependencies: <strong>{{ item.value.dependencies.join(', ') }}</strong></span
             >
           }
+
+          @if (item.value.hasUnknownSAMM) {
+            <span>This namespace has files with unknown SAMM version.</span>
+          }
         </div>
-        @if (item.value.dependencies.length) {
+        @if (item.value.dependencies.length && !item.value.hasUnknownSAMM) {
           <mat-icon
             matTooltip="This namespace has elements from other namespaces. If selected, the dependencies will be automatically selected."
             matTooltipPosition="right"

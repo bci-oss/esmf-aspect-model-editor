@@ -73,8 +73,7 @@ export class MxGraphHelper {
       return false;
     }
 
-    const property = parent.properties?.find(property => property.aspectModelUrn === child.aspectModelUrn);
-    return !!property && property.optional;
+    return parent.propertiesPayload[child.aspectModelUrn]?.optional;
   }
 
   /**
@@ -311,8 +310,10 @@ export class MxGraphHelper {
       if (!hasEnumeration) {
         return null;
       }
-      const overwrittenProp = sourceModelElement.properties.find(prop => prop.aspectModelUrn === targetModelElement.aspectModelUrn);
-      if (overwrittenProp.notInPayload) {
+
+      const propertyPayload = sourceModelElement.propertiesPayload[targetModelElement.aspectModelUrn];
+
+      if (propertyPayload.notInPayload) {
         const p = document.createElement('p');
         p.className += ' edge-label property';
         p.innerText = 'not in payload';

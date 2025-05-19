@@ -174,7 +174,7 @@ export class RdfListService implements CreateEmptyRdfList, EmptyRdfList {
 
   private createPropertyList(elements: PropertyListElement[]) {
     for (const element of elements) {
-      const model = element.metaModelElement;
+      const {metaModelElement: model, propertyPayload} = element;
       if (model?.extends_) {
         this.nodeService.updateBlankNode(element.blankNode, model, {
           extends: model?.extends_?.aspectModelUrn,
@@ -185,27 +185,27 @@ export class RdfListService implements CreateEmptyRdfList, EmptyRdfList {
 
       this.store.addQuad(element.blankNode, this.samm.property(), DataFactory.namedNode(element.metaModelElement.aspectModelUrn));
 
-      if (element.metaModelElement.optional) {
+      if (propertyPayload?.optional) {
         this.store.addQuad(
           element.blankNode,
           this.samm.OptionalProperty(),
-          DataFactory.literal(`${element.metaModelElement.optional}`, DataFactory.namedNode(simpleDataTypes.boolean.isDefinedBy)),
+          DataFactory.literal(`${propertyPayload?.optional}`, DataFactory.namedNode(simpleDataTypes.boolean.isDefinedBy)),
         );
       }
 
-      if (element.metaModelElement.notInPayload) {
+      if (propertyPayload?.notInPayload) {
         this.store.addQuad(
           element.blankNode,
           this.samm.NotInPayloadProperty(),
-          DataFactory.literal(`${element.metaModelElement.notInPayload}`, DataFactory.namedNode(simpleDataTypes.boolean.isDefinedBy)),
+          DataFactory.literal(`${propertyPayload?.notInPayload}`, DataFactory.namedNode(simpleDataTypes.boolean.isDefinedBy)),
         );
       }
 
-      if (element.metaModelElement.payloadName) {
+      if (propertyPayload?.payloadName) {
         this.store.addQuad(
           element.blankNode,
           this.samm.PayloadNameProperty(),
-          DataFactory.literal(`${element.metaModelElement.payloadName}`, DataFactory.namedNode(simpleDataTypes.string.isDefinedBy)),
+          DataFactory.literal(`${propertyPayload?.payloadName}`, DataFactory.namedNode(simpleDataTypes.string.isDefinedBy)),
         );
       }
     }

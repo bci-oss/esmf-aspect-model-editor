@@ -25,6 +25,7 @@ import {
   DefaultEnumeration,
   DefaultProperty,
   EntityInstanceProperty,
+  PropertyPayload,
   Value,
 } from '@esmf/aspect-model-loader';
 import * as locale from 'locale-codes';
@@ -96,6 +97,10 @@ export class EntityInstanceModalTableComponent implements OnChanges, OnDestroy {
     return this.propertiesForm.get(value) as FormArray;
   }
 
+  getPropertyPayload(propertyUrn: string): PropertyPayload {
+    return this.entity.propertiesPayload[propertyUrn];
+  }
+
   private buildEntityValueArray(): EntityInstanceProperty<DefaultProperty>[] {
     return this.entity.properties.map(prop => this.createEntityValueProp(prop));
   }
@@ -117,7 +122,8 @@ export class EntityInstanceModalTableComponent implements OnChanges, OnDestroy {
   }
 
   private createFormControl(prop: DefaultProperty): FormControl {
-    return new FormControl('', prop.optional ? null : EditorDialogValidators.requiredObject);
+    const propertyPayload = this.entity.propertiesPayload[prop.aspectModelUrn];
+    return new FormControl('', propertyPayload?.optional ? null : EditorDialogValidators.requiredObject);
   }
 
   private subscribeToEntityValueChanges(control: FormControl, prop: DefaultProperty): void {
@@ -169,7 +175,9 @@ export class EntityInstanceModalTableComponent implements OnChanges, OnDestroy {
   }
 
   addLanguage([property]: EntityInstanceProperty<DefaultProperty>): void {
-    const fieldValidators = property.optional ? null : EditorDialogValidators.requiredObject;
+    const propertyPayload = this.entity.propertiesPayload[property.aspectModelUrn];
+
+    const fieldValidators = propertyPayload?.optional ? null : EditorDialogValidators.requiredObject;
     const languagesFormArray = this.propertiesForm.get(property.name) as FormArray;
 
     const languageInputControl = new FormControl('', fieldValidators);

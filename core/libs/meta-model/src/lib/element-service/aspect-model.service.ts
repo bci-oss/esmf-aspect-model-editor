@@ -44,9 +44,13 @@ export class AspectModelService extends BaseModelService {
     if (form.editedProperties) {
       for (const property of metaModelElement.properties) {
         const newKeys = form.editedProperties[property.aspectModelUrn];
-        property.notInPayload = newKeys.notInPayload;
-        property.optional = newKeys.optional;
-        property.payloadName = newKeys.payloadName;
+        if (!metaModelElement.propertiesPayload[property.aspectModelUrn]) {
+          metaModelElement.propertiesPayload[property.aspectModelUrn] = {} as any;
+        }
+
+        metaModelElement.propertiesPayload[property.aspectModelUrn].notInPayload = newKeys.notInPayload;
+        metaModelElement.propertiesPayload[property.aspectModelUrn].optional = newKeys.optional;
+        metaModelElement.propertiesPayload[property.aspectModelUrn].payloadName = newKeys.payloadName;
       }
     }
 

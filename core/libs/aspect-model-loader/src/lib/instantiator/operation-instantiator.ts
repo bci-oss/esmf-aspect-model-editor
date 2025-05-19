@@ -39,7 +39,7 @@ export function operationFactory(initProps: BaseInitProps) {
       if (samm.isInputProperty(quad.predicate.value)) {
         const inputQuads = rdfModel.resolveBlankNodes(quad.object.value);
         operation.input = inputQuads.map(input => {
-          const property = propertyFactory(initProps).createProperty(input);
+          const property = propertyFactory(initProps).createProperty(input).property;
           property.addParent(operation);
           return property;
         });
@@ -47,7 +47,7 @@ export function operationFactory(initProps: BaseInitProps) {
       }
 
       if (samm.isOutputProperty(quad.predicate.value)) {
-        operation.output = propertyFactory(initProps).createProperty(quad);
+        operation.output = propertyFactory(initProps).createProperty(quad).property;
         operation.output?.addParent(operation);
       }
     }

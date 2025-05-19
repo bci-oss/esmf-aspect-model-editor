@@ -14,13 +14,13 @@
 import {LoadedFilesService} from '@ame/cache';
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
-import {DefaultAspect, DefaultEntity, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
+import {DefaultAspect, DefaultEntity, NamedElement, PropertyPayload} from '@esmf/aspect-model-loader';
 import {first} from 'rxjs/operators';
-import {PropertiesModalComponent} from '..';
 import {EditorModelService} from '../../../editor-model.service';
+import {PropertiesDialogData, PropertiesModalComponent} from '../properties-modal/properties-modal.component';
 
 export interface UpdatedProperties {
-  [key: string]: DefaultProperty;
+  [key: string]: PropertyPayload & {name: string};
 }
 
 @Component({
@@ -31,7 +31,7 @@ export interface UpdatedProperties {
 export class PropertiesButtonComponent implements OnInit {
   @Output() overwrite = new EventEmitter();
 
-  private propertiesClone: DefaultProperty[];
+  private propertiesPayload: typeof this.metaModelElement.propertiesPayload = {};
 
   public metaModelElement: DefaultEntity | DefaultAspect;
   public get isPredefined(): boolean {
@@ -48,6 +48,7 @@ export class PropertiesButtonComponent implements OnInit {
     this.metaModelDialogService.getMetaModelElement().subscribe((metaModelElement: NamedElement) => {
       if (metaModelElement instanceof DefaultEntity || metaModelElement instanceof DefaultAspect) {
         this.metaModelElement = metaModelElement;
+        this.propertiesPayload = structuredClone(metaModelElement.propertiesPayload);
       }
     });
   }
@@ -56,12 +57,11 @@ export class PropertiesButtonComponent implements OnInit {
     this.matDialog
       .open(PropertiesModalComponent, {
         data: {
-          name: this.metaModelElement.name,
-          properties: this.propertiesClone || this.metaModelElement.properties,
+          propertiesPayload: this.propertiesPayload,
           isExternalRef: this.loadedFiles.isElementExtern(this.metaModelElement),
           metaModelElement: this.metaModelElement,
           isPredefined: this.isPredefined,
-        },
+        } as PropertiesDialogData,
         autoFocus: false,
       })
       .afterClosed()
@@ -71,15 +71,19 @@ export class PropertiesButtonComponent implements OnInit {
           return;
         }
 
-        // @TODO clone this property
-        this.propertiesClone = []; // this.metaModelElement.properties.map(({property, keys}) => ({property, keys: {...keys}}));
-        for (const property of this.propertiesClone) {
+        const properties = this.metaModelElement.properties;
+        for (const property of properties) {
           if (!data[property.aspectModelUrn]) {
             continue;
           }
-          property.notInPayload = data[property.aspectModelUrn].notInPayload;
-          property.optional = data[property.aspectModelUrn].optional;
-          property.payloadName = data[property.aspectModelUrn].payloadName;
+
+          if (!this.propertiesPayload[property.aspectModelUrn]) {
+            this.propertiesPayload[property.aspectModelUrn] = {} as any;
+          }
+
+          this.propertiesPayload[property.aspectModelUrn].notInPayload = data[property.aspectModelUrn].notInPayload;
+          this.propertiesPayload[property.aspectModelUrn].optional = data[property.aspectModelUrn].optional;
+          this.propertiesPayload[property.aspectModelUrn].payloadName = data[property.aspectModelUrn].payloadName;
         }
 
         this.overwrite.emit(data);

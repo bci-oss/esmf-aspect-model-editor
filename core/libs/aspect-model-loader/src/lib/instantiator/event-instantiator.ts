@@ -38,7 +38,7 @@ export function eventFactory(initProps: BaseInitProps) {
       if (samm.isParametersProperty(quad.predicate.value)) {
         const parametersQuads = rdfModel.resolveBlankNodes(quad.object.value);
         event.properties = parametersQuads.map(input => {
-          const property = propertyFactory(initProps).createProperty(input);
+          const property = propertyFactory(initProps).createProperty(input).property;
           property.addParent(event);
           return property;
         });

@@ -72,7 +72,9 @@ export function enumerationCharacteristicFactory(initProps: BaseInitProps) {
       const descriptionQuad = entityInstanceQuads.find(
         quad =>
           quad.predicate.id.toLowerCase().includes('description') &&
-          entity.properties.find(property => property.notInPayload === false && quad.predicate.id),
+          entity.properties.find(
+            property => entity.propertiesPayload[property.aspectModelUrn]?.notInPayload === false && quad.predicate.id,
+          ),
       );
       const descriptions = new Map<string, string>();
       if (descriptionQuad) {

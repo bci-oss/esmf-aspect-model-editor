@@ -54,7 +54,7 @@ export function propertyFactory(initProps: BaseInitProps) {
     const modelElementCache = initProps.cache;
 
     if (modelElementCache.get(quad.object.value)) {
-      return modelElementCache.get(quad.object.value);
+      return {property: modelElementCache.get(quad.object.value), payload: null};
     }
 
     const baseProperties = basePropertiesFactory(initProps)(quad.object as NamedNode);

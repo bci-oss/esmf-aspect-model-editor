@@ -67,7 +67,7 @@ export class InstantiatorService {
     }
 
     if (samm.Operation().value === elementType) {
-      createOperation(new Triple(new NamedNode(subject), null, null));
+      return createOperation(new Triple(new NamedNode(subject), null, null));
     }
 
     if (samm.Event().value === elementType) {

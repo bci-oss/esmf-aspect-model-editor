@@ -49,7 +49,8 @@ export function entityFactory(initProps: BaseInitProps) {
         const propertiesData = propertyFactory(initProps).createProperties(quad.subject as NamedNode);
         for (const propertyData of propertiesData) {
           properties.push(propertyData.property);
-          entity.propertiesPayload[propertyData.property.aspectModelUrn] = propertyData.payload;
+          if (!entity.propertiesPayload[propertyData.property.aspectModelUrn])
+            entity.propertiesPayload[propertyData.property.aspectModelUrn] = propertyData.payload;
         }
         continue;
       }

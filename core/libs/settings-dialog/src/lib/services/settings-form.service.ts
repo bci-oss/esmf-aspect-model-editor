@@ -11,7 +11,6 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
-import {ModelService} from '@ame/rdf/services';
 import {ConfigurationService, NamespaceConfiguration, SammLanguageSettingsService} from '@ame/settings-dialog';
 import {GeneralConfig} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
@@ -55,7 +54,6 @@ export class SettingsFormService {
 
   constructor(
     private formBuilder: FormBuilder,
-    private modelService: ModelService,
     private configurationService: ConfigurationService,
     private translate: LanguageTranslationService,
     private sammLangService: SammLanguageSettingsService,

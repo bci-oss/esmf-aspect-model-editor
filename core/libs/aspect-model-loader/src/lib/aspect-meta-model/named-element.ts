@@ -84,11 +84,11 @@ export abstract class NamedElement extends ModelElement {
   }
 
   getPreferredName(lang: LangString = 'en'): string {
-    return this.preferredNames.get(lang) ?? this.name;
+    return this.preferredNames.get(lang);
   }
 
   getDescription(lang: LangString = 'en'): string {
-    return this.descriptions.get(lang) ?? this.descriptions.get('en') ?? '';
+    return this.descriptions.get(lang);
   }
 
   getParents(): NamedElement[] {

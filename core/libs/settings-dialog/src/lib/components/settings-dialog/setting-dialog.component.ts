@@ -218,27 +218,20 @@ export class SettingDialogComponent {
     const currentCachedFile = this.currentLoadedFile.cachedFile;
 
     currentCachedFile.updateElementsNamespace(oldValue, newValue);
-    this.currentLoadedFile.namespace = newValue;
+    const [, version] = this.currentLoadedFile.namespace.split(':');
+    this.currentLoadedFile.namespace = `${newValue}:${version}`;
     rdfModel.updatePrefix('', oldValue, newValue);
   }
 
   private updateNamespaceAndVersion(namespaceConfig: NamespaceConfiguration): void {
-    const {newNamespace, newVersion, rdfModel} = namespaceConfig;
+    const {newNamespace, newVersion} = namespaceConfig;
 
-    this.updateNamespaceKey(newNamespace, newVersion, rdfModel);
+    this.updateNamespaceKey(newNamespace, newVersion);
     this.formService.setNamespace(newNamespace);
     this.formService.setVersion(newVersion);
   }
-  //@TODO check if this updates are not duplicates
-  private updateNamespaceKey(newNamespace: string, newVersion: string, rdfModel: RdfModel): void {
-    // const newUrn = `urn:samm:${newNamespace}:${newVersion}#`;
-    // this.namespaceCacheService.addFile(newUrn, this.currentLoadedFile.name);
-    // if (this.currentLoadedFile) {
-    //   const [, aspectName] = rdfModel.aspect.value.split('#');
-    //   rdfModel.namespaceHasChanged = true;
-    //   rdfModel.setAspect(`${newUrn}${aspectName}`);
-    //   rdfModel.absoluteAspectModelFileName = `${newUrn.replace('#', ':')}${aspectName}.ttl`;
-    // }
+  private updateNamespaceKey(newNamespace: string, newVersion: string): void {
+    this.currentLoadedFile.namespace = `${newNamespace}:${newVersion}`;
   }
 
   private updateTitleIfNeeded(): void {

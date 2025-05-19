@@ -33,10 +33,10 @@ export class ModelSaverService {
     return this.loadedFiles.currentLoadedFile;
   }
 
-  saveModel() {
+  saveModel(rdfModel?: RdfModel) {
     const synchronizedModel = this.modelService.synchronizeModelToRdf();
     return (synchronizedModel || throwError(() => ({type: SaveValidateErrorsCodes.desynchronized}))).pipe(
-      switchMap(() => this.writeModelToWorkspace()),
+      switchMap(() => this.writeModelToWorkspace(rdfModel)),
       tap(() => {
         this.modelSavingTracker.updateSavedModel();
         this.notificationsService.info({title: this.translate.language.NOTIFICATION_SERVICE.ASPECT_SAVED_SUCCESS});
@@ -46,20 +46,22 @@ export class ModelSaverService {
       catchError(error => {
         console.error('Error on saving aspect model', error);
         this.notificationsService.error({title: this.translate.language.NOTIFICATION_SERVICE.ASPECT_SAVED_ERROR});
-        return of({});
+        return of(null);
       }),
     );
   }
 
-  autoSaveModel(): Observable<RdfModel | object> {
+  autoSaveModel(): Observable<RdfModel> {
     return of({}).pipe(
       delayWhen(() => timer(this.settings.saveTimerSeconds * 1000)),
       switchMap(() =>
         this.currentFile.cachedFile.getKeys().length && !this.currentFile.name.includes('empty.ttl')
           ? this.saveModel().pipe(first())
-          : of([]),
+          : of(null),
       ),
-      tap(() => this.enableAutoSave()),
+      tap(() => {
+        this.enableAutoSave();
+      }),
       retry({
         delay: () => timer(this.settings.saveTimerSeconds * 1000),
       }),
@@ -81,8 +83,8 @@ export class ModelSaverService {
     }
   }
 
-  private writeModelToWorkspace(): Observable<RdfModel> {
-    const rdfContent = this.rdfSerializer.serializeModel(this.currentFile?.rdfModel);
+  private writeModelToWorkspace(rdfModel?: RdfModel): Observable<RdfModel> {
+    const rdfContent = this.rdfSerializer.serializeModel(rdfModel || this.currentFile?.rdfModel);
 
     if (!rdfContent) {
       console.info('Model is empty. Skipping saving.');

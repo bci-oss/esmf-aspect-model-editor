@@ -55,9 +55,13 @@ export class EntityModelService extends BaseModelService {
         if (!newKeys) {
           continue;
         }
-        property.notInPayload = newKeys.notInPayload;
-        property.optional = newKeys.optional;
-        property.payloadName = newKeys.payloadName;
+        if (!modelElement.propertiesPayload[property.aspectModelUrn]) {
+          modelElement.propertiesPayload[property.aspectModelUrn] = {} as any;
+        }
+
+        modelElement.propertiesPayload[property.aspectModelUrn].notInPayload = newKeys.notInPayload;
+        modelElement.propertiesPayload[property.aspectModelUrn].optional = newKeys.optional;
+        modelElement.propertiesPayload[property.aspectModelUrn].payloadName = newKeys.payloadName;
       }
     }
 

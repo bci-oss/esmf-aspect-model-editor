@@ -77,9 +77,6 @@ export interface EntityProps extends StructuredElementProps {
 export interface PropertyProps extends NamedElementProps {
   characteristic?: Characteristic;
   exampleValue?: string;
-  optional?: boolean;
-  notInPayload?: boolean;
-  payloadName?: string;
   isAbstract?: boolean;
   extends_?: Property;
 }

@@ -11,7 +11,15 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {DefaultProperty, DefaultStructuredValue, Type} from '@esmf/aspect-model-loader';
+import {
+  DefaultAspect,
+  DefaultEntity,
+  DefaultProperty,
+  DefaultStructuredValue,
+  PropertyPayload,
+  PropertyUrn,
+  Type,
+} from '@esmf/aspect-model-loader';
 import {ScalarValue} from 'libs/aspect-model-loader/src/lib/aspect-meta-model/scalar-value';
 import {DataFactory} from 'n3';
 import {ListElement, ListElementType, PropertyListElement, ResolvedListElements, SourceElementType} from '.';
@@ -19,27 +27,40 @@ import {ListElement, ListElementType, PropertyListElement, ResolvedListElements,
 export class RdfListHelper {
   static resolveNewElements(source: SourceElementType & {dataType?: Type}, elements: ListElementType[]): ResolvedListElements {
     const overWrittenListElements: PropertyListElement[] = [];
+    let propertiesPayload: Record<PropertyUrn, PropertyPayload>;
+
+    if (source instanceof DefaultEntity || source instanceof DefaultAspect) {
+      propertiesPayload = source.propertiesPayload;
+    }
+
     const listElements = elements.map(metaModelElement => {
-      const {keys, property} = metaModelElement || {};
-      if (property instanceof DefaultProperty && (keys?.optional || keys?.notInPayload || keys?.payloadName || property.getExtends())) {
+      const propertyPayload: PropertyPayload = propertiesPayload[metaModelElement.aspectModelUrn];
+      const property: DefaultProperty = metaModelElement;
+
+      if (
+        property instanceof DefaultProperty &&
+        (propertyPayload?.optional || propertyPayload?.notInPayload || propertyPayload?.payloadName || metaModelElement.getExtends())
+      ) {
         const blankNode = DataFactory.blankNode();
         overWrittenListElements.push({
           metaModelElement,
+          propertyPayload,
           blankNode,
         });
         return blankNode;
       }
 
-      const modelElement = property || metaModelElement;
-      if (modelElement.aspectModelUrn) {
-        return DataFactory.namedNode(modelElement.aspectModelUrn);
-      } else if (modelElement?.value && !(modelElement instanceof ScalarValue)) {
-        return DataFactory.namedNode(modelElement?.value);
+      if (metaModelElement.aspectModelUrn) {
+        return DataFactory.namedNode(metaModelElement.aspectModelUrn);
+      } else if (metaModelElement?.value && !(metaModelElement instanceof ScalarValue)) {
+        return DataFactory.namedNode(metaModelElement?.value);
       }
 
       return DataFactory.literal(
-        modelElement.value,
-        modelElement.type && !(source instanceof DefaultStructuredValue) ? DataFactory.namedNode(modelElement.type.getUrn()) : undefined,
+        metaModelElement.value,
+        metaModelElement.type && !(source instanceof DefaultStructuredValue)
+          ? DataFactory.namedNode(metaModelElement.type.getUrn())
+          : undefined,
       );
     });
 

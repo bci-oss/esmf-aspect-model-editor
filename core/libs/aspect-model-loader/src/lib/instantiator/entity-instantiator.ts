@@ -46,7 +46,12 @@ export function entityFactory(initProps: BaseInitProps) {
 
     for (const quad of quads) {
       if (samm.isPropertiesProperty(quad.predicate.value)) {
-        properties.push(...propertyFactory(initProps).createProperties(quad.subject as NamedNode));
+        const propertiesData = propertyFactory(initProps).createProperties(quad.subject as NamedNode);
+        for (const propertyData of propertiesData) {
+          properties.push(propertyData.property);
+          if (!entity.propertiesPayload[propertyData.property.aspectModelUrn])
+            entity.propertiesPayload[propertyData.property.aspectModelUrn] = propertyData.payload;
+        }
         continue;
       }
 

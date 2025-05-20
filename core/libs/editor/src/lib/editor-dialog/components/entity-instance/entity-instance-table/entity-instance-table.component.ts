@@ -32,6 +32,7 @@ import {
   DefaultProperty,
   EntityInstanceProperty,
   NamedElement,
+  PropertyPayload,
   Value,
 } from '@esmf/aspect-model-loader';
 import * as locale from 'locale-codes';
@@ -59,10 +60,6 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
 
   get entityValuePropertiesForm(): FormGroup {
     return this.parentForm.get('entityValueProperties') as FormGroup;
-  }
-
-  getFormArray(value: string): FormArray {
-    return this.entityValuePropertiesForm.get(value) as FormArray;
   }
 
   constructor(
@@ -100,6 +97,14 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
     );
   }
 
+  getFormArray(value: string): FormArray {
+    return this.entityValuePropertiesForm.get(value) as FormArray;
+  }
+
+  getPropertyPayload(propertyUrn: string): PropertyPayload {
+    return this.metaModelElement.type.propertiesPayload[propertyUrn];
+  }
+
   private createEntityValueProp(property: DefaultProperty): EntityInstanceProperty<DefaultProperty> {
     const propertyControl = this.propertiesForm.get(property.name);
 
@@ -125,12 +130,13 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
   }
 
   private createFormControl(prop: DefaultProperty): FormControl {
-    return new FormControl('', prop.optional ? null : EditorDialogValidators.requiredObject);
+    const propertyPayload = this.metaModelElement.type.propertiesPayload[prop.aspectModelUrn];
+    return new FormControl('', propertyPayload?.optional ? null : EditorDialogValidators.requiredObject);
   }
 
   private getValidators([propertyUrn]: EntityInstanceProperty): (control: AbstractControl) => ValidationErrors | null {
-    const property = this.loadedFiles.getElement<DefaultProperty>(propertyUrn);
-    return property.optional ? null : Validators.required;
+    const propertyPayload = this.metaModelElement.type.propertiesPayload[propertyUrn];
+    return propertyPayload?.optional ? null : Validators.required;
   }
 
   private initializeFormControl(
@@ -246,7 +252,9 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
   }
 
   addLanguage([property]: EntityInstanceProperty<DefaultProperty>): void {
-    const fieldValidators = property.optional ? null : EditorDialogValidators.requiredObject;
+    const propertyPayload = this.metaModelElement.type.propertiesPayload[property.aspectModelUrn];
+
+    const fieldValidators = propertyPayload?.optional ? null : EditorDialogValidators.requiredObject;
     const languagesFormArray = this.propertiesForm.get(property.name) as FormArray;
 
     const languageInputControl = new FormControl('', fieldValidators);

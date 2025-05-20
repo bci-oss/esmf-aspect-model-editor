@@ -25,7 +25,7 @@
 
           {{ source[0].name }}
 
-          @if (!source[0].optional) {
+          @if (!getPropertyPayload(source[0].aspectModelUrn)?.optional) {
             <span class="source__required-indicator">*</span>
           }
         </div>

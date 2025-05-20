@@ -11,10 +11,19 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Aspect, DefaultProperty, Entity, Enumeration, Event, Operation, StructuredValue, Unit} from '@esmf/aspect-model-loader';
+import {
+  Aspect,
+  DefaultProperty,
+  Entity,
+  Enumeration,
+  Event,
+  Operation,
+  PropertyPayload,
+  StructuredValue,
+  Unit,
+} from '@esmf/aspect-model-loader';
 import {BlankNode, NamedNode, Quad_Object} from 'n3';
 
-// For now ListElementType is any because
 export type ListElementType = any;
 export type SourceElementType = Aspect | Operation | Enumeration | StructuredValue | Entity | Unit | Event;
 export enum ListProperties {
@@ -73,6 +82,7 @@ export interface EmptyRdfList {
 
 export interface PropertyListElement {
   metaModelElement: DefaultProperty;
+  propertyPayload: PropertyPayload;
   blankNode: BlankNode;
 }
 

@@ -14,9 +14,15 @@
 import {NamedNode, Quad, Quad_Subject} from 'n3';
 import {Property} from '../aspect-meta-model';
 import {DefaultProperty} from '../aspect-meta-model/default-property';
+import {PropertyPayload} from '../aspect-meta-model/structure-element';
 import {BaseInitProps} from '../shared/base-init-props';
 import {allCharacteristicsFactory} from './characteristic';
 import {basePropertiesFactory} from './meta-model-element-instantiator';
+
+export interface PropertyData {
+  property: Property;
+  payload: PropertyPayload;
+}
 
 export function propertyFactory(initProps: BaseInitProps) {
   const {createCharacteristic} = allCharacteristicsFactory(initProps);
@@ -33,7 +39,7 @@ export function propertyFactory(initProps: BaseInitProps) {
         }
 
         const quadsAbstractProperty = store.getQuads(value.object, null, null, null);
-        const extendedAbstractProperty = createProperty(store.getQuads(null, null, quadsAbstractProperty[0].subject, null)[0]);
+        const {property: extendedAbstractProperty} = createProperty(store.getQuads(null, null, quadsAbstractProperty[0].subject, null)[0]);
         extendedAbstractProperty.isAbstract = quadsAbstractProperty.some(quad => samm.AbstractProperty().equals(quad.object));
         return modelElementCache.resolveInstance(extendedAbstractProperty);
       }
@@ -42,13 +48,13 @@ export function propertyFactory(initProps: BaseInitProps) {
     return null;
   }
 
-  function createProperty(quad: Quad): Property {
+  function createProperty(quad: Quad): PropertyData {
     const rdfModel = initProps.rdfModel;
     const samm = rdfModel.samm;
     const modelElementCache = initProps.cache;
 
     if (modelElementCache.get(quad.object.value)) {
-      return modelElementCache.get(quad.object.value);
+      return {property: modelElementCache.get(quad.object.value), payload: null};
     }
 
     const baseProperties = basePropertiesFactory(initProps)(quad.object as NamedNode);
@@ -77,6 +83,8 @@ export function propertyFactory(initProps: BaseInitProps) {
     });
     modelElementCache.resolveInstance(property);
 
+    const payload: PropertyPayload = {} as any;
+
     for (const propertyQuad of propertyQuads) {
       if (samm.isCharacteristicProperty(propertyQuad.predicate.value)) {
         property.characteristic = createCharacteristic(propertyQuad);
@@ -84,24 +92,24 @@ export function propertyFactory(initProps: BaseInitProps) {
       } else if (samm.isExampleValueProperty(propertyQuad.predicate.value)) {
         property.exampleValue = propertyQuad.object.value;
       } else if (samm.isNotInPayloadProperty(propertyQuad.predicate.value)) {
-        property.notInPayload = propertyQuad.object.value === 'true';
+        payload.notInPayload = propertyQuad.object.value === 'true';
       } else if (samm.isOptionalProperty(propertyQuad.predicate.value)) {
-        property.optional = propertyQuad.object.value === 'true';
+        payload.optional = propertyQuad.object.value === 'true';
       } else if (samm.isPayloadNameProperty(propertyQuad.predicate.value)) {
-        property.payloadName = propertyQuad.object.value;
+        payload.payloadName = propertyQuad.object.value;
       }
     }
 
     property.extends_ = getExtends(propertyQuads);
     property.extends_?.addParent(property);
 
-    return property;
+    return {property, payload};
   }
 
-  function createProperties(subject: Quad_Subject): Array<Property> {
+  function createProperties(subject: Quad_Subject): Array<PropertyData> {
     const rdfModel = initProps.rdfModel;
     const {samm, store} = rdfModel;
-    const properties: Array<Property> = [];
+    const properties: Array<PropertyData> = [];
 
     store.getQuads(subject, samm.PropertiesProperty(), null, null).forEach(propertyQuad => {
       rdfModel

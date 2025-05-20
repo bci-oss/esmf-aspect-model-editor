@@ -49,11 +49,11 @@ export class InstantiatorService {
     const {samm, sammC} = rdfModel;
     const elementType = rdfModel.store.getObjects(subject, rdfModel.samm.RdfType(), null)?.[0]?.value;
     if (samm.Property().value === elementType) {
-      return createProperty(new Triple(null, null, new NamedNode(subject)));
+      return createProperty(new Triple(null, null, new NamedNode(subject))).property;
     }
 
     if (samm.AbstractProperty().value === elementType) {
-      const property = createProperty(new Triple(null, null, new NamedNode(subject)));
+      const {property} = createProperty(new Triple(null, null, new NamedNode(subject)));
       property.isAbstract = true;
       return property;
     }
@@ -67,7 +67,7 @@ export class InstantiatorService {
     }
 
     if (samm.Operation().value === elementType) {
-      createOperation(new Triple(new NamedNode(subject), null, null));
+      return createOperation(new Triple(new NamedNode(subject), null, null));
     }
 
     if (samm.Event().value === elementType) {

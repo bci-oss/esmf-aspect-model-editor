@@ -21,15 +21,7 @@ import {NamedElement} from './named-element';
 export interface Property extends NamedElement, HasExtends<Property> {
   characteristic: Characteristic;
   exampleValue: string;
-  optional: boolean;
-  notInPayload: boolean;
-  payloadName: string;
   isAbstract: boolean;
-
-  getCharacteristic(): Characteristic;
-  getExampleValue(): string;
-  isOptional(): boolean;
-  isNotInPayload(): boolean;
 }
 
 export class DefaultProperty extends NamedElement implements Property {
@@ -50,9 +42,6 @@ export class DefaultProperty extends NamedElement implements Property {
   extends_: Property;
   characteristic: Characteristic;
   exampleValue: string;
-  optional: boolean;
-  notInPayload: boolean;
-  payloadName: string;
   isAbstract: boolean;
 
   constructor(props: PropertyProps) {
@@ -60,26 +49,7 @@ export class DefaultProperty extends NamedElement implements Property {
     this.characteristic = props.characteristic || null;
     this.exampleValue = props.exampleValue || null;
     this.extends_ = props.extends_;
-    this.notInPayload = Boolean(props.notInPayload);
-    this.optional = Boolean(props.optional);
-    this.payloadName = props.payloadName;
     this.isAbstract = Boolean(props.isAbstract);
-  }
-
-  getCharacteristic(): Characteristic {
-    return this.characteristic;
-  }
-
-  getExampleValue(): string {
-    return this.exampleValue;
-  }
-
-  isOptional(): boolean {
-    return this.optional;
-  }
-
-  isNotInPayload(): boolean {
-    return this.notInPayload;
   }
 
   getExtends(): Property {

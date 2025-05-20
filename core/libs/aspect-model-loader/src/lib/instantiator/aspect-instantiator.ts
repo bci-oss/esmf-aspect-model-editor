@@ -12,8 +12,9 @@
  */
 
 import {Quad} from 'n3';
-import {Aspect, DefaultCollection} from '../aspect-meta-model';
+import {Aspect, DefaultCollection, PropertyUrn} from '../aspect-meta-model';
 import {DefaultAspect} from '../aspect-meta-model/default-aspect';
+import {PropertyPayload} from '../aspect-meta-model/structure-element';
 import {BaseInitProps} from '../shared/base-init-props';
 import {getEvents} from './event-instantiator';
 import {basePropertiesFactory} from './meta-model-element-instantiator';
@@ -56,9 +57,15 @@ export function aspectFactory(initProps: BaseInitProps) {
 
     const {createProperties} = propertyFactory(initProps);
     const baseProperties = basePropertiesFactory(initProps)(aspectNode);
-    const properties = createProperties(aspectNode);
+    const propertiesData = createProperties(aspectNode);
     const operations = getOperations(initProps)(aspectNode);
     const events = getEvents(initProps)(aspectNode);
+
+    const properties = propertiesData.map(({property}) => property);
+    const propertiesPayload: Record<PropertyUrn, PropertyPayload> = propertiesData.reduce((acc, {property, payload}) => {
+      acc[property.aspectModelUrn] = payload;
+      return acc;
+    }, {});
 
     const aspect = new DefaultAspect({
       metaModelVersion: baseProperties.metaModelVersion,
@@ -70,6 +77,8 @@ export function aspectFactory(initProps: BaseInitProps) {
       name: baseProperties.name,
       isCollectionAspect: properties.some(property => property.characteristic instanceof DefaultCollection),
     });
+
+    aspect.propertiesPayload = propertiesPayload;
 
     properties.forEach(property => property.addParent(aspect));
     operations.forEach(operation => operation.addParent(aspect));

@@ -56,8 +56,6 @@ export abstract class BaseRenderService {
         return;
       }
 
-      const prop = modelElement.properties.find(property => property.aspectModelUrn === property.aspectModelUrn);
-
       this.mxGraphService.removeCells([e]);
       MxGraphHelper.establishRelation(modelElement, property);
       this.graph.insertEdge(
@@ -66,7 +64,7 @@ export abstract class BaseRenderService {
         null,
         e.source,
         e.target,
-        prop.optional ? 'optionalPropertyEdge' : 'defaultEdge',
+        modelElement.propertiesPayload[property.aspectModelUrn]?.optional ? 'optionalPropertyEdge' : 'defaultEdge',
       );
     });
   }

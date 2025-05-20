@@ -17,18 +17,25 @@ import {FormBuilder, FormControl, FormGroup} from '@angular/forms';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {MatPaginator} from '@angular/material/paginator';
 import {MatTableDataSource} from '@angular/material/table';
-import {DefaultEntity, DefaultEntityInstance, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
+import {
+  DefaultAspect,
+  DefaultEntity,
+  DefaultEntityInstance,
+  DefaultProperty,
+  PropertyPayload,
+  PropertyUrn,
+} from '@esmf/aspect-model-loader';
 
 export interface PropertiesDialogData {
-  name: string;
-  metaModelElement?: NamedElement;
-  properties: DefaultProperty[];
+  metaModelElement?: DefaultEntity | DefaultAspect;
+  propertiesPayload: Record<PropertyUrn, PropertyPayload>;
   isExternalRef: boolean;
   isPredefined?: boolean;
 }
 
 export interface PropertyStatus {
   property: DefaultProperty;
+  propertyPayload: PropertyPayload;
   inherited?: boolean;
   disabled?: boolean;
 }
@@ -49,7 +56,7 @@ export class PropertiesModalComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
 
   public get extendedProperties(): DefaultProperty[] {
-    return (this.data.metaModelElement as DefaultEntity)?.extends_.properties || [];
+    return (this.data.metaModelElement as DefaultEntity)?.extends_?.properties || [];
   }
 
   constructor(
@@ -60,20 +67,21 @@ export class PropertiesModalComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit() {
-    const extendedProperties: PropertyStatus[] = ((this.data.metaModelElement as DefaultEntity)?.properties || [])
-      .filter(
-        property => !(property instanceof DefaultProperty && property.isAbstract && this.data.metaModelElement instanceof DefaultEntity),
-      )
+    const entity = this.data.metaModelElement as DefaultEntity;
+    const extendedProperties: PropertyStatus[] = this.extendedProperties
+      .filter(property => !(property.isAbstract && this.data.metaModelElement instanceof DefaultEntity))
       .map(property => ({
         property,
+        propertyPayload: this.data.propertiesPayload[property.aspectModelUrn] ?? entity.propertiesPayload?.[property.aspectModelUrn],
         inherited: true,
       }));
 
     const allProperties: PropertyStatus[] = [
       ...extendedProperties,
-      ...this.data.properties.map(property => ({
+      ...entity.properties.map(property => ({
         property,
         disabled: !!(property instanceof DefaultProperty && property.extends_),
+        propertyPayload: this.data.propertiesPayload[property.aspectModelUrn] ?? entity.propertiesPayload?.[property.aspectModelUrn],
       })),
     ];
 
@@ -87,15 +95,15 @@ export class PropertiesModalComponent implements OnInit, AfterViewInit {
           disabled: status.inherited || status.disabled,
         }),
         optional: this.formBuilder.control({
-          value: status.property.optional || false,
+          value: status.propertyPayload.optional || false,
           disabled: status.inherited || status.disabled,
         }),
         notInPayload: this.formBuilder.control({
-          value: status.property.notInPayload || false,
+          value: status.propertyPayload.notInPayload || false,
           disabled: status.inherited || status.disabled,
         }),
         payloadName: this.formBuilder.control({
-          value: status.property.payloadName || '',
+          value: status.propertyPayload.payloadName || '',
           disabled: status.inherited || status.disabled,
         }),
       });

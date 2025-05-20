@@ -119,39 +119,45 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
 
   private createCharacteristicClassesList() {
     const characteristicList = [...this.listCharacteristics.keys()];
-    this.listCharacteristics.set(CharacteristicClassType.Characteristic, () => createEmptyElement(DefaultCharacteristic));
-    this.listCharacteristics.set(CharacteristicClassType.Code, () => createEmptyElement(DefaultCode));
-    this.listCharacteristics.set(CharacteristicClassType.Collection, () => createEmptyElement(DefaultCollection));
-    this.listCharacteristics.set(CharacteristicClassType.Duration, () => createEmptyElement(DefaultDuration));
-    this.listCharacteristics.set(CharacteristicClassType.Either, () => createEmptyElement(DefaultEither));
-    this.listCharacteristics.set(CharacteristicClassType.Enumeration, () => createEmptyElement(DefaultEnumeration));
-    this.listCharacteristics.set(CharacteristicClassType.List, () => createEmptyElement(DefaultList));
-    this.listCharacteristics.set(CharacteristicClassType.Measurement, () => createEmptyElement(DefaultMeasurement));
-    this.listCharacteristics.set(CharacteristicClassType.Quantifiable, () => createEmptyElement(DefaultQuantifiable));
-    this.listCharacteristics.set(CharacteristicClassType.Set, () => createEmptyElement(DefaultSet));
-    this.listCharacteristics.set(CharacteristicClassType.SortedSet, () => createEmptyElement(DefaultSortedSet));
-    this.listCharacteristics.set(CharacteristicClassType.SingleEntity, () => createEmptyElement(DefaultSingleEntity));
-    this.listCharacteristics.set(CharacteristicClassType.State, () => createEmptyElement(DefaultState));
-    this.listCharacteristics.set(CharacteristicClassType.StructuredValue, () => createEmptyElement(DefaultStructuredValue));
-    this.listCharacteristics.set(CharacteristicClassType.TimeSeries, () => createEmptyElement(DefaultTimeSeries));
+    this.listCharacteristics.set(CharacteristicClassType.Characteristic, () => this.createEmptyElement(DefaultCharacteristic));
+    this.listCharacteristics.set(CharacteristicClassType.Code, () => this.createEmptyElement(DefaultCode));
+    this.listCharacteristics.set(CharacteristicClassType.Collection, () => this.createEmptyElement(DefaultCollection));
+    this.listCharacteristics.set(CharacteristicClassType.Duration, () => this.createEmptyElement(DefaultDuration));
+    this.listCharacteristics.set(CharacteristicClassType.Either, () => this.createEmptyElement(DefaultEither));
+    this.listCharacteristics.set(CharacteristicClassType.Enumeration, () => this.createEmptyElement(DefaultEnumeration));
+    this.listCharacteristics.set(CharacteristicClassType.List, () => this.createEmptyElement(DefaultList));
+    this.listCharacteristics.set(CharacteristicClassType.Measurement, () => this.createEmptyElement(DefaultMeasurement));
+    this.listCharacteristics.set(CharacteristicClassType.Quantifiable, () => this.createEmptyElement(DefaultQuantifiable));
+    this.listCharacteristics.set(CharacteristicClassType.Set, () => this.createEmptyElement(DefaultSet));
+    this.listCharacteristics.set(CharacteristicClassType.SortedSet, () => this.createEmptyElement(DefaultSortedSet));
+    this.listCharacteristics.set(CharacteristicClassType.SingleEntity, () => this.createEmptyElement(DefaultSingleEntity));
+    this.listCharacteristics.set(CharacteristicClassType.State, () => this.createEmptyElement(DefaultState));
+    this.listCharacteristics.set(CharacteristicClassType.StructuredValue, () => this.createEmptyElement(DefaultStructuredValue));
+    this.listCharacteristics.set(CharacteristicClassType.TimeSeries, () => this.createEmptyElement(DefaultTimeSeries));
     return [...this.listCharacteristics.keys()].filter(value => !characteristicList.includes(value));
+  }
+
+  private createEmptyElement<T>(elementClass: {new (...x: any[]): T}): T {
+    const element = createEmptyElement(elementClass);
+    (element as DefaultCharacteristic).aspectModelUrn = this.metaModelElement.aspectModelUrn;
+    return element;
   }
 
   private createCharacteristicInstancesList() {
     const instanceList = [...this.listCharacteristics.keys()];
-    this.listCharacteristics.set('Boolean', () => this.createDefaultCharacteristic('Boolean'));
-    this.listCharacteristics.set('Language', () => this.createDefaultCharacteristic('Language'));
-    this.listCharacteristics.set('Locale', () => this.createDefaultCharacteristic('Locale'));
-    this.listCharacteristics.set('MultiLanguageText', () => this.createDefaultCharacteristic('MultiLanguageText'));
-    this.listCharacteristics.set('MimeType', () => this.createDefaultCharacteristic('MimeType'));
-    this.listCharacteristics.set('ResourcePath', () => this.createDefaultCharacteristic('ResourcePath'));
-    this.listCharacteristics.set('Text', () => this.createDefaultCharacteristic('Text'));
-    this.listCharacteristics.set('Timestamp', () => this.createDefaultCharacteristic('Timestamp'));
-    this.listCharacteristics.set('UnitReference', () => this.createDefaultCharacteristic('UnitReference'));
+    this.listCharacteristics.set('Boolean', () => this.createPredefinedCharacteristic('Boolean'));
+    this.listCharacteristics.set('Language', () => this.createPredefinedCharacteristic('Language'));
+    this.listCharacteristics.set('Locale', () => this.createPredefinedCharacteristic('Locale'));
+    this.listCharacteristics.set('MultiLanguageText', () => this.createPredefinedCharacteristic('MultiLanguageText'));
+    this.listCharacteristics.set('MimeType', () => this.createPredefinedCharacteristic('MimeType'));
+    this.listCharacteristics.set('ResourcePath', () => this.createPredefinedCharacteristic('ResourcePath'));
+    this.listCharacteristics.set('Text', () => this.createPredefinedCharacteristic('Text'));
+    this.listCharacteristics.set('Timestamp', () => this.createPredefinedCharacteristic('Timestamp'));
+    this.listCharacteristics.set('UnitReference', () => this.createPredefinedCharacteristic('UnitReference'));
     return [...this.listCharacteristics.keys()].filter(value => !instanceList.includes(value));
   }
 
-  private createDefaultCharacteristic(characteristicName: string): Characteristic {
+  private createPredefinedCharacteristic(characteristicName: string): Characteristic {
     const rdfModel = this.loadedFilesService.currentLoadedFile.rdfModel;
     const cache = this.loadedFilesService.currentLoadedFile.cachedFile;
     const {createDefaultCharacteristic} = useLoader({rdfModel, cache});
@@ -203,7 +209,7 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
     const modelElementType = createInstanceFunction();
     if (modelElementType.aspectModelUrn === this.selectedMetaModelElement.aspectModelUrn) {
       this.metaModelElement = this.selectedMetaModelElement;
-      return;
+      return modelElementType;
     }
     return modelElementType;
   }

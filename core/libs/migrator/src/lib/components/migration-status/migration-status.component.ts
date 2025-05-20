@@ -163,10 +163,10 @@ export class MigrationStatusComponent implements OnInit {
 
   private getAmeVersion(sammVersion: string): string | undefined {
     switch (sammVersion) {
-      case '2.0.0':
-        return '4.5.2';
       case '2.1.0':
         return '5.1.0';
+      case '2.2.0':
+        return '6.0.0';
       default:
         return undefined;
     }

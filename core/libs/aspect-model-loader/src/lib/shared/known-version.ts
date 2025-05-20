@@ -17,6 +17,7 @@
 export enum SammVersion {
   SAMM_2_0_0 = '2.0.0',
   SAMM_2_1_0 = '2.1.0',
+  SAMM_2_2_0 = '2.2.0',
 }
 
 export class KnownVersion {
@@ -31,6 +32,8 @@ export class KnownVersion {
       return SammVersion.SAMM_2_0_0;
     } else if (SammVersion.SAMM_2_1_0 === version) {
       return SammVersion.SAMM_2_1_0;
+    } else if (SammVersion.SAMM_2_2_0 === version) {
+      return SammVersion.SAMM_2_2_0;
     } else {
       return undefined;
     }
@@ -52,6 +55,6 @@ export class KnownVersion {
    * @return Array of supported versions
    */
   public static getSupportedVersions(): Array<SammVersion> {
-    return [SammVersion.SAMM_2_0_0, SammVersion.SAMM_2_1_0];
+    return [SammVersion.SAMM_2_0_0, SammVersion.SAMM_2_1_0, SammVersion.SAMM_2_2_0];
   }
 }

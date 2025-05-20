@@ -97,7 +97,10 @@ export class ModelSaverService {
           return throwError(() => ({code: SaveValidateErrorsCodes.emptyModel}));
         }
 
-        return this.modelApiService.saveModel(content, this.currentFile?.absoluteName || '');
+        const copyright = this.settings.copyrightHeader.join('\n');
+        const contentWithCopyright = `${copyright}\n${content}`;
+
+        return this.modelApiService.saveModel(contentWithCopyright, this.currentFile?.absoluteName || '');
       }),
       map(() => this.currentFile?.rdfModel),
     );

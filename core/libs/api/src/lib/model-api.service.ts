@@ -51,30 +51,6 @@ export class ModelApiService {
     return this.http.get(modelPath, {responseType: 'text'}).pipe(map((response: string) => removeCommentsFromTTL(response)));
   }
 
-  lockFile(namespace: string, file: string): Observable<string> {
-    return this.http
-      .get<string>(`${this.serviceUrl}${this.api.fileHandling}/lock`, {
-        headers: new HttpHeaderBuilder().withTextContentType().withFileName(file).withNamespace(namespace).build(),
-        responseType: 'text' as 'json',
-      })
-      .pipe(
-        timeout(this.requestTimeout),
-        catchError(res => throwError(() => res)),
-      );
-  }
-
-  unlockFile(namespace: string, file: string): Observable<string> {
-    return this.http
-      .get<string>(`${this.serviceUrl}${this.api.fileHandling}/unlock`, {
-        headers: new HttpHeaderBuilder().withTextContentType().withFileName(file).withNamespace(namespace).build(),
-        responseType: 'text' as 'json',
-      })
-      .pipe(
-        timeout(this.requestTimeout),
-        catchError(res => throwError(() => res)),
-      );
-  }
-
   loadLatest(): Observable<string> {
     return this.http
       .get<string>(`${this.serviceUrl}${this.api.models}`, {

@@ -34,7 +34,7 @@ import {Injectable, NgZone, inject} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {NamedElement} from '@esmf/aspect-model-loader';
 import {IpcRenderer} from 'electron';
-import {BehaviorSubject, Observable, catchError, distinctUntilChanged, map, of, switchMap, take, tap} from 'rxjs';
+import {BehaviorSubject, Observable, catchError, distinctUntilChanged, map, of, switchMap, tap} from 'rxjs';
 import {ElectronEvents} from '../enums';
 import {ElectronSignals, LockUnlockPayload, StartupData, StartupPayload} from '../model';
 import {ElectronSignalsService} from './electron-signals.service';
@@ -310,23 +310,17 @@ export class ElectronTunnelService {
       return;
     }
 
-    this.electronSignalsService.addListener('lockFile', ({namespace, file}) => {
-      if (file === 'empty.ttl') {
-        return of();
-      }
-
-      return this.modelApiService.lockFile(namespace, file).pipe(
-        take(1),
-        tap(() => this.electronSignalsService.call('addLock', {namespace, file})),
-      );
-    });
-
-    this.electronSignalsService.addListener('unlockFile', ({namespace, file}) => {
-      return this.modelApiService.unlockFile(namespace, file).pipe(
-        take(1),
-        tap(() => this.electronSignalsService.call('removeLock', {namespace, file})),
-      );
-    });
+    // this.electronSignalsService.addListener('lockFile', ({namespace, file}) => {
+    //   if (file === 'empty.ttl') {
+    //     return of();
+    //   }
+    //
+    //   return this.electronSignalsService.call('addLock', {namespace, file});
+    // });
+    //
+    // this.electronSignalsService.addListener('unlockFile', ({namespace, file}) => {
+    //   return this.electronSignalsService.call('removeLock', {namespace, file});
+    // });
 
     this.ipcRenderer.on(ElectronEvents.REQUEST_LOCK_FILE, (_: unknown, namespace: string, file: string) => {
       if (file === 'empty.ttl') return;

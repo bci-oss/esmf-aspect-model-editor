@@ -25,42 +25,23 @@
       <h4 class="column-title">Namespaces</h4>
     }
 
-    @for (item of namespacesDependencies | keyvalue; track item) {
-      <mat-checkbox
-        class="namespace"
-        [value]="item.key"
-        [checked]="item.value.checked"
-        [disabled]="item.value.hasUnknownSAMM || item.value.disabled"
-        (change)="toggleNamespace($event, item.key)"
-        data-cy="enNamespaceList"
-      >
-        <div class="checkbox-info">
-          <span class="namespace">{{ item.key }}</span>
-          @if (item.value.dependencies.length && !item.value.hasUnknownSAMM) {
-            <span class="dependencies"
-              >Dependencies: <strong>{{ item.value.dependencies.join(', ') }}</strong></span
-            >
-          }
-
-          @if (item.value.hasUnknownSAMM) {
-            <span>This namespace has files with unknown SAMM version.</span>
-          }
-        </div>
-        @if (item.value.dependencies.length && !item.value.hasUnknownSAMM) {
-          <mat-icon
-            matTooltip="This namespace has elements from other namespaces. If selected, the dependencies will be automatically selected."
-            matTooltipPosition="right"
-            >info_outline</mat-icon
-          >
-        }
-      </mat-checkbox>
-    }
+    <mat-radio-group [(ngModel)]="selectedKey" aria-label="Select an option">
+      @for (entry of entries | keyvalue; track entry) {
+        <mat-radio-button class="namespace" value="{{ $any(entry.key) }}">
+          <div class="checkbox-info">
+            <span class="namespace">Urn: {{ $any(entry.key) }}</span>
+            <span class="model">Filename: {{ $any(entry.value).model }}</span>
+            <span class="version">Version: {{ $any(entry.value).version }}</span>
+          </div>
+        </mat-radio-button>
+      }
+    </mat-radio-group>
   </section>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
   <button mat-flat-button mat-dialog-close>{{ 'EXPORT_NAMESPACE_DIALOG.CANCEL' | translate }}</button>
-  <button [disabled]="!selectedNamespaces.length" (click)="validate()" mat-flat-button color="primary">
+  <button (click)="export()" mat-flat-button color="primary">
     {{ 'EXPORT_NAMESPACE_DIALOG.NEXT' | translate }}
   </button>
 </mat-dialog-actions>

@@ -44,7 +44,7 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
       this.changeDetector.detectChanges();
 
       refreshing$ = this.modelChecker
-        .detectWorkspaceErrors()
+        .detectWorkspace()
         .pipe(
           map(files => this.sidebarService.updateWorkspace(files)),
           finalize(() => {

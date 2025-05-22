@@ -63,7 +63,7 @@ export class WorkspaceFileListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const sub = this.sidebarService.workspace.refreshSignal$
       .pipe(
-        switchMap(() => this.modelChecker.detectWorkspaceErrors()),
+        switchMap(() => this.modelChecker.detectWorkspace()),
         map(files => this.sidebarService.updateWorkspace(files)),
       )
       .subscribe(() => {

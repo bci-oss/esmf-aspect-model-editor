@@ -77,7 +77,7 @@ export class FilesSearchComponent {
     if (!Object.keys(this.namespaces).length) {
       this.loading = true;
       this.modelChecker
-        .detectWorkspaceErrors()
+        .detectWorkspace()
         .pipe(map(files => this.sidebarStateService.updateWorkspace(files)))
         .subscribe(namespaces => {
           this.parseFiles(namespaces);

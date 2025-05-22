@@ -53,7 +53,7 @@ function startService() {
   createSplashWindow();
 
   if (inDevMode()) {
-    global.backendPort = 9091;
+    global.backendPort = 9090;
     setTimeout(function () {
       splashWindow.close();
       windowsManager.createWindow();

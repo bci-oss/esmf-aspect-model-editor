@@ -97,15 +97,18 @@ export class ModelApiService {
       );
   }
 
-  uploadZip(file: File): Observable<any> {
+  validateImportPackage(file: File): Observable<any> {
     const formData = new FormData();
     formData.append('zipFile', file);
 
-    return this.http.post(`${this.serviceUrl}${this.api.package}/validate-import-zip`, formData);
+    return this.http.post(`${this.serviceUrl}${this.api.package}/validate-package`, formData);
   }
 
-  replaceFiles(files: {namespace: string; files: string[]}[]): Observable<any> {
-    return this.http.post(`${this.serviceUrl}${this.api.package}/import`, files);
+  importPackage(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('zipFile', file);
+
+    return this.http.post(`${this.serviceUrl}${this.api.package}/import`, formData);
   }
 
   saveLatest(rdfContent: string): Observable<string> {
@@ -186,8 +189,9 @@ export class ModelApiService {
     return this.http.post(`${this.serviceUrl}${this.api.package}/validate-models-for-export`, files);
   }
 
-  getExportZipFile(): Observable<any> {
-    return this.http.get(`${this.serviceUrl}${this.api.package}/export-zip`, {
+  getExportZipFile(aspectModelUrn: string): Observable<any> {
+    return this.http.get(`${this.serviceUrl}${this.api.package}/export`, {
+      headers: new HttpHeaderBuilder().withAspectModelUrn(aspectModelUrn).build(),
       responseType: 'blob' as 'json',
     });
   }

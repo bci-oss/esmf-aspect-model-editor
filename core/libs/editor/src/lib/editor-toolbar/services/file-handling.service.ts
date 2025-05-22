@@ -366,23 +366,15 @@ export class FileHandlingService {
     );
   }
 
-  importFilesToWorkspace(
-    files: string[],
-    conflictFiles: {
-      replace: string[];
-      keep: string[];
-    },
-    showLoading = true,
-  ): Observable<RdfModel[]> {
+  importFilesToWorkspace(file: File): Observable<RdfModel[]> {
     const loadingOptions: LoadingScreenOptions = {
       title: this.translate.language.LOADING_SCREEN_DIALOG.WORKSPACE_IMPORT,
       hasCloseButton: false,
     };
-    if (showLoading) this.loadingScreenService.open(loadingOptions);
 
-    const filesReplacement = this.getFilesReplacement(files, conflictFiles);
+    this.loadingScreenService.open(loadingOptions);
 
-    return this.importFiles(filesReplacement).pipe(
+    return this.importFiles(file).pipe(
       tap(() => this.notificationsService.success({title: this.translate.language.NOTIFICATION_SERVICE.PACKAGE_IMPORTED_SUCCESS})),
       catchError(httpError => {
         // @TODO: Temporary check until file blockage is fixed
@@ -392,7 +384,7 @@ export class FileHandlingService {
 
         return of(null);
       }),
-      finalize(() => (showLoading ? this.loadingScreenService.close() : null)),
+      finalize(() => this.loadingScreenService.close()),
     );
   }
 
@@ -517,39 +509,8 @@ export class FileHandlingService {
     );
   }
 
-  private importFiles(filesReplacement: {namespace: string; files: string[]}[]): Observable<RdfModel[]> {
-    return this.modelApiService.replaceFiles(filesReplacement).pipe(
-      map(() => {
-        const requests: Observable<RdfModel>[] = [];
-
-        filesReplacement.forEach(entry =>
-          entry.files.forEach(file => {
-            const fileName = `${entry.namespace}:${file}`;
-            requests.push(this.importFile(fileName));
-          }),
-        );
-
-        return requests;
-      }),
-      switchMap(requests => forkJoin(requests)),
-    );
-  }
-
-  private importFile(fileName: string): Observable<RdfModel> {
-    return this.modelApiService
-      .getAspectMetaModel(fileName)
-      .pipe(switchMap(formattedContent => this.addFileToWorkspace(fileName, formattedContent)));
-  }
-
-  private getFilesReplacement(
-    files: string[],
-    {keep, replace}: {replace: string[]; keep: string[]},
-  ): {namespace: string; files: string[]}[] {
-    // Should "keep" files be excluded?
-    return Array.from(new Set([...keep, ...replace])).map(namespace => ({
-      namespace,
-      files: files.filter(file => file.startsWith(namespace)).map(file => file.replace(`${namespace}:`, '')),
-    }));
+  private importFiles(file: File): Observable<any> {
+    return this.modelApiService.importPackage(file);
   }
 
   private getModelLoaderState(): Observable<ModelLoaderState> {

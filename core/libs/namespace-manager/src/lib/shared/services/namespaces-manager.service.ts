@@ -69,9 +69,9 @@ export class NamespacesManagerService {
           this.router.navigate([{outlets: {'import-namespaces': null}}]);
         }),
       ),
-      switchMap(() => this.modelApiService.uploadZip(zip)),
+      switchMap(() => this.modelApiService.validateImportPackage(zip)),
       tap(result => {
-        this.session.parseResponse(result);
+        this.session.parseResponse(zip, result);
         this.session.state.validating$.next(false);
       }),
       catchError(e => of(this.session.state.validating$.error(e))),
@@ -90,17 +90,6 @@ export class NamespacesManagerService {
         const cb = () => this.router.navigate([{outlets: {'export-namespaces': null}}]);
         this.setOnClose(cb);
       }),
-    );
-  }
-
-  validateExport(files: {namespace: string; files: string[]}[]) {
-    this.session.state.validating$.next(true);
-    return this.modelApiService.validateFilesForExport(files).pipe(
-      tap(result => {
-        this.session.parseResponse(result);
-        this.session.state.validating$.next(false);
-      }),
-      catchError(err => of(this.session.state.validating$.error(err))),
     );
   }
 

@@ -71,7 +71,9 @@ function startService() {
 
       if (processes.length === 0) {
         global.backendPort = port;
-        const process = spawn(path.join(rootPath, `ame-backend-${projectVersion}-${platformData.extension}`), [`-Dserver.port=${port}`]);
+        const process = spawn(path.join(rootPath, `ame-backend-${projectVersion}-${platformData.extension}`), [
+          `-Dmicronaut.server.port=${port}`,
+        ]);
 
         process.stdout.on('data', data => {
           if (data.includes(`Tomcat started on port(s): ${port}`)) {

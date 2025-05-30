@@ -31,7 +31,7 @@ export class ElementSet<T extends NamedElement = NamedElement> extends Array<T> 
         continue;
       }
 
-      item?.aspectModelUrn && (pushedItems += super.push(item));
+      pushedItems += super.push(item);
     }
     return pushedItems;
   }

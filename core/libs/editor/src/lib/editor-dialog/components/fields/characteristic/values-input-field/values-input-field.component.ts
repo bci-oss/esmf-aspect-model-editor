@@ -168,6 +168,6 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
 
     this.enumValues = currentValues.some(val => val instanceof DefaultEntityInstance)
       ? currentValues
-      : (currentValues.map(value => (typeof value === 'string' ? {name: value} : value)) as any[]);
+      : (currentValues.map(value => (typeof value === 'string' ? {name: value} : value?.value || value)) as any[]);
   }
 }

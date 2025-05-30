@@ -44,7 +44,7 @@ class SidebarStateWithRefresh extends SidebarState {
 }
 
 class Selection {
-  #selection$ = new BehaviorSubject<{namespace: string; file: string}>(null);
+  #selection$ = new BehaviorSubject<{namespace: string; file: string; aspectModelUrn: string}>(null);
   public selection$ = this.#selection$.asObservable();
 
   constructor(
@@ -52,11 +52,11 @@ class Selection {
     public file?: string,
   ) {}
 
-  public select(namespace: string, file: string) {
+  public select(namespace: string, file: FileStatus) {
     if (namespace && file) {
       this.namespace = namespace;
-      this.file = file;
-      this.#selection$.next({namespace, file});
+      this.file = file.name;
+      this.#selection$.next({namespace, file: file.name, aspectModelUrn: file.aspectModelUrn});
     }
   }
 
@@ -80,6 +80,7 @@ export class FileStatus {
   public dependencies: string[];
   public missingDependencies: string[];
   public unknownSammVersion: boolean;
+  public aspectModelUrn: string;
 
   constructor(public name: string) {}
 }

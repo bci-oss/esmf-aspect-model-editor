@@ -161,8 +161,8 @@ export class MxGraphService {
   renderModelElement(node: ModelTree<NamedElement>, configuration?: ShapeConfiguration): mxgraph.mxCell {
     const geometry = this.mxGraphGeometryProviderService.createGeometry(
       node,
-      (configuration && configuration.geometry.x) || this.nextCellCoordinates?.x || 0,
-      (configuration && configuration.geometry.y) || this.nextCellCoordinates?.y || 0,
+      (configuration && configuration?.geometry?.x) || this.nextCellCoordinates?.x || 0,
+      (configuration && configuration?.geometry?.y) || this.nextCellCoordinates?.y || 0,
     );
 
     this.nextCellCoordinates = null;
@@ -408,8 +408,8 @@ export class MxGraphService {
     }
   }
 
-  formatCell(cell: mxgraph.mxCell) {
-    if (this.configurationService.getSettings().autoFormatEnabled) {
+  formatCell(cell: mxgraph.mxCell, force = false) {
+    if (!force && this.configurationService.getSettings().autoFormatEnabled) {
       // don't apply cell formatting in case auto format is enabled
       return;
     }

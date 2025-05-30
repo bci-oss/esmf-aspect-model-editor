@@ -318,10 +318,12 @@ export class ElementModelService {
     const elementModelService = this.modelRootService.getElementModelService(modelElement);
 
     for (const parent of modelElement.parents) {
+      if (!(parent instanceof NamedElement)) continue;
       MxGraphHelper.removeRelation(parent, modelElement);
     }
 
     for (const child of modelElement.children) {
+      if (!(child instanceof NamedElement)) continue;
       MxGraphHelper.removeRelation(modelElement, child);
     }
 

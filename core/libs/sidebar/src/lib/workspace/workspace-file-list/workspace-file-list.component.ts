@@ -18,7 +18,7 @@ import {ElectronSignals, ElectronSignalsService, NotificationsService} from '@am
 import {FileStatus, SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
 import {ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit, inject} from '@angular/core';
-import {Subscription, map, switchMap} from 'rxjs';
+import {Subscription, catchError, map, switchMap, throwError} from 'rxjs';
 import {ConfirmDialogEnum} from '../../../../../editor/src/lib/models/confirm-dialog.enum';
 
 @Component({
@@ -63,8 +63,12 @@ export class WorkspaceFileListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const sub = this.sidebarService.workspace.refreshSignal$
       .pipe(
-        switchMap(() => this.modelChecker.detectWorkspace()),
+        switchMap(() => this.modelChecker.detectWorkspaceErrors()),
         map(files => this.sidebarService.updateWorkspace(files)),
+        catchError(error => {
+          console.log(error);
+          return throwError(() => error);
+        }),
       )
       .subscribe(() => {
         for (const namespace in this.namespaces) {
@@ -126,7 +130,7 @@ export class WorkspaceFileListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.sidebarService.selection.select(namespace, file.name);
+    this.sidebarService.selection.select(namespace, file);
     this.changeDetector.detectChanges();
   }
 
@@ -145,6 +149,7 @@ export class WorkspaceFileListComponent implements OnInit, OnDestroy {
       namespace,
       file: file.name,
       fromWorkspace: true,
+      aspectModelUrn: file.aspectModelUrn,
     });
 
     this.menuSelection = null;
@@ -182,7 +187,7 @@ export class WorkspaceFileListComponent implements OnInit, OnDestroy {
           this.modelSaverService.saveModel().subscribe();
         }
         // TODO improve this functionality
-        this.loadNamespaceFile(absoluteFileName);
+        this.fileHandlingService.loadNamespaceFile(absoluteFileName, file.aspectModelUrn);
       });
   }
 
@@ -219,10 +224,6 @@ export class WorkspaceFileListComponent implements OnInit, OnDestroy {
 
   public sortNamespaces(namespaces: {key: string; value: any}[]) {
     return namespaces.sort((n1, n2) => (n1.key >= n2.key ? 1 : -1));
-  }
-
-  private loadNamespaceFile(absoluteFileName: string) {
-    this.fileHandlingService.loadNamespaceFile(absoluteFileName);
   }
 
   public isCurrentFile(key: string, file: FileStatus): string {

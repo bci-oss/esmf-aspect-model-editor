@@ -19,14 +19,14 @@
     @if (extracting) {
       <section class="extracting">
         <mat-spinner class="extracting__spinner"></mat-spinner>
-        <p class="extracting__message">Extracting...</p>
+        <p class="extracting__message">Loading namespaces...</p>
       </section>
     } @else {
       <h4 class="column-title">Namespaces</h4>
     }
 
     <mat-radio-group [(ngModel)]="selectedKey" aria-label="Select an option">
-      @for (entry of entries | keyvalue; track entry) {
+      @for (entry of entries | keyvalue; track entry.key) {
         <mat-radio-button class="namespace" value="{{ $any(entry.key) }}">
           <div class="checkbox-info">
             <span class="namespace">Urn: {{ $any(entry.key) }}</span>

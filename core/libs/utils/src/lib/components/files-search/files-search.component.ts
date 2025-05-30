@@ -77,7 +77,7 @@ export class FilesSearchComponent {
     if (!Object.keys(this.namespaces).length) {
       this.loading = true;
       this.modelChecker
-        .detectWorkspace()
+        .detectWorkspaceErrors()
         .pipe(map(files => this.sidebarStateService.updateWorkspace(files)))
         .subscribe(namespaces => {
           this.parseFiles(namespaces);
@@ -90,13 +90,13 @@ export class FilesSearchComponent {
     }
   }
 
-  openFile({file, namespace}) {
+  openFile({file, namespace, aspectModelUrn}) {
     this.matDialog
       .open(OpenFileDialogComponent, {data: {file, namespace}})
       .afterClosed()
       .pipe(
         filter(result => result),
-        switchMap(result => (result === 'open-in' ? this.loadModel(file, namespace) : this.openWindow(file, namespace))),
+        switchMap(result => (result === 'open-in' ? this.loadModel(file, namespace, aspectModelUrn) : this.openWindow(file, namespace))),
       )
       .subscribe();
     this.searchControl.patchValue('');
@@ -109,7 +109,7 @@ export class FilesSearchComponent {
 
   parseFiles(namespaces: Record<string, FileStatus[]>) {
     this.files = Object.entries(namespaces).reduce((acc: any, [namespace, files]) => {
-      acc.push(...files.map(({name: file}) => ({file, namespace})));
+      acc.push(...files.map(file => ({file: file.name, namespace, aspectModelUrn: file.aspectModelUrn})));
       return acc;
     }, []);
     this.searchableFiles = this.files;
@@ -122,18 +122,15 @@ export class FilesSearchComponent {
     );
   }
 
-  private loadModel(file: string, namespace: string) {
-    const status = this.checkFile(file, namespace);
-    if (status) {
-      return of(status);
-    }
-
-    return this.checkUnsavedChanges().pipe(switchMap(() => of(this.fileHandlingService.loadNamespaceFile(`${namespace}:${file}`))));
+  private loadModel(file: string, namespace: string, aspectModelUrn: string) {
+    return this.checkUnsavedChanges().pipe(
+      switchMap(() => of(this.fileHandlingService.loadNamespaceFile(`${namespace}:${file}`, aspectModelUrn))),
+    );
   }
 
   private openWindow(file: string, namespace: string) {
     const status = this.checkFile(file, namespace);
-    if (status) {
+    if (!(status instanceof FileStatus)) {
       return of(status);
     }
 
@@ -143,6 +140,7 @@ export class FilesSearchComponent {
           namespace,
           file,
           fromWorkspace: true,
+          aspectModelUrn: status.aspectModelUrn,
         }),
       ),
     );
@@ -162,6 +160,6 @@ export class FilesSearchComponent {
       return 'invalid-file';
     }
 
-    return null;
+    return fileStatus;
   }
 }

@@ -56,7 +56,7 @@ export class OpenElementWindowComponent implements OnInit {
   ngOnInit() {
     const [namespace, elementName] = this.elementInfo.urn.replace('urn:samm:', '').split('#');
     this.modelApiService
-      .getAspectMetaModel(`${namespace}:${this.elementInfo.file}`)
+      .getAspectMetaModel(this.elementInfo.urn)
       .pipe(
         switchMap((model: string) => this.modelLoaderService.parseRdfModel([model])),
         tap(rdfModel => {
@@ -67,6 +67,7 @@ export class OpenElementWindowComponent implements OnInit {
               file: this.elementInfo.file,
               editElement: this.elementInfo.urn,
               fromWorkspace: true,
+              aspectModelUrn: this.elementInfo.urn,
             });
           } else {
             this.notificationService.error({

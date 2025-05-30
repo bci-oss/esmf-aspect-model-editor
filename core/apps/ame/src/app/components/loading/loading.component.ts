@@ -77,8 +77,7 @@ export class LoadingComponent implements AfterViewInit, OnDestroy {
           return of(null);
         }
 
-        const {namespace, file} = data.options;
-        return this.modelApiService.getAspectMetaModel(`${namespace}:${file}`);
+        return this.modelApiService.getAspectMetaModel(data.options.aspectModelUrn);
       }),
     );
   }

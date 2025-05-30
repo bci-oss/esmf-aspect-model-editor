@@ -33,6 +33,7 @@ import {SidebarMenuComponent} from './sidebar-menu/sidebar-menu.component';
 import {SidebarSAMMElementsComponent} from './sidebar-samm-elements/sidebar-samm-elements.component';
 import {SidebarComponent} from './sidebar/sidebar.component';
 import {WorkspaceEmptyComponent} from './workspace/workspace-empty/workspace-empty.component';
+import {WorkspaceErrorComponent} from './workspace/workspace-error/workspace-error.component';
 import {WorkspaceFileElementsComponent} from './workspace/workspace-file-elements/workspace-file-elements.component';
 import {WorkspaceFileListComponent} from './workspace/workspace-file-list/workspace-file-list.component';
 import {WorkspaceMigrateComponent} from './workspace/workspace-migrate/workspace-migrate.component';
@@ -57,6 +58,7 @@ import {WorkspaceComponent} from './workspace/workspace.component';
     MatCheckboxModule,
     LanguageTranslateModule,
     ElementIconComponent,
+    WorkspaceErrorComponent,
     BarItemComponent,
   ],
   declarations: [

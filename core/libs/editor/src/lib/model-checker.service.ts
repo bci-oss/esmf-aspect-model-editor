@@ -1,4 +1,4 @@
-import {ModelApiService} from '@ame/api';
+import {ModelApiService, ModelData, WorkspaceStructure} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
 import {ExporterHelper} from '@ame/migrator';
 import {RdfModelUtil} from '@ame/rdf/utils';
@@ -21,13 +21,13 @@ export class ModelCheckerService {
    * Gets all files from workspace and process if they have any error or missing dependencies
    *
    * @param signal used to get the current file in process
-   * @returns
+   * @returns {Observable<Record<string, FileStatus>>}
    */
   detectWorkspaceErrors(signal?: Subject<string>): Observable<Record<string, FileStatus>> {
-    let namespacesStructure: Record<string, string[]>;
+    let namespacesStructure: WorkspaceStructure;
 
-    const extractDependencies = (absoluteName: string) =>
-      this.modelApiService.getAspectMetaModel(absoluteName).pipe(
+    const extractDependencies = (absoluteName: string, modelData: ModelData) =>
+      this.modelApiService.getAspectMetaModel(modelData.aspectModelUrn).pipe(
         switchMap(rdf => this.modelLoader.parseRdfModel([rdf])),
         map(rdfModel => {
           const dependencies = RdfModelUtil.resolveExternalNamespaces(rdfModel)
@@ -40,8 +40,7 @@ export class ModelCheckerService {
             const [namespace, version] = dependency.split(':');
             if (!namespacesStructure[`${namespace}:${version}`]) missingDependencies.push(dependency);
           }
-          const [, , fileName] = absoluteName.split(':');
-          const status = new FileStatus(fileName);
+          const status = new FileStatus(modelData.model);
           const currentFile = this.loadedFilesService.currentLoadedFile;
 
           status.dependencies = dependencies;
@@ -50,6 +49,7 @@ export class ModelCheckerService {
           status.outdated = ExporterHelper.isVersionOutdated(rdfModel.samm.version, config.currentSammVersion);
           status.loaded = currentFile?.absoluteName === absoluteName;
           status.errored = status.unknownSammVersion || Boolean(status.missingDependencies.length);
+          status.aspectModelUrn = modelData.aspectModelUrn;
 
           signal?.next(absoluteName);
 
@@ -62,9 +62,11 @@ export class ModelCheckerService {
         namespacesStructure = structure;
         const requests = {};
         for (const namespace in structure) {
-          for (const file of structure[namespace]) {
-            const absoluteName = `${namespace}:${file}`;
-            requests[absoluteName] = extractDependencies(absoluteName);
+          for (const {version, models} of structure[namespace]) {
+            for (const model of models) {
+              const absoluteName = `${namespace}:${version}:${model.model}`;
+              requests[absoluteName] = extractDependencies(absoluteName, model);
+            }
           }
         }
 
@@ -84,9 +86,8 @@ export class ModelCheckerService {
         const requests = {};
         for (const namespace in structure) {
           for (const element of structure[namespace]) {
-            const elementType = element as any;
-            for (const value of elementType.models) {
-              const fileInformation = {namespace: namespace, model: value.model, version: elementType.version};
+            for (const value of element.models) {
+              const fileInformation = {namespace: namespace, model: value.model, version: element.version};
               requests[value.aspectModelUrn] = fileInformation;
             }
           }

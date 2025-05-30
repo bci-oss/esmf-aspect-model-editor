@@ -27,6 +27,7 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
 
   public namespaces = this.sidebarService.namespacesState;
   public loading = false;
+  public error: {code: number; message: string; path: string} = null;
 
   public get namespacesKeys(): string[] {
     return this.namespaces.namespacesKeys;
@@ -40,11 +41,12 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
     let refreshing$: Subscription;
     const namespaces$ = this.sidebarService.workspace.refreshSignal$.subscribe(() => {
       refreshing$?.unsubscribe();
+      this.error = null;
       this.loading = true;
       this.changeDetector.detectChanges();
 
       refreshing$ = this.modelChecker
-        .detectWorkspace()
+        .detectWorkspaceErrors()
         .pipe(
           map(files => this.sidebarService.updateWorkspace(files)),
           finalize(() => {
@@ -52,7 +54,13 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
             this.changeDetector.detectChanges();
           }),
         )
-        .subscribe();
+        .subscribe({
+          error: err => {
+            if (err?.error?.error) {
+              this.error = err.error.error;
+            }
+          },
+        });
     });
 
     this.subscription.add(refreshing$);

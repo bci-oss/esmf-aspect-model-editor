@@ -245,6 +245,7 @@ export class ElectronTunnelService {
                     this.electronSignalsService.call('unlockFile', {
                       namespace: options?.namespace,
                       file: options?.file,
+                      aspectModelUrn: options.aspectModelUrn,
                     }),
                   ),
                   map(() => close),
@@ -314,21 +315,21 @@ export class ElectronTunnelService {
     //   if (file === 'empty.ttl') {
     //     return of();
     //   }
-    //
+
     //   return this.electronSignalsService.call('addLock', {namespace, file});
     // });
-    //
+
     // this.electronSignalsService.addListener('unlockFile', ({namespace, file}) => {
     //   return this.electronSignalsService.call('removeLock', {namespace, file});
     // });
 
-    this.ipcRenderer.on(ElectronEvents.REQUEST_LOCK_FILE, (_: unknown, namespace: string, file: string) => {
+    this.ipcRenderer.on(ElectronEvents.REQUEST_LOCK_FILE, (_: unknown, namespace: string, file: string, aspectModelUrn: string) => {
       if (file === 'empty.ttl') return;
-      this.electronSignalsService.call('lockFile', {namespace, file}).subscribe();
+      this.electronSignalsService.call('lockFile', {namespace, file, aspectModelUrn}).subscribe();
     });
 
-    this.ipcRenderer.on(ElectronEvents.REQUEST_UNLOCK_FILE, (_: unknown, namespace: string, file: string) => {
-      this.electronSignalsService.call('unlockFile', {namespace, file}).subscribe();
+    this.ipcRenderer.on(ElectronEvents.REQUEST_UNLOCK_FILE, (_: unknown, namespace: string, file: string, aspectModelUrn: string) => {
+      this.electronSignalsService.call('unlockFile', {namespace, file, aspectModelUrn}).subscribe();
     });
 
     this.electronSignalsService.addListener('addLock', ({namespace, file}) => {

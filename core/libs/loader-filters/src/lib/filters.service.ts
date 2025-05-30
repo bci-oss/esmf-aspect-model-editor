@@ -104,7 +104,7 @@ export class FiltersService {
           this.filterAttributesService.isFiltering = true;
           this.filtersMethods[filter]?.();
           const loadedFiles = this.injector.get(LoadedFilesService);
-          const mxGraphSetupVisitor = new MxGraphRenderer(
+          const mxGraphRenderer = new MxGraphRenderer(
             mxGraphService,
             this.injector.get(MxGraphShapeOverlayService),
             this.injector.get(SammLanguageSettingsService),
@@ -124,7 +124,7 @@ export class FiltersService {
 
           return mxGraphService.updateGraph(() => {
             for (const elementTree of filteredElements) {
-              mxGraphSetupVisitor.render(elementTree, null);
+              mxGraphRenderer.render(elementTree, null);
             }
             this.injector.get(MxGraphAttributeService).inCollapsedMode && mxGraphService.foldCells();
           });

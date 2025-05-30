@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelApiService} from '@ame/api';
+import {ModelApiService, WorkspaceStructure} from '@ame/api';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {InstantiatorService} from '@ame/instantiator';
 import {ExporterHelper} from '@ame/migrator';
@@ -90,7 +90,7 @@ export class ModelLoaderService {
       // getting dependencies from the current file and filter data from server
       switchMap((model: string) => {
         payload.rdfAspectModel = model;
-        return this.getNamespaceDependencies(payload.rdfAspectModel);
+        return this.getNamespaceDependencies(payload.rdfAspectModel, {}, null, payload.namespaceFileName);
       }),
       // loading in sequence all RdfModels for the current file and dependencies
       switchMap(files => this.loadRdfModelFromFiles(files, payload)),
@@ -98,7 +98,7 @@ export class ModelLoaderService {
       switchMap(({files, rdfModels}) =>
         loadAspectModel({
           filesContent: [payload.rdfAspectModel, ...Object.values(files)],
-          // aspectModelUrn: undefined, // @TODO search it in store
+          aspectModelUrn: this.getAspectUrn(rdfModels[payload.namespaceFileName]),
         }).pipe(
           // using switchMap to force an this functionality to run before any tap after this
           switchMap(loadedFile => {
@@ -137,29 +137,29 @@ export class ModelLoaderService {
     );
   }
 
-  /**
-   * Loads all the models from workspace and returns a list of RdfModels.
-   * By default the functions looks if the model is already loaded and will not load it again.
-   *
-   * WARNING: using this function it's time and resources consuming. For more than 100 files in workspace
-   * it can make the app go into resource allocation problem
-   *
-   * @param force Default value is false. Set it to true if the reload of file is necessary
-   */
-  loadWorkspaceModels(force = false): Observable<NamespaceFile[]> {
-    return this.modelApiService.getAllNamespacesFilesContent().pipe(
-      switchMap(files =>
-        forkJoin(
-          files.map(file => {
-            const loadedFile = this.loadedFilesService.getFile(file.fileName);
-            return !force && loadedFile
-              ? of(loadedFile)
-              : this.loadSingleModel({rdfAspectModel: file.aspectMetaModel, namespaceFileName: file.fileName, fromWorkspace: true});
-          }),
-        ),
-      ),
-    );
-  }
+  // /**
+  //  * Loads all the models from workspace and returns a list of RdfModels.
+  //  * By default the functions looks if the model is already loaded and will not load it again.
+  //  *
+  //  * WARNING: using this function it's time and resources consuming. For more than 100 files in workspace
+  //  * it can make the app go into resource allocation problem
+  //  *
+  //  * @param force Default value is false. Set it to true if the reload of file is necessary
+  //  */
+  // loadWorkspaceModels(force = false): Observable<NamespaceFile[]> {
+  //   return this.modelApiService.getAllNamespacesFilesContent().pipe(
+  //     switchMap(files =>
+  //       forkJoin(
+  //         files.map(file => {
+  //           const loadedFile = this.loadedFilesService.getFile(file.fileName);
+  //           return !force && loadedFile
+  //             ? of(loadedFile)
+  //             : this.loadSingleModel({rdfAspectModel: file.aspectMetaModel, namespaceFileName: file.fileName, fromWorkspace: true});
+  //         }),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   getRdfModelsFromWorkspace() {
     return this.modelApiService.getAllNamespacesFilesContent().pipe(
@@ -186,17 +186,27 @@ export class ModelLoaderService {
   private getNamespaceDependencies(
     rdf: string,
     namespaces: Record<string, string> = {},
-    workspaceStructure: Record<string, string[]> = null,
+    workspaceStructure: WorkspaceStructure = null,
+    currentFile: string,
   ) {
     return (workspaceStructure ? of(workspaceStructure) : this.modelApiService.getNamespacesStructure()).pipe(
       switchMap(wStructure =>
         this.parseRdfModel([rdf]).pipe(
           switchMap(rdfModel => {
-            const dependencies = RdfModelUtil.resolveExternalNamespaces(rdfModel).map(external => external.replace(/urn:samm:|#/gi, ''));
+            const mainNamespace = rdfModel.getPrefixes()['']?.replace('urn:samm:', '')?.replace('#', '');
+            const excludeSelf = Object.keys(namespaces).some(namespace => namespace.startsWith(mainNamespace));
+            const dependencies = RdfModelUtil.resolveExternalNamespaces(rdfModel, excludeSelf).map(external =>
+              external.replace(/urn:samm:|#/gi, ''),
+            );
             let dependenciesRequests = {};
             for (const dependency of dependencies) {
-              const files = (wStructure?.[dependency] || []).reduce((acc, file) => {
-                acc[`${dependency}:${file}`] = this.modelApiService.getAspectMetaModel(`${dependency}:${file}`);
+              const [namespace] = dependency.split(':');
+              const files = (wStructure[namespace] || []).reduce((acc, file) => {
+                for (const model of file.models) {
+                  const dependencyFile = `${dependency}:${model.model}`;
+                  if (dependencyFile === currentFile) continue;
+                  acc[`${dependency}:${model.model}`] = this.modelApiService.getAspectMetaModel(model.aspectModelUrn);
+                }
                 return acc;
               }, {});
               dependenciesRequests = {...dependenciesRequests, ...files};
@@ -210,7 +220,7 @@ export class ModelLoaderService {
 
             entries.forEach(([key, value]) => (namespaces[key] = value));
             const furtherDependencies = entries.reduce((acc, [key, value]) => {
-              acc[key] = this.getNamespaceDependencies(value, namespaces, wStructure);
+              acc[key] = this.getNamespaceDependencies(value, namespaces, wStructure, currentFile);
               return acc;
             }, {});
             return forkJoin(furtherDependencies);
@@ -219,6 +229,11 @@ export class ModelLoaderService {
         ),
       ),
     );
+  }
+
+  private getAspectUrn(rdfModel: RdfModel): string | undefined {
+    if (!rdfModel) return undefined;
+    return rdfModel.store.getSubjects(rdfModel.samm.RdfType(), rdfModel.samm.Aspect(), null)?.[0]?.value;
   }
 
   private loadRdfModelsInSequence(

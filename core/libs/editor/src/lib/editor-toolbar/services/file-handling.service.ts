@@ -158,9 +158,9 @@ export class FileHandlingService {
     );
   }
 
-  loadNamespaceFile(absoluteFileName: string) {
+  loadNamespaceFile(absoluteFileName: string, aspectModelUrn: string) {
     const subscription = this.modelApiService
-      .getAspectMetaModel(absoluteFileName)
+      .getAspectMetaModel(aspectModelUrn)
       .pipe(
         first(),
         tap(() => {

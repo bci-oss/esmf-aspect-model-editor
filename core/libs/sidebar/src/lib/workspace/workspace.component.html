@@ -32,8 +32,9 @@
     <mat-icon>close</mat-icon>
   </button>
 </div>
-
-@if (namespacesKeys.length === 0) {
+@if (error) {
+  <ame-workspace-error [error]="error"></ame-workspace-error>
+} @else if (namespacesKeys.length === 0) {
   <ame-workspace-empty [loading]="loading"></ame-workspace-empty>
 } @else {
   <ame-workspace-file-list class="list"></ame-workspace-file-list>

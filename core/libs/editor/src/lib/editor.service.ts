@@ -244,12 +244,16 @@ export class EditorService {
       }
 
       const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(newInstance);
-      metaModelElement
-        ? this.mxGraphService.renderModelElement(this.filtersService.createNode(metaModelElement), {
-            shapeAttributes: [],
-            geometry: {x, y},
-          })
-        : this.openAlertBox();
+      // Now it works for first level since for new elements there is no case for more levels
+      for (const child of metaModelElement.children) {
+        const newNamedElement = this.modelElementNamingService.resolveMetaModelElement(child);
+        if (newNamedElement instanceof NamedElement) {
+          this.currentLoadedFile.cachedFile.resolveInstance(child);
+        }
+      }
+      const node = this.filtersService.createNode(newInstance);
+
+      console.log(node);
 
       if (metaModelElement instanceof NamedElement) {
         this.currentLoadedFile.cachedFile.resolveInstance(metaModelElement);

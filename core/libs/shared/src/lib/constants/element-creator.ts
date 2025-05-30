@@ -27,6 +27,7 @@ import {
   DefaultOperation,
   DefaultProperty,
   DefaultQuantifiable,
+  DefaultScalar,
   DefaultSet,
   DefaultSingleEntity,
   DefaultSortedSet,
@@ -36,6 +37,7 @@ import {
   DefaultTrait,
   DefaultUnit,
   NamedElement,
+  XsdDataTypes,
 } from '@esmf/aspect-model-loader';
 import {config} from '../config';
 
@@ -69,10 +71,20 @@ export function createEmptyElement<T>(elementClass: {new (...x: any[]): T}, isAb
         metaModelVersion: config.currentSammVersion,
         aspectModelUrn: '',
         isAbstract,
+        characteristic: createEmptyElement(DefaultCharacteristic),
       });
+      element.characteristic.parents.push(element);
       break;
     case characteristics.includes(elementClass as any):
-      element = new elementClass({name: 'Characteristic', metaModelVersion: config.currentSammVersion, aspectModelUrn: ''});
+      element = new elementClass({
+        name: 'Characteristic',
+        metaModelVersion: config.currentSammVersion,
+        aspectModelUrn: '',
+        dataType: new DefaultScalar({
+          urn: new XsdDataTypes(config.currentSammVersion).getDataType('string').isDefinedBy,
+          metaModelVersion: config.currentSammVersion,
+        }),
+      });
       break;
     case elementClass === DefaultEntity:
       element = new DefaultEntity({

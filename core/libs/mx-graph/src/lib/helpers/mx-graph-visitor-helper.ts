@@ -280,7 +280,7 @@ export class MxGraphVisitorHelper {
 
   static addReferenceUnit(unit: Unit): ShapeAttribute {
     if (unit.referenceUnit) {
-      return {label: `referenceUnit = ${unit.referenceUnit.name}`, key: 'referenceUnit'};
+      return {label: `referenceUnit = ${unit.referenceUnit?.name || unit.referenceUnit}`, key: 'referenceUnit'};
     }
     return null;
   }

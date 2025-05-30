@@ -58,7 +58,7 @@ export class WorkspaceFileElementsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.selection$.pipe(filter(Boolean)).subscribe(({namespace, file}) => {
+    this.selection$.pipe(filter(Boolean)).subscribe(({namespace, file, aspectModelUrn}) => {
       this.elements = {};
       this.searched = {};
 
@@ -74,7 +74,7 @@ export class WorkspaceFileElementsComponent implements OnInit {
 
       if (this.loadedFilesService.getFile(`${namespace}:${file}`)) {
         this.updateElements(this.loadedFilesService.getFile(`${namespace}:${file}`));
-      } else this.requestFile(`${namespace}:${file}`);
+      } else this.requestFile(`${namespace}:${file}`, aspectModelUrn);
     });
   }
 
@@ -121,9 +121,9 @@ export class WorkspaceFileElementsComponent implements OnInit {
     this.changeDetector.detectChanges();
   }
 
-  private requestFile(absoluteName: string) {
+  private requestFile(absoluteName: string, aspectModelUrn: string) {
     this.modelApiService
-      .getAspectMetaModel(absoluteName)
+      .getAspectMetaModel(aspectModelUrn)
       .pipe(
         switchMap(content =>
           this.modelLoaderService.loadSingleModel({

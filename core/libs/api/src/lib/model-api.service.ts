@@ -19,6 +19,7 @@ import {Injectable, inject} from '@angular/core';
 import {Observable, forkJoin, of, throwError} from 'rxjs';
 import {catchError, map, mergeMap, retry, tap, timeout} from 'rxjs/operators';
 import {ModelValidatorService} from './model-validator.service';
+import {WorkspaceStructure} from './models';
 
 export enum PREDEFINED_MODELS {
   SIMPLE_ASPECT = 'assets/aspect-models/org.eclipse.examples/1.0.0/SimpleAspect.ttl',
@@ -135,8 +136,8 @@ export class ModelApiService {
       );
   }
 
-  getNamespacesStructure(): Observable<Record<string, string[]>> {
-    return this.http.get<Record<string, string[]>>(`${this.serviceUrl}${this.api.models}/namespaces`, {
+  getNamespacesStructure(): Observable<WorkspaceStructure> {
+    return this.http.get<WorkspaceStructure>(`${this.serviceUrl}${this.api.models}/namespaces`, {
       params: {
         shouldRefresh: true,
       },
@@ -144,12 +145,35 @@ export class ModelApiService {
   }
 
   // TODO In the backend a defined object should be returned
+  /**
+   * @deprecated this function will be removed in the next versions
+   */
   getNamespacesAppendWithFiles(): Observable<string[]> {
     return this.getNamespacesStructure().pipe(
       timeout(this.requestTimeout),
       map(data => {
         return Object.keys(data).reduce<string[]>(
-          (fileNames, namespace) => [...fileNames, ...data[namespace].map((fileName: string) => `${namespace}:${fileName}`)],
+          (fileNames, namespace) => [
+            ...fileNames,
+            ...data[namespace].map(({version, models}) => models.map(model => `${namespace}:${version}:${model.model}`)).flat(),
+          ],
+          [],
+        );
+      }),
+    );
+  }
+
+  getWorkspaceAspectModelUrns(): Observable<{aspectModelUrn: string; fileName: string; namespace: string}[]> {
+    return this.getNamespacesStructure().pipe(
+      timeout(this.requestTimeout),
+      map(data => {
+        return Object.keys(data).reduce<{aspectModelUrn: string; fileName: string; namespace: string}[]>(
+          (fileNames, namespace) => [
+            ...fileNames,
+            ...data[namespace]
+              .map(({models}) => models.map(model => ({aspectModelUrn: model.aspectModelUrn, fileName: model.model, namespace})))
+              .flat(),
+          ],
           [],
         );
       }),
@@ -157,12 +181,12 @@ export class ModelApiService {
   }
 
   getAllNamespacesFilesContent(): Observable<FileContentModel[]> {
-    return this.getNamespacesAppendWithFiles().pipe(
-      map(aspectModelFileNames =>
-        aspectModelFileNames.reduce<any[]>(
-          (files, absoluteFileName) => [
+    return this.getWorkspaceAspectModelUrns().pipe(
+      map(aspectModelUrns =>
+        aspectModelUrns.reduce<any[]>(
+          (files, file) => [
             ...files,
-            this.getAspectMetaModel(absoluteFileName).pipe(map(aspectMetaModel => new FileContentModel(absoluteFileName, aspectMetaModel))),
+            this.getAspectMetaModel(file.aspectModelUrn).pipe(map(aspectMetaModel => new FileContentModel(file.fileName, aspectMetaModel))),
           ],
           [],
         ),
@@ -172,11 +196,10 @@ export class ModelApiService {
     );
   }
 
-  getAspectMetaModel(absoluteModelName: string): Observable<string> {
-    const [namespace, version, file] = absoluteModelName.split(':');
+  getAspectMetaModel(aspectModelUrn: string): Observable<string> {
     return this.http
       .get<string>(`${this.serviceUrl}${this.api.models}`, {
-        headers: new HttpHeaderBuilder().withContentTypeRdfTurtle().withNamespace(`${namespace}:${version}`).withFileName(file).build(),
+        headers: new HttpHeaderBuilder().withContentTypeRdfTurtle().withAspectModelUrn(aspectModelUrn).build(),
         responseType: 'text' as 'json',
       })
       .pipe(

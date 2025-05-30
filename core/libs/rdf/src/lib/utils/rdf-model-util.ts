@@ -275,11 +275,13 @@ export class RdfModelUtil {
     return !!quads?.length;
   }
 
-  static resolveExternalNamespaces(rdfModel: RdfModel) {
+  static resolveExternalNamespaces(rdfModel: RdfModel, selfExclude = true) {
     const sammNamespaces = getSammNamespaces();
     const prefixes = Object.values(rdfModel.getPrefixes());
 
-    return prefixes.filter(prefix => prefix != rdfModel.getPrefixes()[''] && !sammNamespaces.includes(prefix));
+    const checkItself = (prefix: string) => (selfExclude ? prefix != rdfModel.getPrefixes()[''] : true);
+
+    return prefixes.filter(prefix => checkItself(prefix) && !sammNamespaces.includes(prefix));
   }
 
   static getUrnFromFileName(fileName: string): string {

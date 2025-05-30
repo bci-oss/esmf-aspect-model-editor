@@ -91,6 +91,7 @@ export class ElementsSearchComponent {
                 namespace: element.aspectModelUrn.replace('urn:samm:', '').split('#')[0],
                 editElement: element.aspectModelUrn,
                 fromWorkspace: true,
+                aspectModelUrn: element.aspectModelUrn,
               })
             : null;
         });

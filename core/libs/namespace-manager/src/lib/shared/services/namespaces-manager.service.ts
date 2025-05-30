@@ -65,7 +65,7 @@ export class NamespacesManagerService {
     return this.session.modalRef.afterOpened().pipe(
       tap(() =>
         this.setOnClose(() => {
-          this.modelLoader.loadWorkspaceModels(true).subscribe(() => this.sidebarService.workspace.refresh());
+          this.sidebarService.workspace.refresh();
           this.router.navigate([{outlets: {'import-namespaces': null}}]);
         }),
       ),

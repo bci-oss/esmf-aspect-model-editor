@@ -20,6 +20,7 @@ export * from './shared/elements-set';
 export * from './shared/model-element-cache.service';
 export * from './shared/rdf-model';
 export * from './shared/rdf-model-util';
+export * from './shared/xsd-datatypes';
 export * from './visitor/default-aspect-model-visitor';
 export * from './visitor/default-namespace-visitor';
 export * from './visitor/model-visitor';

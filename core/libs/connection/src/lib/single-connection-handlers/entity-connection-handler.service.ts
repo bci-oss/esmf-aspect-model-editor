@@ -14,9 +14,10 @@
 import {EntityInstanceService} from '@ame/editor';
 import {FiltersService} from '@ame/loader-filters';
 import {ModelElementNamingService} from '@ame/meta-model';
-import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
+import {MxGraphHelper, MxGraphRenderer, MxGraphService, MxGraphShapeOverlayService} from '@ame/mx-graph';
+import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {createEmptyElement} from '@ame/shared';
-import {Injectable} from '@angular/core';
+import {Injectable, inject} from '@angular/core';
 import {DefaultProperty, Entity} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
 import {SingleShapeConnector} from '../models';
@@ -25,6 +26,8 @@ import {SingleShapeConnector} from '../models';
   providedIn: 'root',
 })
 export class EntityConnectionHandler implements SingleShapeConnector<Entity> {
+  private mxGraphShapeOverlay = inject(MxGraphShapeOverlayService);
+  private sammLangService = inject(SammLanguageSettingsService);
   constructor(
     private mxGraphService: MxGraphService,
     private modelElementNamingService: ModelElementNamingService,
@@ -35,13 +38,10 @@ export class EntityConnectionHandler implements SingleShapeConnector<Entity> {
   public connect(entity: Entity, source: mxgraph.mxCell) {
     const defaultProperty = createEmptyElement(DefaultProperty);
     const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(defaultProperty);
-    const child = this.mxGraphService.renderModelElement(
-      this.filtersService.createNode(metaModelElement, {parent: MxGraphHelper.getModelElement(source)}),
-    );
+    const mxRenderer = new MxGraphRenderer(this.mxGraphService, this.mxGraphShapeOverlay, this.sammLangService, null);
+    mxRenderer.render(this.filtersService.createNode(metaModelElement, {parent: MxGraphHelper.getModelElement(source)}), source);
     entity.properties.push(defaultProperty);
     this.entityInstanceService.onNewProperty(defaultProperty, entity);
-    this.mxGraphService.assignToParent(child, source);
-    this.mxGraphService.formatCell(source);
-    this.mxGraphService.formatShapes();
+    this.mxGraphService.formatCell(source, true);
   }
 }

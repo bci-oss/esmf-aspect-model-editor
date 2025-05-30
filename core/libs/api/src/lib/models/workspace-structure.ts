@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Robert Bosch Manufacturing Solutions GmbH
+ * Copyright (c) 2025 Robert Bosch Manufacturing Solutions GmbH
  *
  * See the AUTHORS file(s) distributed with this work for
  * additional information regarding authorship.
@@ -11,7 +11,15 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-export * from './lib/migrator-api.service';
-export * from './lib/model-api.service';
-export * from './lib/model-validator.service';
-export * from './lib/models';
+export interface ModelData {
+  model: string;
+  existing: boolean;
+  aspectModelUrn: string;
+}
+
+export interface WorkspaceStructure {
+  [namespace: string]: {
+    version: string;
+    models: ModelData[];
+  }[];
+}

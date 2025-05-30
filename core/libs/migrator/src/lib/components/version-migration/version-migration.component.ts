@@ -63,12 +63,10 @@ export class VersionMigrationComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.modelLoader
-      .loadWorkspaceModels()
+    this.prepareNamespaces(this.migratorApiService.rdfModelsToMigrate)
       .pipe(
-        tap(() => this.prepareNamespaces(this.migratorApiService.rdfModelsToMigrate)),
         switchMap(() => this.rewriteStores()),
-        switchMap(modelsTobeDeleted => this.rewriteAndDeleteModels(modelsTobeDeleted)),
+        switchMap((modelsTobeDeleted: any[]) => this.rewriteAndDeleteModels(modelsTobeDeleted)),
       )
       .subscribe({
         complete: () => this.navigateToMigrationSuccess(),

@@ -114,6 +114,8 @@ export class CharacteristicVisitor extends BaseVisitor<DefaultCharacteristic> {
       this.store.getQuads(DataFactory.namedNode(characteristic.aspectModelUrn), this.sammC.ConstraintProperty(), null, null),
     );
 
+    // this.rdfListService.push(characteristic, ...characteristic.constraints);
+
     for (const constraint of characteristic.constraints || []) {
       if (!constraint?.aspectModelUrn) {
         continue;

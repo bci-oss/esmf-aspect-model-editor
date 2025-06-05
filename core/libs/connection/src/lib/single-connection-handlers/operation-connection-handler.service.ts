@@ -14,7 +14,7 @@
 import {FiltersService} from '@ame/loader-filters';
 import {ModelElementNamingService} from '@ame/meta-model';
 import {ModelInfo, MxGraphHelper, MxGraphService} from '@ame/mx-graph';
-import {NotificationsService, createEmptyElement} from '@ame/shared';
+import {ElementCreatorService, NotificationsService} from '@ame/shared';
 import {Injectable} from '@angular/core';
 import {DefaultProperty, Operation} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
@@ -29,10 +29,11 @@ export class OperationConnectionHandler implements SingleShapeConnector<Operatio
     private modelElementNamingService: ModelElementNamingService,
     private notificationsService: NotificationsService,
     private filtersService: FiltersService,
+    private elementCreator: ElementCreatorService,
   ) {}
 
   public connect(operation: Operation, source: mxgraph.mxCell, modelInfo: ModelInfo) {
-    const defaultProperty = createEmptyElement(DefaultProperty);
+    const defaultProperty = this.elementCreator.createEmptyElement(DefaultProperty);
 
     if (ModelInfo.IS_OPERATION_OUTPUT === modelInfo) {
       if (operation.output) {

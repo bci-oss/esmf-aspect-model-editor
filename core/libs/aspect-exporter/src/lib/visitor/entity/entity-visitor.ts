@@ -76,13 +76,8 @@ export class EntityVisitor extends BaseVisitor<DefaultEntity> {
   }
 
   private updateParents(entity: DefaultEntity) {
-    let parents = [];
-    if (entity.parents.length) {
-      parents = entity.parents.filter(metaModelElement => metaModelElement instanceof DefaultCharacteristic);
-    }
-
-    for (const parent of parents) {
-      this.rdfNodeService.update(parent, {dataType: entity.aspectModelUrn});
+    for (const parent of entity.parents || []) {
+      parent instanceof DefaultCharacteristic && this.rdfNodeService.update(parent, {dataType: entity.aspectModelUrn});
     }
   }
 

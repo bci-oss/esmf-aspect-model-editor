@@ -90,6 +90,10 @@ export class NamespaceFile {
   setExistsInWorkspace() {
     this.fromWorkspace = true;
   }
+
+  getAnyAspectModelUrn(): string {
+    return this.rdfModel.store.getSubjects(null, null, null)[0].value;
+  }
 }
 
 @Injectable({providedIn: 'root'})
@@ -132,14 +136,17 @@ export class LoadedFilesService {
     const newFile = new NamespaceFile(fileInfo.rdfModel, fileInfo.cachedFile, fileInfo.aspect);
     if (fileInfo.absoluteName) {
       const [namespace, version, name] = fileInfo.absoluteName.split(':');
-      newFile.namespace = `${namespace}:${version}`;
-      newFile.name = name;
+      if (namespace && version) newFile.namespace = `${namespace}:${version}`;
+      if (name) newFile.name = name;
     }
 
     newFile.rendered = Boolean(fileInfo.rendered);
     newFile.originalName = newFile.name;
     newFile.originalNamespace = newFile.namespace;
     newFile.sharedRdfModel = fileInfo.sharedRdfModel;
+    if (this.files[newFile.absoluteName] && this.files[newFile.absoluteName].fromWorkspace) {
+      this.files[newFile.absoluteName + '_workspace_duplicate'] = this.files[newFile.absoluteName];
+    }
     this.files[newFile.absoluteName] = newFile;
     return newFile;
   }
@@ -198,7 +205,7 @@ export class LoadedFilesService {
 
   getFileFromElement(element: NamedElement): string {
     for (const file of Object.values(this.files)) {
-      if (file.cachedFile?.get(element.aspectModelUrn)) {
+      if (file.rdfModel.store?.getQuads(element.aspectModelUrn, null, null, null)?.length) {
         return file.name;
       }
     }

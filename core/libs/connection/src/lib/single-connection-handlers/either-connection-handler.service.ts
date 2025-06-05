@@ -14,7 +14,7 @@
 import {FiltersService} from '@ame/loader-filters';
 import {ModelElementNamingService} from '@ame/meta-model';
 import {ModelInfo, MxGraphHelper, MxGraphService} from '@ame/mx-graph';
-import {NotificationsService, createEmptyElement} from '@ame/shared';
+import {ElementCreatorService, NotificationsService} from '@ame/shared';
 import {Injectable} from '@angular/core';
 import {DefaultCharacteristic, DefaultEither} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
@@ -29,10 +29,11 @@ export class EitherConnectionHandler implements SingleShapeConnector<DefaultEith
     private modelElementNamingService: ModelElementNamingService,
     private notificationsService: NotificationsService,
     private filtersService: FiltersService,
+    private elementCreator: ElementCreatorService,
   ) {}
 
   public connect(either: DefaultEither, source: mxgraph.mxCell, modelInfo: ModelInfo) {
-    const defaultCharacteristic = createEmptyElement(DefaultCharacteristic);
+    const defaultCharacteristic = this.elementCreator.createEmptyElement(DefaultCharacteristic);
 
     if (ModelInfo.IS_EITHER_LEFT === modelInfo) {
       if (either.left) {

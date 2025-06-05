@@ -45,7 +45,10 @@ export class ModelSaverService {
       }),
       catchError(error => {
         console.error('Error on saving aspect model', error);
-        this.notificationsService.error({title: this.translate.language.NOTIFICATION_SERVICE.ASPECT_SAVED_ERROR});
+        this.notificationsService.error({
+          title: this.translate.language.NOTIFICATION_SERVICE.ASPECT_SAVED_ERROR,
+          message: error?.error?.message,
+        });
         return of(null);
       }),
     );
@@ -100,7 +103,11 @@ export class ModelSaverService {
         const copyright = this.settings.copyrightHeader.join('\n');
         const contentWithCopyright = `${copyright}\n${content}`;
 
-        return this.modelApiService.saveModel(contentWithCopyright, this.currentFile?.absoluteName || '');
+        return this.modelApiService.saveModel(
+          contentWithCopyright,
+          this.currentFile?.getAnyAspectModelUrn(),
+          this.currentFile?.absoluteName || '',
+        );
       }),
       map(() => this.currentFile?.rdfModel),
     );

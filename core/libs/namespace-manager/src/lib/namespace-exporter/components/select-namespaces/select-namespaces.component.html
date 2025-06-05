@@ -25,12 +25,12 @@
       <h4 class="column-title">Namespaces</h4>
     }
 
-    <mat-radio-group [(ngModel)]="selectedKey" aria-label="Select an option">
+    <mat-radio-group class="files" [(ngModel)]="selectedKey" aria-label="Select an option">
       @for (entry of entries | keyvalue; track entry.key) {
         <mat-radio-button class="namespace" value="{{ $any(entry.key) }}">
           <div class="checkbox-info">
-            <span class="namespace">Urn: {{ $any(entry.key) }}</span>
-            <span class="model">Filename: {{ $any(entry.value).model }}</span>
+            <span class="model">File: {{ $any(entry.value).model }}</span>
+            <span class="namespace">Namespace: {{ $any(entry.value).namespace }}</span>
             <span class="version">Version: {{ $any(entry.value).version }}</span>
           </div>
         </mat-radio-button>

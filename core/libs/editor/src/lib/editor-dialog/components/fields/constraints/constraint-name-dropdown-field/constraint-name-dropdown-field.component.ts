@@ -95,7 +95,6 @@ export class ConstraintNameDropdownFieldComponent extends DropdownFieldComponent
 
   private initConstraintList(): void {
     if (this.listConstraints.size <= 0) {
-      this.listConstraints.set('Constraint', () => new DefaultConstraint({name: '', aspectModelUrn: '', metaModelVersion: ''}));
       this.listConstraints.set(
         'EncodingConstraint',
         () => new DefaultEncodingConstraint({name: '', aspectModelUrn: '', metaModelVersion: '', value: ''}),
@@ -124,7 +123,7 @@ export class ConstraintNameDropdownFieldComponent extends DropdownFieldComponent
 
   private migrateCommonAttributes(oldMetaModelElement: NamedElement) {
     Object.keys(oldMetaModelElement).forEach(oldKey => {
-      if (Object.keys(this.metaModelElement).find(key => key === oldKey) && oldKey !== 'aspectModelUrn' && oldKey !== 'name') {
+      if (!['aspectModelUrn', 'name', 'className'].includes(oldKey) && Object.keys(this.metaModelElement).find(key => key === oldKey)) {
         this.metaModelElement[oldKey] = oldMetaModelElement[oldKey];
       }
     });

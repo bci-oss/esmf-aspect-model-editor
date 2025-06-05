@@ -29,7 +29,7 @@ import {
   SammC,
 } from '@esmf/aspect-model-loader';
 import {ComplexType} from 'libs/aspect-model-loader/src/lib/aspect-meta-model/complex-type';
-import {DataFactory, NamedNode, Store} from 'n3';
+import {Store} from 'n3';
 import {RdfNodeService} from '../../rdf-node/rdf-node.service';
 import {BaseVisitor} from '../base-visitor';
 
@@ -65,7 +65,6 @@ export class ConstraintVisitor extends BaseVisitor<DefaultConstraint> {
 
   visit(constraint: DefaultConstraint): DefaultConstraint {
     this.setPrefix(constraint.aspectModelUrn);
-    this.updateParents(constraint);
     this.updateProperties(constraint);
 
     const defaultTrait: DefaultTrait = constraint.parents.find(e => e instanceof DefaultTrait) as DefaultTrait;
@@ -134,26 +133,5 @@ export class ConstraintVisitor extends BaseVisitor<DefaultConstraint> {
 
   private updateLocale(constraint: DefaultLocaleConstraint) {
     this.rdfNodeService.update(constraint, {localeCode: constraint.localeCode});
-  }
-
-  private updateParents(constraint: DefaultConstraint) {
-    constraint.parents?.forEach(parent => {
-      this.replaceConstraints(
-        DataFactory.namedNode(parent.aspectModelUrn),
-        this.sammC.ConstraintProperty(),
-        DataFactory.namedNode(constraint.aspectModelUrn),
-        DataFactory.namedNode(constraint.aspectModelUrn),
-      );
-    });
-  }
-
-  private replaceConstraints(subject: NamedNode, predicate: NamedNode, oldObject: NamedNode, newObject: NamedNode) {
-    const existingQuads = this.store.getQuads(subject, predicate, oldObject, null);
-    if (!existingQuads?.length) {
-      this.store.addQuad(DataFactory.triple(subject, predicate, newObject));
-      return;
-    }
-    this.store.removeQuads(existingQuads);
-    existingQuads.forEach(quad => this.store.addQuad(DataFactory.triple(quad.subject, quad.predicate, newObject)));
   }
 }

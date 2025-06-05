@@ -31,12 +31,12 @@ import {ModelService, RdfService} from '@ame/rdf/services';
 import {ConfigurationService, SammLanguageSettingsService} from '@ame/settings-dialog';
 import {
   AlertService,
+  ElementCreatorService,
   LoadingScreenService,
   NotificationsService,
   SaveValidateErrorsCodes,
   TitleService,
   ValidateStatus,
-  createEmptyElement,
   sammElements,
 } from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
@@ -100,6 +100,7 @@ export class EditorService {
     private injector: Injector,
     private ngZone: NgZone,
     private loadedFilesService: LoadedFilesService,
+    private elementCreator: ElementCreatorService,
   ) {
     if (!environment.production) {
       window['angular.editorService'] = this;
@@ -232,32 +233,22 @@ export class EditorService {
             this.notificationsService.warning({title: 'An AspectModel can contain only one Aspect element.'});
             return;
           }
-          newInstance = createEmptyElement(DefaultAspect);
+          newInstance = this.elementCreator.createEmptyElement(DefaultAspect);
           break;
         default:
-          newInstance = createEmptyElement(sammElements[elementType].class, elementType.includes('abstract'));
+          newInstance = this.elementCreator.createEmptyElement(sammElements[elementType].class, elementType.includes('abstract'));
       }
 
       if (newInstance instanceof DefaultAspect) {
         this.createAspect(newInstance, {x, y});
         return;
       }
+      const renderer = new MxGraphRenderer(this.mxGraphService, this.mxGraphShapeOverlayService, this.sammLangService, null);
 
-      const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(newInstance);
-      // Now it works for first level since for new elements there is no case for more levels
-      for (const child of metaModelElement.children) {
-        const newNamedElement = this.modelElementNamingService.resolveMetaModelElement(child);
-        if (newNamedElement instanceof NamedElement) {
-          this.currentLoadedFile.cachedFile.resolveInstance(child);
-        }
-      }
       const node = this.filtersService.createNode(newInstance);
-
-      console.log(node);
-
-      if (metaModelElement instanceof NamedElement) {
-        this.currentLoadedFile.cachedFile.resolveInstance(metaModelElement);
-      }
+      this.mxGraphService.setCoordinatesForNextCellRender(x, y);
+      const cell = renderer.render(node, null);
+      this.mxGraphService.formatCell(cell, true);
     } else {
       const element: NamedElement = this.loadedFilesService.findElementOnExtReferences(aspectModelUrn);
       if (!this.mxGraphService.resolveCellByModelElement(element)) {

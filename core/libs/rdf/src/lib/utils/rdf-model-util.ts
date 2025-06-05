@@ -33,7 +33,6 @@ import {
   RdfModel,
   Samm,
   SammC,
-  SammE,
   SammU,
   Type,
   Value,
@@ -136,28 +135,27 @@ export class RdfModelUtil {
   static getFullQualifiedModelName(modelElement: NamedElement): string {
     const samm = new Samm(modelElement.metaModelVersion);
     const sammC = new SammC(samm);
-    const sammE = new SammE(samm);
     const sammU = new SammU(samm);
     let namespace: string;
     if (
       modelElement.className === 'DefaultCharacteristic' ||
       modelElement.className === 'DefaultConstraint' ||
-      modelElement.className === 'DefaultEntity' ||
-      modelElement.className === 'DefaultAbstractEntity' ||
       modelElement.className === 'DefaultEvent' ||
-      (modelElement instanceof DefaultProperty && modelElement.isAbstract) ||
-      modelElement instanceof DefaultProperty ||
       modelElement instanceof DefaultOperation ||
       modelElement instanceof DefaultEvent ||
       modelElement instanceof DefaultAspect
     ) {
+      namespace = samm.getNamespace();
+    } else if (modelElement instanceof DefaultProperty) {
+      if (modelElement.isAbstract) return samm.AbstractProperty().value;
       namespace = samm.getNamespace();
     } else if (modelElement instanceof DefaultCharacteristic || modelElement instanceof DefaultConstraint) {
       namespace = sammC.getNamespace();
     } else if (modelElement instanceof DefaultUnit) {
       namespace = modelElement.name in sammUDefinition.units ? sammU.getNamespace() : samm.getNamespace();
     } else if (modelElement instanceof DefaultEntity) {
-      namespace = sammE.getNamespace();
+      if (modelElement.isAbstractEntity()) return samm.AbstractEntity().value;
+      namespace = samm.getNamespace();
     } else {
       namespace = ':';
     }

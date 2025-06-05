@@ -64,11 +64,15 @@ export class ModelApiService {
       );
   }
 
-  saveModel(rdfContent: string, absoluteModelName?: string): Observable<string> {
+  saveModel(rdfContent: string, aspectModelUrn: string, absoluteModelName?: string): Observable<string> {
     let headers: HttpHeaders;
     if (absoluteModelName) {
       const [namespace, version, file] = absoluteModelName.split(':');
-      headers = new HttpHeaderBuilder().withNamespace(`${namespace}:${version}`).withFileName(file).build();
+      headers = new HttpHeaderBuilder()
+        .withAspectModelUrn(aspectModelUrn)
+        .withNamespace(`${namespace}:${version}`)
+        .withFileName(file)
+        .build();
     }
 
     return this.http
@@ -123,11 +127,16 @@ export class ModelApiService {
       );
   }
 
-  deleteFile(absoluteModelName: string): Observable<string> {
+  deleteFile(absoluteModelName: string, aspectModelUrn: string): Observable<string> {
     const [namespace, version, file] = absoluteModelName.split(':');
     return this.http
       .delete<string>(`${this.serviceUrl}${this.api.models}`, {
-        headers: new HttpHeaderBuilder().withContentTypeRdfTurtle().withNamespace(`${namespace}:${version}`).withFileName(file).build(),
+        headers: new HttpHeaderBuilder()
+          // .withContentTypeRdfTurtle()
+          .withAspectModelUrn(aspectModelUrn)
+          .withNamespace(`${namespace}:${version}`)
+          .withFileName(file)
+          .build(),
       })
       .pipe(
         timeout(this.requestTimeout),

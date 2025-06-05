@@ -76,7 +76,7 @@ export class MigratorService {
           const newSammFile = this.detectBammAndReplaceWithSamm(file.aspectMetaModel);
           if (file.aspectMetaModel !== newSammFile) {
             file.aspectMetaModel = newSammFile;
-            return acc.concat([this.modelApiService.saveModel(newSammFile, file.fileName)]);
+            return acc.concat([this.modelApiService.saveModel(newSammFile, file.aspectMetaModel, file.fileName)]);
           }
           return acc;
         }, []);

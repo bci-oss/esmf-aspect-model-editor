@@ -194,6 +194,7 @@ export class VersionMigrationComponent implements OnInit {
   }
 
   private deleteModels(models: any[]): Observable<any> {
-    return from(models).pipe(concatMap(model => this.modelApiService.deleteFile(model.oldNamespaceFile)));
+    // @TODO see this functionality
+    return from(models).pipe(concatMap(model => this.modelApiService.deleteFile(model.oldNamespaceFile, '')));
   }
 }

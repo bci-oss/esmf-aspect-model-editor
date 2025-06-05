@@ -28,7 +28,9 @@ import {ModelLoaderService} from '../model-loader.service';
       :host,
       mat-dialog-content {
         display: flex;
+        flex-direction: column;
         justify-content: center;
+        align-items: center;
       }
 
       :host {

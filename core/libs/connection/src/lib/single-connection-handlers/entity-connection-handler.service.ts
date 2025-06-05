@@ -16,7 +16,7 @@ import {FiltersService} from '@ame/loader-filters';
 import {ModelElementNamingService} from '@ame/meta-model';
 import {MxGraphHelper, MxGraphRenderer, MxGraphService, MxGraphShapeOverlayService} from '@ame/mx-graph';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
-import {createEmptyElement} from '@ame/shared';
+import {ElementCreatorService} from '@ame/shared';
 import {Injectable, inject} from '@angular/core';
 import {DefaultProperty, Entity} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
@@ -33,10 +33,11 @@ export class EntityConnectionHandler implements SingleShapeConnector<Entity> {
     private modelElementNamingService: ModelElementNamingService,
     private entityInstanceService: EntityInstanceService,
     private filtersService: FiltersService,
+    private elementCreator: ElementCreatorService,
   ) {}
 
   public connect(entity: Entity, source: mxgraph.mxCell) {
-    const defaultProperty = createEmptyElement(DefaultProperty);
+    const defaultProperty = this.elementCreator.createEmptyElement(DefaultProperty);
     const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(defaultProperty);
     const mxRenderer = new MxGraphRenderer(this.mxGraphService, this.mxGraphShapeOverlay, this.sammLangService, null);
     mxRenderer.render(this.filtersService.createNode(metaModelElement, {parent: MxGraphHelper.getModelElement(source)}), source);

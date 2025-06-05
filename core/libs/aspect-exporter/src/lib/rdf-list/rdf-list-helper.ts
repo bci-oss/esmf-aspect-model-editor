@@ -24,6 +24,7 @@ import {ScalarValue} from 'libs/aspect-model-loader/src/lib/aspect-meta-model/sc
 import {DataFactory} from 'n3';
 import {ListElement, ListElementType, PropertyListElement, ResolvedListElements, SourceElementType} from '.';
 
+// TODO refactor this function so it's more clear what happens here
 export class RdfListHelper {
   static resolveNewElements(source: SourceElementType & {dataType?: Type}, elements: ListElementType[]): ResolvedListElements {
     const overWrittenListElements: PropertyListElement[] = [];
@@ -34,8 +35,8 @@ export class RdfListHelper {
     }
 
     const listElements = elements.map(metaModelElement => {
-      const propertyPayload: PropertyPayload = propertiesPayload[metaModelElement.aspectModelUrn];
       const property: DefaultProperty = metaModelElement;
+      const propertyPayload: PropertyPayload = propertiesPayload?.[metaModelElement.aspectModelUrn];
 
       if (
         property instanceof DefaultProperty &&
@@ -57,7 +58,7 @@ export class RdfListHelper {
       }
 
       return DataFactory.literal(
-        metaModelElement.value,
+        metaModelElement.value || metaModelElement,
         metaModelElement.type && !(source instanceof DefaultStructuredValue)
           ? DataFactory.namedNode(metaModelElement.type.getUrn())
           : undefined,

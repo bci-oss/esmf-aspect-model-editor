@@ -24,7 +24,7 @@ import {
 } from '@ame/mx-graph';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
-import {config, createEmptyElement} from '@ame/shared';
+import {ElementCreatorService, config} from '@ame/shared';
 import {useUpdater} from '@ame/utils';
 import {Injectable} from '@angular/core';
 import {
@@ -58,6 +58,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
     private sammLangService: SammLanguageSettingsService,
     private filtersService: FiltersService,
     private loadedFiles: LoadedFilesService,
+    private elementCreator: ElementCreatorService,
   ) {}
 
   public connect(characteristic: Characteristic, source: mxgraph.mxCell, modelInfo: ModelInfo) {
@@ -90,7 +91,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
 
     // add trait
     const defaultTrait: DefaultTrait = this.modelElementNamingService.resolveElementNaming(
-      createEmptyElement(DefaultTrait),
+      this.elementCreator.createEmptyElement(DefaultTrait),
       RdfModelUtil.capitalizeFirstLetter((incomingEdges.length ? incomingEdges[0].source.id : source.id)?.replace(/[[\]]/g, '')),
     );
 
@@ -147,7 +148,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
    * @param source mxgraph shape from which the plus button was clicked
    */
   private createEntity(characteristic: Characteristic, source: mxgraph.mxCell) {
-    const defaultEntity = createEmptyElement(DefaultEntity);
+    const defaultEntity = this.elementCreator.createEmptyElement(DefaultEntity);
     characteristic.dataType = defaultEntity;
 
     const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(defaultEntity);
@@ -239,7 +240,9 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
    * @param traitShape trait object
    */
   private addConstraint(defaultTrait: DefaultTrait, traitShape: mxgraph.mxCell) {
-    const defaultConstraint = this.modelElementNamingService.resolveElementNaming(createEmptyElement(DefaultConstraint));
+    const defaultConstraint = this.modelElementNamingService.resolveElementNaming(
+      this.elementCreator.createEmptyElement(DefaultConstraint),
+    );
     const constraintShape = this.mxGraphService.renderModelElement(
       this.filtersService.createNode(this.currentCachedFile.resolveInstance(defaultConstraint), {
         parent: MxGraphHelper.getModelElement(traitShape),

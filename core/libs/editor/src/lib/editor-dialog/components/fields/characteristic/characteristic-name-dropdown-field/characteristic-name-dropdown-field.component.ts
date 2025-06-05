@@ -16,7 +16,7 @@ import {CharacteristicClassType} from '@ame/editor';
 import {ModelElementNamingService} from '@ame/meta-model';
 import {ModelService} from '@ame/rdf/services';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
-import {createEmptyElement} from '@ame/shared';
+import {ElementCreatorService} from '@ame/shared';
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import {
   Characteristic,
@@ -58,8 +58,9 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
     public editorModelService: EditorModelService,
     public modelService: ModelService,
     public languageSettings: SammLanguageSettingsService,
-    private modelElementNamingService: ModelElementNamingService,
     public loadedFilesService: LoadedFilesService,
+    private modelElementNamingService: ModelElementNamingService,
+    private elementCreator: ElementCreatorService,
   ) {
     super(editorModelService, modelService, languageSettings, loadedFilesService);
   }
@@ -138,7 +139,8 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
   }
 
   private createEmptyElement<T>(elementClass: {new (...x: any[]): T}): T {
-    const element = createEmptyElement(elementClass);
+    const element = this.elementCreator.createEmptyElement(elementClass);
+    this.loadedFilesService.currentLoadedFile.cachedFile.removeElement((element as NamedElement).aspectModelUrn);
     (element as DefaultCharacteristic).aspectModelUrn = this.metaModelElement.aspectModelUrn;
     return element;
   }

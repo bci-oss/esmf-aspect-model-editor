@@ -19,7 +19,7 @@ import {RdfModelUtil} from '@ame/rdf/utils';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {BrowserService, ElectronSignalsService, ModelSavingTrackerService, NotificationsService, TitleService, config} from '@ame/shared';
 import {Injectable, inject} from '@angular/core';
-import {ModelElementCache, NamedElement, RdfModel, loadAspectModel} from '@esmf/aspect-model-loader';
+import {DefaultAspect, ModelElementCache, NamedElement, RdfModel, loadAspectModel} from '@esmf/aspect-model-loader';
 import {RdfLoader} from 'libs/aspect-model-loader/src/lib/shared/rdf-loader';
 import {NamedNode} from 'n3';
 import {Observable, catchError, first, forkJoin, map, of, switchMap, tap, throwError} from 'rxjs';
@@ -77,6 +77,7 @@ export class ModelLoaderService {
    */
   loadSingleModel(payload: LoadModelPayload, render = false) {
     this.settings.copyrightHeader = RdfModelUtil.extractCommentsFromRdfContent(payload.rdfAspectModel);
+    const currentFileKey = payload.namespaceFileName || 'current';
 
     const migrate$ = this.parseRdfModel([payload.rdfAspectModel]).pipe(
       switchMap((rdfModel: RdfModel) =>
@@ -94,20 +95,22 @@ export class ModelLoaderService {
       }),
       // loading in sequence all RdfModels for the current file and dependencies
       switchMap(files => this.loadRdfModelFromFiles(files, payload)),
+      map(({files, rdfModels}) => ({files, rdfModels: this.filterDependencies(files, rdfModels, currentFileKey)})),
       // loading the model with all namespace dependencies
       switchMap(({files, rdfModels}) =>
         loadAspectModel({
           filesContent: [payload.rdfAspectModel, ...Object.values(files)],
-          aspectModelUrn: this.getAspectUrn(rdfModels[payload.namespaceFileName]),
+          aspectModelUrn: this.getAspectUrn(rdfModels[currentFileKey]),
         }).pipe(
           // using switchMap to force an this functionality to run before any tap after this
           switchMap(loadedFile => {
+            loadedFile.rdfModel = rdfModels[currentFileKey];
             // registering all loaded files
             const currentFile = this.registerFiles(rdfModels, loadedFile, payload, render);
             // loading all isolated elements
-            this.instantiatorService.instantiateRemainingElements(loadedFile.rdfModel, loadedFile.cachedElements);
+            this.instantiatorService.instantiateRemainingElements(rdfModels[currentFileKey], loadedFile.cachedElements);
             // filtering and registering the elements by their location in files
-            this.moveElementsToTheirCacheFile(rdfModels, loadedFile, payload.namespaceFileName);
+            this.moveElementsToTheirCacheFile(rdfModels, loadedFile, payload);
 
             return of(
               render
@@ -137,30 +140,6 @@ export class ModelLoaderService {
     );
   }
 
-  // /**
-  //  * Loads all the models from workspace and returns a list of RdfModels.
-  //  * By default the functions looks if the model is already loaded and will not load it again.
-  //  *
-  //  * WARNING: using this function it's time and resources consuming. For more than 100 files in workspace
-  //  * it can make the app go into resource allocation problem
-  //  *
-  //  * @param force Default value is false. Set it to true if the reload of file is necessary
-  //  */
-  // loadWorkspaceModels(force = false): Observable<NamespaceFile[]> {
-  //   return this.modelApiService.getAllNamespacesFilesContent().pipe(
-  //     switchMap(files =>
-  //       forkJoin(
-  //         files.map(file => {
-  //           const loadedFile = this.loadedFilesService.getFile(file.fileName);
-  //           return !force && loadedFile
-  //             ? of(loadedFile)
-  //             : this.loadSingleModel({rdfAspectModel: file.aspectMetaModel, namespaceFileName: file.fileName, fromWorkspace: true});
-  //         }),
-  //       ),
-  //     ),
-  //   );
-  // }
-
   getRdfModelsFromWorkspace() {
     return this.modelApiService.getAllNamespacesFilesContent().pipe(
       switchMap(files =>
@@ -175,6 +154,38 @@ export class ModelLoaderService {
         }, {}),
       ),
     );
+  }
+
+  private filterDependencies(files: Record<string, string>, rdfModels: Record<string, RdfModel>, currentFile: string) {
+    const current = rdfModels[currentFile];
+    if (!current) return rdfModels;
+
+    const aspect = this.getAspectUrn(current);
+
+    const objects = current.store.getObjects(null, null, null);
+    const toRemove = [];
+    for (const key in rdfModels) {
+      if (key === currentFile) continue;
+      const foundAspect = Boolean(aspect && rdfModels[key].store.getQuads(new NamedNode(aspect), null, null, null).length);
+
+      if (foundAspect) {
+        this.notificationsService.error({title: 'Same aspect found in workspace file ' + key});
+        throw new Error('Same aspect found in workspace file ' + key);
+      }
+
+      const isDependency = objects.some(object => rdfModels[key].store.getQuads(object, null, null, null).length);
+
+      if (!isDependency) {
+        toRemove.push(key);
+      }
+    }
+
+    for (const file of toRemove) {
+      delete rdfModels[file];
+      delete files[file];
+    }
+
+    return rdfModels;
   }
 
   /**
@@ -212,7 +223,7 @@ export class ModelLoaderService {
               dependenciesRequests = {...dependenciesRequests, ...files};
             }
 
-            return dependencies.length ? forkJoin(dependenciesRequests) : of({});
+            return Object.keys(dependenciesRequests).length ? forkJoin(dependenciesRequests) : of({});
           }),
           switchMap((dependencies: Record<string, string>) => {
             const entries = Object.entries(dependencies);
@@ -303,16 +314,34 @@ export class ModelLoaderService {
     return currentNamespaceFile;
   }
 
-  private moveElementsToTheirCacheFile(rdfModels: Record<string, RdfModel>, loadedFile: any, currentLoadingFile: string) {
-    const rdfModelsEntries = Object.entries(rdfModels).filter(([key]) => key !== 'current' && key !== currentLoadingFile);
+  private moveElementsToTheirCacheFile(rdfModels: Record<string, RdfModel>, loadedFile: any, payload: LoadModelPayload) {
+    const rdfModelsEntries = Object.entries(rdfModels).filter(([key]) => key !== 'current' && key !== payload.namespaceFileName);
+    const elementsInWorkspace = [];
     for (const urn of loadedFile.cachedElements.getKeys()) {
       const namedNode = new NamedNode(urn);
       const [key, rdfModel] = rdfModelsEntries.find(([, rdfModel]) => rdfModel.store.countQuads(namedNode, null, null, null) > 0) || [];
-      if (key && key !== 'current' && key !== currentLoadingFile && rdfModel) {
+
+      if (key && key !== 'current' && key !== payload.namespaceFileName && rdfModel) {
+        elementsInWorkspace.push({file: key, element: urn});
+        const element: NamedElement = loadedFile.cachedElements.get(urn);
+        if (element instanceof DefaultAspect) {
+          this.notificationsService.warning({title: `Aspect "${urn}" found in workspace`});
+          continue;
+        }
+
         const fileCache = this.loadedFilesService.files[key].cachedFile;
-        fileCache.resolveInstance<NamedElement>(loadedFile.cachedElements.get(urn));
+        fileCache.resolveInstance<NamedElement>(element);
         loadedFile.cachedElements.removeElement(urn);
       }
+    }
+
+    if (elementsInWorkspace.length) {
+      const message = elementsInWorkspace.reduce((acc, el) => {
+        acc += `${el.element} in file: ${el.file}. \n`;
+        return acc;
+      }, 'Elements found in workspace: \n');
+
+      this.notificationsService.warning({title: 'Elements found in workspace. Using them instead.', message});
     }
   }
 

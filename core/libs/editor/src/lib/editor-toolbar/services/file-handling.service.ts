@@ -182,8 +182,7 @@ export class FileHandlingService {
         ),
         first(),
         catchError(error => {
-          console.groupCollapsed('sidebar.component -> loadNamespaceFile', error);
-          console.groupEnd();
+          console.error('sidebar.component -> loadNamespaceFile', error);
 
           this.notificationsService.error({
             title: this.translate.language.NOTIFICATION_SERVICE.LOADING_ERROR,
@@ -256,6 +255,10 @@ export class FileHandlingService {
       switchMap(formattedModel => {
         const header = this.configurationService.getSettings().copyrightHeader.join('\n');
         return from(navigator.clipboard.writeText(header + '\n\n' + formattedModel));
+      }),
+      catchError(error => {
+        this.notificationsService.error({title: 'Copying error', message: error?.error?.message});
+        return throwError(() => error);
       }),
       tap(() => {
         this.notificationsService.success({
@@ -349,7 +352,7 @@ export class FileHandlingService {
   }
 
   addFileToNamespace(fileInfo: FileInfoParsed): Observable<any> {
-    return this.addFileToWorkspace(fileInfo.path, fileInfo.content, {showNotifications: true}).pipe(
+    return this.addFileToWorkspace(fileInfo.name, fileInfo.content, {showNotifications: true}).pipe(
       map(() => this.electronSignalsService.call('requestRefreshWorkspaces')),
     );
   }
@@ -406,10 +409,14 @@ export class FileHandlingService {
       }),
       switchMap(validations => {
         const found = validations.find(({errorCode}) => errorCode === 'ERR_PROCESSING');
-        return found ? throwError(() => found.message) : this.modelLoaderService.createRdfModelFromContent(newModelContent, fileName);
+        return found
+          ? throwError(() => found.message)
+          : this.modelLoaderService.createRdfModelFromContent(newModelContent, '::' + fileName);
       }),
       tap(({absoluteName}) => (newModelAbsoluteFileName = absoluteName)),
-      switchMap(() => this.modelApiService.saveModel(newModelContent, newModelAbsoluteFileName)),
+      switchMap((file: NamespaceFile) => {
+        return this.modelApiService.saveModel(newModelContent, file.getAnyAspectModelUrn(), newModelAbsoluteFileName);
+      }),
       tap(() => {
         if (uploadOptions.showNotifications) {
           this.notificationsService.success({
@@ -461,19 +468,14 @@ export class FileHandlingService {
   }
 
   onValidateFile() {
-    const subscription$ = this.modelService
-      .synchronizeModelToRdf()
-      .pipe(finalize(() => subscription$.unsubscribe()))
-      .subscribe((): void => {
-        if (!this.loadedFilesService.currentLoadedFile.cachedFile.getKeys().length) {
-          this.notificationsService.info({
-            title: this.translate.language.NOTIFICATION_DIALOG?.NO_ASPECT_TITLE,
-            timeout: 5000,
-          });
-          return;
-        }
-        this.validateFile().pipe(first()).subscribe();
+    if (!this.loadedFilesService.currentLoadedFile.cachedFile.getKeys().length) {
+      this.notificationsService.info({
+        title: this.translate.language.NOTIFICATION_DIALOG?.NO_ASPECT_TITLE,
+        timeout: 5000,
       });
+      return;
+    }
+    this.validateFile().pipe(first()).subscribe();
   }
 
   validateFile(callback?: Function) {

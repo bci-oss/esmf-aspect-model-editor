@@ -14,7 +14,7 @@
 import {FiltersService} from '@ame/loader-filters';
 import {ModelElementNamingService} from '@ame/meta-model';
 import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
-import {createEmptyElement} from '@ame/shared';
+import {ElementCreatorService} from '@ame/shared';
 import {useUpdater} from '@ame/utils';
 import {Injectable} from '@angular/core';
 import {DefaultCharacteristic, DefaultConstraint} from '@esmf/aspect-model-loader';
@@ -29,10 +29,11 @@ export class ConstraintConnectionHandler implements SingleShapeConnector<Default
     private mxGraphService: MxGraphService,
     private modelElementNamingService: ModelElementNamingService,
     private filtersService: FiltersService,
+    private elementCreator: ElementCreatorService,
   ) {}
 
   public connect(constraint: DefaultConstraint, source: mxgraph.mxCell) {
-    const defaultCharacteristic = createEmptyElement(DefaultCharacteristic);
+    const defaultCharacteristic = this.elementCreator.createEmptyElement(DefaultCharacteristic);
     const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(defaultCharacteristic);
     const child = this.mxGraphService.renderModelElement(
       this.filtersService.createNode(metaModelElement, {parent: MxGraphHelper.getModelElement(source)}),

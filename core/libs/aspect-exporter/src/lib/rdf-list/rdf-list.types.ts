@@ -20,12 +20,13 @@ import {
   Operation,
   PropertyPayload,
   StructuredValue,
+  Trait,
   Unit,
 } from '@esmf/aspect-model-loader';
 import {BlankNode, NamedNode, Quad_Object} from 'n3';
 
 export type ListElementType = any;
-export type SourceElementType = Aspect | Operation | Enumeration | StructuredValue | Entity | Unit | Event;
+export type SourceElementType = Aspect | Operation | Enumeration | StructuredValue | Entity | Unit | Event | Trait;
 export enum ListProperties {
   properties = 'properties',
   abstractProperties = 'abstractProperties',

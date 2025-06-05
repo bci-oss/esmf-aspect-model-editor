@@ -95,7 +95,7 @@ export class ModelLoaderService {
       }),
       // loading in sequence all RdfModels for the current file and dependencies
       switchMap(files => this.loadRdfModelFromFiles(files, payload)),
-      map(({files, rdfModels}) => ({files, rdfModels: this.filterDependencies(files, rdfModels, currentFileKey)})),
+      map(({files, rdfModels}) => ({files, rdfModels: this.filterDependencies(files, rdfModels, currentFileKey, payload.fromWorkspace)})),
       // loading the model with all namespace dependencies
       switchMap(({files, rdfModels}) =>
         loadAspectModel({
@@ -156,7 +156,12 @@ export class ModelLoaderService {
     );
   }
 
-  private filterDependencies(files: Record<string, string>, rdfModels: Record<string, RdfModel>, currentFile: string) {
+  private filterDependencies(
+    files: Record<string, string>,
+    rdfModels: Record<string, RdfModel>,
+    currentFile: string,
+    fromWorkspace: boolean,
+  ) {
     const current = rdfModels[currentFile];
     if (!current) return rdfModels;
 
@@ -168,7 +173,7 @@ export class ModelLoaderService {
       if (key === currentFile) continue;
       const foundAspect = Boolean(aspect && rdfModels[key].store.getQuads(new NamedNode(aspect), null, null, null).length);
 
-      if (foundAspect) {
+      if (foundAspect && !fromWorkspace) {
         this.notificationsService.error({title: 'Same aspect found in workspace file ' + key});
         throw new Error('Same aspect found in workspace file ' + key);
       }

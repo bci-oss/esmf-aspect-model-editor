@@ -123,6 +123,7 @@ export class LoadedFilesService {
   isElementInCurrentFile(element: NamedElement): boolean {
     if (!element) return false;
     if (!this.currentLoadedFile) return false;
+    if (element.name.includes('[') && element.name.includes(']')) return true;
     if (!this.currentLoadedFile.cachedFile) return false;
 
     return Boolean(this.currentLoadedFile.cachedFile.get(element.aspectModelUrn));

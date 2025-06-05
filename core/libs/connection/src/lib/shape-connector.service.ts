@@ -187,11 +187,11 @@ export class ShapeConnectorService {
       case metaModel instanceof DefaultCharacteristic:
         connectionHandler = this.characteristicConnectionHandler;
         break;
-      case metaModel instanceof DefaultEntity:
-        connectionHandler = this.entityConnectionHandler;
-        break;
       case metaModel instanceof DefaultEntity && metaModel.isAbstractEntity():
         connectionHandler = this.abstractEntityConnectionHandler;
+        break;
+      case metaModel instanceof DefaultEntity:
+        connectionHandler = this.entityConnectionHandler;
         break;
       case metaModel instanceof DefaultEntityInstance:
         connectionHandler = this.entityValueConnectionHandler;

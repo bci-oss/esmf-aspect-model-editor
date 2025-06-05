@@ -33,7 +33,6 @@ import {
   DefaultStructuredValue,
   DefaultTimeSeries,
   DefaultTrait,
-  HasExtends,
   Samm,
   SammC,
 } from '@esmf/aspect-model-loader';
@@ -297,7 +296,7 @@ export class CharacteristicVisitor extends BaseVisitor<DefaultCharacteristic> {
         continue;
       }
 
-      if (parent instanceof HasExtends && parent.extends_) {
+      if (parent instanceof DefaultProperty && parent.getExtends()) {
         continue;
       }
 

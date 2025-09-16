@@ -95,7 +95,7 @@ export class FiltersService {
     const mxGraphService = runInInjectionContext(this.injector, () => inject(MxGraphService));
     const editorService = runInInjectionContext(this.injector, () => inject(EditorService));
     let selectedCell = mxGraphService.graph.selectionModel.cells?.[0];
-    const selectedModelElement = selectedCell && MxGraphHelper.getModelElementTest(selectedCell);
+    const selectedModelElement = selectedCell && MxGraphHelper.getModelElement(selectedCell);
 
     this.loadingScreen
       .open({

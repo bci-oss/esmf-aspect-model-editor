@@ -37,11 +37,11 @@ export class BaseConnectionHandler {
 
   refreshPropertiesLabel(cell: Cell, modelElement: NamedElement) {
     cell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(modelElement, this.sammLangService);
-    this.mxGraphAttributeService.graphTest.labelChanged(cell, MxGraphHelper.createPropertiesLabelTest(cell), null);
+    this.mxGraphAttributeService.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabel(cell), null);
   }
 
   renderTree(modelElement: NamedElement, parent: Cell): Cell {
-    const node = this.filtersService.createNode(modelElement, {parent: MxGraphHelper.getModelElementTest(parent)});
+    const node = this.filtersService.createNode(modelElement, {parent: MxGraphHelper.getModelElement(parent)});
     const mxRenderer = new MxGraphRenderer(this.mxGraphService, this.mxGraphShapeOverlay, this.sammLangService, null);
     return mxRenderer.render(node, parent);
   }

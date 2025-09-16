@@ -43,7 +43,7 @@ export class EntityModelService extends BaseModelService {
   }
 
   update(cell: Cell, form: {[key: string]: any}) {
-    const modelElement = MxGraphHelper.getModelElementTest<DefaultEntity>(cell);
+    const modelElement = MxGraphHelper.getModelElement<DefaultEntity>(cell);
 
     if (form.editedProperties) {
       for (const property of modelElement.properties) {
@@ -69,11 +69,11 @@ export class EntityModelService extends BaseModelService {
   delete(cell: Cell) {
     this.updateExtends(cell);
     super.delete(cell);
-    const modelElement = MxGraphHelper.getModelElementTest<DefaultEntity>(cell);
-    const outgoingEdges = this.mxGraphAttributeService.graphTest.getOutgoingEdges(cell, null);
-    const incomingEdges = this.mxGraphAttributeService.graphTest.getIncomingEdges(cell, null);
-    this.mxGraphShapeOverlayService.checkAndAddTopShapeActionIconTest(outgoingEdges, modelElement);
-    this.mxGraphShapeOverlayService.checkAndAddShapeActionIconTest(incomingEdges, modelElement);
+    const modelElement = MxGraphHelper.getModelElement<DefaultEntity>(cell);
+    const outgoingEdges = this.mxGraphAttributeService.graph.getOutgoingEdges(cell, null);
+    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell, null);
+    this.mxGraphShapeOverlayService.checkAndAddTopShapeActionIcon(outgoingEdges, modelElement);
+    this.mxGraphShapeOverlayService.checkAndAddShapeActionIcon(incomingEdges, modelElement);
 
     this.entityInstanceService.onEntityRemove(modelElement, () => {
       if (!cell?.edges) {
@@ -83,7 +83,7 @@ export class EntityModelService extends BaseModelService {
 
       const entityValuesToDelete = [];
       for (const edge of cell.edges) {
-        const sourceModelElement = MxGraphHelper.getModelElementTest<NamedElement>(edge.source);
+        const sourceModelElement = MxGraphHelper.getModelElement<NamedElement>(edge.source);
         if (sourceModelElement && this.loadedFilesService.isElementInCurrentFile(sourceModelElement)) {
           this.currentCachedFile.removeElement(modelElement.aspectModelUrn);
           useUpdater(sourceModelElement).delete(modelElement);
@@ -91,8 +91,8 @@ export class EntityModelService extends BaseModelService {
 
         if (sourceModelElement instanceof DefaultEnumeration) {
           // we need to remove and add back the + button for enumeration
-          this.mxGraphShapeOverlayService.removeComplexTypeShapeOverlaysTest(edge.source);
-          this.mxGraphShapeOverlayService.addBottomShapeOverlayTest(edge.source);
+          this.mxGraphShapeOverlayService.removeComplexTypeShapeOverlays(edge.source);
+          this.mxGraphShapeOverlayService.addBottomShapeOverlay(edge.source);
         }
 
         if (sourceModelElement instanceof DefaultEntityInstance && edge.source.style.fillColor.includes('entityValue')) {
@@ -107,17 +107,17 @@ export class EntityModelService extends BaseModelService {
   }
 
   private updateExtends(cell: Cell) {
-    const incomingEdges = this.mxGraphAttributeService.graphTest.getIncomingEdges(cell, null);
+    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell, null);
     for (const edge of incomingEdges) {
-      const entity = MxGraphHelper.getModelElementTest<DefaultEntity>(edge.source);
+      const entity = MxGraphHelper.getModelElement<DefaultEntity>(edge.source);
       if (!(entity instanceof DefaultEntity)) {
         continue;
       }
 
       entity.extends_ = null;
-      MxGraphHelper.removeRelation(entity, MxGraphHelper.getModelElementTest(cell));
+      MxGraphHelper.removeRelation(entity, MxGraphHelper.getModelElement(cell));
       edge.source['configuration'].fields = MxGraphVisitorHelper.getElementProperties(entity, this.languageService);
-      this.mxGraphService.graph.labelChanged(edge.source, MxGraphHelper.createPropertiesLabelTest(edge.source), null);
+      this.mxGraphService.graph.labelChanged(edge.source, MxGraphHelper.createPropertiesLabel(edge.source), null);
     }
   }
 }

@@ -29,7 +29,7 @@ export class AbstractEntityConnectionHandler extends BaseConnectionHandler imple
   public connect(abstractEntity: DefaultEntity, source: Cell) {
     const abstractProperty = this.elementCreator.createEmptyElement(DefaultProperty, {isAbstract: true});
     const abstractPropertyCell = this.mxGraphService.renderModelElement(
-      this.filtersService.createNode(abstractProperty, {parent: MxGraphHelper.getModelElementTest(source)}),
+      this.filtersService.createNode(abstractProperty, {parent: MxGraphHelper.getModelElement(source)}),
     );
     abstractEntity.properties.push(abstractProperty);
     this.entityInstanceService.onNewProperty(abstractProperty, abstractEntity);
@@ -40,7 +40,7 @@ export class AbstractEntityConnectionHandler extends BaseConnectionHandler imple
     const entities = this.mxGraphService.graph
       .getIncomingEdges(source, null)
       .map(edge => edge.source)
-      .filter(cell => MxGraphHelper.getModelElementTest(cell) instanceof DefaultEntity);
+      .filter(cell => MxGraphHelper.getModelElement(cell) instanceof DefaultEntity);
 
     this.refreshPropertiesLabel(abstractPropertyCell, abstractProperty);
 
@@ -57,7 +57,7 @@ export class AbstractEntityConnectionHandler extends BaseConnectionHandler imple
       const newPropertyCell = this.renderTree(newProperty, source);
 
       for (const entity of entities) {
-        const entityModel = MxGraphHelper.getModelElementTest<DefaultEntity>(entity);
+        const entityModel = MxGraphHelper.getModelElement<DefaultEntity>(entity);
         entityModel.properties.push(newProperty);
         this.entityPropertyConnector.connect(entityModel, newProperty, entity, newPropertyCell);
       }

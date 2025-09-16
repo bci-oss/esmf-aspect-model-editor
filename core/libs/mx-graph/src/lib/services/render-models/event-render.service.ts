@@ -20,6 +20,6 @@ import {BaseRenderService} from './base-render-service';
 @Injectable({providedIn: 'root'})
 export class EventRenderService extends BaseRenderService {
   isApplicable(cell: Cell): boolean {
-    return MxGraphHelper.getModelElementTest(cell) instanceof DefaultEvent;
+    return MxGraphHelper.getModelElement(cell) instanceof DefaultEvent;
   }
 }

@@ -23,7 +23,7 @@ export class CollectionCharacteristicConnectionHandler implements MultiShapeConn
   private mxGraphAttributeService = inject(MxGraphAttributeService);
 
   public connect(parentMetaModel: DefaultCollection, childMetaModel: DefaultCharacteristic, parent: Cell, child: Cell) {
-    this.mxGraphAttributeService.graphTest.getOutgoingEdges(parent, null).forEach(outEdge => {
+    this.mxGraphAttributeService.graph.getOutgoingEdges(parent, null).forEach(outEdge => {
       if (outEdge.target && !((outEdge.target as any).getMetaModelElement() instanceof DefaultEntity)) {
         const entity = (outEdge.target as any).getMetaModelElement();
         MxGraphHelper.removeRelation(parentMetaModel, entity);
@@ -35,7 +35,7 @@ export class CollectionCharacteristicConnectionHandler implements MultiShapeConn
     this.mxGraphService.assignToParent(child, parent);
 
     if (parentMetaModel.elementCharacteristic) {
-      this.mxGraphService.graph.labelChanged(parent, MxGraphHelper.createPropertiesLabelTest(parent), null);
+      this.mxGraphService.graph.labelChanged(parent, MxGraphHelper.createPropertiesLabel(parent), null);
     }
   }
 }

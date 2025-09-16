@@ -31,7 +31,7 @@ export class AspectModelService extends BaseModelService {
   }
 
   update(cell: Cell, form: {[key: string]: any}) {
-    const metaModelElement = MxGraphHelper.getModelElementTest<DefaultAspect>(cell);
+    const metaModelElement = MxGraphHelper.getModelElement<DefaultAspect>(cell);
     if (form.name && form.name !== metaModelElement.name) {
       this.loadedFilesService.currentLoadedFile.originalAspectModelUrn = metaModelElement.aspectModelUrn;
       this.loadedFilesService.updateAbsoluteName(this.loadedFile.absoluteName, `${this.loadedFile.namespace}:${form.name}.ttl`);
@@ -57,9 +57,9 @@ export class AspectModelService extends BaseModelService {
   }
 
   delete(cell: Cell) {
-    const aspect = MxGraphHelper.getModelElementTest(cell);
+    const aspect = MxGraphHelper.getModelElement(cell);
     for (const {target} of this.mxGraphService.graph.getOutgoingEdges(cell, null)) {
-      MxGraphHelper.removeRelation(aspect, MxGraphHelper.getModelElementTest(target));
+      MxGraphHelper.removeRelation(aspect, MxGraphHelper.getModelElement(target));
     }
     super.delete(cell);
     this.aspectRenderer.delete(cell);

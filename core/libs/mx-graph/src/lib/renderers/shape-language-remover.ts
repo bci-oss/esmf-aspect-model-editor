@@ -23,8 +23,8 @@ export class ShapeLanguageRemover {
   private mxGraphAttributeService = inject(MxGraphAttributeService);
 
   removeUnnecessaryLanguages(locales: string[]) {
-    this.mxGraphAttributeService.graphTest.getChildCells(this.mxGraphAttributeService.graphTest.getDefaultParent()).forEach(cell => {
-      const modelElement = MxGraphHelper.getModelElementTest(cell);
+    this.mxGraphAttributeService.graph.getChildCells(this.mxGraphAttributeService.graph.getDefaultParent()).forEach(cell => {
+      const modelElement = MxGraphHelper.getModelElement(cell);
       if (!modelElement) {
         return;
       }
@@ -32,7 +32,7 @@ export class ShapeLanguageRemover {
       this.removeLanguageInformation(modelElement, locales);
     });
 
-    return MxGraphHelper.getModelElementTest(this.mxGraphShapeSelectorService.getAspectCell());
+    return MxGraphHelper.getModelElement(this.mxGraphShapeSelectorService.getAspectCell());
   }
 
   private removeLanguageInformation(element: NamedElement, locales: string[]) {
@@ -60,7 +60,7 @@ export class ShapeLanguageRemover {
       });
 
       cell['configuration'].fields = newCellConfig;
-      this.mxGraphAttributeService.graphTest.labelChanged(cell, MxGraphHelper.createPropertiesLabelTest(cell), null);
+      this.mxGraphAttributeService.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabel(cell), null);
     });
   }
 }

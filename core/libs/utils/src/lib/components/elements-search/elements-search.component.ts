@@ -73,7 +73,7 @@ export class ElementsSearchComponent {
     this.searchControl.valueChanges.pipe(startWith(''), throttleTime(150)).subscribe(value => {
       this.elements = this.searchService
         .search<Cell>(value, this.mxGraphService.getAllCells(), mxCellSearchOption)
-        ?.map(cell => MxGraphHelper.getModelElementTest(cell));
+        ?.map(cell => MxGraphHelper.getModelElement(cell));
     });
   }
 

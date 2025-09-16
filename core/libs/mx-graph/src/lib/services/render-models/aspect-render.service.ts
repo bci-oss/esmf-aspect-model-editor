@@ -31,7 +31,7 @@ export class AspectRenderService extends BaseRenderService {
   }
 
   delete(cell: Cell) {
-    const modelElement = MxGraphHelper.getModelElementTest(cell);
+    const modelElement = MxGraphHelper.getModelElement(cell);
     const store = this.loadedFilesService.currentLoadedFile.rdfModel.store;
 
     const aspectQuads = store.getQuads(new NamedNode(modelElement.aspectModelUrn), null, null, null);
@@ -41,6 +41,6 @@ export class AspectRenderService extends BaseRenderService {
   }
 
   isApplicable(cell: Cell): boolean {
-    return MxGraphHelper.getModelElementTest(cell) instanceof DefaultAspect;
+    return MxGraphHelper.getModelElement(cell) instanceof DefaultAspect;
   }
 }

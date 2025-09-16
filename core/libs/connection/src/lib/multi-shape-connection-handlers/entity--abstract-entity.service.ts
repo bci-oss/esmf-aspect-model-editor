@@ -26,7 +26,7 @@ export class EntityAbstractEntityConnectionHandler
   private notificationService = inject(NotificationsService);
 
   public connect(parentMetaModel: DefaultEntity, childMetaModel: DefaultEntity, parent: Cell, child: Cell): void {
-    if (MxGraphHelper.isEntityCycleInheritanceTest(child, parentMetaModel, this.mxGraphService.graph)) {
+    if (MxGraphHelper.isEntityCycleInheritance(child, parentMetaModel, this.mxGraphService.graph)) {
       this.notificationService.warning({
         title: this.translate.language.NOTIFICATION_SERVICE.RECURSIVE_ELEMENTS,
         message: this.translate.language.NOTIFICATION_SERVICE.CIRCULAR_CONNECTION_MESSAGE,

@@ -36,7 +36,7 @@ export class UnitModelService extends BaseModelService {
   }
 
   update(cell: Cell, form: {[key: string]: any}) {
-    const modelElement = MxGraphHelper.getModelElementTest<DefaultUnit>(cell);
+    const modelElement = MxGraphHelper.getModelElement<DefaultUnit>(cell);
     super.update(cell, form);
     modelElement.referenceUnit = form.referenceUnit;
     modelElement.code = form.code;
@@ -62,11 +62,11 @@ export class UnitModelService extends BaseModelService {
 
   delete(cell: Cell) {
     super.delete(cell);
-    const modelElement = MxGraphHelper.getModelElementTest(cell);
-    const outgoingEdges = this.mxGraphAttributeService.graphTest.getOutgoingEdges(cell, null);
-    const incomingEdges = this.mxGraphAttributeService.graphTest.getIncomingEdges(cell, null);
-    this.mxGraphShapeOverlayService.checkAndAddTopShapeActionIconTest(outgoingEdges, modelElement);
-    this.mxGraphShapeOverlayService.checkAndAddShapeActionIconTest(incomingEdges, modelElement);
+    const modelElement = MxGraphHelper.getModelElement(cell);
+    const outgoingEdges = this.mxGraphAttributeService.graph.getOutgoingEdges(cell, null);
+    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell, null);
+    this.mxGraphShapeOverlayService.checkAndAddTopShapeActionIcon(outgoingEdges, modelElement);
+    this.mxGraphShapeOverlayService.checkAndAddShapeActionIcon(incomingEdges, modelElement);
     this.mxGraphService.removeCells([cell]);
   }
 }

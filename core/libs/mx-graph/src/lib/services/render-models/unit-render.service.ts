@@ -30,16 +30,16 @@ export class UnitRenderService extends BaseRenderService {
 
     // create shape for new unit
     new MxGraphRenderer(this.mxGraphService, this.mxGraphShapeOverlayService, this.sammLangService, null).renderUnit(
-      this.filterService.createNode(unit, {parent: MxGraphHelper.getModelElementTest(parentCell)}),
+      this.filterService.createNode(unit, {parent: MxGraphHelper.getModelElement(parentCell)}),
       parentCell,
     );
   }
 
   removeFrom(parentCell: Cell) {
     const edges = this.mxGraphService.graph.getOutgoingEdges(parentCell, null);
-    const edgeToUnit = edges.find(edge => MxGraphHelper.getModelElementTest(edge?.target) instanceof DefaultUnit);
-    const unit = edgeToUnit ? MxGraphHelper.getModelElementTest<DefaultUnit>(edgeToUnit.target) : null;
-    const parent = MxGraphHelper.getModelElementTest(parentCell);
+    const edgeToUnit = edges.find(edge => MxGraphHelper.getModelElement(edge?.target) instanceof DefaultUnit);
+    const unit = edgeToUnit ? MxGraphHelper.getModelElement<DefaultUnit>(edgeToUnit.target) : null;
+    const parent = MxGraphHelper.getModelElement(parentCell);
 
     if (edgeToUnit && unit?.isPredefined) {
       MxGraphHelper.removeRelation(parent, unit);
@@ -52,6 +52,6 @@ export class UnitRenderService extends BaseRenderService {
   }
 
   isApplicable(cell: Cell): boolean {
-    return MxGraphHelper.getModelElementTest(cell) instanceof DefaultUnit;
+    return MxGraphHelper.getModelElement(cell) instanceof DefaultUnit;
   }
 }

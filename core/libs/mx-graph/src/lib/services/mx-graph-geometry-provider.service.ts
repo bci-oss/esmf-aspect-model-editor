@@ -22,7 +22,7 @@ import {MxGraphAttributeService} from './mx-graph-attribute.service';
 export class MxGraphGeometryProviderService {
   private mxGraphAttributeService = inject(MxGraphAttributeService);
 
-  public createGeometryTest(node: ModelTree<NamedElement>, x?: number, y?: number): Geometry {
+  public createGeometry(node: ModelTree<NamedElement>, x?: number, y?: number): Geometry {
     return this.mxGraphAttributeService.inCollapsedMode
       ? new Geometry(x, y, node.shape.collapsedWidth, node.shape.collapsedHeight)
       : new Geometry(x, y, node.shape.expandedWith, node.shape.expandedHeight);
@@ -41,35 +41,11 @@ export class MxGraphGeometryProviderService {
   }
 
   /**
-   * When we add a new Trait in collapsed mode we need to resize the cell.
-   *
-   * @param cell - trait to resize
-   */
-  public upgradeTraitGeometryTest(cell: Cell, geometry: Geometry, isVertex: boolean): void {
-    if (cell.style.fillColor.includes('trait') && isVertex && geometry != null) {
-      geometry.width = circleShapeGeometry.collapsedWidth;
-      geometry.height = circleShapeGeometry.collapsedHeight;
-    }
-  }
-
-  /**
    * When we add a new EntityValue in collapsed mode we need to resize the cell.
    *
    * @param cell - entity value to resize
    */
   public upgradeEntityValueGeometry(cell: Cell, geometry: Geometry, isVertex: boolean): void {
-    if (cell.style.fillColor.includes('entityValue') && isVertex && geometry != null) {
-      geometry.width = smallBasicShapeGeometry.collapsedWidth;
-      geometry.height = smallBasicShapeGeometry.collapsedHeight;
-    }
-  }
-
-  /**
-   * When we add a new EntityValue in collapsed mode we need to resize the cell.
-   *
-   * @param cell - entity value to resize
-   */
-  public upgradeEntityValueGeometryTest(cell: Cell, geometry: Geometry, isVertex: boolean): void {
     if (cell.style.fillColor.includes('entityValue') && isVertex && geometry != null) {
       geometry.width = smallBasicShapeGeometry.collapsedWidth;
       geometry.height = smallBasicShapeGeometry.collapsedHeight;

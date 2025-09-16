@@ -74,7 +74,7 @@ export class MxGraphSetupService {
       //   mxUtils.load(this.appConfig.editorConfiguration).getDocumentElement(),
       // ));
 
-      this.mxGraphAttributeService.graphTest = this.graph;
+      this.mxGraphAttributeService.graph = this.graph;
 
       this.scrollTileSize = new Rectangle(0, 0, this.graph.container.clientWidth, this.graph.container.clientHeight);
       this.graphSizeDidChange = this.graph.sizeDidChange;
@@ -110,7 +110,7 @@ export class MxGraphSetupService {
       this.graph.getLabel = (cell): any => {
         if (!cell.value && this.configurationService.getSettings().showConnectionLabels) {
           // label for edges
-          return MxGraphHelper.createEdgeLabelTest(cell, this.graph);
+          return MxGraphHelper.createEdgeLabel(cell, this.graph);
         }
 
         if (!cell.connectable) {
@@ -118,7 +118,7 @@ export class MxGraphSetupService {
           return;
         }
 
-        return MxGraphHelper.createPropertiesLabelTest(cell);
+        return MxGraphHelper.createPropertiesLabel(cell);
       };
     });
   }
@@ -129,7 +129,7 @@ export class MxGraphSetupService {
   }
 
   private getTooltipForCell(cell: Cell): string {
-    const metaModelElement = MxGraphHelper.getModelElementTest(cell);
+    const metaModelElement = MxGraphHelper.getModelElement(cell);
     if ([DefaultEntityInstance, DefaultTrait].some(e => metaModelElement instanceof e)) {
       return this.getToolTipContent(cell);
     }
@@ -337,8 +337,8 @@ export class MxGraphSetupService {
       return true;
     }
 
-    const target = MxGraphHelper.getModelElementTest(cell.target);
-    const source = MxGraphHelper.getModelElementTest(cell.source);
+    const target = MxGraphHelper.getModelElement(cell.target);
+    const source = MxGraphHelper.getModelElement(cell.source);
 
     if (
       !this.configurationService.getSettings().showEntityValueEntityEdge &&
@@ -361,7 +361,7 @@ export class MxGraphSetupService {
   }
 
   private redraw(state: CellState, force: boolean, rendering: boolean): boolean {
-    const cellHeight = MxGraphHelper.getCellHeightTest(state.cell);
+    const cellHeight = MxGraphHelper.getCellHeight(state.cell);
     if (cellHeight) {
       state.height = +cellHeight * state.view.scale;
     }
@@ -369,9 +369,9 @@ export class MxGraphSetupService {
   }
 
   private getPopupFactoryMethod(menu: PopupMenuHandler, cell: Cell) {
-    const selectedCells: Array<Cell> = this.mxGraphShapeSelectorService.getSelectedCellsTest();
+    const selectedCells: Array<Cell> = this.mxGraphShapeSelectorService.getSelectedCells();
     if (cell && !cell.edge) {
-      const modelElement = MxGraphHelper.getModelElementTest(cell);
+      const modelElement = MxGraphHelper.getModelElement(cell);
 
       menu.addItem(
         `${this.translate.language.EDITOR_CANVAS.GRAPH_SETUP.OPEN_IN} ${this.loadedFiles.isElementExtern(modelElement) ? 'new Window' : 'detail view'}`,

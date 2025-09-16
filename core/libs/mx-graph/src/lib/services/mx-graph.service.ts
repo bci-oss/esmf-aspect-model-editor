@@ -71,7 +71,7 @@ export class MxGraphService {
 
   initGraph(): void {
     this.graphSetupService.setUp();
-    this.graph = this.mxGraphAttributeService.graphTest;
+    this.graph = this.mxGraphAttributeService.graph;
     this.graph.keepEdgesInBackground = true;
     this.themeService.setGraph(this.graph);
     this.graphInitialized$.next(true);
@@ -142,7 +142,7 @@ export class MxGraphService {
     }
 
     return this.graph.getChildVertices(this.graph.getDefaultParent()).find(cell => {
-      const metaModel = MxGraphHelper.getModelElementTest(cell);
+      const metaModel = MxGraphHelper.getModelElement(cell);
       return metaModel && metaModelElement && metaModel?.aspectModelUrn === metaModelElement?.aspectModelUrn;
     });
   }
@@ -158,7 +158,7 @@ export class MxGraphService {
    * @throws {Error} - If there are issues in shape creation or overlay operations.
    */
   renderModelElement(node: ModelTree<NamedElement>, configuration?: ShapeConfiguration): Cell {
-    const geometry = this.mxGraphGeometryProviderService.createGeometryTest(
+    const geometry = this.mxGraphGeometryProviderService.createGeometry(
       node,
       (configuration && configuration?.geometry?.x) || this.nextCellCoordinates?.x || 0,
       (configuration && configuration?.geometry?.y) || this.nextCellCoordinates?.y || 0,
@@ -173,16 +173,16 @@ export class MxGraphService {
     }
 
     node.shape.mxGraphStyle = cellStyle;
-    const modelShape = this.mxGraphShapeOverlayService.createShapeTest(node, geometry, configuration?.shapeAttributes || []);
-    MxGraphHelper.setElementNodeTest(modelShape, node);
+    const modelShape = this.mxGraphShapeOverlayService.createShape(node, geometry, configuration?.shapeAttributes || []);
+    MxGraphHelper.setElementNode(modelShape, node);
 
-    this.mxGraphShapeOverlayService.checkComplexEnumerationOverlaysTest(node.element, modelShape);
+    this.mxGraphShapeOverlayService.checkComplexEnumerationOverlays(node.element, modelShape);
 
     if (this.loadedFiles.isElementInCurrentFile(node.element)) {
-      this.mxGraphShapeOverlayService.addBottomShapeOverlayTest(modelShape);
-      this.mxGraphShapeOverlayService.addTopShapeOverlayTest(modelShape);
+      this.mxGraphShapeOverlayService.addBottomShapeOverlay(modelShape);
+      this.mxGraphShapeOverlayService.addTopShapeOverlay(modelShape);
     }
-    this.graph.labelChanged(modelShape, MxGraphHelper.createPropertiesLabelTest(modelShape), null);
+    this.graph.labelChanged(modelShape, MxGraphHelper.createPropertiesLabel(modelShape), null);
     this.mxGraphAttributeService.inCollapsedMode && this.foldCell(modelShape);
     return modelShape;
   }
@@ -243,7 +243,7 @@ export class MxGraphService {
    */
   navigateToCellByUrn(aspectModelUrn: string): Cell {
     const cellToNavigate = Object.values<Cell>(this.graph.model.cells).find((cell: Cell) => {
-      const metaElement = MxGraphHelper.getModelElementTest(cell);
+      const metaElement = MxGraphHelper.getModelElement(cell);
       if (metaElement && metaElement.aspectModelUrn === aspectModelUrn) {
         return cell;
       }
@@ -287,25 +287,21 @@ export class MxGraphService {
       for (const cell of cells) {
         this.graph.resizeCell(
           cell,
-          this.mxGraphGeometryProviderService.createGeometryTest(
-            MxGraphHelper.getElementNodeTest(cell),
-            cell?.geometry?.x,
-            cell?.geometry?.y,
-          ),
+          this.mxGraphGeometryProviderService.createGeometry(MxGraphHelper.getElementNode(cell), cell?.geometry?.x, cell?.geometry?.y),
         );
-        const modelElement = MxGraphHelper.getModelElementTest(cell);
+        const modelElement = MxGraphHelper.getModelElement(cell);
         if (MxGraphHelper.isComplexEnumeration(modelElement)) {
-          this.mxGraphShapeOverlayService.addComplexEnumerationShapeOverlayTest(cell);
+          this.mxGraphShapeOverlayService.addComplexEnumerationShapeOverlay(cell);
         }
         cell.overlays?.forEach(overlay => {
           overlay.image.width = overlayGeometry.expandedWith;
           overlay.image.height = overlayGeometry.expandedHeight;
 
-          MxGraphHelper.setConstrainOverlayOffsetTest(overlay, cell);
+          MxGraphHelper.setConstrainOverlayOffset(overlay, cell);
         });
       }
 
-      const selectedCell = this.mxGraphShapeSelectorService.getSelectedShapeTest();
+      const selectedCell = this.mxGraphShapeSelectorService.getSelectedShape();
       if (selectedCell) {
         this.navigateToCell(selectedCell, true);
       }
@@ -326,25 +322,25 @@ export class MxGraphService {
 
     return this.updateGraph(() => {
       for (const cell of cells) {
-        const modelElement = MxGraphHelper.getModelElementTest(cell);
+        const modelElement = MxGraphHelper.getModelElement(cell);
         if (MxGraphHelper.isComplexEnumeration(modelElement)) {
-          this.mxGraphShapeOverlayService.removeOverlayTest(cell, MxGraphHelper.getRightOverlayButtonTest(cell));
+          this.mxGraphShapeOverlayService.removeOverlay(cell, MxGraphHelper.getRightOverlayButton(cell));
         }
 
         cell.overlays?.forEach(overlay => {
           overlay.image.width = overlayGeometry.collapsedWidth;
           overlay.image.height = overlayGeometry.collapsedHeight;
 
-          MxGraphHelper.setConstrainOverlayOffsetTest(overlay, cell);
+          MxGraphHelper.setConstrainOverlayOffset(overlay, cell);
         });
 
         const geometry = cell.getGeometry();
         const isVertex = cell.isVertex();
-        this.mxGraphGeometryProviderService.upgradeTraitGeometryTest(cell, geometry, isVertex);
-        this.mxGraphGeometryProviderService.upgradeEntityValueGeometryTest(cell, geometry, isVertex);
+        this.mxGraphGeometryProviderService.upgradeTraitGeometry(cell, geometry, isVertex);
+        this.mxGraphGeometryProviderService.upgradeEntityValueGeometry(cell, geometry, isVertex);
       }
 
-      const selectedCell = this.mxGraphShapeSelectorService.getSelectedShapeTest();
+      const selectedCell = this.mxGraphShapeSelectorService.getSelectedShape();
       if (selectedCell) {
         this.navigateToCell(selectedCell, true);
       }
@@ -367,7 +363,7 @@ export class MxGraphService {
       overlay.image.width = overlayGeometry.expandedWith;
       overlay.image.height = overlayGeometry.expandedHeight;
 
-      MxGraphHelper.setConstrainOverlayOffsetTest(overlay, cell);
+      MxGraphHelper.setConstrainOverlayOffset(overlay, cell);
     });
   }
 
@@ -382,7 +378,7 @@ export class MxGraphService {
       overlay.image.width = overlayGeometry.collapsedWidth;
       overlay.image.height = overlayGeometry.collapsedHeight;
 
-      MxGraphHelper.setConstrainOverlayOffsetTest(overlay, cell);
+      MxGraphHelper.setConstrainOverlayOffset(overlay, cell);
     });
     this.graph.refresh();
   }
@@ -397,20 +393,20 @@ export class MxGraphService {
     if (!this.configurationService.getSettings().autoFormatEnabled && !force) return;
     if (this.graph.getDefaultParent().children === undefined) return;
 
-    const selectedShape = restoreScrollPosition ? this.mxGraphShapeSelectorService.getSelectedShapeTest() : undefined;
+    const selectedShape = restoreScrollPosition ? this.mxGraphShapeSelectorService.getSelectedShape() : undefined;
     const visibleCell = restoreScrollPosition ? this.getVisibleCells()[0] : undefined;
-    const visibleCellCoordinates = restoreScrollPosition ? this.getCellCoordinatesTest(visibleCell, this.graph) : undefined;
+    const visibleCellCoordinates = restoreScrollPosition ? this.getCellCoordinates(visibleCell, this.graph) : undefined;
 
     this.configurationService.getSettings().enableHierarchicalLayout
-      ? MxGraphHelper.setHierarchicalLayoutTest(this.graph, this.mxGraphAttributeService.inCollapsedMode)
-      : MxGraphHelper.setCompactTreeLayoutTest(this.graph, this.mxGraphAttributeService.inCollapsedMode);
+      ? MxGraphHelper.setHierarchicalLayout(this.graph, this.mxGraphAttributeService.inCollapsedMode)
+      : MxGraphHelper.setCompactTreeLayout(this.graph, this.mxGraphAttributeService.inCollapsedMode);
 
     if (!restoreScrollPosition) return;
 
     if (selectedShape) {
       this.navigateToCell(selectedShape, true);
     } else if (visibleCell) {
-      const newCellCoordinates = this.getCellCoordinatesTest(visibleCell, this.graph);
+      const newCellCoordinates = this.getCellCoordinates(visibleCell, this.graph);
       if (visibleCellCoordinates.x === newCellCoordinates.x && visibleCellCoordinates.y === newCellCoordinates.y) return;
 
       this.graph.scrollCellToVisible(visibleCell, true);
@@ -427,8 +423,8 @@ export class MxGraphService {
     const formattedCells = [];
     if (this.graph.getDefaultParent().children !== undefined) {
       this.configurationService.getSettings().enableHierarchicalLayout
-        ? MxGraphHelper.setHierarchicalLayoutTest(this.graph, this.mxGraphAttributeService.inCollapsedMode, cell)
-        : MxGraphHelper.setCompactTreeLayoutTest(this.graph, this.mxGraphAttributeService.inCollapsedMode, cell);
+        ? MxGraphHelper.setHierarchicalLayout(this.graph, this.mxGraphAttributeService.inCollapsedMode, cell)
+        : MxGraphHelper.setCompactTreeLayout(this.graph, this.mxGraphAttributeService.inCollapsedMode, cell);
     }
     this.updateGraph(() => {
       const deltaX = initialX - cell.geometry.x;
@@ -450,10 +446,10 @@ export class MxGraphService {
       return;
     }
 
-    const childNode = MxGraphHelper.getElementNodeTest(child);
+    const childNode = MxGraphHelper.getElementNode(child);
 
     if (
-      (parent?.edges || []).some(edge => MxGraphHelper.getModelElementTest(edge.target).aspectModelUrn === childNode.element.aspectModelUrn)
+      (parent?.edges || []).some(edge => MxGraphHelper.getModelElement(edge.target).aspectModelUrn === childNode.element.aspectModelUrn)
     ) {
       return;
     }
@@ -464,7 +460,7 @@ export class MxGraphService {
     } as CellStyle);
 
     if (!this.filterAttributes.isFiltering) {
-      MxGraphHelper.establishRelation(MxGraphHelper.getModelElementTest(parent), childNode.element);
+      MxGraphHelper.establishRelation(MxGraphHelper.getModelElement(parent), childNode.element);
     }
   }
 
@@ -475,7 +471,7 @@ export class MxGraphService {
    */
   showValidationErrorOnShape(focusNodeUrn: string): void {
     Object.values<Cell>(this.graph.model.cells).forEach((cell: Cell) => {
-      const modelElement = MxGraphHelper.getModelElementTest(cell);
+      const modelElement = MxGraphHelper.getModelElement(cell);
       if (modelElement && modelElement.aspectModelUrn === focusNodeUrn) {
         // this.graph.setCellStyles(mxConstants.STYLE_STROKECOLOR, 'red', [cell]);
         // this.graph.setCellStyles(mxConstants.STYLE_STROKEWIDTH, 3, [cell]);
@@ -499,14 +495,14 @@ export class MxGraphService {
     for (const cell of cells) {
       if (cell?.isEdge?.()) {
         if (cell.source && cell.target) {
-          const parent = MxGraphHelper.getModelElementTest(cell.source);
-          const child = MxGraphHelper.getModelElementTest(cell.target);
+          const parent = MxGraphHelper.getModelElement(cell.source);
+          const child = MxGraphHelper.getModelElement(cell.target);
           if (this.loadedFiles.isElementInCurrentFile(parent)) MxGraphHelper.removeRelation(parent, child);
         }
         continue;
       }
 
-      const modelElement = MxGraphHelper.getModelElementTest(cell);
+      const modelElement = MxGraphHelper.getModelElement(cell);
       if (this.loadedFiles.isElementExtern(modelElement)) continue;
 
       for (const child of modelElement.children) {
@@ -564,7 +560,7 @@ export class MxGraphService {
     deletedEntityValueCells
       .filter(entityValueCell => entityValueCell.isVertex())
       .forEach(entityValueCell =>
-        this.updateEntityValuesWithReference(MxGraphHelper.getModelElementTest<DefaultEntityInstance>(entityValueCell)),
+        this.updateEntityValuesWithReference(MxGraphHelper.getModelElement<DefaultEntityInstance>(entityValueCell)),
       );
   }
 
@@ -588,7 +584,7 @@ export class MxGraphService {
    * Get an array of cells which are currently visible to a user
    */
   public getVisibleCells(): Cell[] {
-    const graph = this.mxGraphAttributeService.graphTest;
+    const graph = this.mxGraphAttributeService.graph;
     const cells: Record<any, Cell> = graph.model.cells;
     const visibleCells: Cell[] = [];
 
@@ -620,7 +616,7 @@ export class MxGraphService {
     const xRangeEnd = viewportWidth + xRangeStart;
     const yRangeStart = scrollPosition.y;
     const yRangeEnd = viewportHeight + yRangeStart;
-    const coordinates = this.getCellCoordinatesTest(cell, graph);
+    const coordinates = this.getCellCoordinates(cell, graph);
 
     if (!coordinates) return false;
 
@@ -633,7 +629,7 @@ export class MxGraphService {
    * @param cell target cell
    * @param graph a graph the cell belongs to
    */
-  public getCellCoordinatesTest(cell: Cell, graph: Graph): Coordinates {
+  public getCellCoordinates(cell: Cell, graph: Graph): Coordinates {
     const cellState = graph.view.getState(cell);
     const cellNode = cellState?.shape?.node;
 

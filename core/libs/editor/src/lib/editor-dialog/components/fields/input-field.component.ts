@@ -271,7 +271,7 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
   searchExtProperty(value: string): FilteredType[] {
     return this.searchExtElement(value)
       ?.map((cell: Cell) => {
-        const modelElement = MxGraphHelper.getModelElementTest(cell);
+        const modelElement = MxGraphHelper.getModelElement(cell);
         if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultProperty) {
           return {
             name: modelElement.name,
@@ -288,7 +288,7 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
   searchExtCharacteristic(value: string): FilteredType[] {
     return this.searchExtElement(value)
       ?.map((cell: Cell) => {
-        const modelElement = MxGraphHelper.getModelElementTest(cell);
+        const modelElement = MxGraphHelper.getModelElement(cell);
         if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultCharacteristic) {
           return {
             name: modelElement.name,
@@ -305,7 +305,7 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
   searchExtEntity(value: string): FilteredType[] {
     return this.searchExtElement(value)
       ?.map((cell: Cell) => {
-        const modelElement = MxGraphHelper.getModelElementTest(cell);
+        const modelElement = MxGraphHelper.getModelElement(cell);
         if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultEntity) {
           return {
             name: modelElement.name,
@@ -323,7 +323,7 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
   searchExtAbstractEntity(value: string): FilteredType[] {
     return this.searchExtElement(value)
       ?.map((cell: Cell) => {
-        const modelElement = MxGraphHelper.getModelElementTest(cell);
+        const modelElement = MxGraphHelper.getModelElement(cell);
         if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultEntity && modelElement.isAbstractEntity()) {
           return {
             name: modelElement.name,

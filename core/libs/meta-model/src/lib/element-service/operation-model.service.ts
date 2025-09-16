@@ -32,7 +32,7 @@ export class OperationModelService extends BaseModelService {
   }
 
   update(cell: Cell, form: {[key: string]: any}) {
-    const modelElement = MxGraphHelper.getModelElementTest<DefaultOperation>(cell);
+    const modelElement = MxGraphHelper.getModelElement<DefaultOperation>(cell);
     super.update(cell, form);
 
     const inputList = form.inputChipList;
@@ -57,9 +57,9 @@ export class OperationModelService extends BaseModelService {
   }
 
   private removeInputDependency(cell: Cell, input: Array<DefaultProperty>, output: DefaultProperty) {
-    const operation = MxGraphHelper.getModelElementTest<DefaultOperation>(cell);
-    this.mxGraphAttributeService.graphTest.getOutgoingEdges(cell, null).forEach(edge => {
-      const modelElement = MxGraphHelper.getModelElementTest(edge.target);
+    const operation = MxGraphHelper.getModelElement<DefaultOperation>(cell);
+    this.mxGraphAttributeService.graph.getOutgoingEdges(cell, null).forEach(edge => {
+      const modelElement = MxGraphHelper.getModelElement(edge.target);
       const inputProperty = input.find(value => value.aspectModelUrn === modelElement.aspectModelUrn);
       if (
         modelElement instanceof DefaultProperty &&
@@ -74,9 +74,9 @@ export class OperationModelService extends BaseModelService {
   }
 
   private removeOutputDependency(cell: Cell, output: DefaultProperty, input: Array<DefaultProperty>) {
-    const operation = MxGraphHelper.getModelElementTest<DefaultOperation>(cell);
-    this.mxGraphAttributeService.graphTest.getOutgoingEdges(cell, null).forEach(edge => {
-      const modelElement = MxGraphHelper.getModelElementTest(edge.target);
+    const operation = MxGraphHelper.getModelElement<DefaultOperation>(cell);
+    this.mxGraphAttributeService.graph.getOutgoingEdges(cell, null).forEach(edge => {
+      const modelElement = MxGraphHelper.getModelElement(edge.target);
       if (
         modelElement instanceof DefaultProperty &&
         output?.aspectModelUrn === modelElement.aspectModelUrn &&
@@ -91,7 +91,7 @@ export class OperationModelService extends BaseModelService {
   private addInputProperties(cell: Cell, input: Array<DefaultProperty>) {
     input.forEach(property => {
       const cachedProperty = this.currentCachedFile.resolveInstance(property);
-      const operation = MxGraphHelper.getModelElementTest(cell);
+      const operation = MxGraphHelper.getModelElement(cell);
       const resolvedCell = this.mxGraphService.resolveCellByModelElement(cachedProperty);
       const propertyCell = resolvedCell
         ? resolvedCell
@@ -102,7 +102,7 @@ export class OperationModelService extends BaseModelService {
 
   private addOutputProperties(cell: Cell, property: DefaultProperty) {
     const cachedProperty = this.currentCachedFile.resolveInstance(property);
-    const operation = MxGraphHelper.getModelElementTest(cell);
+    const operation = MxGraphHelper.getModelElement(cell);
     const resolvedCell = this.mxGraphService.resolveCellByModelElement(cachedProperty);
     const propertyCell = resolvedCell
       ? resolvedCell

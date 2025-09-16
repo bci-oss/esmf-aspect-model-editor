@@ -18,7 +18,7 @@ import {environment} from 'environments/environment';
 @Injectable({providedIn: 'root'})
 export class MxGraphAttributeService {
   private _inCollapsedMode = false;
-  private _graphTest;
+  private _graph;
 
   constructor() {
     if (!environment.production) {
@@ -34,12 +34,12 @@ export class MxGraphAttributeService {
     this._inCollapsedMode = inCollapsedMode;
   }
 
-  public get graphTest(): Graph {
-    return this._graphTest;
+  public get graph(): Graph {
+    return this._graph;
   }
 
   // eslint-disable-next-line @typescript-eslint/adjacent-overload-signatures
-  public set graphTest(value: Graph) {
-    this._graphTest = value;
+  public set graph(value: Graph) {
+    this._graph = value;
   }
 }

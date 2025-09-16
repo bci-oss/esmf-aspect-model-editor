@@ -25,7 +25,7 @@ export class EnumerationEntityValueConnectionHandler implements MultiShapeConnec
     childMetaModel.addParent(parentMetaModel);
     parentMetaModel.values.push(childMetaModel);
 
-    this.mxGraphService.graph.labelChanged(parent, MxGraphHelper.createPropertiesLabelTest(parent), null);
+    this.mxGraphService.graph.labelChanged(parent, MxGraphHelper.createPropertiesLabel(parent), null);
     this.mxGraphService.assignToParent(child, parent);
   }
 }

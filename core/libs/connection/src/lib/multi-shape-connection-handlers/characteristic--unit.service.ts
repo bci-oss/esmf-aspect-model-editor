@@ -29,9 +29,9 @@ export class CharacteristicUnitConnectionHandler implements MultiShapeConnector<
     if (parentMetaModel.unit && parentMetaModel.unit !== childMetaModel) {
       const obsoleteEdge = this.mxGraphService.graph
         .getOutgoingEdges(parent, null)
-        .find(edge => MxGraphHelper.getModelElementTest(edge.target) instanceof DefaultUnit);
+        .find(edge => MxGraphHelper.getModelElement(edge.target) instanceof DefaultUnit);
 
-      const unit = MxGraphHelper.getModelElementTest<DefaultUnit>(obsoleteEdge.target);
+      const unit = MxGraphHelper.getModelElement<DefaultUnit>(obsoleteEdge.target);
       MxGraphHelper.removeRelation(parentMetaModel, unit);
 
       if (unit.isPredefined) {

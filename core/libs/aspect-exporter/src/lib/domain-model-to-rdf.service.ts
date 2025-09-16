@@ -62,7 +62,7 @@ export class DomainModelToRdfService {
   private cleanupVisitorService = inject(CleanupVisitor);
 
   get graph(): Graph {
-    return this.mxGraphAttributeService.graphTest;
+    return this.mxGraphAttributeService.graph;
   }
 
   get currentCachedFile() {

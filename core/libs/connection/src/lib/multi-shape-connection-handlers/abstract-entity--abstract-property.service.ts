@@ -37,10 +37,10 @@ export class AbstractEntityAbstractPropertyConnectionHandler
     const grandParents = this.mxGraphService.graph
       .getIncomingEdges(parentCell, null)
       .map(edge => edge.source)
-      .filter(cell => MxGraphHelper.getModelElementTest(cell) instanceof DefaultEntity);
+      .filter(cell => MxGraphHelper.getModelElement(cell) instanceof DefaultEntity);
 
     for (const grandParent of grandParents) {
-      const grandParentElement = MxGraphHelper.getModelElementTest<DefaultEntity>(grandParent);
+      const grandParentElement = MxGraphHelper.getModelElement<DefaultEntity>(grandParent);
       const alreadyExtended = grandParentElement.properties.some(
         property => property.getExtends()?.aspectModelUrn === childMetaModel.aspectModelUrn,
       );

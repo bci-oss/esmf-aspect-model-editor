@@ -39,21 +39,21 @@ export class ConstraintModelService extends BaseModelService {
   private filtersService = inject(FiltersService);
 
   update(cell: Cell, form: {[key: string]: any}) {
-    let metaModelElement = MxGraphHelper.getModelElementTest<DefaultConstraint>(cell);
+    let metaModelElement = MxGraphHelper.getModelElement<DefaultConstraint>(cell);
     if (form.changedMetaModel) {
       this.currentCachedFile.removeElement(metaModelElement?.aspectModelUrn);
       this.currentCachedFile.resolveInstance(form.changedMetaModel);
       cell = this.mxGraphService.resolveCellByModelElement(metaModelElement);
 
       cell.edges?.forEach(({source}) => {
-        const trait = MxGraphHelper.getModelElementTest<DefaultTrait>(source);
+        const trait = MxGraphHelper.getModelElement<DefaultTrait>(source);
         trait.constraints = trait.constraints.filter(constraint => constraint.aspectModelUrn !== metaModelElement.aspectModelUrn);
         MxGraphHelper.removeRelation(trait, metaModelElement);
         MxGraphHelper.establishRelation(trait, form.changedMetaModel);
       });
 
       this.updateModelOfParent(cell, form.changedMetaModel);
-      MxGraphHelper.setElementNodeTest(cell, this.filtersService.createNode(form.changedMetaModel));
+      MxGraphHelper.setElementNode(cell, this.filtersService.createNode(form.changedMetaModel));
       metaModelElement = form.changedMetaModel; // set the changed meta model as the actual
     }
     super.update(cell, form);
@@ -68,17 +68,17 @@ export class ConstraintModelService extends BaseModelService {
 
   delete(cell: Cell) {
     super.delete(cell);
-    const elementModel = MxGraphHelper.getModelElementTest(cell);
-    const outgoingEdges = this.mxGraphAttributeService.graphTest.getOutgoingEdges(cell, null);
-    const incomingEdges = this.mxGraphAttributeService.graphTest.getIncomingEdges(cell, null);
-    this.mxGraphShapeOverlayService.checkAndAddTopShapeActionIconTest(outgoingEdges, elementModel);
-    this.mxGraphShapeOverlayService.checkAndAddShapeActionIconTest(incomingEdges, elementModel);
+    const elementModel = MxGraphHelper.getModelElement(cell);
+    const outgoingEdges = this.mxGraphAttributeService.graph.getOutgoingEdges(cell, null);
+    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell, null);
+    this.mxGraphShapeOverlayService.checkAndAddTopShapeActionIcon(outgoingEdges, elementModel);
+    this.mxGraphShapeOverlayService.checkAndAddShapeActionIcon(incomingEdges, elementModel);
     this.mxGraphService.removeCells([cell]);
   }
 
   private updateModelOfParent(cell: Cell, value: any) {
-    this.mxGraphAttributeService.graphTest.getIncomingEdges(cell, null).forEach(cellParent => {
-      const parentModel = MxGraphHelper.getModelElementTest<NamedElement>(cellParent.source);
+    this.mxGraphAttributeService.graph.getIncomingEdges(cell, null).forEach(cellParent => {
+      const parentModel = MxGraphHelper.getModelElement<NamedElement>(cellParent.source);
       useUpdater(parentModel).update(value);
     });
   }

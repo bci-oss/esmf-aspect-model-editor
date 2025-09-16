@@ -46,7 +46,7 @@ export class StructuredValueCharacteristicPropertyConnectionHandler
       this.addPropertyElement(childMetaModel, parentMetaModel);
     }
 
-    MxGraphHelper.updateLabelTest(parentCell, this.mxGraphAttributeService.graphTest, this.sammLangService);
+    MxGraphHelper.updateLabel(parentCell, this.mxGraphAttributeService.graph, this.sammLangService);
     this.mxGraphService.assignToParent(childCell, parentCell);
     this.mxGraphService.formatCell(parentCell);
     this.mxGraphService.formatShapes();

@@ -39,7 +39,7 @@ export abstract class BaseModelService {
   abstract isApplicable(metaModelElement: NamedElement): boolean;
 
   update(cell: Cell, form: {[key: string]: any}) {
-    const modelElement = MxGraphHelper.getModelElementTest(cell);
+    const modelElement = MxGraphHelper.getModelElement(cell);
     if (!modelElement) {
       return;
     }
@@ -69,9 +69,9 @@ export abstract class BaseModelService {
 
   delete(cell: Cell) {
     // Add common operations
-    const modelElement = MxGraphHelper.getModelElementTest(cell);
+    const modelElement = MxGraphHelper.getModelElement(cell);
     for (const edge of (cell.edges?.length && cell.edges) || []) {
-      const sourceNode = MxGraphHelper.getModelElementTest<NamedElement>(edge.source);
+      const sourceNode = MxGraphHelper.getModelElement<NamedElement>(edge.source);
       if (sourceNode && !(sourceNode instanceof DefaultEnumeration) && this.loadedFilesService.isElementInCurrentFile(sourceNode)) {
         this.currentCachedFile.removeElement(modelElement.aspectModelUrn);
         useUpdater(sourceNode).delete(modelElement);

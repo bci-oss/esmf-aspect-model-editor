@@ -40,13 +40,13 @@ export abstract class InheritanceConnector extends BaseConnectionHandler {
     this.checkAndRemoveExtendElement(parentCell);
     this.mxGraphService.assignToParent(childCell, parentCell);
     parentCell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(parentMetaModel, this.sammLangService);
-    this.mxGraphAttributeService.graphTest.labelChanged(parentCell, MxGraphHelper.createPropertiesLabelTest(parentCell), null);
+    this.mxGraphAttributeService.graph.labelChanged(parentCell, MxGraphHelper.createPropertiesLabel(parentCell), null);
   }
 
   public checkAndRemoveExtendElement(parentCell: Cell) {
-    const parentElementModel = MxGraphHelper.getModelElementTest(parentCell);
-    this.mxGraphAttributeService.graphTest.getOutgoingEdges(parentCell, null).forEach((outEdge: Cell) => {
-      const targetElementModel = MxGraphHelper.getModelElementTest(outEdge.target);
+    const parentElementModel = MxGraphHelper.getModelElement(parentCell);
+    this.mxGraphAttributeService.graph.getOutgoingEdges(parentCell, null).forEach((outEdge: Cell) => {
+      const targetElementModel = MxGraphHelper.getModelElement(outEdge.target);
       if (this.isInheritedElement(targetElementModel)) {
         this.mxGraphService.removeCells([parentCell.removeEdge(outEdge, true)]);
         MxGraphHelper.removeRelation(parentElementModel, targetElementModel);

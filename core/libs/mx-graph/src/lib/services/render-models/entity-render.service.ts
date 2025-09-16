@@ -34,6 +34,6 @@ export class EntityRenderService extends BaseRenderService {
   }
 
   isApplicable(cell: Cell): boolean {
-    return MxGraphHelper.getModelElementTest(cell) instanceof DefaultEntity;
+    return MxGraphHelper.getModelElement(cell) instanceof DefaultEntity;
   }
 }

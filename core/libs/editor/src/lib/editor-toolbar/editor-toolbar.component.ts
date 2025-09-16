@@ -61,7 +61,7 @@ export class EditorToolbarComponent implements AfterViewInit, OnInit, OnDestroy 
   }
 
   public get selectedCells() {
-    return this.mxGraphShapeSelectorService.getSelectedCellsTest();
+    return this.mxGraphShapeSelectorService.getSelectedCells();
   }
 
   private checkChangesInterval: NodeJS.Timeout;

@@ -23,7 +23,7 @@ export class TimeSeriesEntityRemoveService implements PredefinedRemove {
   private mxGraphService = inject(MxGraphService);
 
   public delete(cell: Cell) {
-    const modelElement = MxGraphHelper.getModelElementTest(cell);
+    const modelElement = MxGraphHelper.getModelElement(cell);
 
     if (
       modelElement instanceof DefaultEntity &&
@@ -43,7 +43,7 @@ export class TimeSeriesEntityRemoveService implements PredefinedRemove {
     }
 
     const foundCell = this.mxGraphService.graph.getIncomingEdges(cell, null).find(e => {
-      const model = MxGraphHelper.getModelElementTest(e.source);
+      const model = MxGraphHelper.getModelElement(e.source);
       return model instanceof DefaultProperty && model.name === PredefinedPropertiesEnum.timestamp && model.isPredefined;
     })?.source;
 
@@ -78,16 +78,16 @@ export class TimeSeriesEntityRemoveService implements PredefinedRemove {
     const cellsToBeRemoved = [];
 
     for (const edge of this.mxGraphService.graph.getIncomingEdges(cell, null)) {
-      MxGraphHelper.removeRelation(MxGraphHelper.getModelElementTest(edge.source), MxGraphHelper.getModelElementTest(cell));
+      MxGraphHelper.removeRelation(MxGraphHelper.getModelElement(edge.source), MxGraphHelper.getModelElement(cell));
     }
 
     while (cellStack.length) {
       const lastCell = cellStack.pop();
-      const modelElement = MxGraphHelper.getModelElementTest(lastCell);
+      const modelElement = MxGraphHelper.getModelElement(lastCell);
       const parentsEdges = this.mxGraphService.graph.getIncomingEdges(lastCell, null);
 
       const dependentProperties = parentsEdges.filter(e => {
-        const parentElement = MxGraphHelper.getModelElementTest(e.source);
+        const parentElement = MxGraphHelper.getModelElement(e.source);
         return (parentElement instanceof DefaultProperty && parentElement.isAbstract) || parentElement instanceof DefaultProperty;
       });
 
@@ -116,7 +116,7 @@ export class TimeSeriesEntityRemoveService implements PredefinedRemove {
     }
 
     [cell, ...cellsToBeRemoved].forEach(c => {
-      const modelElement = MxGraphHelper.getModelElementTest(c);
+      const modelElement = MxGraphHelper.getModelElement(c);
       const elementModelService = this.modelRootService.getElementModelService(modelElement);
       elementModelService?.delete(c);
     });
@@ -125,7 +125,7 @@ export class TimeSeriesEntityRemoveService implements PredefinedRemove {
   private handleTimeSeriesEntityPropertiesRemoval(cell: Cell) {
     const incomingEdges = this.mxGraphService.graph.getIncomingEdges(cell, null);
     const timeSeriesCell = incomingEdges.find(edge => {
-      const modelElement = MxGraphHelper.getModelElementTest(edge.source);
+      const modelElement = MxGraphHelper.getModelElement(edge.source);
       return (
         modelElement instanceof DefaultEntity && modelElement.isPredefined && modelElement.name === PredefinedEntitiesEnum.TimeSeriesEntity
       );

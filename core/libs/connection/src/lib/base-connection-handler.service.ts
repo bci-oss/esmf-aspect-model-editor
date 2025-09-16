@@ -24,7 +24,7 @@ import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {ElementCreatorService} from '@ame/shared';
 import {Directive, inject} from '@angular/core';
 import {NamedElement} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 
 @Directive()
 export class BaseConnectionHandler {
@@ -35,14 +35,14 @@ export class BaseConnectionHandler {
   protected readonly filtersService = inject(FiltersService);
   protected mxGraphShapeOverlay = inject(MxGraphShapeOverlayService);
 
-  refreshPropertiesLabel(cell: mxgraph.mxCell, modelElement: NamedElement) {
+  refreshPropertiesLabel(cell: Cell, modelElement: NamedElement) {
     cell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(modelElement, this.sammLangService);
-    this.mxGraphAttributeService.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabel(cell));
+    this.mxGraphAttributeService.graphTest.labelChanged(cell, MxGraphHelper.createPropertiesLabelTest(cell), null);
   }
 
-  renderTree(modelElement: NamedElement, parent: mxgraph.mxCell): mxgraph.mxCell {
-    const node = this.filtersService.createNode(modelElement, {parent: MxGraphHelper.getModelElement(parent)});
-    const mxGraphRenderer = new MxGraphRenderer(this.mxGraphService, this.mxGraphShapeOverlay, this.sammLangService, null);
-    return mxGraphRenderer.render(node, parent);
+  renderTree(modelElement: NamedElement, parent: Cell): Cell {
+    const node = this.filtersService.createNode(modelElement, {parent: MxGraphHelper.getModelElementTest(parent)});
+    const mxRenderer = new MxGraphRenderer(this.mxGraphService, this.mxGraphShapeOverlay, this.sammLangService, null);
+    return mxRenderer.render(node, parent);
   }
 }

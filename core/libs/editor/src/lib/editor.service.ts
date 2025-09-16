@@ -23,9 +23,6 @@ import {
   MxGraphShapeOverlayService,
   MxGraphShapeSelectorService,
   ShapeConfiguration,
-  mxConstants,
-  mxEvent,
-  mxUtils,
 } from '@ame/mx-graph';
 import {ModelService, RdfService} from '@ame/rdf/services';
 import {ConfigurationService, SammLanguageSettingsService} from '@ame/settings-dialog';
@@ -40,11 +37,10 @@ import {
   sammElements,
 } from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
-import {useUpdater} from '@ame/utils';
 import {Injectable, Injector, NgZone, inject} from '@angular/core';
 import {DefaultAspect, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
+import {Cell, FitPlugin, gestureUtils} from '@maxgraph/core';
 import {environment} from 'environments/environment';
-import {mxgraph} from 'mxgraph-factory';
 import {BehaviorSubject, Observable, Subscription, catchError, delayWhen, first, of, retry, switchMap, tap, throwError, timer} from 'rxjs';
 import {ConfirmDialogService} from './confirm-dialog/confirm-dialog.service';
 import {ShapeSettingsService, ShapeSettingsStateService} from './editor-dialog';
@@ -109,71 +105,67 @@ export class EditorService {
     this.enableAutoValidation();
     this.modelSaverService.enableAutoSave();
 
-    mxEvent.addMouseWheelListener(
-      mxUtils.bind(this, (evt, up) => {
+    const container = this.mxGraphAttributeService.graphTest.getContainer();
+    const onWheel = (evt: WheelEvent) => {
+      if (!evt.defaultPrevented && evt.altKey) {
+        evt.preventDefault();
         this.ngZone.run(() => {
-          if (!mxEvent.isConsumed(evt) && evt.altKey) {
-            if (up) {
-              this.mxGraphAttributeService.graph.zoomIn();
-            } else {
-              this.mxGraphAttributeService.graph.zoomOut();
-            }
-            mxEvent.consume(evt);
-          }
+          evt.deltaY < 0 ? this.mxGraphAttributeService.graphTest.zoomIn() : this.mxGraphAttributeService.graphTest.zoomOut();
         });
-      }),
-      null,
-    );
+      }
+    };
+
+    container.addEventListener('wheel', onWheel, {passive: false});
 
     // TODO Check this when refactoring editor service
     // enforce parent domain object will be updated if an cell e.g. unit will be deleted
-    this.mxGraphAttributeService.graph.addListener(
-      mxEvent.CELLS_REMOVED,
-      mxUtils.bind(this, (_source: mxgraph.mxGraph, event: mxgraph.mxEventObject) => {
-        this.ngZone.run(() => {
-          if (this.filterAttributes.isFiltering) {
-            return;
-          }
-
-          const changedCells: Array<mxgraph.mxCell> = event.getProperty('cells');
-          changedCells.forEach(cell => {
-            if (!MxGraphHelper.getModelElement(cell)) {
-              return;
-            }
-
-            const edgeParent = changedCells.find(edge => edge.isEdge() && edge.target && edge.target.id === cell.id);
-            if (!edgeParent) {
-              return;
-            }
-
-            const sourceElement = MxGraphHelper.getModelElement<NamedElement>(edgeParent.source);
-            if (sourceElement && this.loadedFilesService.isElementInCurrentFile(sourceElement)) {
-              useUpdater(sourceElement).delete(MxGraphHelper.getModelElement(cell));
-            }
-          });
-        });
-      }),
-    );
+    // this.mxGraphAttributeService.graphTest.addListener(
+    //   InternalEvents.CELLS_REMOVED,
+    //   mxUtils.bind(this, (_source: mxgraph.mxGraph, event: mxgraph.mxEventObject) => {
+    //     this.ngZone.run(() => {
+    //       if (this.filterAttributes.isFiltering) {
+    //         return;
+    //       }
+    //
+    //       const changedCells: Array<mxgraph.mxCell> = event.getProperty('cells');
+    //       changedCells.forEach(cell => {
+    //         if (!MxGraphHelper.getModelElementTest(cell)) {
+    //           return;
+    //         }
+    //
+    //         const edgeParent = changedCells.find(edge => edge.isEdge() && edge.target && edge.target.id === cell.id);
+    //         if (!edgeParent) {
+    //           return;
+    //         }
+    //
+    //         const sourceElement = MxGraphHelper.getModelElementTest<NamedElement>(edgeParent.source);
+    //         if (sourceElement && this.loadedFilesService.isElementInCurrentFile(sourceElement)) {
+    //           useUpdater(sourceElement).delete(MxGraphHelper.getModelElementTest(cell));
+    //         }
+    //       });
+    //     });
+    //   }),
+    // );
 
     // increase performance by not passing the event to the parent(s)
-    this.mxGraphAttributeService.graph.getModel().addListener(mxEvent.CHANGE, function (sender, evt) {
-      evt.consume();
-    });
+    // this.mxGraphAttributeService.graphTest.getDataModel().addListener(InternalEvents.CHANGE, function (sender, evt) {
+    //   evt.consume();
+    // });
 
     this.delayedBindings.forEach(binding => this.bindAction(binding.actionname, binding.funct));
     this.delayedBindings = [];
-    this.mxGraphAttributeService.graph.view.setTranslate(0, 0);
+    // this.mxGraphAttributeService.graphTest.view.setTranslate(0, 0);
   }
 
   bindAction(actionName: string, callback: Function) {
-    if (!this.mxGraphAttributeService.graph) {
-      this.delayedBindings.push({
-        actionname: actionName,
-        funct: callback,
-      });
-      return;
-    }
-    this.mxGraphAttributeService.editor.addAction(actionName, callback);
+    // if (!this.mxGraphAttributeService.graph) {
+    //   this.delayedBindings.push({
+    //     actionname: actionName,
+    //     funct: callback,
+    //   });
+    //   return;
+    // }
+    // this.mxGraphAttributeService.editor.addAction(actionName, callback);
   }
 
   generateJsonSample(rdfModel: RdfModel): Observable<string> {
@@ -206,9 +198,9 @@ export class EditorService {
   }
 
   makeDraggable(element: HTMLDivElement, dragElement: HTMLDivElement) {
-    const ds = mxUtils.makeDraggable(
+    const ds = gestureUtils.makeDraggable(
       element,
-      this.mxGraphAttributeService.graph,
+      this.mxGraphAttributeService.graphTest,
       (_graph, _evt, _cell, x, y) => {
         const elementType: string = element.dataset.type;
         const urn: string = element.dataset.urn;
@@ -297,13 +289,13 @@ export class EditorService {
   }
 
   deleteSelectedElements() {
-    const result: mxgraph.mxCell[] = [];
-    const selectedCells = this.mxGraphShapeSelectorService.getSelectedCells();
+    const result: Cell[] = [];
+    const selectedCells = this.mxGraphShapeSelectorService.getSelectedCellsTest();
 
     result.push(...selectedCells);
 
-    const externElements = result.filter((cell: mxgraph.mxCell) => {
-      const element = MxGraphHelper.getModelElement(cell);
+    const externElements = result.filter((cell: Cell) => {
+      const element = MxGraphHelper.getModelElementTest(cell);
       if (!element) {
         return false;
       }
@@ -314,19 +306,19 @@ export class EditorService {
     this.deleteElements(result);
   }
 
-  private deletePrefixForExternalNamespaceReference(cell: mxgraph.mxCell) {
+  private deletePrefixForExternalNamespaceReference(cell: Cell) {
     if (!cell || cell.isVertex()) {
       return;
     }
 
-    const element = MxGraphHelper.getModelElement(cell);
+    const element = MxGraphHelper.getModelElementTest(cell);
     if (!element || !element.aspectModelUrn) {
       return;
     }
 
     const rdfModel = this.loadedFilesService.currentLoadedFile?.rdfModel;
 
-    const aspectModelUrnToBeRemoved = MxGraphHelper.getModelElement(cell).aspectModelUrn;
+    const aspectModelUrnToBeRemoved = MxGraphHelper.getModelElementTest(cell).aspectModelUrn;
     const urnToBeChecked = aspectModelUrnToBeRemoved.substring(0, aspectModelUrnToBeRemoved.indexOf('#'));
 
     const nodeNames = rdfModel.store.getObjects(null, null, null).map((el: any) => el.id);
@@ -356,16 +348,16 @@ export class EditorService {
     return resultArray;
   }
 
-  private deleteElements(cells: mxgraph.mxCell[]): void {
+  private deleteElements(cells: Cell[]): void {
     if (this.shapeSettingsStateService.isShapeSettingOpened && cells.includes(this.shapeSettingsStateService.selectedShapeForUpdate)) {
       this.shapeSettingsStateService.closeShapeSettings();
     }
 
-    cells.forEach((cell: mxgraph.mxCell) => {
-      this.mxGraphAttributeService.graph.setCellStyles(
-        mxConstants.STYLE_STROKECOLOR,
+    cells.forEach((cell: Cell) => {
+      this.mxGraphAttributeService.graphTest.setCellStyles(
+        'strokeColor',
         'black',
-        this.mxGraphService.graph.getOutgoingEdges(cell).map(edge => edge.target),
+        this.mxGraphService.graph.getOutgoingEdges(cell, null).map(edge => edge.target),
       );
       this.elementModelService.deleteElement(cell);
     });
@@ -379,7 +371,7 @@ export class EditorService {
       })
       .afterOpened()
       .subscribe(() => {
-        this.mxGraphAttributeService.graph.zoomIn();
+        this.mxGraphAttributeService.graphTest.zoomIn();
         this.loadingScreenService.close();
       });
   }
@@ -392,7 +384,7 @@ export class EditorService {
       })
       .afterOpened()
       .subscribe(() => {
-        this.mxGraphAttributeService.graph.zoomOut();
+        this.mxGraphAttributeService.graphTest.zoomOut();
         this.loadingScreenService.close();
       });
   }
@@ -405,7 +397,7 @@ export class EditorService {
       })
       .afterOpened()
       .subscribe(() => {
-        this.mxGraphAttributeService.graph.fit();
+        this.mxGraphAttributeService.graphTest.getPlugin<FitPlugin>('FitPlugin').fit();
         this.loadingScreenService.close();
       });
   }
@@ -418,7 +410,7 @@ export class EditorService {
       })
       .afterOpened()
       .subscribe(() => {
-        this.mxGraphAttributeService.graph.zoomActual();
+        this.mxGraphAttributeService.graphTest.zoomActual();
         this.loadingScreenService.close();
       });
   }

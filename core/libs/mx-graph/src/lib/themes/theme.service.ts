@@ -12,73 +12,74 @@
  */
 
 import {Injectable} from '@angular/core';
-import {mxgraph} from 'mxgraph-factory';
-import {mxConstants} from '../providers';
+import {Cell, CellStyle, Graph} from '@maxgraph/core';
+import {darkColors} from './dark-theme';
 import {lightColors} from './light-theme';
 
 @Injectable({providedIn: 'root'})
 export class ThemeService {
   private root: HTMLElement = document.documentElement;
-  private graph: mxgraph.mxGraph;
+  private graph: Graph;
 
   public currentColors: any = lightColors;
 
+  private static STROKE_WIDTH = 'strokeWidth';
+  private static STROKE_Color = 'strokeColor';
+  private static FILL_COLOR = 'fillColor';
+
   get getDefaultShapesColors() {
     return {
-      [mxConstants.STYLE_STROKEWIDTH]: 2,
-      [mxConstants.STYLE_STROKECOLOR]: this.currentColors.border,
-      [mxConstants.STYLE_FONTCOLOR]: this.currentColors.font,
+      [ThemeService.STROKE_WIDTH]: 2,
+      [ThemeService.STROKE_Color]: this.currentColors.border,
+      [ThemeService.FILL_COLOR]: this.currentColors.font,
     };
   }
 
   get theme() {
     return {
-      aspect: {[mxConstants.STYLE_FILLCOLOR]: this.currentColors.aspect},
-      property: {[mxConstants.STYLE_FILLCOLOR]: this.currentColors.property},
-      abstractProperty: {[mxConstants.STYLE_FILLCOLOR]: this.currentColors.abstractProperty},
-      operation: {[mxConstants.STYLE_FILLCOLOR]: this.currentColors.operation},
-      event: {[mxConstants.STYLE_FILLCOLOR]: this.currentColors.event},
-      characteristic: {[mxConstants.STYLE_FILLCOLOR]: this.currentColors.characteristic},
-      abstractEntity: {[mxConstants.STYLE_FILLCOLOR]: this.currentColors.entityValue},
-      entity: {[mxConstants.STYLE_FILLCOLOR]: this.currentColors.entity},
-      constraint: {[mxConstants.STYLE_FILLCOLOR]: this.currentColors.constraint},
-      trait: {[mxConstants.STYLE_FILLCOLOR]: this.currentColors.trait},
-      unit: {[mxConstants.STYLE_FILLCOLOR]: this.currentColors.unit},
-      entityValue: {[mxConstants.STYLE_FILLCOLOR]: this.currentColors.entityValue},
-      filteredProperties_entity: {[mxConstants.STYLE_FILLCOLOR]: this.currentColors.entity},
-      filteredProperties_either: {[mxConstants.STYLE_FILLCOLOR]: this.currentColors.characteristic},
+      aspect: {[ThemeService.FILL_COLOR]: this.currentColors.aspect},
+      property: {[ThemeService.FILL_COLOR]: this.currentColors.property},
+      abstractProperty: {[ThemeService.FILL_COLOR]: this.currentColors.abstractProperty},
+      operation: {[ThemeService.FILL_COLOR]: this.currentColors.operation},
+      event: {[ThemeService.FILL_COLOR]: this.currentColors.event},
+      characteristic: {[ThemeService.FILL_COLOR]: this.currentColors.characteristic},
+      abstractEntity: {[ThemeService.FILL_COLOR]: this.currentColors.entityValue},
+      entity: {[ThemeService.FILL_COLOR]: this.currentColors.entity},
+      constraint: {[ThemeService.FILL_COLOR]: this.currentColors.constraint},
+      trait: {[ThemeService.FILL_COLOR]: this.currentColors.trait},
+      unit: {[ThemeService.FILL_COLOR]: this.currentColors.unit},
+      entityValue: {[ThemeService.FILL_COLOR]: this.currentColors.entityValue},
+      filteredProperties_entity: {[ThemeService.FILL_COLOR]: this.currentColors.entity},
+      filteredProperties_either: {[ThemeService.FILL_COLOR]: this.currentColors.characteristic},
     };
   }
 
-  setGraph(graph: mxgraph.mxGraph) {
+  setGraph(graph: Graph) {
     this.graph = graph;
   }
 
   applyTheme(theme: string) {
     this.setCssVars(theme);
-    this.graph.getChildVertices(this.graph.getDefaultParent()).forEach((shape: mxgraph.mxCell) => {
-      this.graph.setCellStyle(this.generateThemeStyle(shape.style), [shape]);
+    this.graph.getChildVertices(this.graph.getDefaultParent()).forEach((cell: Cell) => {
+      //debugger;
+      this.graph.setCellStyle(this.generateThemeStyle(cell.id), [cell]);
     });
   }
 
-  generateThemeStyle(cellStyle: string) {
-    const shapeStyle = cellStyle?.split(';')[0];
-    if (!shapeStyle) {
-      return '';
+  generateThemeStyle(styleName: string): CellStyle {
+    if (!styleName) {
+      return {} as CellStyle;
     }
 
-    return (
-      shapeStyle +
-      [...Object.entries(this.theme[shapeStyle]), ...Object.entries(this.getDefaultShapesColors)].reduce(
-        (acc, [key, value]) => `${acc};${key}=${value}`,
-        '',
-      )
-    );
+    return {
+      baseStyleNames: [styleName],
+      ...Object.fromEntries(Object.entries(this.getDefaultShapesColors)),
+      ...Object.fromEntries(Object.entries(this.theme[styleName])),
+    } as CellStyle;
   }
 
   setCssVars(theme: string) {
-    // TODO add new themes here
-    this.currentColors = theme === 'light' ? lightColors : null;
+    this.currentColors = theme === 'light' ? lightColors : darkColors;
     Object.entries(this.currentColors).forEach(([key, color]: any) => this.root.style.setProperty(`--ame-${key}`, color));
   }
 }

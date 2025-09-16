@@ -13,7 +13,7 @@
 import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
 import {inject, Injectable} from '@angular/core';
 import {NamedElement, PredefinedEntitiesEnum, PredefinedPropertiesEnum} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {ModelRootService} from '../model-root.service';
 import {PredefinedRemove} from './predefined-remove.type';
 
@@ -22,12 +22,12 @@ export class FileResourceRemoveService implements PredefinedRemove {
   private modelRootService = inject(ModelRootService);
   private mxGraphService = inject(MxGraphService);
 
-  delete(cell: mxgraph.mxCell): boolean {
+  delete(cell: Cell): boolean {
     if (!cell) {
       return false;
     }
 
-    const modelElement = MxGraphHelper.getModelElement(cell);
+    const modelElement = MxGraphHelper.getModelElementTest(cell);
     if (!this.modelRootService.isPredefined(modelElement)) {
       return false;
     }
@@ -39,7 +39,7 @@ export class FileResourceRemoveService implements PredefinedRemove {
     if ([PredefinedPropertiesEnum.resource, PredefinedPropertiesEnum.mimeType].includes(modelElement.name as PredefinedPropertiesEnum)) {
       const parent = this.mxGraphService
         .resolveParents(cell)
-        .find(p => MxGraphHelper.getModelElement(p).name === PredefinedEntitiesEnum.FileResource);
+        .find(p => MxGraphHelper.getModelElementTest(p).name === PredefinedEntitiesEnum.FileResource);
       return this.removeTree(parent);
     }
 
@@ -50,11 +50,11 @@ export class FileResourceRemoveService implements PredefinedRemove {
     return false;
   }
 
-  decouple(edge: mxgraph.mxCell, source: NamedElement): boolean {
+  decouple(edge: Cell, source: NamedElement): boolean {
     if ([PredefinedPropertiesEnum.resource, PredefinedPropertiesEnum.mimeType].includes(source.name as PredefinedPropertiesEnum)) {
       const parent = this.mxGraphService
         .resolveParents(edge.source)
-        .find(p => MxGraphHelper.getModelElement(p).name === PredefinedEntitiesEnum.FileResource);
+        .find(p => MxGraphHelper.getModelElementTest(p).name === PredefinedEntitiesEnum.FileResource);
       return this.removeTree(parent);
     }
 
@@ -65,26 +65,26 @@ export class FileResourceRemoveService implements PredefinedRemove {
     return false;
   }
 
-  private removeTree(cell: mxgraph.mxCell): boolean {
+  private removeTree(cell: Cell): boolean {
     if (!cell) {
       return false;
     }
 
     const toRemove = [cell];
-    const stack = this.mxGraphService.graph.getOutgoingEdges(cell).map(edge => edge.target);
+    const stack = this.mxGraphService.graph.getOutgoingEdges(cell, null).map(edge => edge.target);
 
-    for (const edge of this.mxGraphService.graph.getIncomingEdges(cell)) {
-      MxGraphHelper.removeRelation(MxGraphHelper.getModelElement(edge.source), MxGraphHelper.getModelElement(cell));
+    for (const edge of this.mxGraphService.graph.getIncomingEdges(cell, null)) {
+      MxGraphHelper.removeRelation(MxGraphHelper.getModelElementTest(edge.source), MxGraphHelper.getModelElementTest(cell));
     }
 
     while (stack.length) {
       const lastCell = stack.pop();
-      stack.push(...this.mxGraphService.graph.getOutgoingEdges(lastCell).map(edge => edge.target));
+      stack.push(...this.mxGraphService.graph.getOutgoingEdges(lastCell, null).map(edge => edge.target));
       toRemove.push(lastCell);
     }
 
     toRemove.forEach(c => {
-      const modelElement = MxGraphHelper.getModelElement(c);
+      const modelElement = MxGraphHelper.getModelElementTest(c);
       const elementModelService = this.modelRootService.getElementModelService(modelElement);
       elementModelService?.delete(c);
     });

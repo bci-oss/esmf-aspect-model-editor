@@ -14,7 +14,7 @@
 import {MxGraphHelper} from '@ame/mx-graph';
 import {Injectable} from '@angular/core';
 import {DefaultAspect} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {NamedNode} from 'n3';
 import {RendererUpdatePayload} from '../../models';
 import {BaseRenderService} from './base-render-service';
@@ -30,8 +30,8 @@ export class AspectRenderService extends BaseRenderService {
     });
   }
 
-  delete(cell: mxgraph.mxCell) {
-    const modelElement = MxGraphHelper.getModelElement(cell);
+  delete(cell: Cell) {
+    const modelElement = MxGraphHelper.getModelElementTest(cell);
     const store = this.loadedFilesService.currentLoadedFile.rdfModel.store;
 
     const aspectQuads = store.getQuads(new NamedNode(modelElement.aspectModelUrn), null, null, null);
@@ -40,7 +40,7 @@ export class AspectRenderService extends BaseRenderService {
     this.mxGraphService.removeCells([cell]);
   }
 
-  isApplicable(cell: mxgraph.mxCell): boolean {
-    return MxGraphHelper.getModelElement(cell) instanceof DefaultAspect;
+  isApplicable(cell: Cell): boolean {
+    return MxGraphHelper.getModelElementTest(cell) instanceof DefaultAspect;
   }
 }

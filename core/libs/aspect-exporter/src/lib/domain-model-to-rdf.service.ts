@@ -27,7 +27,7 @@ import {
   DefaultUnit,
   NamedElement,
 } from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Graph} from '@maxgraph/core';
 import {filter, tap} from 'rxjs/operators';
 import {
   AspectVisitor,
@@ -58,8 +58,8 @@ export class DomainModelToRdfService {
   private modelService = inject(ModelService);
   private cleanupVisitorService = inject(CleanupVisitor);
 
-  get graph(): mxgraph.mxGraph {
-    return this.mxGraphAttributeService.graph;
+  get graph(): Graph {
+    return this.mxGraphAttributeService.graphTest;
   }
 
   get currentCachedFile() {

@@ -73,7 +73,7 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
   }
 
   get modelElements() {
-    return this.mxGraphService.getAllCells().map(cell => MxGraphHelper.getModelElement(cell));
+    return this.mxGraphService.getAllCells().map(cell => MxGraphHelper.getModelElementTest(cell));
   }
 
   constructor() {

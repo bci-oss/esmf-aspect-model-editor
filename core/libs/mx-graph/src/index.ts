@@ -13,6 +13,7 @@
 
 export * from './lib/helpers';
 export * from './lib/models';
+export * from './lib/mx-graph.module';
 export * from './lib/providers';
 export * from './lib/renderers';
 export * from './lib/services';

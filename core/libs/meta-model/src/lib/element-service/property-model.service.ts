@@ -17,7 +17,7 @@ import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {useUpdater} from '@ame/utils';
 import {inject, Injectable} from '@angular/core';
 import {DefaultProperty, DefaultStructuredValue, HasExtends, NamedElement} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
@@ -32,8 +32,8 @@ export class PropertyModelService extends BaseModelService {
     return metaModelElement instanceof DefaultProperty;
   }
 
-  update(cell: mxgraph.mxCell, form: {[key: string]: any}) {
-    const modelElement = MxGraphHelper.getModelElement<DefaultProperty>(cell);
+  update(cell: Cell, form: {[key: string]: any}) {
+    const modelElement = MxGraphHelper.getModelElementTest<DefaultProperty>(cell);
     if (modelElement.extends_) {
       return;
     }
@@ -46,15 +46,15 @@ export class PropertyModelService extends BaseModelService {
     this.propertyRenderer.update({cell});
   }
 
-  delete(cell: mxgraph.mxCell) {
-    const node = MxGraphHelper.getModelElement<DefaultProperty>(cell);
+  delete(cell: Cell) {
+    const node = MxGraphHelper.getModelElementTest<DefaultProperty>(cell);
 
     const parents = this.mxGraphService.resolveParents(cell);
     for (const parent of parents) {
-      const parentModel = MxGraphHelper.getModelElement(parent);
+      const parentModel = MxGraphHelper.getModelElementTest(parent);
       if (parentModel instanceof DefaultStructuredValue) {
         useUpdater(parent).delete(node);
-        MxGraphHelper.updateLabel(parent, this.mxGraphService.graph, this.sammLangService);
+        MxGraphHelper.updateLabelTest(parent, this.mxGraphService.graph, this.sammLangService);
       }
     }
 
@@ -66,28 +66,28 @@ export class PropertyModelService extends BaseModelService {
     });
   }
 
-  private updatePropertiesNames(cell: mxgraph.mxCell) {
+  private updatePropertiesNames(cell: Cell) {
     const parents =
-      this.mxGraphService.resolveParents(cell)?.filter(e => MxGraphHelper.getModelElement(e) instanceof DefaultProperty) || [];
-    const modelElement = MxGraphHelper.getModelElement(cell);
+      this.mxGraphService.resolveParents(cell)?.filter(e => MxGraphHelper.getModelElementTest(e) instanceof DefaultProperty) || [];
+    const modelElement = MxGraphHelper.getModelElementTest(cell);
 
     for (const parentCell of parents) {
-      const parentModelElement = MxGraphHelper.getModelElement(parentCell);
+      const parentModelElement = MxGraphHelper.getModelElementTest(parentCell);
       parentModelElement.name = `[${modelElement.name}]`;
       parentModelElement.aspectModelUrn = `${parentModelElement.aspectModelUrn.split('#')[0]}#${parentModelElement.name}`;
       this.updateCell(parentCell);
     }
   }
 
-  private updateCell(cell: mxgraph.mxCell) {
-    cell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(MxGraphHelper.getModelElement(cell), this.sammLangService);
-    this.mxGraphService.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabel(cell));
+  private updateCell(cell: Cell) {
+    cell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(MxGraphHelper.getModelElementTest(cell), this.sammLangService);
+    this.mxGraphService.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabelTest(cell), null);
   }
 
-  private updateExtends(cell: mxgraph.mxCell, isDeleting = true) {
-    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell);
+  private updateExtends(cell: Cell, isDeleting = true) {
+    const incomingEdges = this.mxGraphAttributeService.graphTest.getIncomingEdges(cell, null);
     for (const edge of incomingEdges) {
-      const element = MxGraphHelper.getModelElement<HasExtends>(edge.source);
+      const element = MxGraphHelper.getModelElementTest<HasExtends>(edge.source);
       if (element instanceof DefaultProperty && isDeleting) {
         element.extends_ = null;
         this.mxGraphService.removeCells([edge.source]);

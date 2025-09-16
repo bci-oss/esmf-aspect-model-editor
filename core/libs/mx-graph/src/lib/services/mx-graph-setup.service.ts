@@ -22,9 +22,22 @@ import {APP_CONFIG, AssetsPath, BindingsService, BrowserService} from '@ame/shar
 import {LanguageTranslationService} from '@ame/translation';
 import {inject, Injectable, NgZone} from '@angular/core';
 import {DefaultEntity, DefaultEntityInstance, DefaultProperty, DefaultTrait} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {
+  Cell,
+  CellState,
+  Graph,
+  InternalEvent,
+  Outline,
+  Point,
+  PopupMenuHandler,
+  Rectangle,
+  SelectionHandler,
+  StackLayout,
+  VertexHandlerConfig,
+  domUtils,
+  styleUtils,
+} from '@maxgraph/core';
 import {MxGraphHelper, ShapeAttribute} from '../helpers';
-import {mxConstants, mxEditor, mxLayoutManager, mxOutline, mxPoint, mxRectangle, mxStackLayout, mxUtils} from '../providers';
 import {MxGraphAttributeService} from './mx-graph-attribute.service';
 import {MxGraphShapeSelectorService} from './mx-graph-shape-selector.service';
 
@@ -40,8 +53,8 @@ export class MxGraphSetupService {
   private loadedFiles = inject(LoadedFilesService);
   private ngZone = inject(NgZone);
 
-  private scrollTileSize: mxgraph.mxRectangle;
-  private graph: mxgraph.mxGraph;
+  private scrollTileSize: Rectangle;
+  private graph: Graph;
   private graphSizeDidChange: Function;
   private graphCellRedraw: Function;
   private autoTranslate = false;
@@ -52,32 +65,44 @@ export class MxGraphSetupService {
 
   setUp() {
     this.ngZone.runOutsideAngular(() => {
-      const editor = (this.mxGraphAttributeService.editor = new mxEditor(
-        mxUtils.load(this.appConfig.editorConfiguration).getDocumentElement(),
-      ));
-      this.graph = this.mxGraphAttributeService.graph = (editor as any).graph;
+      const container = <HTMLElement>document.getElementById('graph');
+      InternalEvent.disableContextMenu(container);
 
-      this.scrollTileSize = new mxRectangle(0, 0, this.graph.container.clientWidth, this.graph.container.clientHeight);
+      this.graph = new Graph(container);
+
+      // const editor = (this.mxGraphAttributeService.editor = new mxEditor(
+      //   mxUtils.load(this.appConfig.editorConfiguration).getDocumentElement(),
+      // ));
+
+      this.mxGraphAttributeService.graphTest = this.graph;
+
+      this.scrollTileSize = new Rectangle(0, 0, this.graph.container.clientWidth, this.graph.container.clientHeight);
       this.graphSizeDidChange = this.graph.sizeDidChange;
       this.graphCellRedraw = this.graph.cellRenderer.redraw;
 
       this.graph.setPanning(true);
       this.graph.setCellsEditable(false);
       this.graph.setCellsResizable(false);
-      this.graph.graphHandler.setRemoveCellsFromParent(false);
       this.graph.setAllowDanglingEdges(false);
       this.graph.setCellsDisconnectable(false);
-
-      this.graph.popupMenuHandler.factoryMethod = (menu: mxgraph.mxPopupMenu, cell: mxgraph.mxCell) =>
-        this.getPopupFactoryMethod(menu, cell);
+      this.graph.setHtmlLabels(true);
+      this.graph.sizeDidChange = () => this.sizeDidChange();
       this.graph.view.getBackgroundPageBounds = () => this.getBackgroundPageBounds();
       this.graph.getPreferredPageSize = () => this.getPreferredPageSize();
-      this.graph.sizeDidChange = () => this.sizeDidChange();
-      this.graph.convertValueToString = (cell: mxgraph.mxCell) => this.convertValueToString(cell);
-      this.graph.cellRenderer.redraw = (state, force, rendering) => this.redraw(state, force, rendering);
-      this.graph.getTooltipForCell = (cell: mxgraph.mxCell) => this.getTooltipForCell(cell);
-      this.graph.isCellVisible = (cell: mxgraph.mxCell) => this.isCellVisible(cell);
-      this.graph.setHtmlLabels(true);
+      this.graph.convertValueToString = (cell: Cell) => this.convertValueToString(cell);
+      this.graph.cellRenderer.redraw = (state: CellState, force: boolean, rendering: boolean) => this.redraw(state, force, rendering);
+      this.graph.getTooltipForCell = (cell: Cell) => this.getTooltipForCell(cell);
+      // this.graph.isCellVisible = (cell: Cell) => this.isCellVisible(cell);
+
+      const popupMenuHandler = this.graph.getPlugin<PopupMenuHandler>('PopupMenuHandler')!;
+      if (popupMenuHandler) {
+        popupMenuHandler.factoryMethod = (menu: any, cell: Cell | null): void => {
+          return this.getPopupFactoryMethod(menu, cell);
+        };
+      }
+
+      const selectionHandler = this.graph.getPlugin<SelectionHandler>('SelectionHandler')!;
+      selectionHandler.setRemoveCellsFromParent(false);
 
       this.initializeGraphConstants();
       this.initLayout();
@@ -85,7 +110,7 @@ export class MxGraphSetupService {
       this.graph.getLabel = (cell): any => {
         if (!cell.value && this.configurationService.getSettings().showConnectionLabels) {
           // label for edges
-          return MxGraphHelper.createEdgeLabel(cell, this.graph);
+          return MxGraphHelper.createEdgeLabelTest(cell, this.graph);
         }
 
         if (!cell.connectable) {
@@ -93,7 +118,7 @@ export class MxGraphSetupService {
           return;
         }
 
-        return MxGraphHelper.createPropertiesLabel(cell);
+        return MxGraphHelper.createPropertiesLabelTest(cell);
       };
     });
   }
@@ -103,8 +128,8 @@ export class MxGraphSetupService {
     return `${this.browserService.getAssetBasePath()}/${path}`;
   }
 
-  private getTooltipForCell(cell: mxgraph.mxCell) {
-    const metaModelElement = MxGraphHelper.getModelElement(cell);
+  private getTooltipForCell(cell: Cell): string {
+    const metaModelElement = MxGraphHelper.getModelElementTest(cell);
     if ([DefaultEntityInstance, DefaultTrait].some(e => metaModelElement instanceof e)) {
       return this.getToolTipContent(cell);
     }
@@ -115,7 +140,7 @@ export class MxGraphSetupService {
     return '';
   }
 
-  private getToolTipContent(cell: mxgraph.mxCell) {
+  private getToolTipContent(cell: Cell): string {
     const div = document.createElement('div');
     div.classList.add('cell-tooltip');
 
@@ -148,11 +173,13 @@ export class MxGraphSetupService {
     return container.innerHTML;
   }
 
-  centerGraph() {
+  centerGraph(): void {
     const bounds = this.graph.getGraphBounds();
     const height = Math.max(bounds.height, this.scrollTileSize.height * this.graph.view.scale);
 
-    const aspect = this.graph.getChildCells(this.graph.getDefaultParent(), true, false).find(({style}) => style.includes('aspect'));
+    const aspect = this.graph
+      .getChildCells(this.graph.getDefaultParent(), true, false)
+      .find(({style}: Cell) => style.fillColor.includes('aspect'));
     if (aspect) {
       const topCoordinate = Math.floor(Math.max(0, bounds.y - Math.max(0, (this.graph.container.clientHeight - height) / 2)));
       this.graph.scrollCellToVisible(aspect, true);
@@ -160,15 +187,13 @@ export class MxGraphSetupService {
     }
   }
 
-  private initializeGraphConstants() {
-    mxConstants.VERTEX_SELECTION_STROKEWIDTH = 2;
-    mxConstants.EDGE_SELECTION_STROKEWIDTH = 2;
-    mxConstants.VERTEX_SELECTION_DASHED = false;
-    mxConstants.EDGE_SELECTION_DASHED = false;
+  private initializeGraphConstants(): void {
+    VertexHandlerConfig.selectionStrokeWidth = 2;
+    VertexHandlerConfig.selectionDashed = false;
   }
 
-  private initLayout() {
-    const elementLayout = new mxStackLayout(this.graph, false);
+  private initLayout(): void {
+    const elementLayout = new StackLayout(this.graph, false);
     elementLayout.fill = true;
     elementLayout.marginTop = 30;
     elementLayout.marginBottom = 20;
@@ -176,20 +201,20 @@ export class MxGraphSetupService {
     elementLayout.resizeParentMax = true;
     elementLayout.borderCollapse = false;
 
-    new mxLayoutManager(this.graph).getLayout = mxUtils.bind(this, (cell: mxgraph.mxCell) => {
-      if (cell.vertex && cell.connectable) {
-        return elementLayout;
-      }
-      return null;
-    });
+    // new LayoutManager(this.graph).getLayout = mxUtils.bind(this, (cell: Cell) => {
+    //   if (cell.vertex && cell.connectable) {
+    //     return elementLayout;
+    //   }
+    //   return null;
+    // });
 
     // Necessary to display the minimap
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    new mxOutline(this.graph, document.getElementById('outline')); //NOSONAR
+    new Outline(this.graph, document.getElementById('outline')); //NOSONAR
   }
 
-  private convertValueToString(cell: mxgraph.mxCell) {
-    if (mxUtils.isNode(cell.value, null)) {
+  private convertValueToString(cell: Cell): any {
+    if (domUtils.isNode(cell.value, null)) {
       return cell.getAttribute('parent') === 'yes' ? cell.getAttribute('name') : cell.getAttribute('label');
     }
 
@@ -200,8 +225,8 @@ export class MxGraphSetupService {
    * Returns the padding for pages in page view with scrollbars.
    * We have 400px width for namespace sidebar.
    */
-  private getPagePadding() {
-    return new mxPoint(
+  private getPagePadding(): Point {
+    return new Point(
       Math.max(0, Math.round(this.graph.container.offsetWidth - 34)),
       Math.max(0, Math.round(this.graph.container.offsetHeight - 34)),
     );
@@ -210,9 +235,9 @@ export class MxGraphSetupService {
   /**
    * Returns the size of the page format scaled with the page size.
    */
-  private getPageSize() {
+  private getPageSize(): Rectangle {
     return this.graph.pageVisible
-      ? new mxRectangle(0, 0, this.graph.pageFormat.width * this.graph.pageScale, this.graph.pageFormat.height * this.graph.pageScale)
+      ? new Rectangle(0, 0, this.graph.pageFormat.width * this.graph.pageScale, this.graph.pageFormat.height * this.graph.pageScale)
       : this.scrollTileSize;
   }
 
@@ -222,12 +247,12 @@ export class MxGraphSetupService {
    * left page and width and height are the vertical and horizontal
    * page count.
    */
-  private getPageLayout() {
+  private getPageLayout(): Rectangle {
     const size = this.graph.pageVisible ? this.getPageSize() : this.scrollTileSize;
     const bounds = this.graph.getGraphBounds();
 
     if (bounds.width === 0 || bounds.height === 0) {
-      return new mxRectangle(0, 0, 1, 1);
+      return new Rectangle(0, 0, 1, 1);
     } else {
       // Computes untransformed graph bounds
       const x = Math.ceil(bounds.x / this.graph.view.scale - this.graph.view.translate.x);
@@ -240,18 +265,18 @@ export class MxGraphSetupService {
       const w0 = Math.ceil((x + w) / size.width) - x0;
       const h0 = Math.ceil((y + h) / size.height) - y0;
 
-      return new mxRectangle(x0, y0, w0, h0);
+      return new Rectangle(x0, y0, w0, h0);
     }
   }
 
   /**
    * Fits the number of background pages to the graph
    */
-  private getBackgroundPageBounds() {
+  private getBackgroundPageBounds(): Rectangle {
     const layout = this.getPageLayout();
     const page = this.getPageSize();
 
-    return new mxRectangle(
+    return new Rectangle(
       this.graph.view.scale * (this.graph.view.translate.x + layout.x * page.width),
       this.graph.view.scale * (this.graph.view.translate.y + layout.y * page.height),
       this.graph.view.scale * layout.width * page.width,
@@ -259,15 +284,15 @@ export class MxGraphSetupService {
     );
   }
 
-  private getPreferredPageSize() {
+  private getPreferredPageSize(): Rectangle {
     const pages = this.getPageLayout();
     const size = this.getPageSize();
 
-    return new mxRectangle(0, 0, pages.width * size.width, pages.height * size.height);
+    return new Rectangle(0, 0, pages.width * size.width, pages.height * size.height);
   }
 
-  private sizeDidChange(...args: any) {
-    if (this.graph.container != null && mxUtils.hasScrollbars(this.graph.container)) {
+  private sizeDidChange(...args: any): void {
+    if (this.graph.container != null && styleUtils.hasScrollbars(this.graph.container)) {
       const pages = this.getPageLayout();
       const pad = this.getPagePadding();
       const size = this.getPageSize();
@@ -280,7 +305,7 @@ export class MxGraphSetupService {
 
       // After delayed call in window.resize event handler
       if (min == null || min.width !== minWidth || min.height !== minHeight) {
-        this.graph.minimumGraphSize = new mxRectangle(0, 0, minWidth, minHeight);
+        this.graph.minimumGraphSize = new Rectangle(0, 0, minWidth, minHeight);
       }
 
       // Updates auto-translate to include padding and graph size
@@ -307,13 +332,13 @@ export class MxGraphSetupService {
     }
   }
 
-  private isCellVisible(cell: mxgraph.mxCell): boolean {
+  private isCellVisible(cell: Cell): boolean {
     if (!cell.isEdge()) {
       return true;
     }
 
-    const target = MxGraphHelper.getModelElement(cell.target);
-    const source = MxGraphHelper.getModelElement(cell.source);
+    const target = MxGraphHelper.getModelElementTest(cell.target);
+    const source = MxGraphHelper.getModelElementTest(cell.source);
 
     if (
       !this.configurationService.getSettings().showEntityValueEntityEdge &&
@@ -335,18 +360,18 @@ export class MxGraphSetupService {
     return true;
   }
 
-  private redraw(state: mxgraph.mxCellState, force: boolean, rendering: boolean): boolean {
-    const cellHeight = MxGraphHelper.getCellHeight(state.cell);
+  private redraw(state: CellState, force: boolean, rendering: boolean): boolean {
+    const cellHeight = MxGraphHelper.getCellHeightTest(state.cell);
     if (cellHeight) {
       state.height = +cellHeight * state.view.scale;
     }
     return this.graphCellRedraw.apply(this.graph.cellRenderer, [state, force, rendering]);
   }
 
-  private getPopupFactoryMethod(menu: mxgraph.mxPopupMenu, cell: mxgraph.mxCell) {
-    const selectedCells: Array<mxgraph.mxCell> = this.mxGraphShapeSelectorService.getSelectedCells();
+  private getPopupFactoryMethod(menu: PopupMenuHandler, cell: Cell) {
+    const selectedCells: Array<Cell> = this.mxGraphShapeSelectorService.getSelectedCellsTest();
     if (cell && !cell.edge) {
-      const modelElement = MxGraphHelper.getModelElement(cell);
+      const modelElement = MxGraphHelper.getModelElementTest(cell);
 
       menu.addItem(
         `${this.translate.language.EDITOR_CANVAS.GRAPH_SETUP.OPEN_IN} ${this.loadedFiles.isElementExtern(modelElement) ? 'new Window' : 'detail view'}`,

@@ -14,7 +14,7 @@
 import {ShapeConnectorService} from '@ame/connection';
 import {inject, Injectable} from '@angular/core';
 import {DefaultProperty} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MxGraphHelper} from '../../helpers';
 import {RendererUpdatePayload} from '../../models';
 import {BaseRenderService} from './base-render-service';
@@ -29,12 +29,12 @@ export class PropertyRenderService extends BaseRenderService {
     super.update({cell, callback});
   }
 
-  isApplicable(cell: mxgraph.mxCell): boolean {
-    return MxGraphHelper.getModelElement(cell) instanceof DefaultProperty;
+  isApplicable(cell: Cell): boolean {
+    return MxGraphHelper.getModelElementTest(cell) instanceof DefaultProperty;
   }
 
-  private handleExtendsElement(cell: mxgraph.mxCell) {
-    const node = MxGraphHelper.getElementNode<DefaultProperty>(cell);
+  private handleExtendsElement(cell: Cell) {
+    const node = MxGraphHelper.getElementNodeTest<DefaultProperty>(cell);
     const metaModelElement = node.element;
     if (!metaModelElement.exampleValue) {
       return;

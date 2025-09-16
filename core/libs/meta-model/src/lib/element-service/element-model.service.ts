@@ -29,7 +29,7 @@ import {
   DefaultStructuredValue,
   NamedElement,
 } from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {CharacteristicModelService} from './characteristic-model.service';
 import {ModelRootService} from './model-root.service';
 
@@ -53,19 +53,19 @@ export class ElementModelService {
     return this.loadedFilesService.currentLoadedFile.cachedFile;
   }
 
-  updateElement(cell: mxgraph.mxCell, form: {[key: string]: any}) {
+  updateElement(cell: Cell, form: {[key: string]: any}): void {
     if (!cell || cell.isEdge()) {
       return;
     }
     const characteristicModelService = this.injector.get(CharacteristicModelService);
-    const modelElement = MxGraphHelper.getModelElement(cell);
+    const modelElement = MxGraphHelper.getModelElementTest(cell);
 
     const modelService =
       modelElement instanceof DefaultEnumeration ? characteristicModelService : this.modelRootService.getElementModelService(modelElement);
     modelService.update(cell, form);
   }
 
-  deleteElement(cell: mxgraph.mxCell) {
+  deleteElement(cell: Cell): void {
     if (!cell) {
       return;
     }
@@ -88,7 +88,7 @@ export class ElementModelService {
       return;
     }
 
-    const elementModel = MxGraphHelper.getModelElement(cell);
+    const elementModel = MxGraphHelper.getModelElementTest(cell);
     if (elementModel.isPredefined) {
       const service = this.modelRootService.getPredefinedService(elementModel);
       if (service?.delete && service?.delete?.(cell)) {
@@ -99,9 +99,9 @@ export class ElementModelService {
     this.removeElementData(cell);
   }
 
-  decoupleElements(edge: mxgraph.mxCell) {
-    const sourceModelElement = MxGraphHelper.getModelElement(edge.source);
-    const targetModelElement = MxGraphHelper.getModelElement(edge.target);
+  decoupleElements(edge: Cell): void {
+    const sourceModelElement = MxGraphHelper.getModelElementTest(edge.source);
+    const targetModelElement = MxGraphHelper.getModelElementTest(edge.target);
 
     MxGraphHelper.removeRelation(sourceModelElement, targetModelElement);
 
@@ -151,15 +151,15 @@ export class ElementModelService {
 
     if (sourceModelElement instanceof DefaultStructuredValue && targetModelElement instanceof DefaultProperty) {
       useUpdater(sourceModelElement).delete(targetModelElement);
-      MxGraphHelper.updateLabel(edge.source, this.mxGraphService.graph, this.sammLangService);
+      MxGraphHelper.updateLabelTest(edge.source, this.mxGraphService.graph, this.sammLangService);
     }
 
     this.removeConnectionBetweenElements(edge, sourceModelElement, targetModelElement);
     this.mxGraphService.removeCells([edge]);
   }
 
-  private handleAspectRemoval(cell: mxgraph.mxCell) {
-    const modelElement = MxGraphHelper.getModelElement(cell);
+  private handleAspectRemoval(cell: Cell): boolean {
+    const modelElement = MxGraphHelper.getModelElementTest(cell);
     if (!(modelElement instanceof DefaultAspect)) {
       return false;
     }
@@ -182,42 +182,44 @@ export class ElementModelService {
     return true;
   }
 
-  private handleAbstractEntityRemoval(edge: mxgraph.mxCell) {
-    const target = MxGraphHelper.getModelElement(edge.target);
+  private handleAbstractEntityRemoval(edge: Cell): boolean {
+    const target = MxGraphHelper.getModelElementTest(edge.target);
     if (!(target instanceof DefaultEntity && target.isAbstractEntity())) {
       return false;
     }
 
-    const parents = this.mxGraphService.resolveParents(edge.target)?.filter(c => MxGraphHelper.getModelElement(c) instanceof DefaultEntity);
+    const parents = this.mxGraphService
+      .resolveParents(edge.target)
+      ?.filter(c => MxGraphHelper.getModelElementTest(c) instanceof DefaultEntity);
     const toRemove = [edge];
 
     for (const parent of parents) {
       const properties = this.mxGraphService.graph
-        .getOutgoingEdges(parent)
+        .getOutgoingEdges(parent, null)
         .map(e => e.target)
-        .filter(c => !!MxGraphHelper.getModelElement<DefaultProperty>(c)?.extends_);
+        .filter(c => !!MxGraphHelper.getModelElementTest<DefaultProperty>(c)?.extends_);
 
       for (const property of properties) {
-        MxGraphHelper.removeRelation(MxGraphHelper.getModelElement(parent), MxGraphHelper.getModelElement(property));
+        MxGraphHelper.removeRelation(MxGraphHelper.getModelElementTest(parent), MxGraphHelper.getModelElementTest(property));
       }
 
       toRemove.push(...properties);
     }
 
     this.mxGraphService.removeCells(toRemove);
-    const source = MxGraphHelper.getModelElement<DefaultEntity>(edge.source);
+    const source = MxGraphHelper.getModelElementTest<DefaultEntity>(edge.source);
     source.extends_ = null;
-    MxGraphHelper.updateLabel(edge.source, this.mxGraphService.graph, this.sammLangService);
+    MxGraphHelper.updateLabelTest(edge.source, this.mxGraphService.graph, this.sammLangService);
     return true;
   }
 
-  private handleAbstractPropertyRemoval(edge: mxgraph.mxCell, source: NamedElement, target: NamedElement) {
+  private handleAbstractPropertyRemoval(edge: Cell, source: NamedElement, target: NamedElement): boolean {
     if (
       (source instanceof DefaultProperty && target instanceof DefaultProperty && target.isAbstract) ||
       (source instanceof DefaultProperty && target instanceof DefaultProperty)
     ) {
-      const sourceElement = MxGraphHelper.getModelElement(edge.source);
-      MxGraphHelper.removeRelation(sourceElement, MxGraphHelper.getModelElement(edge.target));
+      const sourceElement = MxGraphHelper.getModelElementTest(edge.source);
+      MxGraphHelper.removeRelation(sourceElement, MxGraphHelper.getModelElementTest(edge.target));
       this.currentCachedFile.removeElement(sourceElement.aspectModelUrn);
       this.mxGraphService.removeCells([edge, edge.source]);
       return true;
@@ -226,7 +228,7 @@ export class ElementModelService {
     return false;
   }
 
-  private handleAbstractElementsDecoupling(edge: mxgraph.mxCell, source: NamedElement, target: NamedElement) {
+  private handleAbstractElementsDecoupling(edge: Cell, source: NamedElement, target: NamedElement): boolean {
     if (
       (source instanceof DefaultEntity && target instanceof DefaultEntity && target.isAbstractEntity()) ||
       (source instanceof DefaultEntity && source.isAbstractEntity() && target instanceof DefaultEntity && target.isAbstractEntity()) ||
@@ -235,10 +237,10 @@ export class ElementModelService {
     ) {
       source.extends_ = null;
       edge.source['configuration'].fields = MxGraphVisitorHelper.getElementProperties(
-        MxGraphHelper.getModelElement(edge.source),
+        MxGraphHelper.getModelElementTest(edge.source),
         this.sammLangService,
       );
-      this.mxGraphService.graph.labelChanged(edge.source, MxGraphHelper.createPropertiesLabel(edge.source));
+      this.mxGraphService.graph.labelChanged(edge.source, MxGraphHelper.createPropertiesLabelTest(edge.source), null);
       this.removeConnectionBetweenElements(edge, source, target);
       this.mxGraphService.removeCells([edge]);
       return true;
@@ -247,7 +249,7 @@ export class ElementModelService {
     return false;
   }
 
-  private handleEntityPropertyDecoupling(edge: mxgraph.mxCell, source: NamedElement, target: NamedElement) {
+  private handleEntityPropertyDecoupling(edge: Cell, source: NamedElement, target: NamedElement): boolean {
     if (source instanceof DefaultEntity && target instanceof DefaultProperty) {
       if (target.extends_) {
         this.mxGraphService.removeCells([edge.target]);
@@ -264,10 +266,10 @@ export class ElementModelService {
     return false;
   }
 
-  private handleEnumerationEntityDecoupling(edge: mxgraph.mxCell, source: NamedElement, target: NamedElement) {
+  private handleEnumerationEntityDecoupling(edge: Cell, source: NamedElement, target: NamedElement) {
     if (source instanceof DefaultEnumeration && target instanceof DefaultEntity) {
       return this.entityInstanceService.onEntityDisconnect(source, target, () => {
-        const obsoleteEntityValues = MxGraphCharacteristicHelper.findObsoleteEntityValues(edge);
+        const obsoleteEntityValues = MxGraphCharacteristicHelper.findObsoleteEntityValuesTest(edge);
         this.removeConnectionBetweenElements(edge, source, target);
         this.mxGraphService.updateEntityValuesWithCellReference(obsoleteEntityValues);
         this.mxGraphService.removeCells([edge, ...obsoleteEntityValues]);
@@ -277,13 +279,13 @@ export class ElementModelService {
     return false;
   }
 
-  private removeConnectionBetweenElements(edge: mxgraph.mxCell, source: NamedElement, target: NamedElement) {
+  private removeConnectionBetweenElements(edge: Cell, source: NamedElement, target: NamedElement) {
     if (MxGraphHelper.isComplexEnumeration(source)) {
-      this.mxGraphShapeOverlayService.removeComplexTypeShapeOverlays(edge.source);
+      this.mxGraphShapeOverlayService.removeComplexTypeShapeOverlaysTest(edge.source);
     }
     MxGraphHelper.removeRelation(source, target);
     useUpdater(source).delete(target);
-    this.mxGraphShapeOverlayService.checkAndAddShapeActionIcon(new Array(edge), source);
+    this.mxGraphShapeOverlayService.checkAndAddShapeActionIconTest(new Array(edge), source);
     edge.target.removeEdge(edge, false);
     edge.source.removeEdge(edge, true);
   }
@@ -295,11 +297,7 @@ export class ElementModelService {
    * @param targetModelElement - target entity value
    * @param edge - deleted edge
    */
-  private decoupleEnumerationFromEntityValue(
-    sourceModelElement: NamedElement,
-    targetModelElement: NamedElement,
-    edge: mxgraph.mxCell,
-  ): void {
+  private decoupleEnumerationFromEntityValue(sourceModelElement: NamedElement, targetModelElement: NamedElement, edge: Cell): void {
     if (sourceModelElement instanceof DefaultEnumeration && targetModelElement instanceof DefaultEntityInstance) {
       const entityValueIndex = sourceModelElement.values.indexOf(targetModelElement);
       const enumerationIndex = targetModelElement.parents.indexOf(sourceModelElement);
@@ -312,8 +310,8 @@ export class ElementModelService {
     }
   }
 
-  private removeElementData(cell: mxgraph.mxCell) {
-    const modelElement = MxGraphHelper.getModelElement(cell);
+  private removeElementData(cell: Cell): void {
+    const modelElement = MxGraphHelper.getModelElementTest(cell);
     const elementModelService = this.modelRootService.getElementModelService(modelElement);
 
     for (const parent of modelElement.parents) {
@@ -327,6 +325,6 @@ export class ElementModelService {
     }
 
     elementModelService?.delete(cell);
-    this.currentCachedFile.removeElement(MxGraphHelper.getModelElement(cell).aspectModelUrn);
+    this.currentCachedFile.removeElement(MxGraphHelper.getModelElementTest(cell).aspectModelUrn);
   }
 }

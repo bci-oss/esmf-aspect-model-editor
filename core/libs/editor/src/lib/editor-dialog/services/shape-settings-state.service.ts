@@ -12,7 +12,7 @@
  */
 
 import {inject, Injectable} from '@angular/core';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {BehaviorSubject} from 'rxjs';
 import {EditorModelService} from '../editor-model.service';
 
@@ -20,7 +20,7 @@ import {EditorModelService} from '../editor-model.service';
 export class ShapeSettingsStateService {
   private editorModelService = inject(EditorModelService);
 
-  public selectedShapeForUpdate: mxgraph.mxCell | null;
+  public selectedShapeForUpdate: Cell | null;
   public isShapeSettingOpened = false;
 
   onSettingsOpened$ = new BehaviorSubject(this.isShapeSettingOpened);

@@ -14,7 +14,7 @@
 import {MxGraphAttributeService, MxGraphHelper, MxGraphService} from '@ame/mx-graph';
 import {Injectable, inject} from '@angular/core';
 import {DefaultCharacteristic, DefaultCollection, DefaultEntity} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MultiShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
@@ -22,10 +22,10 @@ export class CollectionCharacteristicConnectionHandler implements MultiShapeConn
   private mxGraphService = inject(MxGraphService);
   private mxGraphAttributeService = inject(MxGraphAttributeService);
 
-  public connect(parentMetaModel: DefaultCollection, childMetaModel: DefaultCharacteristic, parent: mxgraph.mxCell, child: mxgraph.mxCell) {
-    this.mxGraphAttributeService.graph.getOutgoingEdges(parent).forEach(outEdge => {
-      if (outEdge.target && !(outEdge.target.getMetaModelElement() instanceof DefaultEntity)) {
-        const entity = outEdge.target.getMetaModelElement();
+  public connect(parentMetaModel: DefaultCollection, childMetaModel: DefaultCharacteristic, parent: Cell, child: Cell) {
+    this.mxGraphAttributeService.graphTest.getOutgoingEdges(parent, null).forEach(outEdge => {
+      if (outEdge.target && !((outEdge.target as any).getMetaModelElement() instanceof DefaultEntity)) {
+        const entity = (outEdge.target as any).getMetaModelElement();
         MxGraphHelper.removeRelation(parentMetaModel, entity);
         this.mxGraphService.removeCells([parent.removeEdge(outEdge, true)]);
       }
@@ -35,7 +35,7 @@ export class CollectionCharacteristicConnectionHandler implements MultiShapeConn
     this.mxGraphService.assignToParent(child, parent);
 
     if (parentMetaModel.elementCharacteristic) {
-      this.mxGraphService.graph.labelChanged(parent, MxGraphHelper.createPropertiesLabel(parent));
+      this.mxGraphService.graph.labelChanged(parent, MxGraphHelper.createPropertiesLabelTest(parent), null);
     }
   }
 }

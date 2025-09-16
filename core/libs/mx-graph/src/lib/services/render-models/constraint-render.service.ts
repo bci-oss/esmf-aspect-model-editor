@@ -13,13 +13,13 @@
 
 import {Injectable} from '@angular/core';
 import {DefaultConstraint} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MxGraphHelper} from '../../helpers';
 import {BaseRenderService} from './base-render-service';
 
 @Injectable({providedIn: 'root'})
 export class ConstraintRenderService extends BaseRenderService {
-  isApplicable(cell: mxgraph.mxCell): boolean {
-    return MxGraphHelper.getModelElement(cell) instanceof DefaultConstraint;
+  isApplicable(cell: Cell): boolean {
+    return MxGraphHelper.getModelElementTest(cell) instanceof DefaultConstraint;
   }
 }

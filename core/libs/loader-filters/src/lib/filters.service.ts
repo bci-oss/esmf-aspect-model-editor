@@ -77,7 +77,10 @@ export class FiltersService {
 
   updateNodeInfo<T extends NamedElement = NamedElement>(node: ModelTree<T>, options?: ModelTreeOptions): ModelTree<T> {
     node.fromParentArrow = options?.parent ? this.currentFilter.getArrowStyle(node.element, options.parent) : null;
-    node.shape = {...this.currentFilter.getShapeGeometry(node.element), mxGraphStyle: this.currentFilter.getMxGraphStyle(node.element)};
+    node.shape = {
+      ...this.currentFilter.getShapeGeometry(node.element),
+      mxGraphStyle: {baseStyleNames: [this.currentFilter.getMxGraphStyle(node.element)]},
+    };
     node.filterType = this.currentFilter.filterType;
     return node;
   }
@@ -92,7 +95,7 @@ export class FiltersService {
     const mxGraphService = inject(MxGraphService);
     const editorService = inject(EditorService);
     let selectedCell = mxGraphService.graph.selectionModel.cells?.[0];
-    const selectedModelElement = selectedCell && MxGraphHelper.getModelElement(selectedCell);
+    const selectedModelElement = selectedCell && MxGraphHelper.getModelElementTest(selectedCell);
 
     this.loadingScreen
       .open({

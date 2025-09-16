@@ -21,10 +21,10 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {NamedElement} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 
 interface Element {
-  cell: mxgraph.mxCell;
+  cell: Cell;
   model: NamedElement;
 }
 
@@ -47,9 +47,9 @@ export class ConnectWithDialogComponent {
   public connectWithModel: NamedElement;
 
   constructor() {
-    this.connectWithModel = MxGraphHelper.getModelElement(this.connectWithCell);
+    this.connectWithModel = MxGraphHelper.getModelElementTest(this.connectWithCell);
     this.elements = this.mxGraphService.getAllCells().map(e => {
-      return {model: MxGraphHelper.getModelElement(e), cell: e};
+      return {model: MxGraphHelper.getModelElementTest(e), cell: e};
     });
   }
 

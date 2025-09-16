@@ -13,7 +13,7 @@
 
 import {inject, Injectable} from '@angular/core';
 import {DefaultEntity} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MxGraphHelper} from '../../helpers';
 import {BaseEntityRendererService} from './base-entity-renderer.service';
 import {BaseRenderService} from './base-render-service';
@@ -33,7 +33,7 @@ export class EntityRenderService extends BaseRenderService {
     });
   }
 
-  isApplicable(cell: mxgraph.mxCell): boolean {
-    return MxGraphHelper.getModelElement(cell) instanceof DefaultEntity;
+  isApplicable(cell: Cell): boolean {
+    return MxGraphHelper.getModelElementTest(cell) instanceof DefaultEntity;
   }
 }

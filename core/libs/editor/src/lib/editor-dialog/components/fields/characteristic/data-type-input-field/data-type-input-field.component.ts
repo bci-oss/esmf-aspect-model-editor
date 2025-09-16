@@ -209,11 +209,11 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
   private hasStructuredValueAsGrandParent() {
     const cell = this.mxGraphService.resolveCellByModelElement(this.metaModelElement);
     return this.mxGraphService.graph
-      .getIncomingEdges(cell)
+      .getIncomingEdges(cell, null)
       .some(firstEdge =>
         this.mxGraphService.graph
-          .getIncomingEdges(firstEdge.source)
-          .some(secondEdge => MxGraphHelper.getModelElement(secondEdge.source) instanceof DefaultStructuredValue),
+          .getIncomingEdges(firstEdge.source, null)
+          .some(secondEdge => MxGraphHelper.getModelElementTest(secondEdge.source) instanceof DefaultStructuredValue),
       );
   }
 }

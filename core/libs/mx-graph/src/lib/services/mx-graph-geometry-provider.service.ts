@@ -15,18 +15,17 @@ import {ModelTree} from '@ame/loader-filters';
 import {circleShapeGeometry, smallBasicShapeGeometry} from '@ame/shared';
 import {inject, Injectable} from '@angular/core';
 import {NamedElement} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
-import {mxGeometry} from '../providers';
+import {Cell, Geometry} from '@maxgraph/core';
 import {MxGraphAttributeService} from './mx-graph-attribute.service';
 
 @Injectable({providedIn: 'root'})
 export class MxGraphGeometryProviderService {
   private mxGraphAttributeService = inject(MxGraphAttributeService);
 
-  public createGeometry(node: ModelTree<NamedElement>, x?: number, y?: number): mxgraph.mxGeometry {
+  public createGeometryTest(node: ModelTree<NamedElement>, x?: number, y?: number): Geometry {
     return this.mxGraphAttributeService.inCollapsedMode
-      ? new mxGeometry(x, y, node.shape.collapsedWidth, node.shape.collapsedHeight)
-      : new mxGeometry(x, y, node.shape.expandedWith, node.shape.expandedHeight);
+      ? new Geometry(x, y, node.shape.collapsedWidth, node.shape.collapsedHeight)
+      : new Geometry(x, y, node.shape.expandedWith, node.shape.expandedHeight);
   }
 
   /**
@@ -34,8 +33,20 @@ export class MxGraphGeometryProviderService {
    *
    * @param cell - trait to resize
    */
-  public upgradeTraitGeometry(cell: mxgraph.mxCell, geometry: mxgraph.mxGeometry, isVertex: boolean): void {
-    if (cell.style.includes('trait') && isVertex && geometry != null) {
+  public upgradeTraitGeometry(cell: Cell, geometry: Geometry, isVertex: boolean): void {
+    if (cell.style.fillColor.includes('trait') && isVertex && geometry != null) {
+      geometry.width = circleShapeGeometry.collapsedWidth;
+      geometry.height = circleShapeGeometry.collapsedHeight;
+    }
+  }
+
+  /**
+   * When we add a new Trait in collapsed mode we need to resize the cell.
+   *
+   * @param cell - trait to resize
+   */
+  public upgradeTraitGeometryTest(cell: Cell, geometry: Geometry, isVertex: boolean): void {
+    if (cell.style.fillColor.includes('trait') && isVertex && geometry != null) {
       geometry.width = circleShapeGeometry.collapsedWidth;
       geometry.height = circleShapeGeometry.collapsedHeight;
     }
@@ -46,8 +57,20 @@ export class MxGraphGeometryProviderService {
    *
    * @param cell - entity value to resize
    */
-  public upgradeEntityValueGeometry(cell: mxgraph.mxCell, geometry: mxgraph.mxGeometry, isVertex: boolean): void {
-    if (cell.style.includes('entityValue') && isVertex && geometry != null) {
+  public upgradeEntityValueGeometry(cell: Cell, geometry: Geometry, isVertex: boolean): void {
+    if (cell.style.fillColor.includes('entityValue') && isVertex && geometry != null) {
+      geometry.width = smallBasicShapeGeometry.collapsedWidth;
+      geometry.height = smallBasicShapeGeometry.collapsedHeight;
+    }
+  }
+
+  /**
+   * When we add a new EntityValue in collapsed mode we need to resize the cell.
+   *
+   * @param cell - entity value to resize
+   */
+  public upgradeEntityValueGeometryTest(cell: Cell, geometry: Geometry, isVertex: boolean): void {
+    if (cell.style.fillColor.includes('entityValue') && isVertex && geometry != null) {
       geometry.width = smallBasicShapeGeometry.collapsedWidth;
       geometry.height = smallBasicShapeGeometry.collapsedHeight;
     }

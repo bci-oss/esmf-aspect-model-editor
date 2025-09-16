@@ -12,10 +12,11 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {mxEvent, MxGraphAttributeService, MxGraphHelper, MxGraphService, MxGraphShapeSelectorService, mxUtils} from '@ame/mx-graph';
+import {MxGraphAttributeService, MxGraphHelper, MxGraphService, MxGraphShapeSelectorService} from '@ame/mx-graph';
 import {BindingsService} from '@ame/shared';
 import {inject, Injectable, NgZone} from '@angular/core';
 import {NamedElement} from '@esmf/aspect-model-loader';
+import {InternalEvent} from '@maxgraph/core';
 import {BehaviorSubject} from 'rxjs';
 import {EditorService} from '../../editor.service';
 import {OpenReferencedElementService} from '../../open-element-window/open-element-window.service';
@@ -51,10 +52,7 @@ export class ShapeSettingsService {
   }
 
   setHotKeysActions() {
-    this.editorService.bindAction(
-      'deleteElement',
-      mxUtils.bind(this, () => this.ngZone.run(() => this.editorService.deleteSelectedElements())),
-    );
+    this.editorService.bindAction('deleteElement', () => this.ngZone.run(() => this.editorService.deleteSelectedElements()));
 
     this.mxGraphService.graph.container.addEventListener('wheel', evt => {
       if (evt.altKey) {
@@ -64,26 +62,23 @@ export class ShapeSettingsService {
   }
 
   setSelectCellListener() {
-    this.mxGraphAttributeService.graph
+    this.mxGraphAttributeService.graphTest
       .getSelectionModel()
-      .addListener(mxEvent.CHANGE, selectionModel => this.ngZone.run(() => this.selectedCellsSubject.next(selectionModel.cells)));
+      .addListener(InternalEvent.CHANGE, selectionModel => this.ngZone.run(() => this.selectedCellsSubject.next(selectionModel.cells)));
   }
 
   setMoveCellsListener() {
-    this.mxGraphAttributeService.graph.addListener(
-      mxEvent.MOVE_CELLS,
-      mxUtils.bind(this, () => {
-        this.ngZone.run(() => (this.mxGraphAttributeService.graph.resetEdgesOnMove = true));
-      }),
+    this.mxGraphAttributeService.graphTest.addListener(InternalEvent.MOVE_CELLS, () =>
+      this.ngZone.run(() => (this.mxGraphAttributeService.graphTest.resetEdgesOnMove = true)),
     );
   }
 
   setFoldListener() {
-    this.mxGraphAttributeService.graph.addListener(mxEvent.FOLD_CELLS, () => this.mxGraphService.formatShapes());
+    this.mxGraphAttributeService.graphTest.addListener(InternalEvent.FOLD_CELLS, () => this.mxGraphService.formatShapes());
   }
 
   setDblClickListener() {
-    this.mxGraphAttributeService.graph.addListener(mxEvent.DOUBLE_CLICK, () => this.ngZone.run(() => this.editSelectedCell()));
+    this.mxGraphAttributeService.graphTest.addListener(InternalEvent.DOUBLE_CLICK, () => this.ngZone.run(() => this.editSelectedCell()));
   }
 
   unselectShapeForUpdate() {
@@ -91,7 +86,7 @@ export class ShapeSettingsService {
   }
 
   editSelectedCell() {
-    this.shapeSettingsStateService.selectedShapeForUpdate = this.mxGraphShapeSelectorService.getSelectedShape();
+    this.shapeSettingsStateService.selectedShapeForUpdate = this.mxGraphShapeSelectorService.getSelectedShapeTest();
     const selectedElement = this.shapeSettingsStateService.selectedShapeForUpdate;
 
     if (!selectedElement || selectedElement?.isEdge()) {
@@ -99,7 +94,7 @@ export class ShapeSettingsService {
       return;
     }
 
-    this.modelElement = MxGraphHelper.getModelElement(selectedElement);
+    this.modelElement = MxGraphHelper.getModelElementTest(selectedElement);
     if (this.loadedFiles.isElementExtern(this.modelElement) && !this.modelElement.isPredefined) {
       this.openReferencedElementService.openReferencedElement(this.modelElement);
       return;

@@ -17,9 +17,8 @@ import {NotificationsService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {inject} from '@angular/core';
 import {DefaultEntity, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {BaseConnectionHandler} from '../base-connection-handler.service';
-import mxCell = mxgraph.mxCell;
 
 export abstract class InheritanceConnector extends BaseConnectionHandler {
   protected mxGraphService = inject(MxGraphService);
@@ -28,7 +27,7 @@ export abstract class InheritanceConnector extends BaseConnectionHandler {
   protected notificationsService = inject(NotificationsService);
   protected translate = inject(LanguageTranslationService);
 
-  public connect(parentMetaModel: NamedElement, childMetaModel: NamedElement, parentCell: mxCell, childCell: mxCell) {
+  public connect(parentMetaModel: NamedElement, childMetaModel: NamedElement, parentCell: Cell, childCell: Cell) {
     if (parentMetaModel?.isPredefined) {
       this.notificationsService.warning({title: this.translate.language.NOTIFICATION_SERVICE.CHILD_FOR_PREDEFINED_ELEMENT_ERROR});
       return;
@@ -41,13 +40,13 @@ export abstract class InheritanceConnector extends BaseConnectionHandler {
     this.checkAndRemoveExtendElement(parentCell);
     this.mxGraphService.assignToParent(childCell, parentCell);
     parentCell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(parentMetaModel, this.sammLangService);
-    this.mxGraphAttributeService.graph.labelChanged(parentCell, MxGraphHelper.createPropertiesLabel(parentCell));
+    this.mxGraphAttributeService.graphTest.labelChanged(parentCell, MxGraphHelper.createPropertiesLabelTest(parentCell), null);
   }
 
-  public checkAndRemoveExtendElement(parentCell: mxCell) {
-    const parentElementModel = MxGraphHelper.getModelElement(parentCell);
-    this.mxGraphAttributeService.graph.getOutgoingEdges(parentCell).forEach((outEdge: mxCell) => {
-      const targetElementModel = MxGraphHelper.getModelElement(outEdge.target);
+  public checkAndRemoveExtendElement(parentCell: Cell) {
+    const parentElementModel = MxGraphHelper.getModelElementTest(parentCell);
+    this.mxGraphAttributeService.graphTest.getOutgoingEdges(parentCell, null).forEach((outEdge: Cell) => {
+      const targetElementModel = MxGraphHelper.getModelElementTest(outEdge.target);
       if (this.isInheritedElement(targetElementModel)) {
         this.mxGraphService.removeCells([parentCell.removeEdge(outEdge, true)]);
         MxGraphHelper.removeRelation(parentElementModel, targetElementModel);

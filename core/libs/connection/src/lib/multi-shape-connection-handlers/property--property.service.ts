@@ -15,7 +15,7 @@ import {MxGraphHelper} from '@ame/mx-graph';
 import {NotificationsService} from '@ame/shared';
 import {Injectable, inject} from '@angular/core';
 import {DefaultProperty} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MultiShapeConnector, PropertyInheritanceConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
@@ -25,7 +25,7 @@ export class PropertyPropertyConnectionHandler
 {
   private notificationService = inject(NotificationsService);
 
-  public connect(parentMetaModel: DefaultProperty, childMetaModel: DefaultProperty, parentCell: mxgraph.mxCell, childCell: mxgraph.mxCell) {
+  public connect(parentMetaModel: DefaultProperty, childMetaModel: DefaultProperty, parentCell: Cell, childCell: Cell) {
     if (parentMetaModel.isPredefined) {
       this.notificationsService.warning({title: this.translate.language.NOTIFICATION_SERVICE.CHILD_FOR_PREDEFINED_ELEMENT_ERROR});
       return;
@@ -39,7 +39,7 @@ export class PropertyPropertyConnectionHandler
       return;
     }
 
-    if (MxGraphHelper.isEntityCycleInheritance(childCell, parentMetaModel, this.mxGraphService.graph)) {
+    if (MxGraphHelper.isEntityCycleInheritanceTest(childCell, parentMetaModel, this.mxGraphService.graph)) {
       this.notificationService.warning({
         title: this.translate.language.NOTIFICATION_SERVICE.RECURSIVE_ELEMENTS,
         message: this.translate.language.NOTIFICATION_SERVICE.CIRCULAR_CONNECTION_MESSAGE,

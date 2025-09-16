@@ -15,7 +15,7 @@ import {EntityInstanceService} from '@ame/editor';
 import {MxGraphService} from '@ame/mx-graph';
 import {inject, Injectable} from '@angular/core';
 import {DefaultEntity, DefaultProperty} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MultiShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
@@ -23,7 +23,7 @@ export class EntityPropertyConnectionHandler implements MultiShapeConnector<Defa
   private mxGraphService = inject(MxGraphService);
   private entityInstanceService = inject(EntityInstanceService);
 
-  public connect(parentMetaModel: DefaultEntity, childMetaModel: DefaultProperty, parentCell: mxgraph.mxCell, childCell: mxgraph.mxCell) {
+  public connect(parentMetaModel: DefaultEntity, childMetaModel: DefaultProperty, parentCell: Cell, childCell: Cell) {
     if (!parentMetaModel.properties.find(property => property.aspectModelUrn === childMetaModel.aspectModelUrn)) {
       parentMetaModel.properties.push(childMetaModel);
       this.entityInstanceService.onNewProperty(childMetaModel, parentMetaModel);

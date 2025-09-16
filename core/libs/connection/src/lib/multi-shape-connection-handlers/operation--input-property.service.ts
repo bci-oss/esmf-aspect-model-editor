@@ -14,14 +14,14 @@
 import {MxGraphService} from '@ame/mx-graph';
 import {inject, Injectable} from '@angular/core';
 import {DefaultOperation, DefaultProperty} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MultiShapeConnectorWithProperty} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class OperationPropertyInputConnectionHandler implements MultiShapeConnectorWithProperty<DefaultOperation, DefaultProperty> {
   private mxGraphService = inject(MxGraphService);
 
-  public connect(parentMetaModel: DefaultOperation, childMetaModel: DefaultProperty, parent: mxgraph.mxCell, child: mxgraph.mxCell) {
+  public connect(parentMetaModel: DefaultOperation, childMetaModel: DefaultProperty, parent: Cell, child: Cell) {
     const isInputAlreadyDefined = parentMetaModel.input.some(value => value.aspectModelUrn === childMetaModel.aspectModelUrn);
     if (!isInputAlreadyDefined) {
       parentMetaModel.input.push(childMetaModel);

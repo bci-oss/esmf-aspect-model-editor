@@ -14,14 +14,14 @@
 import {MxGraphService} from '@ame/mx-graph';
 import {inject, Injectable} from '@angular/core';
 import {DefaultEvent, DefaultProperty} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MultiShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class EventPropertyConnectionHandler implements MultiShapeConnector<DefaultEvent, DefaultProperty> {
   private mxGraphService = inject(MxGraphService);
 
-  public connect(parentMetaModel: DefaultEvent, childMetaModel: DefaultProperty, parent: mxgraph.mxCell, child: mxgraph.mxCell) {
+  public connect(parentMetaModel: DefaultEvent, childMetaModel: DefaultProperty, parent: Cell, child: Cell) {
     if (!parentMetaModel.properties.find(param => param.aspectModelUrn === childMetaModel.aspectModelUrn)) {
       parentMetaModel.properties.push(childMetaModel);
     }

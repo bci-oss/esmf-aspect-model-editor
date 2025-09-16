@@ -15,7 +15,7 @@ import {FiltersService} from '@ame/loader-filters';
 import {EdgeStyles, MxGraphHelper, MxGraphService} from '@ame/mx-graph';
 import {inject, Injectable} from '@angular/core';
 import {DefaultEntityInstance, DefaultEnumeration} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {SingleShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
@@ -23,13 +23,13 @@ export class EntityValueConnectionHandler implements SingleShapeConnector<Defaul
   private mxGraphService = inject(MxGraphService);
   private filtersService = inject(FiltersService);
 
-  public connect(entityValue: DefaultEntityInstance, source: mxgraph.mxCell) {
+  public connect(entityValue: DefaultEntityInstance, source: Cell) {
     const child = this.mxGraphService.renderModelElement(
-      this.filtersService.createNode(entityValue, {parent: MxGraphHelper.getModelElement(source)}),
+      this.filtersService.createNode(entityValue, {parent: MxGraphHelper.getModelElementTest(source)}),
     );
 
     // connect: EntityValue - Enumeration
-    if (MxGraphHelper.getModelElement(source) instanceof DefaultEnumeration) {
+    if (MxGraphHelper.getModelElementTest(source) instanceof DefaultEnumeration) {
       this.mxGraphService.assignToParent(child, source);
     }
     const entityCell = this.mxGraphService.resolveCellByModelElement(entityValue.type);

@@ -15,7 +15,7 @@ import {LoadedFilesService} from '@ame/cache';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {inject} from '@angular/core';
 import {DefaultAspect, DefaultEntity, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell, Graph} from '@maxgraph/core';
 import {MxGraphHelper, MxGraphVisitorHelper} from '../../helpers';
 import {RendererUpdatePayload} from '../../models';
 import {MxGraphService} from '../mx-graph.service';
@@ -25,21 +25,21 @@ export abstract class BaseRenderService {
   protected sammLangService = inject(SammLanguageSettingsService);
   protected loadedFilesService = inject(LoadedFilesService);
 
-  get graph(): mxgraph.mxGraph {
+  get graph(): Graph {
     return this.mxGraphService.graph;
   }
 
-  public abstract isApplicable(cell: mxgraph.mxCell): boolean;
+  public abstract isApplicable(cell: Cell): boolean;
 
   public update({cell, callback}: RendererUpdatePayload) {
-    const modelElement = MxGraphHelper.getModelElement(cell);
+    const modelElement = MxGraphHelper.getModelElementTest(cell);
 
     cell.setId(modelElement.name);
     cell.setAttribute('name', modelElement.name);
 
     cell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(modelElement, this.sammLangService);
     cell['configuration'].baseProperties = MxGraphVisitorHelper.getModelInfo(modelElement, this.loadedFilesService.currentLoadedFile);
-    this.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabel(cell));
+    this.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabelTest(cell), null);
 
     if (typeof callback === 'function') {
       callback();
@@ -48,44 +48,39 @@ export abstract class BaseRenderService {
     this.mxGraphService.formatShapes();
   }
 
-  protected renderOptionalProperties(cell: mxgraph.mxCell) {
-    const modelElement = MxGraphHelper.getModelElement<DefaultAspect | DefaultEntity>(cell);
-    this.graph.getOutgoingEdges(cell)?.forEach((e: mxgraph.mxCell) => {
-      const property = MxGraphHelper.getModelElement(e.target);
+  protected renderOptionalProperties(cell: Cell) {
+    const modelElement = MxGraphHelper.getModelElementTest<DefaultAspect | DefaultEntity>(cell);
+    this.graph.getOutgoingEdges(cell, null)?.forEach((e: Cell) => {
+      const property = MxGraphHelper.getModelElementTest(e.target);
       if (!(property instanceof DefaultProperty)) {
         return;
       }
 
       this.mxGraphService.removeCells([e]);
       MxGraphHelper.establishRelation(modelElement, property);
-      this.graph.insertEdge(
-        this.graph.getDefaultParent(),
-        null,
-        null,
-        e.source,
-        e.target,
-        modelElement.propertiesPayload[property.aspectModelUrn]?.optional ? 'optionalPropertyEdge' : 'defaultEdge',
-      );
+      this.graph.insertEdge(this.graph.getDefaultParent(), null, null, e.source, e.target, {
+        baseStyleNames: [modelElement.propertiesPayload[property.aspectModelUrn]?.optional ? 'optionalPropertyEdge' : 'defaultEdge'],
+      });
     });
   }
 
-  protected inMxGraph(modelElement: NamedElement): mxgraph.mxCell {
+  protected inMxGraph(modelElement: NamedElement): Cell {
     return this.mxGraphService
       ?.getAllCells()
-      ?.find(cell => MxGraphHelper.getModelElement(cell)?.aspectModelUrn === modelElement?.aspectModelUrn);
+      ?.find(cell => MxGraphHelper.getModelElementTest(cell)?.aspectModelUrn === modelElement?.aspectModelUrn);
   }
 
-  protected renderParents(cell: mxgraph.mxCell) {
+  protected renderParents(cell: Cell) {
     const parents = this.mxGraphService.resolveParents(cell);
 
     for (const parent of parents) {
-      const parentElementModel = MxGraphHelper.getModelElement(parent);
+      const parentElementModel = MxGraphHelper.getModelElementTest(parent);
       parent['configuration'].fields = MxGraphVisitorHelper.getElementProperties(parentElementModel, this.sammLangService);
       parent['configuration'].baseProperties = MxGraphVisitorHelper.getModelInfo(
         parentElementModel,
         this.loadedFilesService.currentLoadedFile,
       );
-      this.graph.labelChanged(parent, MxGraphHelper.createPropertiesLabel(parent));
+      this.graph.labelChanged(parent, MxGraphHelper.createPropertiesLabelTest(parent), null);
     }
   }
 }

@@ -26,7 +26,7 @@ import {
   NamedElement,
   Unit,
 } from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {Observable, Subscription, of, startWith} from 'rxjs';
 import {filter, map, tap} from 'rxjs/operators';
 import {EditorModelService} from '../../editor-model.service';
@@ -270,8 +270,8 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
 
   searchExtProperty(value: string): FilteredType[] {
     return this.searchExtElement(value)
-      ?.map((cell: mxgraph.mxCell) => {
-        const modelElement = MxGraphHelper.getModelElement(cell);
+      ?.map((cell: Cell) => {
+        const modelElement = MxGraphHelper.getModelElementTest(cell);
         if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultProperty) {
           return {
             name: modelElement.name,
@@ -287,8 +287,8 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
 
   searchExtCharacteristic(value: string): FilteredType[] {
     return this.searchExtElement(value)
-      ?.map((cell: mxgraph.mxCell) => {
-        const modelElement = MxGraphHelper.getModelElement(cell);
+      ?.map((cell: Cell) => {
+        const modelElement = MxGraphHelper.getModelElementTest(cell);
         if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultCharacteristic) {
           return {
             name: modelElement.name,
@@ -304,8 +304,8 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
 
   searchExtEntity(value: string): FilteredType[] {
     return this.searchExtElement(value)
-      ?.map((cell: mxgraph.mxCell) => {
-        const modelElement = MxGraphHelper.getModelElement(cell);
+      ?.map((cell: Cell) => {
+        const modelElement = MxGraphHelper.getModelElementTest(cell);
         if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultEntity) {
           return {
             name: modelElement.name,
@@ -322,8 +322,8 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
 
   searchExtAbstractEntity(value: string): FilteredType[] {
     return this.searchExtElement(value)
-      ?.map((cell: mxgraph.mxCell) => {
-        const modelElement = MxGraphHelper.getModelElement(cell);
+      ?.map((cell: Cell) => {
+        const modelElement = MxGraphHelper.getModelElementTest(cell);
         if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultEntity && modelElement.isAbstractEntity()) {
           return {
             name: modelElement.name,
@@ -381,7 +381,7 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
     this.parentForm.setControl('changedMetaModel', new FormControl());
   }
 
-  private searchExtElement(value: string): mxgraph.mxCell[] {
-    return this.searchService.search<mxgraph.mxCell>(value, this.mxGraphService.getAllCells(), mxCellSearchOption);
+  private searchExtElement(value: string): Cell[] {
+    return this.searchService.search<Cell>(value, this.mxGraphService.getAllCells(), mxCellSearchOption);
   }
 }

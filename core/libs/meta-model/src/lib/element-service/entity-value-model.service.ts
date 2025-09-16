@@ -14,7 +14,7 @@
 import {EntityValueRenderService, MxGraphHelper} from '@ame/mx-graph';
 import {inject, Injectable} from '@angular/core';
 import {DefaultEntity, DefaultEntityInstance, NamedElement, Value} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
@@ -25,8 +25,8 @@ export class EntityValueModelService extends BaseModelService {
     return metaModelElement instanceof DefaultEntityInstance;
   }
 
-  update(cell: mxgraph.mxCell, form: {[key: string]: any}): void {
-    const modelElement = MxGraphHelper.getModelElement<DefaultEntityInstance>(cell);
+  update(cell: Cell, form: {[key: string]: any}): void {
+    const modelElement = MxGraphHelper.getModelElementTest<DefaultEntityInstance>(cell);
     // update name
     const aspectModelUrn = this.loadedFile?.rdfModel?.getAspectModelUrn();
     this.currentCachedFile.updateElementKey(`${aspectModelUrn}${modelElement.name}`, `${aspectModelUrn}${form.name}`);
@@ -99,7 +99,7 @@ export class EntityValueModelService extends BaseModelService {
     }
   }
 
-  delete(cell: mxgraph.mxCell): void {
+  delete(cell: Cell): void {
     super.delete(cell);
     this.entityValueRenderService.delete(cell);
   }

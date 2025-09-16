@@ -64,7 +64,7 @@ export class PropertiesFilterLoader implements FilterLoader {
     const elementTree: ModelTree<NamedElement> = {
       element,
       fromParentArrow: options?.parent ? this.getArrowStyle(element, options.parent) : null,
-      shape: {...this.getShapeGeometry(element), mxGraphStyle: this.getMxGraphStyle(element)},
+      shape: {...this.getShapeGeometry(element), mxGraphStyle: {baseStyleNames: [this.getMxGraphStyle(element)]}},
       children: new ChildrenArray(),
       filterType: this.filterType,
     };

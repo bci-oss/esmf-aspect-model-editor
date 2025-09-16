@@ -85,7 +85,7 @@ export class DefaultFilter implements FilterLoader {
       element,
       fromParentArrow: this.getArrowStyle(element, options?.parent),
       children: new ChildrenArray(),
-      shape: {...this.getShapeGeometry(element), mxGraphStyle: this.getMxGraphStyle(element)},
+      shape: {...this.getShapeGeometry(element), mxGraphStyle: {baseStyleNames: [this.getMxGraphStyle(element)]}},
       filterType: this.filterType,
     };
 

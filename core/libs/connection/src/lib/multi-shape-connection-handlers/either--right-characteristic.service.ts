@@ -14,7 +14,7 @@
 import {MxGraphAttributeService, MxGraphHelper, MxGraphService} from '@ame/mx-graph';
 import {Injectable, inject} from '@angular/core';
 import {DefaultCharacteristic, DefaultEither} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MultiShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
@@ -22,10 +22,10 @@ export class EitherCharacteristicRightConnectionHandler implements MultiShapeCon
   private mxGraphService = inject(MxGraphService);
   private mxGraphAttributeService = inject(MxGraphAttributeService);
 
-  public connect(parentMetaModel: DefaultEither, childMetaModel: DefaultCharacteristic, parent: mxgraph.mxCell, child: mxgraph.mxCell) {
+  public connect(parentMetaModel: DefaultEither, childMetaModel: DefaultCharacteristic, parent: Cell, child: Cell) {
     parentMetaModel.right = childMetaModel;
-    this.mxGraphAttributeService.graph.getOutgoingEdges(parent).forEach(outEdge => {
-      const targetModel = MxGraphHelper.getModelElement(outEdge.target);
+    this.mxGraphAttributeService.graphTest.getOutgoingEdges(parent, null).forEach(outEdge => {
+      const targetModel = MxGraphHelper.getModelElementTest(outEdge.target);
       if (outEdge.target && targetModel?.aspectModelUrn === parentMetaModel.right?.aspectModelUrn) {
         MxGraphHelper.removeRelation(parentMetaModel, parentMetaModel.right);
         this.mxGraphService.removeCells([parent.removeEdge(outEdge, true)]);

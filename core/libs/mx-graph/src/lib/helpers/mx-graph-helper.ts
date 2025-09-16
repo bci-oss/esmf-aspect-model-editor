@@ -44,7 +44,7 @@ export class MxGraphHelper {
    *
    * @param cell mx element
    */
-  static getElementNodeTest<U extends NamedElement = NamedElement>(cell: Cell): ModelTree<U> {
+  static getElementNode<U extends NamedElement = NamedElement>(cell: Cell): ModelTree<U> {
     if (typeof cell?.['getMetaModelElement'] === 'function') {
       return (<any>cell).getMetaModelElement();
     }
@@ -56,8 +56,8 @@ export class MxGraphHelper {
    *
    * @param cell mx element
    */
-  static getModelElementTest<U extends NamedElement = NamedElement>(cell: Cell): U {
-    const node = this.getElementNodeTest<U>(cell);
+  static getModelElement<U extends NamedElement = NamedElement>(cell: Cell): U {
+    const node = this.getElementNode<U>(cell);
     return node ? node.element : null;
   }
 
@@ -96,12 +96,12 @@ export class MxGraphHelper {
     return metaModelElement instanceof DefaultEnumeration && metaModelElement.dataType instanceof DefaultEntity;
   }
 
-  static isNewConstrainOverlayButtonTest(overlay: CellOverlay): boolean {
+  static isNewConstrainOverlayButton(overlay: CellOverlay): boolean {
     return overlay.verticalAlign === 'top' && overlay.offset.x > 0;
   }
 
-  static setConstrainOverlayOffsetTest(overlay: CellOverlay, cell: Cell): void {
-    if (MxGraphHelper.isNewConstrainOverlayButtonTest(overlay)) {
+  static setConstrainOverlayOffset(overlay: CellOverlay, cell: Cell): void {
+    if (MxGraphHelper.isNewConstrainOverlayButton(overlay)) {
       overlay.offset.x = cell.geometry.width / 8;
     }
   }
@@ -110,8 +110,8 @@ export class MxGraphHelper {
    * Checks if cell is a characteristic without datatype.
    *
    */
-  static isCharacteristicWithoutDataTypeTest(cell: Cell): boolean {
-    const modelElement = MxGraphHelper.getModelElementTest<DefaultCharacteristic>(cell);
+  static isCharacteristicWithoutDataType(cell: Cell): boolean {
+    const modelElement = MxGraphHelper.getModelElement<DefaultCharacteristic>(cell);
     return modelElement ? !modelElement?.dataType : false;
   }
 
@@ -128,7 +128,7 @@ export class MxGraphHelper {
    * @param cell mx element
    * @param metaModelObject internal model
    */
-  static setElementNodeTest(cell: Cell, node: ModelTree<NamedElement>) {
+  static setElementNode(cell: Cell, node: ModelTree<NamedElement>) {
     cell['getMetaModelElement'] = (): ModelTree<NamedElement> => node;
   }
 
@@ -139,13 +139,13 @@ export class MxGraphHelper {
    * @param graph the graph the cell can be found
    * @returns boolean
    */
-  static hasGrandParentStructuredValueTest(cell: Cell, graph: Graph) {
+  static hasGrandParentStructuredValue(cell: Cell, graph: Graph) {
     return graph
       .getIncomingEdges(cell, null)
       .some(firstEdge =>
         graph
           .getIncomingEdges(firstEdge.source, null)
-          .some(secondEdge => MxGraphHelper.getModelElementTest(secondEdge.source) instanceof DefaultStructuredValue),
+          .some(secondEdge => MxGraphHelper.getModelElement(secondEdge.source) instanceof DefaultStructuredValue),
       );
   }
 
@@ -202,30 +202,30 @@ export class MxGraphHelper {
     );
   }
 
-  static isEntityCycleInheritanceTest(child: Cell, parent: NamedElement, graph: Graph): boolean {
+  static isEntityCycleInheritance(child: Cell, parent: NamedElement, graph: Graph): boolean {
     const nextGeneration = graph.getOutgoingEdges(child, null)?.map(edge => edge.target) || [];
 
     for (const cell of nextGeneration) {
-      const modelElement = MxGraphHelper.getModelElementTest(cell);
-      return modelElement.aspectModelUrn === parent.aspectModelUrn || this.isEntityCycleInheritanceTest(cell, parent, graph);
+      const modelElement = MxGraphHelper.getModelElement(cell);
+      return modelElement.aspectModelUrn === parent.aspectModelUrn || this.isEntityCycleInheritance(cell, parent, graph);
     }
 
     return false;
   }
 
-  static getNewShapeOverlayButtonTest(cell: Cell): CellOverlay {
+  static getNewShapeOverlayButton(cell: Cell): CellOverlay {
     return cell?.overlays?.find(overlay => overlay.verticalAlign === 'bottom');
   }
 
-  static getTopOverlayButtonTest(cell: Cell): CellOverlay {
+  static getTopOverlayButton(cell: Cell): CellOverlay {
     return cell?.overlays?.find(overlay => overlay.verticalAlign === 'top' && overlay.align === 'center');
   }
 
-  static getRightOverlayButtonTest(cell: Cell): CellOverlay {
+  static getRightOverlayButton(cell: Cell): CellOverlay {
     return cell?.overlays?.find(overlay => overlay.align === 'right');
   }
 
-  static setCompactTreeLayoutTest(graph: Graph, inCollapsedMode: boolean, cell?: Cell): void {
+  static setCompactTreeLayout(graph: Graph, inCollapsedMode: boolean, cell?: Cell): void {
     const graphLayout = new CompactTreeLayout(graph);
     graphLayout.maintainParentLocation = true;
     graphLayout.horizontal = false;
@@ -238,14 +238,14 @@ export class MxGraphHelper {
       graphLayout.execute(graph.getDefaultParent(), cell);
     } else {
       graph.getChildVertices(graph.getDefaultParent())?.forEach(element => {
-        if (this.getModelElementTest(element).parents.length === 0) {
+        if (this.getModelElement(element).parents.length === 0) {
           graphLayout.execute(graph.getDefaultParent(), element);
         }
       });
     }
   }
 
-  static setHierarchicalLayoutTest(graph: Graph, inCollapsedMode: boolean, cell?: Cell): void {
+  static setHierarchicalLayout(graph: Graph, inCollapsedMode: boolean, cell?: Cell): void {
     const graphLayout = new HierarchicalLayout(graph);
     graphLayout.maintainParentLocation = true;
     graphLayout.edgeStyle = ModelHierarchicalLayout.edgeStyle;
@@ -258,14 +258,14 @@ export class MxGraphHelper {
     graphLayout.execute(graph.getDefaultParent(), cell);
   }
 
-  static getCellHeightTest(cell: Cell) {
-    const div = this.createPropertiesLabelTest(cell);
+  static getCellHeight(cell: Cell) {
+    const div = this.createPropertiesLabel(cell);
     return div?.style.height.split('px')[0];
   }
 
-  static createEdgeLabelTest(cell: Cell, graph: Graph): HTMLElement {
-    const sourceModelElement = MxGraphHelper.getModelElementTest(cell.source);
-    const targetModelElement = MxGraphHelper.getModelElementTest(cell.target);
+  static createEdgeLabel(cell: Cell, graph: Graph): HTMLElement {
+    const sourceModelElement = MxGraphHelper.getModelElement(cell.source);
+    const targetModelElement = MxGraphHelper.getModelElement(cell.target);
 
     if (sourceModelElement instanceof DefaultOperation) {
       const isInput = sourceModelElement?.input?.some(overwrittenProp => overwrittenProp === targetModelElement);
@@ -301,7 +301,7 @@ export class MxGraphHelper {
       if (entityIncomingEdges) {
         entityIncomingEdges.forEach((c: Cell) => {
           // first check if it has a parent Enumeration
-          if (this.getElementNodeTest(c.source) instanceof DefaultEnumeration) {
+          if (this.getElementNode(c.source) instanceof DefaultEnumeration) {
             hasEnumeration = true;
           }
         });
@@ -322,7 +322,7 @@ export class MxGraphHelper {
     return null;
   }
 
-  private static createLabelElementTest(cell: Cell) {
+  private static createLabelElement(cell: Cell) {
     const div = document.createElement('div');
     div.dataset.cellId = cell.id;
     div.dataset.collapsed = cell.collapsed ? 'yes' : 'no';
@@ -331,8 +331,8 @@ export class MxGraphHelper {
     return div;
   }
 
-  private static createTitleLabelElementTest(cell: Cell, isSmallShape: boolean) {
-    const modelElement = MxGraphHelper.getModelElementTest(cell);
+  private static createTitleLabelElement(cell: Cell, isSmallShape: boolean) {
+    const modelElement = MxGraphHelper.getModelElement(cell);
     const title = document.createElement('span');
     if (!cell.collapsed) {
       title.style.width = cell.geometry.width + 'px';
@@ -356,20 +356,20 @@ export class MxGraphHelper {
     }
   }
 
-  static createPropertiesLabelTest(cell: Cell) {
-    const modelElement = MxGraphHelper.getModelElementTest(cell);
+  static createPropertiesLabel(cell: Cell) {
+    const modelElement = MxGraphHelper.getModelElement(cell);
     if (!modelElement) {
       return null;
     }
 
-    const node = this.getElementNodeTest(cell);
+    const node = this.getElementNode(cell);
     if (node.filterType === 'properties' && !(modelElement instanceof DefaultProperty || modelElement instanceof DefaultAspect)) {
       return null;
     }
 
     const isSmallShape = [DefaultEntityInstance].some(c => modelElement instanceof c);
-    const div = this.createLabelElementTest(cell);
-    const title = this.createTitleLabelElementTest(cell, isSmallShape);
+    const div = this.createLabelElement(cell);
+    const title = this.createTitleLabelElement(cell, isSmallShape);
 
     div.appendChild(title);
 
@@ -484,9 +484,9 @@ export class MxGraphHelper {
     return span;
   }
 
-  static updateLabelTest(cell: Cell, graph: Graph, sammLangService: SammLanguageSettingsService) {
-    cell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(MxGraphHelper.getModelElementTest(cell), sammLangService);
-    graph.labelChanged(cell, MxGraphHelper.createPropertiesLabelTest(cell), null);
+  static updateLabel(cell: Cell, graph: Graph, sammLangService: SammLanguageSettingsService) {
+    cell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(MxGraphHelper.getModelElement(cell), sammLangService);
+    graph.labelChanged(cell, MxGraphHelper.createPropertiesLabel(cell), null);
   }
 
   static getNamespaceFromElement(element: NamedElement) {

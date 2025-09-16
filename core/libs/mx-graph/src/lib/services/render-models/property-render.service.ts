@@ -30,11 +30,11 @@ export class PropertyRenderService extends BaseRenderService {
   }
 
   isApplicable(cell: Cell): boolean {
-    return MxGraphHelper.getModelElementTest(cell) instanceof DefaultProperty;
+    return MxGraphHelper.getModelElement(cell) instanceof DefaultProperty;
   }
 
   private handleExtendsElement(cell: Cell) {
-    const node = MxGraphHelper.getElementNodeTest<DefaultProperty>(cell);
+    const node = MxGraphHelper.getElementNode<DefaultProperty>(cell);
     const metaModelElement = node.element;
     if (!metaModelElement.exampleValue) {
       return;

@@ -24,13 +24,13 @@ export class PropertyCharacteristicConnectionHandler implements MultiShapeConnec
   private mxGraphAttributeService = inject(MxGraphAttributeService);
 
   public connect(parentMetaModel: DefaultProperty, childMetaModel: DefaultCharacteristic, parent: Cell, child: Cell) {
-    this.mxGraphAttributeService.graphTest.getOutgoingEdges(parent, null).forEach((outEdge: Cell) => {
+    this.mxGraphAttributeService.graph.getOutgoingEdges(parent, null).forEach((outEdge: Cell) => {
       // moves the cell being disconnected(arrow removal) in order to prevent overlapping overlays
       if (outEdge.target?.geometry?.x < basicShapeGeometry.expandedWith) {
         outEdge.target.geometry.translate(basicShapeGeometry.expandedWith, 0);
       }
 
-      const targetModel = MxGraphHelper.getModelElementTest<DefaultProperty>(outEdge.target);
+      const targetModel = MxGraphHelper.getModelElement<DefaultProperty>(outEdge.target);
       if (targetModel instanceof DefaultProperty) {
         return;
       }

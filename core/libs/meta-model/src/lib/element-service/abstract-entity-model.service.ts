@@ -43,7 +43,7 @@ export class AbstractEntityModelService extends BaseModelService {
   }
 
   update(cell: Cell, form: {[key: string]: any}) {
-    const metaModelElement = MxGraphHelper.getModelElementTest<DefaultEntity>(cell);
+    const metaModelElement = MxGraphHelper.getModelElement<DefaultEntity>(cell);
 
     if (form.editedProperties) {
       for (const property of metaModelElement.properties) {
@@ -64,27 +64,27 @@ export class AbstractEntityModelService extends BaseModelService {
   }
 
   delete(cell: Cell) {
-    const modelElement = MxGraphHelper.getModelElementTest<DefaultEntity>(cell);
-    const outgoingEdges = this.mxGraphAttributeService.graphTest.getOutgoingEdges(cell, null);
-    const incomingEdges = this.mxGraphAttributeService.graphTest.getIncomingEdges(cell, null);
+    const modelElement = MxGraphHelper.getModelElement<DefaultEntity>(cell);
+    const outgoingEdges = this.mxGraphAttributeService.graph.getOutgoingEdges(cell, null);
+    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell, null);
 
     const extendingProperties = [];
     for (const edge of incomingEdges) {
       const properties = this.mxGraphService.graph
         .getOutgoingEdges(edge.source, null)
         .filter(e => {
-          const property = MxGraphHelper.getModelElementTest<DefaultProperty>(e.target);
+          const property = MxGraphHelper.getModelElement<DefaultProperty>(e.target);
           return property instanceof DefaultProperty && !!property.extends_;
         })
         .map(e => e.target);
       extendingProperties.push(...properties);
 
-      const entity = MxGraphHelper.getModelElementTest<DefaultEntity>(edge.source);
+      const entity = MxGraphHelper.getModelElement<DefaultEntity>(edge.source);
       entity.extends_ = null;
 
       MxGraphHelper.removeRelation(entity, modelElement);
       for (const property of properties) {
-        MxGraphHelper.removeRelation(entity, MxGraphHelper.getModelElementTest(property));
+        MxGraphHelper.removeRelation(entity, MxGraphHelper.getModelElement(property));
       }
 
       edge.source['configuration'].fields = MxGraphVisitorHelper.getElementProperties(entity, this.languageService);
@@ -95,8 +95,8 @@ export class AbstractEntityModelService extends BaseModelService {
     this.currentCachedFile.removeElement(modelElement.aspectModelUrn);
     super.delete(cell);
 
-    this.mxGraphShapeOverlayService.checkAndAddTopShapeActionIconTest(outgoingEdges, modelElement);
-    this.mxGraphShapeOverlayService.checkAndAddShapeActionIconTest(incomingEdges, modelElement);
+    this.mxGraphShapeOverlayService.checkAndAddTopShapeActionIcon(outgoingEdges, modelElement);
+    this.mxGraphShapeOverlayService.checkAndAddShapeActionIcon(incomingEdges, modelElement);
     this.entityInstanceService.onEntityRemove(modelElement, () => {
       if (!cell?.edges) {
         this.mxGraphService.removeCells([cell]);
@@ -105,7 +105,7 @@ export class AbstractEntityModelService extends BaseModelService {
 
       const entityValuesToDelete = [];
       for (const edge of cell.edges) {
-        const element = MxGraphHelper.getModelElementTest(edge.source);
+        const element = MxGraphHelper.getModelElement(edge.source);
         if (element && this.loadedFilesService.isElementInCurrentFile(element)) {
           this.currentCachedFile.removeElement(element.aspectModelUrn);
           useUpdater(modelElement).delete(element);
@@ -113,8 +113,8 @@ export class AbstractEntityModelService extends BaseModelService {
 
         if (element instanceof DefaultEnumeration) {
           // we need to remove and add back the + button for enumeration
-          this.mxGraphShapeOverlayService.removeComplexTypeShapeOverlaysTest(edge.source);
-          this.mxGraphShapeOverlayService.addBottomShapeOverlayTest(edge.source);
+          this.mxGraphShapeOverlayService.removeComplexTypeShapeOverlays(edge.source);
+          this.mxGraphShapeOverlayService.addBottomShapeOverlay(edge.source);
         }
 
         if (element instanceof DefaultEntityInstance && edge.source.style.fillColor.includes('entityValue')) {

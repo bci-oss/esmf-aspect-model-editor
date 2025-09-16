@@ -80,7 +80,7 @@ export class MaxValueInputFieldComponent extends InputFieldComponent<DefaultRang
   private getCharacteristicTypeForConstraint(id: string): Type {
     const edges = this.mxGraphService.getAllEdges(id);
     // constraint can only have trait as a source edge
-    const types = edges?.map(edge => MxGraphHelper.getModelElementTest<DefaultTrait>(edge.source)?.getBaseCharacteristic()?.dataType) || [];
+    const types = edges?.map(edge => MxGraphHelper.getModelElement<DefaultTrait>(edge.source)?.getBaseCharacteristic()?.dataType) || [];
 
     if (types.length > 0) {
       // return type only if we have one kind of a type in list.

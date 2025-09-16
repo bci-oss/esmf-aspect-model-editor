@@ -62,23 +62,23 @@ export class ShapeSettingsService {
   }
 
   setSelectCellListener() {
-    this.mxGraphAttributeService.graphTest
+    this.mxGraphAttributeService.graph
       .getSelectionModel()
       .addListener(InternalEvent.CHANGE, selectionModel => this.ngZone.run(() => this.selectedCellsSubject.next(selectionModel.cells)));
   }
 
   setMoveCellsListener() {
-    this.mxGraphAttributeService.graphTest.addListener(InternalEvent.MOVE_CELLS, () =>
-      this.ngZone.run(() => (this.mxGraphAttributeService.graphTest.resetEdgesOnMove = true)),
+    this.mxGraphAttributeService.graph.addListener(InternalEvent.MOVE_CELLS, () =>
+      this.ngZone.run(() => (this.mxGraphAttributeService.graph.resetEdgesOnMove = true)),
     );
   }
 
   setFoldListener() {
-    this.mxGraphAttributeService.graphTest.addListener(InternalEvent.FOLD_CELLS, () => this.mxGraphService.formatShapes());
+    this.mxGraphAttributeService.graph.addListener(InternalEvent.FOLD_CELLS, () => this.mxGraphService.formatShapes());
   }
 
   setDblClickListener() {
-    this.mxGraphAttributeService.graphTest.addListener(InternalEvent.DOUBLE_CLICK, () => this.ngZone.run(() => this.editSelectedCell()));
+    this.mxGraphAttributeService.graph.addListener(InternalEvent.DOUBLE_CLICK, () => this.ngZone.run(() => this.editSelectedCell()));
   }
 
   unselectShapeForUpdate() {
@@ -86,7 +86,7 @@ export class ShapeSettingsService {
   }
 
   editSelectedCell() {
-    this.shapeSettingsStateService.selectedShapeForUpdate = this.mxGraphShapeSelectorService.getSelectedShapeTest();
+    this.shapeSettingsStateService.selectedShapeForUpdate = this.mxGraphShapeSelectorService.getSelectedShape();
     const selectedElement = this.shapeSettingsStateService.selectedShapeForUpdate;
 
     if (!selectedElement || selectedElement?.isEdge()) {
@@ -94,7 +94,7 @@ export class ShapeSettingsService {
       return;
     }
 
-    this.modelElement = MxGraphHelper.getModelElementTest(selectedElement);
+    this.modelElement = MxGraphHelper.getModelElement(selectedElement);
     if (this.loadedFiles.isElementExtern(this.modelElement) && !this.modelElement.isPredefined) {
       this.openReferencedElementService.openReferencedElement(this.modelElement);
       return;

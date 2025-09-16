@@ -20,6 +20,6 @@ import {BaseRenderService} from './base-render-service';
 @Injectable({providedIn: 'root'})
 export class TraitRenderService extends BaseRenderService {
   isApplicable(cell: Cell): boolean {
-    return MxGraphHelper.getModelElementTest(cell) instanceof DefaultTrait;
+    return MxGraphHelper.getModelElement(cell) instanceof DefaultTrait;
   }
 }

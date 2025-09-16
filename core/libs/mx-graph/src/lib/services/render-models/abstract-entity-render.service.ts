@@ -34,7 +34,7 @@ export class AbstractEntityRenderService extends BaseRenderService {
   }
 
   isApplicable(cell: Cell): boolean {
-    const element = MxGraphHelper.getModelElementTest(cell);
+    const element = MxGraphHelper.getModelElement(cell);
     return element instanceof DefaultEntity && element.isAbstractEntity();
   }
 }

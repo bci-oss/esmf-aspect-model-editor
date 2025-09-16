@@ -51,8 +51,8 @@ export class CharacteristicEntityConnectionHandler implements MultiShapeConnecto
     }
 
     parentMetaModel.dataType = childMetaModel;
-    this.mxGraphAttributeService.graphTest.getOutgoingEdges(parent, null).forEach(outEdge => this.removeCells(outEdge, null));
-    this.mxGraphShapeOverlayService.removeOverlayTest(parent, MxGraphHelper.getNewShapeOverlayButtonTest(parent));
+    this.mxGraphAttributeService.graph.getOutgoingEdges(parent, null).forEach(outEdge => this.removeCells(outEdge, null));
+    this.mxGraphShapeOverlayService.removeOverlay(parent, MxGraphHelper.getNewShapeOverlayButton(parent));
 
     // Add icon when you simply connect an enumeration with an entity.
     if (parentMetaModel instanceof DefaultEnumeration) {
@@ -61,13 +61,13 @@ export class CharacteristicEntityConnectionHandler implements MultiShapeConnecto
       // if (!parentMetaModel.createdFromEditor) {
       //   parentMetaModel.values = [];
       // }
-      this.mxGraphShapeOverlayService.removeOverlayTest(parent, MxGraphHelper.getRightOverlayButtonTest(parent));
-      this.mxGraphShapeOverlayService.addComplexEnumerationShapeOverlayTest(parent);
-      this.mxGraphShapeOverlayService.addBottomShapeOverlayTest(parent);
+      this.mxGraphShapeOverlayService.removeOverlay(parent, MxGraphHelper.getRightOverlayButton(parent));
+      this.mxGraphShapeOverlayService.addComplexEnumerationShapeOverlay(parent);
+      this.mxGraphShapeOverlayService.addBottomShapeOverlay(parent);
     }
 
     if (parentMetaModel.dataType) {
-      MxGraphHelper.updateLabelTest(parent, this.mxGraphAttributeService.graphTest, this.sammLangService);
+      MxGraphHelper.updateLabel(parent, this.mxGraphAttributeService.graph, this.sammLangService);
     }
 
     if (parentMetaModel.dataType?.isComplexType()) {
@@ -79,25 +79,25 @@ export class CharacteristicEntityConnectionHandler implements MultiShapeConnecto
   }
 
   private updateChildPropertiesLabels(parent: Cell): void {
-    const parentIncomingEdges = this.mxGraphAttributeService.graphTest.getIncomingEdges(parent, null);
+    const parentIncomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(parent, null);
     parentIncomingEdges.forEach(edge => {
-      const edgeSourceMetaModelElement = MxGraphHelper.getModelElementTest(edge.source);
+      const edgeSourceMetaModelElement = MxGraphHelper.getModelElement(edge.source);
       if (edgeSourceMetaModelElement instanceof DefaultProperty) {
         // Remove example value for complex datatypes
         edgeSourceMetaModelElement.exampleValue = null;
-        MxGraphHelper.updateLabelTest(edge.source, this.mxGraphAttributeService.graphTest, this.sammLangService);
+        MxGraphHelper.updateLabel(edge.source, this.mxGraphAttributeService.graph, this.sammLangService);
       }
     });
   }
 
   private removeCells(edge: Cell, parent: Cell): void {
-    const metaModel = MxGraphHelper.getModelElementTest(edge.target);
+    const metaModel = MxGraphHelper.getModelElement(edge.target);
 
     if (metaModel instanceof DefaultUnit) return;
 
     // Remove icon if we delete the edge between enumeration and entity.
     if (metaModel instanceof DefaultEnumeration) {
-      this.mxGraphShapeOverlayService.removeComplexTypeShapeOverlaysTest(parent);
+      this.mxGraphShapeOverlayService.removeComplexTypeShapeOverlays(parent);
     }
 
     // TODO Should be defined in more details
@@ -106,12 +106,12 @@ export class CharacteristicEntityConnectionHandler implements MultiShapeConnecto
         MxGraphHelper.removeRelation(metaModel, child);
       }
 
-      this.mxGraphAttributeService.graphTest.getOutgoingEdges(edge.target, null).forEach(outEdge => this.removeCells(outEdge, null));
+      this.mxGraphAttributeService.graph.getOutgoingEdges(edge.target, null).forEach(outEdge => this.removeCells(outEdge, null));
       this.mxGraphService.removeCells([edge.target]);
       this.currentCachedFile.removeElement(metaModel.aspectModelUrn);
     }
 
-    const parentModel = MxGraphHelper.getModelElementTest(edge.source);
+    const parentModel = MxGraphHelper.getModelElement(edge.source);
     MxGraphHelper.removeRelation(parentModel, metaModel);
     this.mxGraphService.removeCells([edge]);
   }

@@ -47,9 +47,9 @@ export class ConnectWithDialogComponent {
   public connectWithModel: NamedElement;
 
   constructor() {
-    this.connectWithModel = MxGraphHelper.getModelElementTest(this.connectWithCell);
+    this.connectWithModel = MxGraphHelper.getModelElement(this.connectWithCell);
     this.elements = this.mxGraphService.getAllCells().map(e => {
-      return {model: MxGraphHelper.getModelElementTest(e), cell: e};
+      return {model: MxGraphHelper.getModelElement(e), cell: e};
     });
   }
 

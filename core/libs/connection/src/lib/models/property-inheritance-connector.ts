@@ -37,6 +37,6 @@ export class PropertyInheritanceConnector extends InheritanceConnector {
   }
 
   protected hasEntityParent(cell: Cell) {
-    return !this.mxGraphService.resolveParents(cell)?.some(cell => MxGraphHelper.getModelElementTest(cell) instanceof DefaultEntity);
+    return !this.mxGraphService.resolveParents(cell)?.some(cell => MxGraphHelper.getModelElement(cell) instanceof DefaultEntity);
   }
 }

@@ -45,15 +45,15 @@ export class CharacteristicRenderService extends BaseRenderService {
   private mxGraphShapeOverlayService = inject(MxGraphShapeOverlayService);
 
   isApplicable(cell: Cell): boolean {
-    return MxGraphHelper.getModelElementTest(cell) instanceof DefaultCharacteristic;
+    return MxGraphHelper.getModelElement(cell) instanceof DefaultCharacteristic;
   }
 
   update({cell, form}: RendererUpdatePayload) {
-    this.metaModelElement = MxGraphHelper.getModelElementTest<DefaultCharacteristic>(cell);
+    this.metaModelElement = MxGraphHelper.getModelElement<DefaultCharacteristic>(cell);
     if (this.metaModelElement instanceof DefaultEither) {
       this.removeObsoleteEntityValues(cell);
       this.metaModelElement.dataType = null;
-      this.mxGraphShapeOverlayService.changeEitherOverlayTest(cell);
+      this.mxGraphShapeOverlayService.changeEitherOverlay(cell);
       this.removeEitherTargetShape(cell, form.leftCharacteristic, form.rightCharacteristic);
       this.handleEitherCharacteristic(cell, form.leftCharacteristic, ModelInfo.IS_EITHER_LEFT);
       this.handleEitherCharacteristic(cell, form.rightCharacteristic, ModelInfo.IS_EITHER_RIGHT);
@@ -80,7 +80,7 @@ export class CharacteristicRenderService extends BaseRenderService {
     const outGoingEdges = this.mxGraphService.graph.getOutgoingEdges(cell, null);
     const toRemove = [];
     for (const edge of outGoingEdges) {
-      const metaModel = MxGraphHelper.getModelElementTest(edge.target);
+      const metaModel = MxGraphHelper.getModelElement(edge.target);
       metaModel instanceof DefaultProperty && toRemove.push(edge);
     }
 
@@ -88,7 +88,7 @@ export class CharacteristicRenderService extends BaseRenderService {
   }
 
   private addStructuredValueProperties(cell: Cell) {
-    const modelElement = MxGraphHelper.getModelElementTest<DefaultStructuredValue>(cell);
+    const modelElement = MxGraphHelper.getModelElement<DefaultStructuredValue>(cell);
     for (const element of modelElement.elements) {
       if (typeof element === 'string') {
         continue;
@@ -104,7 +104,7 @@ export class CharacteristicRenderService extends BaseRenderService {
 
       propertyCell = this.mxGraphService.resolveCellByModelElement(element);
       propertyCell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(element, this.sammLangService);
-      this.graph.labelChanged(propertyCell, MxGraphHelper.createPropertiesLabelTest(propertyCell), null);
+      this.graph.labelChanged(propertyCell, MxGraphHelper.createPropertiesLabel(propertyCell), null);
 
       if (!element?.characteristic) {
         continue;
@@ -124,20 +124,20 @@ export class CharacteristicRenderService extends BaseRenderService {
         element.characteristic,
         this.sammLangService,
       );
-      this.graph.labelChanged(childCharacteristicCell, MxGraphHelper.createPropertiesLabelTest(childCharacteristicCell), null);
+      this.graph.labelChanged(childCharacteristicCell, MxGraphHelper.createPropertiesLabel(childCharacteristicCell), null);
 
-      this.mxGraphShapeOverlayService.removeOverlayTest(
+      this.mxGraphShapeOverlayService.removeOverlay(
         childCharacteristicCell,
-        MxGraphHelper.getNewShapeOverlayButtonTest(childCharacteristicCell),
+        MxGraphHelper.getNewShapeOverlayButton(childCharacteristicCell),
       );
     }
   }
 
   private removeEverythingForStructuredValue(cell: Cell) {
     const outGoingEdges = this.mxGraphService.graph.getOutgoingEdges(cell, null);
-    const characteristic = MxGraphHelper.getModelElementTest(cell);
+    const characteristic = MxGraphHelper.getModelElement(cell);
     for (const edge of outGoingEdges) {
-      const modelElement = MxGraphHelper.getModelElementTest(edge.target);
+      const modelElement = MxGraphHelper.getModelElement(edge.target);
       MxGraphHelper.removeRelation(characteristic, modelElement);
       if (modelElement?.isPredefined) {
         this.mxGraphService.removeCells([edge.target]);
@@ -147,9 +147,9 @@ export class CharacteristicRenderService extends BaseRenderService {
   }
 
   private removeEitherTargetShape(cell: Cell, left: DefaultCharacteristic, right: DefaultCharacteristic) {
-    const characteristic = MxGraphHelper.getModelElementTest(cell);
+    const characteristic = MxGraphHelper.getModelElement(cell);
     this.mxGraphService.graph.getOutgoingEdges(cell, null).forEach(edge => {
-      const modelElement = MxGraphHelper.getModelElementTest(edge.target);
+      const modelElement = MxGraphHelper.getModelElement(edge.target);
       if (modelElement && modelElement.aspectModelUrn !== left.aspectModelUrn && modelElement.aspectModelUrn !== right.aspectModelUrn) {
         MxGraphHelper.removeRelation(characteristic, modelElement);
         if (modelElement?.isPredefined) {
@@ -178,27 +178,27 @@ export class CharacteristicRenderService extends BaseRenderService {
 
   private handleOverlay(cell: Cell) {
     if (!(this.metaModelElement instanceof DefaultEither)) {
-      this.mxGraphShapeOverlayService.removeOverlayTest(cell, MxGraphHelper.getNewShapeOverlayButtonTest(cell));
-      this.mxGraphShapeOverlayService.removeOverlayTest(cell, MxGraphHelper.getTopOverlayButtonTest(cell));
+      this.mxGraphShapeOverlayService.removeOverlay(cell, MxGraphHelper.getNewShapeOverlayButton(cell));
+      this.mxGraphShapeOverlayService.removeOverlay(cell, MxGraphHelper.getTopOverlayButton(cell));
 
       if (this.metaModelElement?.isPredefined) {
-        this.mxGraphShapeOverlayService.addTopShapeOverlayTest(cell);
+        this.mxGraphShapeOverlayService.addTopShapeOverlay(cell);
       } else {
-        this.mxGraphShapeOverlayService.addTopShapeOverlayTest(cell);
-        this.mxGraphShapeOverlayService.addBottomShapeOverlayTest(cell);
+        this.mxGraphShapeOverlayService.addTopShapeOverlay(cell);
+        this.mxGraphShapeOverlayService.addBottomShapeOverlay(cell);
       }
     }
   }
 
   private handlePredefinedCharacteristicConnections(cell: Cell) {
-    const modelElement = MxGraphHelper.getModelElementTest<DefaultCharacteristic>(cell);
+    const modelElement = MxGraphHelper.getModelElement<DefaultCharacteristic>(cell);
     if (!modelElement?.isPredefined) {
       return;
     }
 
     const predefinedElements: Cell[] = [];
     const edgesToRemove = cell.edges?.filter(edge => {
-      const element = MxGraphHelper.getModelElementTest(edge.target);
+      const element = MxGraphHelper.getModelElement(edge.target);
       if (element.isPredefined && element.aspectModelUrn !== modelElement.aspectModelUrn) predefinedElements.push(edge.target);
       return element.aspectModelUrn !== modelElement.aspectModelUrn;
     });
@@ -207,7 +207,7 @@ export class CharacteristicRenderService extends BaseRenderService {
 
   private removeCharacteristicTargetShape(cell: Cell) {
     this.mxGraphService.graph.getOutgoingEdges(cell, null).forEach(edge => {
-      const targetMetaModel = MxGraphHelper.getModelElementTest(edge.target);
+      const targetMetaModel = MxGraphHelper.getModelElement(edge.target);
       if (targetMetaModel instanceof DefaultCharacteristic) {
         this.mxGraphService.removeCells([edge], true);
       }
@@ -245,8 +245,8 @@ export class CharacteristicRenderService extends BaseRenderService {
 
   private removeObsoleteEntityValues(cell: Cell) {
     this.mxGraphService.graph.getOutgoingEdges(cell, null).forEach(outEdge => {
-      if (MxGraphHelper.getModelElementTest(outEdge.target) instanceof DefaultEntityInstance) {
-        const entityValues = MxGraphCharacteristicHelper.findObsoleteEntityValuesTest(outEdge);
+      if (MxGraphHelper.getModelElement(outEdge.target) instanceof DefaultEntityInstance) {
+        const entityValues = MxGraphCharacteristicHelper.findObsoleteEntityValues(outEdge);
         this.mxGraphService.removeCells(entityValues);
       }
     });
@@ -260,11 +260,11 @@ export class CharacteristicRenderService extends BaseRenderService {
 
   private removeOutgoingComplexDataType(cell: Cell) {
     const outGoingEdges = this.mxGraphService.graph.getOutgoingEdges(cell, null);
-    const characteristic = MxGraphHelper.getModelElementTest(cell);
+    const characteristic = MxGraphHelper.getModelElement(cell);
 
     if (outGoingEdges.length) {
       outGoingEdges.forEach(edge => {
-        const modelElement = MxGraphHelper.getModelElementTest(edge.target);
+        const modelElement = MxGraphHelper.getModelElement(edge.target);
         if (modelElement instanceof DefaultEntity) {
           MxGraphHelper.removeRelation(characteristic, modelElement);
           const characteristicUpdater = useUpdater(this.metaModelElement);
@@ -279,13 +279,13 @@ export class CharacteristicRenderService extends BaseRenderService {
   private handleUnit(cell: Cell, unit: DefaultUnit) {
     const isSameUnit = this.mxGraphService.graph
       .getOutgoingEdges(cell, null)
-      .find(edge => MxGraphHelper.getModelElementTest(edge.target).aspectModelUrn === unit?.aspectModelUrn);
+      .find(edge => MxGraphHelper.getModelElement(edge.target).aspectModelUrn === unit?.aspectModelUrn);
 
     if (!isSameUnit) {
       this.unassignUnit(cell);
     }
 
-    const modelElement = MxGraphHelper.getModelElementTest(cell);
+    const modelElement = MxGraphHelper.getModelElement(cell);
     if (!(modelElement instanceof DefaultQuantifiable)) {
       this.unitRendererService.removeFrom(cell);
       return;
@@ -299,7 +299,7 @@ export class CharacteristicRenderService extends BaseRenderService {
       }
       this.shapeConnectorService.connectShapes(modelElement, unit, cell, unitCell);
     } else if (unit && !isSameUnit) {
-      this.removeCharacteristic(cell, MxGraphHelper.getModelElementTest<DefaultCharacteristic>(cell));
+      this.removeCharacteristic(cell, MxGraphHelper.getModelElement<DefaultCharacteristic>(cell));
       this.unitRendererService.create(cell, unit);
     }
   }
@@ -307,14 +307,14 @@ export class CharacteristicRenderService extends BaseRenderService {
   private unassignUnit(cell: Cell) {
     const edgeToOldUnit = this.mxGraphService.graph
       .getOutgoingEdges(cell, null)
-      .find(edge => MxGraphHelper.getModelElementTest(edge.target) instanceof DefaultUnit);
+      .find(edge => MxGraphHelper.getModelElement(edge.target) instanceof DefaultUnit);
 
     if (!edgeToOldUnit) {
       return;
     }
 
-    const parent = MxGraphHelper.getModelElementTest(cell);
-    const unit = MxGraphHelper.getModelElementTest<DefaultUnit>(edgeToOldUnit.target);
+    const parent = MxGraphHelper.getModelElement(cell);
+    const unit = MxGraphHelper.getModelElement<DefaultUnit>(edgeToOldUnit.target);
 
     if (unit?.isPredefined) {
       MxGraphHelper.removeRelation(parent, unit);
@@ -330,7 +330,7 @@ export class CharacteristicRenderService extends BaseRenderService {
     if (this.metaModelElement instanceof DefaultCollection) {
       if (elementCharacteristic) {
         this.mxGraphService.graph.getOutgoingEdges(cell, null).forEach(edge => {
-          const modelElement = MxGraphHelper.getModelElementTest(edge.target);
+          const modelElement = MxGraphHelper.getModelElement(edge.target);
           if (
             modelElement &&
             modelElement.aspectModelUrn !== elementCharacteristic.aspectModelUrn &&
@@ -359,12 +359,12 @@ export class CharacteristicRenderService extends BaseRenderService {
 
   private removeCharacteristic(cell: Cell, modelElement: DefaultCharacteristic) {
     const edgesToRemove = cell.edges?.filter(edge => {
-      const sourceModelElement = MxGraphHelper.getModelElementTest(edge.source);
+      const sourceModelElement = MxGraphHelper.getModelElement(edge.source);
       if (modelElement.aspectModelUrn !== sourceModelElement.aspectModelUrn) {
         return false;
       }
 
-      const targetModelElement = MxGraphHelper.getModelElementTest(edge.target);
+      const targetModelElement = MxGraphHelper.getModelElement(edge.target);
       return targetModelElement instanceof DefaultCharacteristic && targetModelElement.aspectModelUrn !== sourceModelElement.aspectModelUrn;
     });
 

@@ -31,8 +31,8 @@ export class PropertyConnectionHandler extends BaseConnectionHandler implements 
     const child = this.renderTree(property.characteristic, source);
     this.mxGraphService.assignToParent(child, source);
 
-    if (MxGraphHelper.hasGrandParentStructuredValueTest(child, this.mxGraphService.graph)) {
-      this.mxGraphShapeOverlayService.removeOverlayTest(child, MxGraphHelper.getNewShapeOverlayButtonTest(child));
+    if (MxGraphHelper.hasGrandParentStructuredValue(child, this.mxGraphService.graph)) {
+      this.mxGraphShapeOverlayService.removeOverlay(child, MxGraphHelper.getNewShapeOverlayButton(child));
     }
 
     this.refreshPropertiesLabel(child, property.characteristic);

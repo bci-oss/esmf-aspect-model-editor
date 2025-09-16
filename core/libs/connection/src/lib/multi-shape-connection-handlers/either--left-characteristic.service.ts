@@ -24,7 +24,7 @@ export class EitherCharacteristicLeftConnectionHandler implements MultiShapeConn
 
   public connect(parentMetaModel: DefaultEither, childMetaModel: DefaultCharacteristic, parent: Cell, child: Cell) {
     parentMetaModel.left = childMetaModel;
-    this.mxGraphAttributeService.graphTest.getOutgoingEdges(parent, null).forEach(outEdge => {
+    this.mxGraphAttributeService.graph.getOutgoingEdges(parent, null).forEach(outEdge => {
       if (outEdge.target && (outEdge.target as any).getMetaModelElement().aspectModelUrn === parentMetaModel.left?.aspectModelUrn) {
         MxGraphHelper.removeRelation(parentMetaModel, parentMetaModel.left);
         this.mxGraphService.removeCells([parent.removeEdge(outEdge, true)]);

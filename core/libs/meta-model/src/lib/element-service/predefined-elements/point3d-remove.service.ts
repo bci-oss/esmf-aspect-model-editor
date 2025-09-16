@@ -23,7 +23,7 @@ export class Point3dRemoveService implements PredefinedRemove {
   private mxGraphService = inject(MxGraphService);
 
   delete(cell: Cell): boolean {
-    const modelElement = MxGraphHelper.getModelElementTest(cell);
+    const modelElement = MxGraphHelper.getModelElement(cell);
     if (!this.modelRootService.isPredefined(modelElement)) {
       return false;
     }
@@ -35,7 +35,7 @@ export class Point3dRemoveService implements PredefinedRemove {
     ) {
       const parent = this.mxGraphService
         .resolveParents(cell)
-        .find(p => MxGraphHelper.getModelElementTest(p).name === PredefinedEntitiesEnum.Point3d);
+        .find(p => MxGraphHelper.getModelElement(p).name === PredefinedEntitiesEnum.Point3d);
       return this.removeTree(parent);
     }
 
@@ -64,11 +64,11 @@ export class Point3dRemoveService implements PredefinedRemove {
     }
 
     for (const edge of this.mxGraphService.graph.getIncomingEdges(cell, null)) {
-      MxGraphHelper.removeRelation(MxGraphHelper.getModelElementTest(edge.source), MxGraphHelper.getModelElementTest(cell));
+      MxGraphHelper.removeRelation(MxGraphHelper.getModelElement(edge.source), MxGraphHelper.getModelElement(cell));
     }
 
     [cell, ...this.mxGraphService.graph.getOutgoingEdges(cell, null).map(e => e.target)].forEach(c => {
-      const modelElement = MxGraphHelper.getModelElementTest(c);
+      const modelElement = MxGraphHelper.getModelElement(c);
       const elementModelService = this.modelRootService.getElementModelService(modelElement);
       elementModelService?.delete(c);
     });

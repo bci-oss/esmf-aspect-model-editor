@@ -213,7 +213,7 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
       .some(firstEdge =>
         this.mxGraphService.graph
           .getIncomingEdges(firstEdge.source, null)
-          .some(secondEdge => MxGraphHelper.getModelElementTest(secondEdge.source) instanceof DefaultStructuredValue),
+          .some(secondEdge => MxGraphHelper.getModelElement(secondEdge.source) instanceof DefaultStructuredValue),
       );
   }
 }

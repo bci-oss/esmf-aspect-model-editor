@@ -32,14 +32,14 @@ export abstract class BaseRenderService {
   public abstract isApplicable(cell: Cell): boolean;
 
   public update({cell, callback}: RendererUpdatePayload) {
-    const modelElement = MxGraphHelper.getModelElementTest(cell);
+    const modelElement = MxGraphHelper.getModelElement(cell);
 
     cell.setId(modelElement.name);
     cell.setAttribute('name', modelElement.name);
 
     cell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(modelElement, this.sammLangService);
     cell['configuration'].baseProperties = MxGraphVisitorHelper.getModelInfo(modelElement, this.loadedFilesService.currentLoadedFile);
-    this.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabelTest(cell), null);
+    this.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabel(cell), null);
 
     if (typeof callback === 'function') {
       callback();
@@ -49,9 +49,9 @@ export abstract class BaseRenderService {
   }
 
   protected renderOptionalProperties(cell: Cell) {
-    const modelElement = MxGraphHelper.getModelElementTest<DefaultAspect | DefaultEntity>(cell);
+    const modelElement = MxGraphHelper.getModelElement<DefaultAspect | DefaultEntity>(cell);
     this.graph.getOutgoingEdges(cell, null)?.forEach((e: Cell) => {
-      const property = MxGraphHelper.getModelElementTest(e.target);
+      const property = MxGraphHelper.getModelElement(e.target);
       if (!(property instanceof DefaultProperty)) {
         return;
       }
@@ -67,20 +67,20 @@ export abstract class BaseRenderService {
   protected inMxGraph(modelElement: NamedElement): Cell {
     return this.mxGraphService
       ?.getAllCells()
-      ?.find(cell => MxGraphHelper.getModelElementTest(cell)?.aspectModelUrn === modelElement?.aspectModelUrn);
+      ?.find(cell => MxGraphHelper.getModelElement(cell)?.aspectModelUrn === modelElement?.aspectModelUrn);
   }
 
   protected renderParents(cell: Cell) {
     const parents = this.mxGraphService.resolveParents(cell);
 
     for (const parent of parents) {
-      const parentElementModel = MxGraphHelper.getModelElementTest(parent);
+      const parentElementModel = MxGraphHelper.getModelElement(parent);
       parent['configuration'].fields = MxGraphVisitorHelper.getElementProperties(parentElementModel, this.sammLangService);
       parent['configuration'].baseProperties = MxGraphVisitorHelper.getModelInfo(
         parentElementModel,
         this.loadedFilesService.currentLoadedFile,
       );
-      this.graph.labelChanged(parent, MxGraphHelper.createPropertiesLabelTest(parent), null);
+      this.graph.labelChanged(parent, MxGraphHelper.createPropertiesLabel(parent), null);
     }
   }
 }

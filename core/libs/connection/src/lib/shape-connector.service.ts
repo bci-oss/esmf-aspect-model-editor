@@ -123,7 +123,7 @@ export class ShapeConnectorService {
   }
 
   connectSelectedElements(cells?: Cell[]) {
-    const selectedCells = cells || [...this.mxGraphAttributeService.graphTest.selectionModel.cells];
+    const selectedCells = cells || [...this.mxGraphAttributeService.graph.selectionModel.cells];
 
     if (selectedCells.length !== 2) {
       return this.notificationsService.error({title: this.translate.language.NOTIFICATION_SERVICE.ONLY_TWO_ELEMENTS_CONNECTION});
@@ -131,7 +131,7 @@ export class ShapeConnectorService {
 
     const firstElement = selectedCells[0].style.split(';')[0];
     const secondElement = selectedCells[1].style.split(';')[0];
-    const modelElements = selectedCells.map(e => MxGraphHelper.getModelElementTest(e));
+    const modelElements = selectedCells.map(e => MxGraphHelper.getModelElement(e));
 
     if (
       secondElement !== firstElement &&
@@ -149,61 +149,12 @@ export class ShapeConnectorService {
     const newConnection = this.connectShapes(modelElements[0], modelElements[1], selectedCells[0], selectedCells[1]);
 
     if (newConnection && !(modelElements[1] instanceof DefaultEntity)) {
-      this.mxGraphShapeOverlayService.removeOverlaysByConnectionTest(modelElements[0], selectedCells[0]);
-      this.mxGraphAttributeService.graphTest.clearSelection();
+      this.mxGraphShapeOverlayService.removeOverlaysByConnection(modelElements[0], selectedCells[0]);
+      this.mxGraphAttributeService.graph.clearSelection();
     }
   }
 
   createAndConnectShape(metaModel: NamedElement, source: Cell, modelInfo: ModelInfo = ModelInfo.IS_CHARACTERISTIC) {
-    if (!metaModel) {
-      console.info('No cell selected with a meta model to connect.');
-      return;
-    }
-
-    let connectionHandler: SingleShapeConnector<NamedElement>;
-
-    switch (true) {
-      case metaModel instanceof DefaultAspect:
-        connectionHandler = this.aspectConnectionHandler;
-        break;
-      case metaModel instanceof DefaultProperty:
-        connectionHandler = this.propertyConnectionHandler;
-        break;
-      case metaModel instanceof DefaultEither:
-        connectionHandler = this.eitherConnectionHandler;
-        break;
-      case metaModel instanceof DefaultOperation:
-        connectionHandler = this.operationConnectionHandler;
-        break;
-      case metaModel instanceof DefaultStructuredValue:
-        connectionHandler = this.structuredValueConnectionHandler;
-        break;
-      case metaModel instanceof DefaultTrait:
-        connectionHandler = this.traitConnectionHandler;
-        break;
-      case metaModel instanceof DefaultCharacteristic:
-        connectionHandler = this.characteristicConnectionHandler;
-        break;
-      case metaModel instanceof DefaultEntity && metaModel.isAbstractEntity():
-        connectionHandler = this.abstractEntityConnectionHandler;
-        break;
-      case metaModel instanceof DefaultEntity:
-        connectionHandler = this.entityConnectionHandler;
-        break;
-      case metaModel instanceof DefaultEntityInstance:
-        connectionHandler = this.entityValueConnectionHandler;
-        break;
-      case metaModel instanceof DefaultEvent:
-        connectionHandler = this.eventConnectionHandler;
-        break;
-      default:
-        throw new Error(`No shape connector found for ${metaModel.aspectModelUrn}`);
-    }
-
-    connectionHandler.connect(metaModel, source, modelInfo);
-  }
-
-  createAndConnectShapeTest(metaModel: NamedElement, source: Cell, modelInfo: ModelInfo = ModelInfo.IS_CHARACTERISTIC) {
     if (!metaModel) {
       console.info('No cell selected with a meta model to connect.');
       return;

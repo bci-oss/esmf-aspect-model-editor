@@ -39,7 +39,7 @@ export class PropertyPropertyConnectionHandler
       return;
     }
 
-    if (MxGraphHelper.isEntityCycleInheritanceTest(childCell, parentMetaModel, this.mxGraphService.graph)) {
+    if (MxGraphHelper.isEntityCycleInheritance(childCell, parentMetaModel, this.mxGraphService.graph)) {
       this.notificationService.warning({
         title: this.translate.language.NOTIFICATION_SERVICE.RECURSIVE_ELEMENTS,
         message: this.translate.language.NOTIFICATION_SERVICE.CIRCULAR_CONNECTION_MESSAGE,

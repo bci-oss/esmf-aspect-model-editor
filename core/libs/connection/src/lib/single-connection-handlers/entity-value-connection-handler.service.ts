@@ -25,11 +25,11 @@ export class EntityValueConnectionHandler implements SingleShapeConnector<Defaul
 
   public connect(entityValue: DefaultEntityInstance, source: Cell) {
     const child = this.mxGraphService.renderModelElement(
-      this.filtersService.createNode(entityValue, {parent: MxGraphHelper.getModelElementTest(source)}),
+      this.filtersService.createNode(entityValue, {parent: MxGraphHelper.getModelElement(source)}),
     );
 
     // connect: EntityValue - Enumeration
-    if (MxGraphHelper.getModelElementTest(source) instanceof DefaultEnumeration) {
+    if (MxGraphHelper.getModelElement(source) instanceof DefaultEnumeration) {
       this.mxGraphService.assignToParent(child, source);
     }
     const entityCell = this.mxGraphService.resolveCellByModelElement(entityValue.type);

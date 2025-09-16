@@ -27,7 +27,7 @@ export class FileResourceRemoveService implements PredefinedRemove {
       return false;
     }
 
-    const modelElement = MxGraphHelper.getModelElementTest(cell);
+    const modelElement = MxGraphHelper.getModelElement(cell);
     if (!this.modelRootService.isPredefined(modelElement)) {
       return false;
     }
@@ -39,7 +39,7 @@ export class FileResourceRemoveService implements PredefinedRemove {
     if ([PredefinedPropertiesEnum.resource, PredefinedPropertiesEnum.mimeType].includes(modelElement.name as PredefinedPropertiesEnum)) {
       const parent = this.mxGraphService
         .resolveParents(cell)
-        .find(p => MxGraphHelper.getModelElementTest(p).name === PredefinedEntitiesEnum.FileResource);
+        .find(p => MxGraphHelper.getModelElement(p).name === PredefinedEntitiesEnum.FileResource);
       return this.removeTree(parent);
     }
 
@@ -54,7 +54,7 @@ export class FileResourceRemoveService implements PredefinedRemove {
     if ([PredefinedPropertiesEnum.resource, PredefinedPropertiesEnum.mimeType].includes(source.name as PredefinedPropertiesEnum)) {
       const parent = this.mxGraphService
         .resolveParents(edge.source)
-        .find(p => MxGraphHelper.getModelElementTest(p).name === PredefinedEntitiesEnum.FileResource);
+        .find(p => MxGraphHelper.getModelElement(p).name === PredefinedEntitiesEnum.FileResource);
       return this.removeTree(parent);
     }
 
@@ -74,7 +74,7 @@ export class FileResourceRemoveService implements PredefinedRemove {
     const stack = this.mxGraphService.graph.getOutgoingEdges(cell, null).map(edge => edge.target);
 
     for (const edge of this.mxGraphService.graph.getIncomingEdges(cell, null)) {
-      MxGraphHelper.removeRelation(MxGraphHelper.getModelElementTest(edge.source), MxGraphHelper.getModelElementTest(cell));
+      MxGraphHelper.removeRelation(MxGraphHelper.getModelElement(edge.source), MxGraphHelper.getModelElement(cell));
     }
 
     while (stack.length) {
@@ -84,7 +84,7 @@ export class FileResourceRemoveService implements PredefinedRemove {
     }
 
     toRemove.forEach(c => {
-      const modelElement = MxGraphHelper.getModelElementTest(c);
+      const modelElement = MxGraphHelper.getModelElement(c);
       const elementModelService = this.modelRootService.getElementModelService(modelElement);
       elementModelService?.delete(c);
     });

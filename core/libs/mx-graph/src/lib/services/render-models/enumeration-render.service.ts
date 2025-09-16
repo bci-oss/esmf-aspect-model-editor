@@ -45,11 +45,11 @@ export class EnumerationRenderService extends BaseRenderService {
   private unitRendererService = inject(UnitRenderService);
 
   isApplicable(cell: Cell): boolean {
-    return MxGraphHelper.getModelElementTest(cell) instanceof DefaultEnumeration;
+    return MxGraphHelper.getModelElement(cell) instanceof DefaultEnumeration;
   }
 
   update({cell, form}) {
-    const metaModelElement = MxGraphHelper.getModelElementTest<DefaultCharacteristic>(cell);
+    const metaModelElement = MxGraphHelper.getModelElement<DefaultCharacteristic>(cell);
     this.handleBottomOverlay(cell);
     if (form.newDataType) {
       this.handleNewDataType(cell, form.newDataType);
@@ -69,7 +69,7 @@ export class EnumerationRenderService extends BaseRenderService {
     const outGoingEdges = this.mxGraphService.graph.getOutgoingEdges(cell, null);
     const toRemove = [];
     for (const edge of outGoingEdges) {
-      const metaModel = MxGraphHelper.getModelElementTest(edge.target);
+      const metaModel = MxGraphHelper.getModelElement(edge.target);
       metaModel instanceof DefaultProperty && toRemove.push(edge);
     }
 
@@ -84,10 +84,10 @@ export class EnumerationRenderService extends BaseRenderService {
   }
 
   private removeFloatingEntityValues(cell: Cell) {
-    const modelElement = MxGraphHelper.getModelElementTest<DefaultEnumeration>(cell);
+    const modelElement = MxGraphHelper.getModelElement<DefaultEnumeration>(cell);
     const outGoingCells =
       this.mxGraphService.graph.getOutgoingEdges(cell, null)?.filter(edge => {
-        const childModelElement = MxGraphHelper.getModelElementTest<DefaultEntityInstance>(edge.target);
+        const childModelElement = MxGraphHelper.getModelElement<DefaultEntityInstance>(edge.target);
 
         if (childModelElement instanceof DefaultEntity) {
           return true;
@@ -102,7 +102,7 @@ export class EnumerationRenderService extends BaseRenderService {
 
     this.mxGraphService.removeCells(
       outGoingCells.map(edge => {
-        const modelElement = MxGraphHelper.getModelElementTest(edge.target);
+        const modelElement = MxGraphHelper.getModelElement(edge.target);
         if (modelElement instanceof DefaultEntity) {
           return edge;
         }
@@ -124,14 +124,14 @@ export class EnumerationRenderService extends BaseRenderService {
   }
 
   private handleBottomOverlay(cell: Cell) {
-    const modelElement = MxGraphHelper.getModelElementTest<DefaultCharacteristic>(cell);
+    const modelElement = MxGraphHelper.getModelElement<DefaultCharacteristic>(cell);
     if (!(modelElement instanceof DefaultEither)) {
-      this.mxGraphShapeOverlayService.removeOverlayTest(cell);
+      this.mxGraphShapeOverlayService.removeOverlay(cell);
       if (modelElement?.isPredefined) {
-        this.mxGraphShapeOverlayService.addTopShapeOverlayTest(cell);
+        this.mxGraphShapeOverlayService.addTopShapeOverlay(cell);
       } else {
-        this.mxGraphShapeOverlayService.addTopShapeOverlayTest(cell);
-        this.mxGraphShapeOverlayService.addBottomShapeOverlayTest(cell);
+        this.mxGraphShapeOverlayService.addTopShapeOverlay(cell);
+        this.mxGraphShapeOverlayService.addBottomShapeOverlay(cell);
       }
     }
   }
@@ -143,21 +143,21 @@ export class EnumerationRenderService extends BaseRenderService {
 
     if (newDataType instanceof DefaultEntity) {
       const entityCell = this.mxGraphService.renderModelElement(
-        this.filtersService.createNode(newDataType, {parent: MxGraphHelper.getModelElementTest(cell)}),
+        this.filtersService.createNode(newDataType, {parent: MxGraphHelper.getModelElement(cell)}),
       );
-      this.shapeConnectorService.connectShapes(MxGraphHelper.getModelElementTest(cell), newDataType, cell, entityCell);
+      this.shapeConnectorService.connectShapes(MxGraphHelper.getModelElement(cell), newDataType, cell, entityCell);
     }
   }
 
   private removeElementCharacteristic(cell: Cell) {
-    const modelElement = MxGraphHelper.getModelElementTest(cell);
+    const modelElement = MxGraphHelper.getModelElement(cell);
     const edgesToRemove = cell.edges?.filter(edge => {
-      const sourceNode = MxGraphHelper.getModelElementTest(edge.source);
+      const sourceNode = MxGraphHelper.getModelElement(edge.source);
       if (modelElement.aspectModelUrn !== sourceNode.aspectModelUrn) {
         return false;
       }
 
-      const targetModel = MxGraphHelper.getModelElementTest(edge.target);
+      const targetModel = MxGraphHelper.getModelElement(edge.target);
       return targetModel instanceof DefaultCharacteristic && targetModel.aspectModelUrn !== sourceNode.aspectModelUrn;
     });
 
@@ -165,7 +165,7 @@ export class EnumerationRenderService extends BaseRenderService {
   }
 
   private handleComplexValues(cell: Cell, form: EnumerationForm) {
-    const metaModel = MxGraphHelper.getModelElementTest<DefaultEnumeration>(cell);
+    const metaModel = MxGraphHelper.getModelElement<DefaultEnumeration>(cell);
     if (!(metaModel.dataType instanceof DefaultEntity)) {
       return;
     }
@@ -181,6 +181,6 @@ export class EnumerationRenderService extends BaseRenderService {
       this.entityValueRenderer.deleteByModel(entityValue);
     }
 
-    this.mxGraphShapeOverlayService.addBottomShapeOverlayTest(cell);
+    this.mxGraphShapeOverlayService.addBottomShapeOverlay(cell);
   }
 }

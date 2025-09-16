@@ -27,7 +27,7 @@ export class TraitConnectionHandler extends BaseConnectionHandler implements Sin
         ? this.elementCreator.createEmptyElement(DefaultCharacteristic)
         : this.elementCreator.createEmptyElement(DefaultConstraint);
     const child = this.mxGraphService.renderModelElement(
-      this.filtersService.createNode(defaultElement, {parent: MxGraphHelper.getModelElementTest(source)}),
+      this.filtersService.createNode(defaultElement, {parent: MxGraphHelper.getModelElement(source)}),
     );
 
     useUpdater(trait).update(defaultElement);

@@ -33,12 +33,12 @@ export class AbstractPropertyRenderService extends BaseRenderService {
   }
 
   isApplicable(cell: Cell): boolean {
-    const element = MxGraphHelper.getModelElementTest(cell);
+    const element = MxGraphHelper.getModelElement(cell);
     return element instanceof DefaultProperty && element.isAbstract;
   }
 
   private handleExtendsElement(cell: Cell) {
-    const metaModelElement = MxGraphHelper.getModelElementTest<DefaultProperty>(cell);
+    const metaModelElement = MxGraphHelper.getModelElement<DefaultProperty>(cell);
     if (!metaModelElement.extends_) {
       return;
     }

@@ -30,7 +30,7 @@ export class AbstractPropertyModelService extends BaseModelService {
   }
 
   update(cell: Cell, form: {[key: string]: any}) {
-    const metaModelElement = MxGraphHelper.getModelElementTest<DefaultProperty>(cell);
+    const metaModelElement = MxGraphHelper.getModelElement<DefaultProperty>(cell);
     metaModelElement.exampleValue = form.exampleValue;
 
     super.update(cell, form);
@@ -47,11 +47,11 @@ export class AbstractPropertyModelService extends BaseModelService {
 
   private updatePropertiesNames(cell: Cell) {
     const parents =
-      this.mxGraphService.resolveParents(cell)?.filter(e => MxGraphHelper.getModelElementTest(e) instanceof DefaultProperty) || [];
-    const modelElement = MxGraphHelper.getModelElementTest(cell);
+      this.mxGraphService.resolveParents(cell)?.filter(e => MxGraphHelper.getModelElement(e) instanceof DefaultProperty) || [];
+    const modelElement = MxGraphHelper.getModelElement(cell);
 
     for (const parentCell of parents) {
-      const parentElement = MxGraphHelper.getModelElementTest(parentCell);
+      const parentElement = MxGraphHelper.getModelElement(parentCell);
       parentElement.name = `[${modelElement.name}]`;
       parentElement.aspectModelUrn = `${parentElement.aspectModelUrn.split('#')[0]}#${parentElement.name}`;
       this.updateCell(parentCell);
@@ -59,11 +59,11 @@ export class AbstractPropertyModelService extends BaseModelService {
   }
 
   private updateExtends(cell: Cell, isDeleting = true) {
-    const incomingEdges = this.mxGraphAttributeService.graphTest.getIncomingEdges(cell, null);
-    const modelElement = MxGraphHelper.getModelElementTest(cell);
+    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell, null);
+    const modelElement = MxGraphHelper.getModelElement(cell);
 
     for (const edge of incomingEdges) {
-      const element = MxGraphHelper.getModelElementTest<HasExtends>(edge.source);
+      const element = MxGraphHelper.getModelElement<HasExtends>(edge.source);
       if (element instanceof DefaultProperty && isDeleting) {
         MxGraphHelper.removeRelation(element, modelElement);
         this.mxGraphService.removeCells([edge.source]);
@@ -76,7 +76,7 @@ export class AbstractPropertyModelService extends BaseModelService {
   }
 
   private updateCell(cell: Cell) {
-    cell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(MxGraphHelper.getModelElementTest(cell), this.languageService);
-    this.mxGraphService.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabelTest(cell), null);
+    cell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(MxGraphHelper.getModelElement(cell), this.languageService);
+    this.mxGraphService.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabel(cell), null);
   }
 }

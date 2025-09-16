@@ -122,7 +122,7 @@ export class MxGraphRenderer implements ModelRenderer<Cell, Cell> {
 
   renderUnit(node: ModelTree<DefaultUnit>, parent: Cell, geometry: ShapeConfiguration['geometry'] = {}): Cell {
     const unit = node.element;
-    if (this.inParentRendered(unit, parent) || (parent && !(MxGraphHelper.getModelElementTest(parent) instanceof DefaultCharacteristic))) {
+    if (this.inParentRendered(unit, parent) || (parent && !(MxGraphHelper.getModelElement(parent) instanceof DefaultCharacteristic))) {
       return null;
     }
 
@@ -177,7 +177,7 @@ export class MxGraphRenderer implements ModelRenderer<Cell, Cell> {
       });
     this.connectIsolatedElement(parentCell, cell);
 
-    const parent = MxGraphHelper.getModelElementTest(parentCell);
+    const parent = MxGraphHelper.getModelElement(parentCell);
     if (parent instanceof DefaultProperty && (parentCell as any).isAbstract) {
       return cell;
     }
@@ -224,7 +224,7 @@ export class MxGraphRenderer implements ModelRenderer<Cell, Cell> {
       shapeAttributes: MxGraphVisitorHelper.getConstraintProperties(node.element, this.sammLangService),
       geometry,
     });
-    MxGraphHelper.setElementNodeTest(cell, node);
+    MxGraphHelper.setElementNode(cell, node);
     this.connectIsolatedElement(context, cell);
 
     this.assignToParent(cell, context, node);
@@ -278,14 +278,14 @@ export class MxGraphRenderer implements ModelRenderer<Cell, Cell> {
   private inParentRendered(element: NamedElement, parent: Cell): boolean {
     return this.mxGraphService.graph
       .getOutgoingEdges(parent, null)
-      .some(cell => MxGraphHelper.getModelElementTest(cell)?.aspectModelUrn === element.aspectModelUrn);
+      .some(cell => MxGraphHelper.getModelElement(cell)?.aspectModelUrn === element.aspectModelUrn);
   }
 
   private connectIsolatedElement(parentCell: Cell, childCell: Cell) {
     if (parentCell) {
-      const childNode = MxGraphHelper.getElementNodeTest(childCell);
+      const childNode = MxGraphHelper.getElementNode(childCell);
       const child = childNode.element;
-      const parent = MxGraphHelper.getModelElementTest(parentCell);
+      const parent = MxGraphHelper.getModelElement(parentCell);
 
       const isParentIsolated = parent.parents.length === 0;
       const isChildIsolated = child.parents.length === 0;
@@ -326,6 +326,6 @@ export class MxGraphRenderer implements ModelRenderer<Cell, Cell> {
   }
 
   private removeActionIcons(NamedNode: NamedElement, cell: Cell) {
-    this.mxGraphShapeOverlayService.removeShapeActionIconsByLoadingTest(NamedNode, cell);
+    this.mxGraphShapeOverlayService.removeShapeActionIconsByLoading(NamedNode, cell);
   }
 }

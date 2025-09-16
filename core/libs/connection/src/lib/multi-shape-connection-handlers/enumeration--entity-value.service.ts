@@ -14,18 +14,18 @@
 import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
 import {Injectable, inject} from '@angular/core';
 import {DefaultEntityInstance, DefaultEnumeration} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MultiShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class EnumerationEntityValueConnectionHandler implements MultiShapeConnector<DefaultEnumeration, DefaultEntityInstance> {
   private mxGraphService = inject(MxGraphService);
 
-  connect(parentMetaModel: DefaultEnumeration, childMetaModel: DefaultEntityInstance, parent: mxgraph.mxCell, child: mxgraph.mxCell): void {
+  connect(parentMetaModel: DefaultEnumeration, childMetaModel: DefaultEntityInstance, parent: Cell, child: Cell): void {
     childMetaModel.addParent(parentMetaModel);
     parentMetaModel.values.push(childMetaModel);
 
-    this.mxGraphService.graph.labelChanged(parent, MxGraphHelper.createPropertiesLabel(parent));
+    this.mxGraphService.graph.labelChanged(parent, MxGraphHelper.createPropertiesLabelTest(parent), null);
     this.mxGraphService.assignToParent(child, parent);
   }
 }

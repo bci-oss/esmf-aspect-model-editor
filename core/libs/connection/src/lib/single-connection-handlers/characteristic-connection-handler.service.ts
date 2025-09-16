@@ -38,8 +38,8 @@ import {
   DefaultProperty,
   DefaultTrait,
 } from '@esmf/aspect-model-loader';
+import {Cell} from '@maxgraph/core';
 import {ScalarValue} from 'libs/aspect-model-loader/src/lib/aspect-meta-model/scalar-value';
-import {mxgraph} from 'mxgraph-factory';
 import {SingleShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
@@ -57,7 +57,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
     return this.loadedFilesService.currentLoadedFile.cachedFile;
   }
 
-  public connect(characteristic: Characteristic, source: mxgraph.mxCell, modelInfo: ModelInfo) {
+  public connect(characteristic: Characteristic, source: Cell, modelInfo: ModelInfo) {
     if (
       ModelInfo.IS_CHARACTERISTIC_DATATYPE === modelInfo &&
       characteristic instanceof DefaultEnumeration &&
@@ -80,10 +80,10 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
    *
    * @param source mxgraph shape from which the plus button was clicked
    */
-  private createTrait(source: mxgraph.mxCell) {
+  private createTrait(source: Cell) {
     // Add Trait Shape when clicking upper plus of characteristic
-    const currentMetaModel = MxGraphHelper.getModelElement<Characteristic>(source);
-    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(source);
+    const currentMetaModel = MxGraphHelper.getModelElementTest<Characteristic>(source);
+    const incomingEdges = this.mxGraphAttributeService.graphTest.getIncomingEdges(source, null);
 
     // add trait
     const defaultTrait: DefaultTrait = this.elementCreator.createEmptyElement(DefaultTrait, {baseCharacteristic: currentMetaModel});
@@ -91,7 +91,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
     const mxGraphRenderer = new MxGraphRenderer(this.mxGraphService, this.mxGraphShapeOverlayService, this.sammLangService, null);
     const traitShape = mxGraphRenderer.render(
       this.filtersService.createNode(this.currentCachedFile.resolveInstance(defaultTrait), {
-        parent: MxGraphHelper.getModelElement(source),
+        parent: MxGraphHelper.getModelElementTest(source),
       }),
       null,
     );
@@ -99,14 +99,14 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
     if (incomingEdges.length) {
       incomingEdges.forEach(edge => {
         const edgeSource = edge.source;
-        const sourceElementModel = MxGraphHelper.getModelElement(edgeSource);
+        const sourceElementModel = MxGraphHelper.getModelElementTest(edgeSource);
 
         if (sourceElementModel instanceof DefaultProperty) {
           sourceElementModel.characteristic = defaultTrait;
         } else if (sourceElementModel instanceof DefaultCollection) {
           sourceElementModel.elementCharacteristic = defaultTrait;
         } else if (sourceElementModel instanceof DefaultEither) {
-          sourceElementModel.left.aspectModelUrn === MxGraphHelper.getModelElement(edge.target).aspectModelUrn
+          sourceElementModel.left.aspectModelUrn === MxGraphHelper.getModelElementTest(edge.target).aspectModelUrn
             ? (sourceElementModel.left = defaultTrait) // NOSONAR
             : (sourceElementModel.right = defaultTrait); // NOSONAR
         } else {
@@ -124,7 +124,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
       });
     }
 
-    const traitWithProperty = traitShape.edges?.some(edge => MxGraphHelper.getModelElement(edge.source) instanceof DefaultProperty);
+    const traitWithProperty = traitShape.edges?.some(edge => MxGraphHelper.getModelElementTest(edge.source) instanceof DefaultProperty);
     if (!traitWithProperty) {
       this.mxGraphService.moveCells([traitShape], source.getGeometry().x, source.getGeometry().y);
     }
@@ -137,38 +137,38 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
    * @param characteristic model element from which the plus button was clicked
    * @param source mxgraph shape from which the plus button was clicked
    */
-  private createEntity(characteristic: Characteristic, source: mxgraph.mxCell) {
+  private createEntity(characteristic: Characteristic, source: Cell) {
     const defaultEntity = this.elementCreator.createEmptyElement(DefaultEntity);
     characteristic.dataType = defaultEntity;
 
-    const selectedParentIncomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(source);
+    const selectedParentIncomingEdges = this.mxGraphAttributeService.graphTest.getIncomingEdges(source, null);
     selectedParentIncomingEdges.forEach(edge => {
       const edgeSource = edge.source;
-      const edgeSourceMetaModelElement = MxGraphHelper.getModelElement(edgeSource);
+      const edgeSourceMetaModelElement = MxGraphHelper.getModelElementTest(edgeSource);
 
       if (edgeSourceMetaModelElement instanceof DefaultProperty) {
         // remove example value for complex datatypes
         edgeSourceMetaModelElement.exampleValue = null;
         edgeSource['configuration'].fields = MxGraphVisitorHelper.getElementProperties(edgeSourceMetaModelElement, this.sammLangService);
-        this.mxGraphAttributeService.graph.labelChanged(edgeSource, MxGraphHelper.createPropertiesLabel(edgeSource));
+        this.mxGraphAttributeService.graphTest.labelChanged(edgeSource, MxGraphHelper.createPropertiesLabelTest(edgeSource), null);
       }
     });
 
     const child = this.mxGraphService.renderModelElement(
-      this.filtersService.createNode(defaultEntity, {parent: MxGraphHelper.getModelElement(source)}),
+      this.filtersService.createNode(defaultEntity, {parent: MxGraphHelper.getModelElementTest(source)}),
     );
 
     this.mxGraphService.assignToParent(child, source);
     // add icon if we click on + button of an enumeration
     if (characteristic instanceof DefaultEnumeration) {
-      this.mxGraphShapeOverlayService.removeOverlay(source, MxGraphHelper.getNewShapeOverlayButton(source));
+      this.mxGraphShapeOverlayService.removeOverlayTest(source, MxGraphHelper.getNewShapeOverlayButtonTest(source));
       characteristic.values = [];
     }
-    this.mxGraphShapeOverlayService.checkComplexEnumerationOverlays(characteristic, source);
+    this.mxGraphShapeOverlayService.checkComplexEnumerationOverlaysTest(characteristic, source);
 
     if (characteristic.dataType) {
       // delete child cell dataType of the parent
-      this.mxGraphService.graph.labelChanged(source, MxGraphHelper.createPropertiesLabel(source));
+      this.mxGraphService.graph.labelChanged(source, MxGraphHelper.createPropertiesLabelTest(source), null);
     }
   }
 
@@ -178,7 +178,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
    * @param source mxgraph shape from which the plus button was clicked
    * @returns a cell and model element for newly created Entity Value
    */
-  private createEntityValue(characteristic: DefaultEnumeration, source: mxgraph.mxCell): [mxgraph.mxCell, DefaultEntityInstance] {
+  private createEntityValue(characteristic: DefaultEnumeration, source: Cell): [Cell, DefaultEntityInstance] {
     const entityValue = new DefaultEntityInstance({
       name: 'entityInstance',
       metaModelVersion: config.currentSammVersion,
@@ -194,7 +194,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
     characteristic.values.push(entityValue);
     const metaModelElement = this.modelElementNamingService.resolveMetaModelElement(entityValue);
     const entityValueCell = this.mxGraphService.renderModelElement(
-      this.filtersService.createNode(metaModelElement, {parent: MxGraphHelper.getModelElement(source)}),
+      this.filtersService.createNode(metaModelElement, {parent: MxGraphHelper.getModelElementTest(source)}),
     );
 
     return [entityValueCell, entityValue];
@@ -206,7 +206,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
    * @param characteristic model element from which the plus button was clicked
    * @param source mxgraph shape from which the plus button was clicked
    */
-  private handleEnumeration(characteristic: DefaultEnumeration, source: mxgraph.mxCell) {
+  private handleEnumeration(characteristic: DefaultEnumeration, source: Cell) {
     // create new entity value
     const [entityValueCell, entityValue] = this.createEntityValue(characteristic, source);
 
@@ -216,7 +216,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
 
     // connect: Entity - EntityValue
     this.mxGraphService.assignToParent(entityCell, entityValueCell);
-    this.mxGraphService.graph.labelChanged(source, MxGraphHelper.createPropertiesLabel(source));
+    this.mxGraphService.graph.labelChanged(source, MxGraphHelper.createPropertiesLabelTest(source), null);
     this.currentCachedFile.resolveInstance(entityValue);
     this.mxGraphService.formatShapes();
   }
@@ -228,11 +228,11 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
    * @param defaultTrait trait model
    * @param traitShape trait object
    */
-  private addConstraint(defaultTrait: DefaultTrait, traitShape: mxgraph.mxCell) {
+  private addConstraint(defaultTrait: DefaultTrait, traitShape: Cell) {
     const defaultConstraint = this.elementCreator.createEmptyElement(DefaultConstraint);
     const constraintShape = this.mxGraphService.renderModelElement(
       this.filtersService.createNode(this.currentCachedFile.resolveInstance(defaultConstraint), {
-        parent: MxGraphHelper.getModelElement(traitShape),
+        parent: MxGraphHelper.getModelElementTest(traitShape),
       }),
     );
 

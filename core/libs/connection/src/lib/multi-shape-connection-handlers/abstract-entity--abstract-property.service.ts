@@ -15,7 +15,7 @@ import {EntityInstanceService} from '@ame/editor';
 import {MxGraphHelper} from '@ame/mx-graph';
 import {Injectable, inject} from '@angular/core';
 import {DefaultCharacteristic, DefaultEntity, DefaultProperty} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {BaseConnectionHandler} from '../base-connection-handler.service';
 import {MultiShapeConnector} from '../models';
 
@@ -26,7 +26,7 @@ export class AbstractEntityAbstractPropertyConnectionHandler
 {
   private entityInstanceService = inject(EntityInstanceService);
 
-  public connect(parentMetaModel: DefaultEntity, childMetaModel: DefaultProperty, parentCell: mxgraph.mxCell, childCell: mxgraph.mxCell) {
+  public connect(parentMetaModel: DefaultEntity, childMetaModel: DefaultProperty, parentCell: Cell, childCell: Cell) {
     if (!parentMetaModel.isAbstractEntity() || !childMetaModel.isAbstract) return;
 
     if (!parentMetaModel.properties.find(property => property.aspectModelUrn === childMetaModel.aspectModelUrn)) {
@@ -35,12 +35,12 @@ export class AbstractEntityAbstractPropertyConnectionHandler
     }
 
     const grandParents = this.mxGraphService.graph
-      .getIncomingEdges(parentCell)
+      .getIncomingEdges(parentCell, null)
       .map(edge => edge.source)
-      .filter(cell => MxGraphHelper.getModelElement(cell) instanceof DefaultEntity);
+      .filter(cell => MxGraphHelper.getModelElementTest(cell) instanceof DefaultEntity);
 
     for (const grandParent of grandParents) {
-      const grandParentElement = MxGraphHelper.getModelElement<DefaultEntity>(grandParent);
+      const grandParentElement = MxGraphHelper.getModelElementTest<DefaultEntity>(grandParent);
       const alreadyExtended = grandParentElement.properties.some(
         property => property.getExtends()?.aspectModelUrn === childMetaModel.aspectModelUrn,
       );

@@ -16,7 +16,7 @@ import {TitleService} from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
 import {inject, Injectable} from '@angular/core';
 import {DefaultAspect, NamedElement} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
@@ -30,8 +30,8 @@ export class AspectModelService extends BaseModelService {
     return metaModelElement instanceof DefaultAspect;
   }
 
-  update(cell: mxgraph.mxCell, form: {[key: string]: any}) {
-    const metaModelElement = MxGraphHelper.getModelElement<DefaultAspect>(cell);
+  update(cell: Cell, form: {[key: string]: any}) {
+    const metaModelElement = MxGraphHelper.getModelElementTest<DefaultAspect>(cell);
     if (form.name && form.name !== metaModelElement.name) {
       this.loadedFilesService.currentLoadedFile.originalAspectModelUrn = metaModelElement.aspectModelUrn;
       this.loadedFilesService.updateAbsoluteName(this.loadedFile.absoluteName, `${this.loadedFile.namespace}:${form.name}.ttl`);
@@ -56,10 +56,10 @@ export class AspectModelService extends BaseModelService {
     this.sidebarStateService.workspace.refresh();
   }
 
-  delete(cell: mxgraph.mxCell) {
-    const aspect = MxGraphHelper.getModelElement(cell);
-    for (const {target} of this.mxGraphService.graph.getOutgoingEdges(cell)) {
-      MxGraphHelper.removeRelation(aspect, MxGraphHelper.getModelElement(target));
+  delete(cell: Cell) {
+    const aspect = MxGraphHelper.getModelElementTest(cell);
+    for (const {target} of this.mxGraphService.graph.getOutgoingEdges(cell, null)) {
+      MxGraphHelper.removeRelation(aspect, MxGraphHelper.getModelElementTest(target));
     }
     super.delete(cell);
     this.aspectRenderer.delete(cell);

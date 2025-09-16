@@ -30,7 +30,8 @@ import {
   NamedElement,
   RdfModel,
 } from '@esmf/aspect-model-loader';
-import {mxCell, mxgraph} from 'mxgraph';
+import {Cell} from '@maxgraph/core';
+import {mxCell} from 'mxgraph';
 import {MxGraphHelper, MxGraphVisitorHelper} from '../helpers';
 import {ShapeConfiguration} from '../models';
 import {MxGraphService, MxGraphShapeOverlayService} from '../services';
@@ -123,7 +124,7 @@ export class MxGraphRenderer implements ModelRenderer<mxCell, mxCell> {
 
   renderUnit(node: ModelTree<DefaultUnit>, parent: mxCell, geometry: ShapeConfiguration['geometry'] = {}): mxCell {
     const unit = node.element;
-    if (this.inParentRendered(unit, parent) || (parent && !(MxGraphHelper.getModelElement(parent) instanceof DefaultCharacteristic))) {
+    if (this.inParentRendered(unit, parent) || (parent && !(MxGraphHelper.getModelElementTest(parent) instanceof DefaultCharacteristic))) {
       return null;
     }
 
@@ -143,7 +144,7 @@ export class MxGraphRenderer implements ModelRenderer<mxCell, mxCell> {
     // The information is directly shown on the unit, mainly to reduce the amount of shapes
   }
 
-  renderProperty(node: ModelTree<DefaultProperty>, parent: mxgraph.mxCell, geometry: ShapeConfiguration['geometry'] = {}): mxgraph.mxCell {
+  renderProperty(node: ModelTree<DefaultProperty>, parent: Cell, geometry: ShapeConfiguration['geometry'] = {}): Cell {
     const property = node.element;
     const cell = this.getOrCreateMxCell(node, {
       shapeAttributes: MxGraphVisitorHelper.getPropertyProperties(property, this.sammLangService),
@@ -155,11 +156,7 @@ export class MxGraphRenderer implements ModelRenderer<mxCell, mxCell> {
     return cell;
   }
 
-  renderAbstractProperty(
-    node: ModelTree<DefaultProperty>,
-    parent: mxgraph.mxCell,
-    geometry: ShapeConfiguration['geometry'] = {},
-  ): mxgraph.mxCell {
+  renderAbstractProperty(node: ModelTree<DefaultProperty>, parent: Cell, geometry: ShapeConfiguration['geometry'] = {}): Cell {
     const abstractProperty = node.element;
     const cell = this.getOrCreateMxCell(node, {
       shapeAttributes: MxGraphVisitorHelper.getAbstractPropertyProperties(abstractProperty, this.sammLangService),
@@ -181,7 +178,7 @@ export class MxGraphRenderer implements ModelRenderer<mxCell, mxCell> {
       });
     this.connectIsolatedElement(parentCell, cell);
 
-    const parent = MxGraphHelper.getModelElement(parentCell);
+    const parent = MxGraphHelper.getModelElementTest(parentCell);
     if (parent instanceof DefaultProperty && parentCell.isAbstract) {
       return cell;
     }
@@ -242,7 +239,7 @@ export class MxGraphRenderer implements ModelRenderer<mxCell, mxCell> {
       shapeAttributes: MxGraphVisitorHelper.getConstraintProperties(node.element, this.sammLangService),
       geometry,
     });
-    MxGraphHelper.setElementNode(cell, node);
+    MxGraphHelper.setElementNodeTest(cell, node);
     this.connectIsolatedElement(context, cell);
 
     this.assignToParent(cell, context, node);
@@ -297,15 +294,15 @@ export class MxGraphRenderer implements ModelRenderer<mxCell, mxCell> {
 
   private inParentRendered(element: NamedElement, parent: mxCell): boolean {
     return this.mxGraphService.graph
-      .getOutgoingEdges(parent)
-      .some(cell => MxGraphHelper.getModelElement(cell)?.aspectModelUrn === element.aspectModelUrn);
+      .getOutgoingEdges(parent, null)
+      .some(cell => MxGraphHelper.getModelElementTest(cell)?.aspectModelUrn === element.aspectModelUrn);
   }
 
-  private connectIsolatedElement(parentCell: mxgraph.mxCell, childCell: mxgraph.mxCell) {
+  private connectIsolatedElement(parentCell: Cell, childCell: Cell) {
     if (parentCell) {
-      const childNode = MxGraphHelper.getElementNode(childCell);
+      const childNode = MxGraphHelper.getElementNodeTest(childCell);
       const child = childNode.element;
-      const parent = MxGraphHelper.getModelElement(parentCell);
+      const parent = MxGraphHelper.getModelElementTest(parentCell);
 
       const isParentIsolated = parent.parents.length === 0;
       const isChildIsolated = child.parents.length === 0;
@@ -345,7 +342,7 @@ export class MxGraphRenderer implements ModelRenderer<mxCell, mxCell> {
     this.removeActionIcons(node.element, cell);
   }
 
-  private removeActionIcons(NamedNode: NamedElement, cell: mxgraph.mxCell) {
-    this.mxGraphShapeOverlayService.removeShapeActionIconsByLoading(NamedNode, cell);
+  private removeActionIcons(NamedNode: NamedElement, cell: Cell) {
+    this.mxGraphShapeOverlayService.removeShapeActionIconsByLoadingTest(NamedNode, cell);
   }
 }

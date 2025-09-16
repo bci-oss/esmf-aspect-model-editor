@@ -14,7 +14,7 @@
 import {FiltersService} from '@ame/loader-filters';
 import {Injectable, inject} from '@angular/core';
 import {DefaultUnit} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MxGraphHelper} from '../../helpers';
 import {MxGraphRenderer} from '../../renderers';
 import {MxGraphShapeOverlayService} from '../mx-graph-shape-overlay.service';
@@ -25,21 +25,21 @@ export class UnitRenderService extends BaseRenderService {
   private filterService = inject(FiltersService);
   private mxGraphShapeOverlayService = inject(MxGraphShapeOverlayService);
 
-  create(parentCell: mxgraph.mxCell, unit: DefaultUnit) {
+  create(parentCell: Cell, unit: DefaultUnit) {
     this.removeFrom(parentCell);
 
     // create shape for new unit
     new MxGraphRenderer(this.mxGraphService, this.mxGraphShapeOverlayService, this.sammLangService, null).renderUnit(
-      this.filterService.createNode(unit, {parent: MxGraphHelper.getModelElement(parentCell)}),
+      this.filterService.createNode(unit, {parent: MxGraphHelper.getModelElementTest(parentCell)}),
       parentCell,
     );
   }
 
-  removeFrom(parentCell: mxgraph.mxCell) {
-    const edges = this.mxGraphService.graph.getOutgoingEdges(parentCell);
-    const edgeToUnit = edges.find(edge => MxGraphHelper.getModelElement(edge?.target) instanceof DefaultUnit);
-    const unit = edgeToUnit ? MxGraphHelper.getModelElement<DefaultUnit>(edgeToUnit.target) : null;
-    const parent = MxGraphHelper.getModelElement(parentCell);
+  removeFrom(parentCell: Cell) {
+    const edges = this.mxGraphService.graph.getOutgoingEdges(parentCell, null);
+    const edgeToUnit = edges.find(edge => MxGraphHelper.getModelElementTest(edge?.target) instanceof DefaultUnit);
+    const unit = edgeToUnit ? MxGraphHelper.getModelElementTest<DefaultUnit>(edgeToUnit.target) : null;
+    const parent = MxGraphHelper.getModelElementTest(parentCell);
 
     if (edgeToUnit && unit?.isPredefined) {
       MxGraphHelper.removeRelation(parent, unit);
@@ -51,7 +51,7 @@ export class UnitRenderService extends BaseRenderService {
     }
   }
 
-  isApplicable(cell: mxgraph.mxCell): boolean {
-    return MxGraphHelper.getModelElement(cell) instanceof DefaultUnit;
+  isApplicable(cell: Cell): boolean {
+    return MxGraphHelper.getModelElementTest(cell) instanceof DefaultUnit;
   }
 }

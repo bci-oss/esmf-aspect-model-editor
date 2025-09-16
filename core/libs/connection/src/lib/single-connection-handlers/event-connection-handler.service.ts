@@ -13,13 +13,13 @@
 
 import {Injectable} from '@angular/core';
 import {DefaultEvent, DefaultProperty} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {BaseConnectionHandler} from '../base-connection-handler.service';
 import {SingleShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class EventConnectionHandler extends BaseConnectionHandler implements SingleShapeConnector<DefaultEvent> {
-  public connect(event: DefaultEvent, source: mxgraph.mxCell) {
+  public connect(event: DefaultEvent, source: Cell) {
     const defaultProperty = this.elementCreator.createEmptyElement(DefaultProperty);
     const child = this.renderTree(defaultProperty, source);
     this.refreshPropertiesLabel(child, defaultProperty);

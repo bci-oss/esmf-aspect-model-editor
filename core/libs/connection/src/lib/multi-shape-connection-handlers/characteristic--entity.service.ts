@@ -25,7 +25,7 @@ import {
   DefaultStructuredValue,
   DefaultUnit,
 } from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MultiShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
@@ -41,7 +41,7 @@ export class CharacteristicEntityConnectionHandler implements MultiShapeConnecto
     return this.loadedFiles.currentLoadedFile.cachedFile;
   }
 
-  connect(parentMetaModel: DefaultCharacteristic, childMetaModel: DefaultEntity, parent: mxgraph.mxCell, child: mxgraph.mxCell): void {
+  connect(parentMetaModel: DefaultCharacteristic, childMetaModel: DefaultEntity, parent: Cell, child: Cell): void {
     if (parentMetaModel instanceof DefaultStructuredValue) {
       return this.notificationsService.warning({
         title: 'Unable to connect elements',
@@ -51,8 +51,8 @@ export class CharacteristicEntityConnectionHandler implements MultiShapeConnecto
     }
 
     parentMetaModel.dataType = childMetaModel;
-    this.mxGraphAttributeService.graph.getOutgoingEdges(parent).forEach(outEdge => this.removeCells(outEdge, null));
-    this.mxGraphShapeOverlayService.removeOverlay(parent, MxGraphHelper.getNewShapeOverlayButton(parent));
+    this.mxGraphAttributeService.graphTest.getOutgoingEdges(parent, null).forEach(outEdge => this.removeCells(outEdge, null));
+    this.mxGraphShapeOverlayService.removeOverlayTest(parent, MxGraphHelper.getNewShapeOverlayButtonTest(parent));
 
     // Add icon when you simply connect an enumeration with an entity.
     if (parentMetaModel instanceof DefaultEnumeration) {
@@ -61,13 +61,13 @@ export class CharacteristicEntityConnectionHandler implements MultiShapeConnecto
       // if (!parentMetaModel.createdFromEditor) {
       //   parentMetaModel.values = [];
       // }
-      this.mxGraphShapeOverlayService.removeOverlay(parent, MxGraphHelper.getRightOverlayButton(parent));
-      this.mxGraphShapeOverlayService.addComplexEnumerationShapeOverlay(parent);
-      this.mxGraphShapeOverlayService.addBottomShapeOverlay(parent);
+      this.mxGraphShapeOverlayService.removeOverlayTest(parent, MxGraphHelper.getRightOverlayButtonTest(parent));
+      this.mxGraphShapeOverlayService.addComplexEnumerationShapeOverlayTest(parent);
+      this.mxGraphShapeOverlayService.addBottomShapeOverlayTest(parent);
     }
 
     if (parentMetaModel.dataType) {
-      MxGraphHelper.updateLabel(parent, this.mxGraphAttributeService.graph, this.sammLangService);
+      MxGraphHelper.updateLabelTest(parent, this.mxGraphAttributeService.graphTest, this.sammLangService);
     }
 
     if (parentMetaModel.dataType?.isComplexType()) {
@@ -78,26 +78,26 @@ export class CharacteristicEntityConnectionHandler implements MultiShapeConnecto
     this.mxGraphService.formatShapes();
   }
 
-  private updateChildPropertiesLabels(parent: mxgraph.mxCell): void {
-    const parentIncomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(parent);
+  private updateChildPropertiesLabels(parent: Cell): void {
+    const parentIncomingEdges = this.mxGraphAttributeService.graphTest.getIncomingEdges(parent, null);
     parentIncomingEdges.forEach(edge => {
-      const edgeSourceMetaModelElement = MxGraphHelper.getModelElement(edge.source);
+      const edgeSourceMetaModelElement = MxGraphHelper.getModelElementTest(edge.source);
       if (edgeSourceMetaModelElement instanceof DefaultProperty) {
         // Remove example value for complex datatypes
         edgeSourceMetaModelElement.exampleValue = null;
-        MxGraphHelper.updateLabel(edge.source, this.mxGraphAttributeService.graph, this.sammLangService);
+        MxGraphHelper.updateLabelTest(edge.source, this.mxGraphAttributeService.graphTest, this.sammLangService);
       }
     });
   }
 
-  private removeCells(edge: mxgraph.mxCell, parent: mxgraph.mxCell): void {
-    const metaModel = MxGraphHelper.getModelElement(edge.target);
+  private removeCells(edge: Cell, parent: Cell): void {
+    const metaModel = MxGraphHelper.getModelElementTest(edge.target);
 
     if (metaModel instanceof DefaultUnit) return;
 
     // Remove icon if we delete the edge between enumeration and entity.
     if (metaModel instanceof DefaultEnumeration) {
-      this.mxGraphShapeOverlayService.removeComplexTypeShapeOverlays(parent);
+      this.mxGraphShapeOverlayService.removeComplexTypeShapeOverlaysTest(parent);
     }
 
     // TODO Should be defined in more details
@@ -106,12 +106,12 @@ export class CharacteristicEntityConnectionHandler implements MultiShapeConnecto
         MxGraphHelper.removeRelation(metaModel, child);
       }
 
-      this.mxGraphAttributeService.graph.getOutgoingEdges(edge.target).forEach(outEdge => this.removeCells(outEdge, null));
+      this.mxGraphAttributeService.graphTest.getOutgoingEdges(edge.target, null).forEach(outEdge => this.removeCells(outEdge, null));
       this.mxGraphService.removeCells([edge.target]);
       this.currentCachedFile.removeElement(metaModel.aspectModelUrn);
     }
 
-    const parentModel = MxGraphHelper.getModelElement(edge.source);
+    const parentModel = MxGraphHelper.getModelElementTest(edge.source);
     MxGraphHelper.removeRelation(parentModel, metaModel);
     this.mxGraphService.removeCells([edge]);
   }

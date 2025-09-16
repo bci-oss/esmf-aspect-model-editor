@@ -32,7 +32,7 @@ export class BaseEntityModelService {
 
     const resolvedCell = extendedElement && this.mxGraphService.resolveCellByModelElement(extendedElement);
 
-    if (resolvedCell && MxGraphHelper.isEntityCycleInheritance(resolvedCell, metaModelElement, this.mxGraphService.graph)) {
+    if (resolvedCell && MxGraphHelper.isEntityCycleInheritanceTest(resolvedCell, metaModelElement, this.mxGraphService.graph)) {
       this.notificationService.warning({
         title: this.translate.language.NOTIFICATION_SERVICE.RECURSIVE_ELEMENTS,
         message: this.translate.language.NOTIFICATION_SERVICE.CIRCULAR_CONNECTION_MESSAGE,

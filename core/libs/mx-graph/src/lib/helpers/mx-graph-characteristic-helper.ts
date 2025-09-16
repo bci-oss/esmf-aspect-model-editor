@@ -13,7 +13,7 @@
 
 import {Injectable} from '@angular/core';
 import {DefaultEntityInstance} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 
 @Injectable({providedIn: 'root'})
 export class MxGraphCharacteristicHelper {
@@ -23,10 +23,33 @@ export class MxGraphCharacteristicHelper {
    *
    * @param edge the edge between enumeration and entity.
    */
-  static findObsoleteEntityValues(edge: mxgraph.mxCell): Array<mxgraph.mxCell> {
+  static findObsoleteEntityValues(edge: Cell): Array<Cell> {
     const obsoleteCells = [];
     edge.source.edges
-      .filter(enumerationEdge => enumerationEdge.target.style.includes('entityValue'))
+      .filter(enumerationEdge => enumerationEdge.target.style.fillColor.includes('entityValue'))
+      .forEach(enumerationEntityValueEdge => {
+        // if it has more than 2 edges this entity value is referenced into another enumeration too.
+        const entityValue = enumerationEntityValueEdge.target;
+        if (entityValue.edges.length > 2) {
+          obsoleteCells.push(enumerationEntityValueEdge);
+        } else {
+          obsoleteCells.push(entityValue);
+        }
+      });
+
+    return obsoleteCells;
+  }
+
+  /**
+   * When we delete the edge between enumeration and entity,
+   * entity values or the edges between enumeration and entity value must be deleted.
+   *
+   * @param edge the edge between enumeration and entity.
+   */
+  static findObsoleteEntityValuesTest(edge: Cell): Array<Cell> {
+    const obsoleteCells = [];
+    edge.source.edges
+      .filter(enumerationEdge => enumerationEdge.target.style.fillColor.includes('entityValue'))
       .forEach(enumerationEntityValueEdge => {
         // if it has more than 2 edges this entity value is referenced into another enumeration too.
         const entityValue = enumerationEntityValueEdge.target;

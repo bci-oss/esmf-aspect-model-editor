@@ -22,7 +22,7 @@ import {
 } from '@ame/mx-graph';
 import {inject, Injectable} from '@angular/core';
 import {DefaultCharacteristic, DefaultEither, DefaultEntity, DefaultProperty, DefaultTrait, NamedElement} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {BaseModelService} from './base-model-service';
 
 interface EitherInformation {
@@ -39,7 +39,7 @@ export class TraitModelService extends BaseModelService {
   private shapeConnectorService = inject(ShapeConnectorService);
   private traitRendererService = inject(TraitRenderService);
 
-  update(cell: mxgraph.mxCell, form: {[key: string]: any}) {
+  update(cell: Cell, form: {[key: string]: any}) {
     super.update(cell, form);
     this.traitRendererService.update({cell});
   }
@@ -48,12 +48,12 @@ export class TraitModelService extends BaseModelService {
     return metaModelElement instanceof DefaultTrait;
   }
 
-  delete(cell: mxgraph.mxCell) {
+  delete(cell: Cell) {
     const sourceTargetPair = this.getSourceTargetPairForReconnect(cell);
 
     const informationOfEithers: Array<EitherInformation> = [];
     Array.from(sourceTargetPair.keys()).forEach(source => {
-      const sourceMetaModel = MxGraphHelper.getModelElement(source);
+      const sourceMetaModel = MxGraphHelper.getModelElementTest(source);
       if (sourceMetaModel instanceof DefaultEither) {
         informationOfEithers.push({
           urn: sourceMetaModel.aspectModelUrn,
@@ -70,26 +70,28 @@ export class TraitModelService extends BaseModelService {
     });
 
     super.delete(cell);
-    const elementModel = MxGraphHelper.getModelElement(cell);
-    const outgoingEdges = this.mxGraphAttributeService.graph.getOutgoingEdges(cell);
-    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell);
-    this.mxGraphShapeOverlayService.checkAndAddTopShapeActionIcon(outgoingEdges, elementModel);
-    this.mxGraphShapeOverlayService.checkAndAddShapeActionIcon(incomingEdges, elementModel);
+    const elementModel = MxGraphHelper.getModelElementTest(cell);
+    const outgoingEdges = this.mxGraphAttributeService.graphTest.getOutgoingEdges(cell, null);
+    const incomingEdges = this.mxGraphAttributeService.graphTest.getIncomingEdges(cell, null);
+    this.mxGraphShapeOverlayService.checkAndAddTopShapeActionIconTest(outgoingEdges, elementModel);
+    this.mxGraphShapeOverlayService.checkAndAddShapeActionIconTest(incomingEdges, elementModel);
     this.mxGraphService.removeCells([cell]);
     this.reconnectShapePair(sourceTargetPair, informationOfEithers);
   }
 
   // Used to reconnect Characteristic with Properties if you delete theTrait
-  private getSourceTargetPairForReconnect(cell: mxgraph.mxCell) {
+  private getSourceTargetPairForReconnect(cell: Cell) {
     const sourceTargetPair = new Map();
-    const elementModel = MxGraphHelper.getModelElement(cell);
+    const elementModel = MxGraphHelper.getModelElementTest(cell);
     if (this.loadedFilesService.isElementInCurrentFile(elementModel)) {
-      const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell);
-      const outgoingEdges = this.mxGraphAttributeService.graph.getOutgoingEdges(cell);
+      const incomingEdges = this.mxGraphAttributeService.graphTest.getIncomingEdges(cell, null);
+      const outgoingEdges = this.mxGraphAttributeService.graphTest.getOutgoingEdges(cell, null);
 
       // outgoingEdges[0].target can be characteristic or constraint.
       // In this case we need to make sure that we relink property only to characteristic
-      const characteristicEdge = outgoingEdges.find(edge => MxGraphHelper.getModelElement(edge.target) instanceof DefaultCharacteristic);
+      const characteristicEdge = outgoingEdges.find(
+        edge => MxGraphHelper.getModelElementTest(edge.target) instanceof DefaultCharacteristic,
+      );
       if (incomingEdges.length && outgoingEdges.length && characteristicEdge) {
         incomingEdges.forEach(incomingEdge => sourceTargetPair.set(incomingEdge.source, characteristicEdge.target));
       }
@@ -102,8 +104,8 @@ export class TraitModelService extends BaseModelService {
     sourceTargetPair.forEach((target, source) => {
       let modelInfo = null;
 
-      const targetModelElement = MxGraphHelper.getModelElement(target);
-      const sourceModelElement = MxGraphHelper.getModelElement(source);
+      const targetModelElement = MxGraphHelper.getModelElementTest(target);
+      const sourceModelElement = MxGraphHelper.getModelElementTest(source);
 
       if (sourceModelElement instanceof DefaultEither) {
         const either = informationOfEithers.find(eitherInfo => eitherInfo.urn === sourceModelElement.aspectModelUrn);
@@ -117,15 +119,15 @@ export class TraitModelService extends BaseModelService {
       const newConnection = this.shapeConnectorService.connectShapes(sourceModelElement, targetModelElement, source, target, modelInfo);
 
       if (newConnection) {
-        this.mxGraphShapeOverlayService.removeOverlay(target, MxGraphHelper.getTopOverlayButton(target));
-        this.mxGraphShapeOverlayService.removeOverlaysByConnection(sourceModelElement, source);
-        this.mxGraphShapeOverlayService.addTopShapeOverlay(target);
+        this.mxGraphShapeOverlayService.removeOverlayTest(target, MxGraphHelper.getTopOverlayButtonTest(target));
+        this.mxGraphShapeOverlayService.removeOverlaysByConnectionTest(sourceModelElement, source);
+        this.mxGraphShapeOverlayService.addTopShapeOverlayTest(target);
         if (
           targetModelElement instanceof DefaultCharacteristic &&
           sourceModelElement instanceof DefaultProperty &&
           !(targetModelElement.dataType instanceof DefaultEntity)
         ) {
-          this.mxGraphShapeOverlayService.addBottomShapeOverlay(target);
+          this.mxGraphShapeOverlayService.addBottomShapeOverlayTest(target);
         }
         this.mxGraphService.formatShapes();
       }

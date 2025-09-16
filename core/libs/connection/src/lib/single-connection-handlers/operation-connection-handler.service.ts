@@ -15,7 +15,7 @@ import {ModelInfo} from '@ame/mx-graph';
 import {NotificationsService} from '@ame/shared';
 import {inject, Injectable} from '@angular/core';
 import {DefaultProperty, Operation} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {BaseConnectionHandler} from '../base-connection-handler.service';
 import {SingleShapeConnector} from '../models';
 
@@ -23,7 +23,7 @@ import {SingleShapeConnector} from '../models';
 export class OperationConnectionHandler extends BaseConnectionHandler implements SingleShapeConnector<Operation> {
   private notificationsService = inject(NotificationsService);
 
-  public connect(operation: Operation, source: mxgraph.mxCell, modelInfo: ModelInfo) {
+  public connect(operation: Operation, source: Cell, modelInfo: ModelInfo) {
     const defaultProperty = this.elementCreator.createEmptyElement(DefaultProperty);
 
     if (ModelInfo.IS_OPERATION_OUTPUT === modelInfo) {

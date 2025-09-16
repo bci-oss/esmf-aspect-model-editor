@@ -19,7 +19,7 @@ import {ModelService, RdfService} from '@ame/rdf/services';
 import {useUpdater} from '@ame/utils';
 import {inject} from '@angular/core';
 import {DefaultAspect, DefaultEntityInstance, DefaultEnumeration, HasExtends, NamedElement} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 
 export abstract class BaseModelService {
   protected rdfService: RdfService = inject(RdfService);
@@ -38,8 +38,8 @@ export abstract class BaseModelService {
 
   abstract isApplicable(metaModelElement: NamedElement): boolean;
 
-  update(cell: mxgraph.mxCell, form: {[key: string]: any}) {
-    const modelElement = MxGraphHelper.getModelElement(cell);
+  update(cell: Cell, form: {[key: string]: any}) {
+    const modelElement = MxGraphHelper.getModelElementTest(cell);
     if (!modelElement) {
       return;
     }
@@ -67,11 +67,11 @@ export abstract class BaseModelService {
     this.updateSee(modelElement, form);
   }
 
-  delete(cell: mxgraph.mxCell) {
+  delete(cell: Cell) {
     // Add common operations
-    const modelElement = MxGraphHelper.getModelElement(cell);
+    const modelElement = MxGraphHelper.getModelElementTest(cell);
     for (const edge of (cell.edges?.length && cell.edges) || []) {
-      const sourceNode = MxGraphHelper.getModelElement<NamedElement>(edge.source);
+      const sourceNode = MxGraphHelper.getModelElementTest<NamedElement>(edge.source);
       if (sourceNode && !(sourceNode instanceof DefaultEnumeration) && this.loadedFilesService.isElementInCurrentFile(sourceNode)) {
         this.currentCachedFile.removeElement(modelElement.aspectModelUrn);
         useUpdater(sourceNode).delete(modelElement);

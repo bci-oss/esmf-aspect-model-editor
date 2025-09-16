@@ -14,7 +14,7 @@
 import {MxGraphHelper, MxGraphShapeOverlayService} from '@ame/mx-graph';
 import {Injectable, inject} from '@angular/core';
 import {DefaultCharacteristic, Property} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {BaseConnectionHandler} from '../base-connection-handler.service';
 import {SingleShapeConnector} from '../models';
 
@@ -22,7 +22,7 @@ import {SingleShapeConnector} from '../models';
 export class PropertyConnectionHandler extends BaseConnectionHandler implements SingleShapeConnector<Property> {
   private mxGraphShapeOverlayService = inject(MxGraphShapeOverlayService);
 
-  public connect(property: Property, source: mxgraph.mxCell) {
+  public connect(property: Property, source: Cell) {
     if (property.characteristic) {
       return;
     }
@@ -31,8 +31,8 @@ export class PropertyConnectionHandler extends BaseConnectionHandler implements 
     const child = this.renderTree(property.characteristic, source);
     this.mxGraphService.assignToParent(child, source);
 
-    if (MxGraphHelper.hasGrandParentStructuredValue(child, this.mxGraphService.graph)) {
-      this.mxGraphShapeOverlayService.removeOverlay(child, MxGraphHelper.getNewShapeOverlayButton(child));
+    if (MxGraphHelper.hasGrandParentStructuredValueTest(child, this.mxGraphService.graph)) {
+      this.mxGraphShapeOverlayService.removeOverlayTest(child, MxGraphHelper.getNewShapeOverlayButtonTest(child));
     }
 
     this.refreshPropertiesLabel(child, property.characteristic);

@@ -11,10 +11,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 
 export interface RendererUpdatePayload {
-  cell: mxgraph.mxCell;
+  cell: Cell;
   form?: {[key: string]: any};
   callback?: Function;
 }

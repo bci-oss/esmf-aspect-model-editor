@@ -12,14 +12,13 @@
  */
 
 import {Injectable} from '@angular/core';
+import {Graph} from '@maxgraph/core';
 import {environment} from 'environments/environment';
-import {mxgraph} from 'mxgraph-factory';
 
 @Injectable({providedIn: 'root'})
 export class MxGraphAttributeService {
   private _inCollapsedMode = false;
-  private _graph;
-  private _editor: mxgraph.mxEditor;
+  private _graphTest;
 
   constructor() {
     if (!environment.production) {
@@ -35,19 +34,12 @@ export class MxGraphAttributeService {
     this._inCollapsedMode = inCollapsedMode;
   }
 
-  public get graph(): mxgraph.mxGraph {
-    return this._graph;
+  public get graphTest(): Graph {
+    return this._graphTest;
   }
 
-  public set graph(value: mxgraph.mxGraph) {
-    this._graph = value;
-  }
-
-  get editor(): mxgraph.mxEditor {
-    return this._editor;
-  }
-
-  set editor(value: mxgraph.mxEditor) {
-    this._editor = value;
+  // eslint-disable-next-line @typescript-eslint/adjacent-overload-signatures
+  public set graphTest(value: Graph) {
+    this._graphTest = value;
   }
 }

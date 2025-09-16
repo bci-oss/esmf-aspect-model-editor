@@ -15,7 +15,7 @@ import {FiltersService} from '@ame/loader-filters';
 import {ElementCreatorService} from '@ame/shared';
 import {inject} from '@angular/core';
 import {DefaultCharacteristic, DefaultEntity, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {EntityPropertyConnectionHandler, PropertyAbstractPropertyConnectionHandler} from '../multi-shape-connection-handlers';
 import {InheritanceConnector} from './inheritance-connector';
 
@@ -25,7 +25,7 @@ export class EntityInheritanceConnector extends InheritanceConnector {
   protected entityPropertyConnector = inject(EntityPropertyConnectionHandler);
   protected elementCreator = inject(ElementCreatorService);
 
-  connectWithAbstract(parentMetaModel: DefaultEntity, childMetaModel: DefaultEntity, parent: mxgraph.mxCell, child: mxgraph.mxCell) {
+  connectWithAbstract(parentMetaModel: DefaultEntity, childMetaModel: DefaultEntity, parent: Cell, child: Cell) {
     if (parentMetaModel.getExtends()?.aspectModelUrn === childMetaModel.aspectModelUrn) {
       return;
     }

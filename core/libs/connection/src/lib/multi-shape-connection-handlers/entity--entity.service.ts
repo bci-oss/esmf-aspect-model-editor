@@ -15,15 +15,15 @@ import {MxGraphHelper} from '@ame/mx-graph';
 import {NotificationsService} from '@ame/shared';
 import {Injectable, inject} from '@angular/core';
 import {DefaultEntity} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {EntityInheritanceConnector, MultiShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class EntityEntityConnectionHandler extends EntityInheritanceConnector implements MultiShapeConnector<DefaultEntity, DefaultEntity> {
   private notificationService = inject(NotificationsService);
 
-  public connect(parentMetaModel: DefaultEntity, childMetaModel: DefaultEntity, parentCell: mxgraph.mxCell, childCell: mxgraph.mxCell) {
-    if (MxGraphHelper.isEntityCycleInheritance(childCell, parentMetaModel, this.mxGraphService.graph)) {
+  public connect(parentMetaModel: DefaultEntity, childMetaModel: DefaultEntity, parentCell: Cell, childCell: Cell) {
+    if (MxGraphHelper.isEntityCycleInheritanceTest(childCell, parentMetaModel, this.mxGraphService.graph)) {
       this.notificationService.warning({
         title: this.translate.language.NOTIFICATION_SERVICE.RECURSIVE_ELEMENTS,
         message: this.translate.language.NOTIFICATION_SERVICE.CIRCULAR_CONNECTION_MESSAGE,

@@ -12,7 +12,7 @@
  */
 
 import {inject, Injectable} from '@angular/core';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {
   CharacteristicRenderService,
   ConstraintRenderService,
@@ -40,11 +40,11 @@ export class ModelRenderService {
   private unitRenderService = inject(UnitRenderService);
   private constraintRenderService = inject(ConstraintRenderService);
 
-  update(cell: mxgraph.mxCell) {
+  update(cell: Cell) {
     this.getElementModelService(cell)?.update({cell});
   }
 
-  private getElementModelService(cell: mxgraph.mxCell): BaseRenderService {
+  private getElementModelService(cell: Cell): BaseRenderService {
     // Order is important
     const elementServices: BaseRenderService[] = [
       this.aspectRenderService,

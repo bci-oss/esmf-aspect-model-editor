@@ -12,10 +12,10 @@
  */
 
 import {inject, Injectable} from '@angular/core';
-import {mxgraph} from 'mxgraph-factory';
 
 import {MxGraphAttributeService, MxGraphHelper, MxGraphService, MxGraphShapeOverlayService, UnitRenderService} from '@ame/mx-graph';
 import {DefaultQuantityKind, DefaultUnit, NamedElement, SammU} from '@esmf/aspect-model-loader';
+import {Cell} from '@maxgraph/core';
 import {BaseModelService} from './base-model-service';
 
 declare const sammUDefinition: any;
@@ -35,8 +35,8 @@ export class UnitModelService extends BaseModelService {
     return metaModelElement instanceof DefaultUnit;
   }
 
-  update(cell: mxgraph.mxCell, form: {[key: string]: any}) {
-    const modelElement = MxGraphHelper.getModelElement<DefaultUnit>(cell);
+  update(cell: Cell, form: {[key: string]: any}) {
+    const modelElement = MxGraphHelper.getModelElementTest<DefaultUnit>(cell);
     super.update(cell, form);
     modelElement.referenceUnit = form.referenceUnit;
     modelElement.code = form.code;
@@ -60,13 +60,13 @@ export class UnitModelService extends BaseModelService {
     this.unitRenderer.update({cell, form});
   }
 
-  delete(cell: mxgraph.mxCell) {
+  delete(cell: Cell) {
     super.delete(cell);
-    const modelElement = MxGraphHelper.getModelElement(cell);
-    const outgoingEdges = this.mxGraphAttributeService.graph.getOutgoingEdges(cell);
-    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell);
-    this.mxGraphShapeOverlayService.checkAndAddTopShapeActionIcon(outgoingEdges, modelElement);
-    this.mxGraphShapeOverlayService.checkAndAddShapeActionIcon(incomingEdges, modelElement);
+    const modelElement = MxGraphHelper.getModelElementTest(cell);
+    const outgoingEdges = this.mxGraphAttributeService.graphTest.getOutgoingEdges(cell, null);
+    const incomingEdges = this.mxGraphAttributeService.graphTest.getIncomingEdges(cell, null);
+    this.mxGraphShapeOverlayService.checkAndAddTopShapeActionIconTest(outgoingEdges, modelElement);
+    this.mxGraphShapeOverlayService.checkAndAddShapeActionIconTest(incomingEdges, modelElement);
     this.mxGraphService.removeCells([cell]);
   }
 }

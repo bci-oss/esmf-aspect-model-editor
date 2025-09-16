@@ -16,7 +16,7 @@ import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {NotificationsService} from '@ame/shared';
 import {Injectable, inject} from '@angular/core';
 import {DefaultProperty, DefaultStructuredValue} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MultiShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
@@ -28,7 +28,7 @@ export class StructuredValueCharacteristicPropertyConnectionHandler
   private sammLangService = inject(SammLanguageSettingsService);
   private notificationsService = inject(NotificationsService);
 
-  connect(parentMetaModel: DefaultStructuredValue, childMetaModel: DefaultProperty, first: mxgraph.mxCell, second: mxgraph.mxCell): void {
+  connect(parentMetaModel: DefaultStructuredValue, childMetaModel: DefaultProperty, first: Cell, second: Cell): void {
     const isRecursiveConnection = MxGraphHelper.isChildOf(childMetaModel, parentMetaModel);
 
     if (isRecursiveConnection) {
@@ -46,7 +46,7 @@ export class StructuredValueCharacteristicPropertyConnectionHandler
       this.addPropertyElement(childMetaModel, parentMetaModel);
     }
 
-    MxGraphHelper.updateLabel(parentCell, this.mxGraphAttributeService.graph, this.sammLangService);
+    MxGraphHelper.updateLabelTest(parentCell, this.mxGraphAttributeService.graphTest, this.sammLangService);
     this.mxGraphService.assignToParent(childCell, parentCell);
     this.mxGraphService.formatCell(parentCell);
     this.mxGraphService.formatShapes();

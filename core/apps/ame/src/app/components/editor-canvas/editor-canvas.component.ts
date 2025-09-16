@@ -25,7 +25,7 @@ import {FormGroup} from '@angular/forms';
 import {MatIconModule} from '@angular/material/icon';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NamedElement} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {fromEvent, Observable} from 'rxjs';
 import {debounceTime, filter, map, switchMap, tap} from 'rxjs/operators';
 import {SidebarComponent} from '../../../../../../libs/sidebar/src/lib/sidebar/sidebar.component';
@@ -79,7 +79,7 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
     return this.configurationService.settings$.pipe(map(settings => settings.toolbarVisibility));
   }
 
-  get selectedShapeForUpdate(): mxgraph.mxCell | null {
+  get selectedShapeForUpdate(): Cell | null {
     return this.shapeSettingsStateService.selectedShapeForUpdate;
   }
 

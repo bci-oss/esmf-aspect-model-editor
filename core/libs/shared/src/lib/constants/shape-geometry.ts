@@ -11,13 +11,15 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {CellStyle} from '@maxgraph/core';
+
 export type ShapeGeometry = {
   type: 'basic' | 'circle' | 'small' | 'overlay' | 'smallCircle';
   expandedWith: number;
   expandedHeight: number;
   collapsedWidth: number;
   collapsedHeight: number;
-  mxGraphStyle?: string;
+  mxGraphStyle?: CellStyle;
 };
 
 export const basicShapeGeometry: ShapeGeometry = {

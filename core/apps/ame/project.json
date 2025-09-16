@@ -24,7 +24,7 @@
           }
         ],
         "styles": ["node_modules/ngx-toastr/toastr.css", "apps/ame/src/styles.scss"],
-        "scripts": ["node_modules/mxgraph/javascript/mxClient.js", "apps/ame/src/assets/samm-units.js"],
+        "scripts": ["apps/ame/src/assets/samm-units.js"],
         "allowedCommonJsDependencies": [
           "file-saver",
           "urn-lib",

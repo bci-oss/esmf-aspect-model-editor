@@ -32,8 +32,8 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 import {NamedElement} from '@esmf/aspect-model-loader';
+import {Cell} from '@maxgraph/core';
 import {TranslatePipe} from '@ngx-translate/core';
-import {mxgraph} from 'mxgraph-factory';
 import {startWith, throttleTime} from 'rxjs';
 import {ConfirmDialogEnum} from '../../../../../editor/src/lib/models/confirm-dialog.enum';
 import {ElementIconComponent} from '../../../../../shared/src/lib/components/element/element.component';
@@ -72,8 +72,8 @@ export class ElementsSearchComponent {
   constructor() {
     this.searchControl.valueChanges.pipe(startWith(''), throttleTime(150)).subscribe(value => {
       this.elements = this.searchService
-        .search<mxgraph.mxCell>(value, this.mxGraphService.getAllCells(), mxCellSearchOption)
-        ?.map(cell => MxGraphHelper.getModelElement(cell));
+        .search<Cell>(value, this.mxGraphService.getAllCells(), mxCellSearchOption)
+        ?.map(cell => MxGraphHelper.getModelElementTest(cell));
     });
   }
 

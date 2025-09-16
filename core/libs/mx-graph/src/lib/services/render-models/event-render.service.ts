@@ -13,13 +13,13 @@
 
 import {Injectable} from '@angular/core';
 import {DefaultEvent} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MxGraphHelper} from '../../helpers';
 import {BaseRenderService} from './base-render-service';
 
 @Injectable({providedIn: 'root'})
 export class EventRenderService extends BaseRenderService {
-  isApplicable(cell: mxgraph.mxCell): boolean {
-    return MxGraphHelper.getModelElement(cell) instanceof DefaultEvent;
+  isApplicable(cell: Cell): boolean {
+    return MxGraphHelper.getModelElementTest(cell) instanceof DefaultEvent;
   }
 }

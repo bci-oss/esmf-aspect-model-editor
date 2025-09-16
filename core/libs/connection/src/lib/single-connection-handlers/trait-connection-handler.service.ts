@@ -15,19 +15,19 @@ import {MxGraphHelper} from '@ame/mx-graph';
 import {useUpdater} from '@ame/utils';
 import {Injectable} from '@angular/core';
 import {DefaultCharacteristic, DefaultConstraint, DefaultTrait} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {BaseConnectionHandler} from '../base-connection-handler.service';
 import {SingleShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class TraitConnectionHandler extends BaseConnectionHandler implements SingleShapeConnector<DefaultTrait> {
-  public connect(trait: DefaultTrait, source: mxgraph.mxCell) {
+  public connect(trait: DefaultTrait, source: Cell) {
     const defaultElement =
       trait.getBaseCharacteristic() == null
         ? this.elementCreator.createEmptyElement(DefaultCharacteristic)
         : this.elementCreator.createEmptyElement(DefaultConstraint);
     const child = this.mxGraphService.renderModelElement(
-      this.filtersService.createNode(defaultElement, {parent: MxGraphHelper.getModelElement(source)}),
+      this.filtersService.createNode(defaultElement, {parent: MxGraphHelper.getModelElementTest(source)}),
     );
 
     useUpdater(trait).update(defaultElement);

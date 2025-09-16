@@ -16,7 +16,7 @@ import {FiltersService} from '@ame/loader-filters';
 import {ModelInfo, MxGraphAttributeService, MxGraphHelper, MxGraphService, OperationRenderService} from '@ame/mx-graph';
 import {Injectable, inject} from '@angular/core';
 import {DefaultOperation, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
@@ -31,8 +31,8 @@ export class OperationModelService extends BaseModelService {
     return metaModelElement instanceof DefaultOperation;
   }
 
-  update(cell: mxgraph.mxCell, form: {[key: string]: any}) {
-    const modelElement = MxGraphHelper.getModelElement<DefaultOperation>(cell);
+  update(cell: Cell, form: {[key: string]: any}) {
+    const modelElement = MxGraphHelper.getModelElementTest<DefaultOperation>(cell);
     super.update(cell, form);
 
     const inputList = form.inputChipList;
@@ -51,15 +51,15 @@ export class OperationModelService extends BaseModelService {
     this.operationRender.update({cell});
   }
 
-  delete(cell: mxgraph.mxCell) {
+  delete(cell: Cell) {
     super.delete(cell);
     this.mxGraphService.removeCells([cell]);
   }
 
-  private removeInputDependency(cell: mxgraph.mxCell, input: Array<DefaultProperty>, output: DefaultProperty) {
-    const operation = MxGraphHelper.getModelElement<DefaultOperation>(cell);
-    this.mxGraphAttributeService.graph.getOutgoingEdges(cell).forEach(edge => {
-      const modelElement = MxGraphHelper.getModelElement(edge.target);
+  private removeInputDependency(cell: Cell, input: Array<DefaultProperty>, output: DefaultProperty) {
+    const operation = MxGraphHelper.getModelElementTest<DefaultOperation>(cell);
+    this.mxGraphAttributeService.graphTest.getOutgoingEdges(cell, null).forEach(edge => {
+      const modelElement = MxGraphHelper.getModelElementTest(edge.target);
       const inputProperty = input.find(value => value.aspectModelUrn === modelElement.aspectModelUrn);
       if (
         modelElement instanceof DefaultProperty &&
@@ -73,10 +73,10 @@ export class OperationModelService extends BaseModelService {
     });
   }
 
-  private removeOutputDependency(cell: mxgraph.mxCell, output: DefaultProperty, input: Array<DefaultProperty>) {
-    const operation = MxGraphHelper.getModelElement<DefaultOperation>(cell);
-    this.mxGraphAttributeService.graph.getOutgoingEdges(cell).forEach(edge => {
-      const modelElement = MxGraphHelper.getModelElement(edge.target);
+  private removeOutputDependency(cell: Cell, output: DefaultProperty, input: Array<DefaultProperty>) {
+    const operation = MxGraphHelper.getModelElementTest<DefaultOperation>(cell);
+    this.mxGraphAttributeService.graphTest.getOutgoingEdges(cell, null).forEach(edge => {
+      const modelElement = MxGraphHelper.getModelElementTest(edge.target);
       if (
         modelElement instanceof DefaultProperty &&
         output?.aspectModelUrn === modelElement.aspectModelUrn &&
@@ -88,10 +88,10 @@ export class OperationModelService extends BaseModelService {
     });
   }
 
-  private addInputProperties(cell: mxgraph.mxCell, input: Array<DefaultProperty>) {
+  private addInputProperties(cell: Cell, input: Array<DefaultProperty>) {
     input.forEach(property => {
       const cachedProperty = this.currentCachedFile.resolveInstance(property);
-      const operation = MxGraphHelper.getModelElement(cell);
+      const operation = MxGraphHelper.getModelElementTest(cell);
       const resolvedCell = this.mxGraphService.resolveCellByModelElement(cachedProperty);
       const propertyCell = resolvedCell
         ? resolvedCell
@@ -100,9 +100,9 @@ export class OperationModelService extends BaseModelService {
     });
   }
 
-  private addOutputProperties(cell: mxgraph.mxCell, property: DefaultProperty) {
+  private addOutputProperties(cell: Cell, property: DefaultProperty) {
     const cachedProperty = this.currentCachedFile.resolveInstance(property);
-    const operation = MxGraphHelper.getModelElement(cell);
+    const operation = MxGraphHelper.getModelElementTest(cell);
     const resolvedCell = this.mxGraphService.resolveCellByModelElement(cachedProperty);
     const propertyCell = resolvedCell
       ? resolvedCell

@@ -14,24 +14,24 @@
 import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
 import {Injectable, inject} from '@angular/core';
 import {DefaultCharacteristic, DefaultQuantifiable, DefaultUnit} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MultiShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class CharacteristicUnitConnectionHandler implements MultiShapeConnector<DefaultCharacteristic, DefaultUnit> {
   private mxGraphService = inject(MxGraphService);
 
-  public connect(parentMetaModel: DefaultCharacteristic, childMetaModel: DefaultUnit, parent: mxgraph.mxCell, child: mxgraph.mxCell) {
+  public connect(parentMetaModel: DefaultCharacteristic, childMetaModel: DefaultUnit, parent: Cell, child: Cell) {
     if (!(parentMetaModel instanceof DefaultQuantifiable)) {
       return;
     }
 
     if (parentMetaModel.unit && parentMetaModel.unit !== childMetaModel) {
       const obsoleteEdge = this.mxGraphService.graph
-        .getOutgoingEdges(parent)
-        .find(edge => MxGraphHelper.getModelElement(edge.target) instanceof DefaultUnit);
+        .getOutgoingEdges(parent, null)
+        .find(edge => MxGraphHelper.getModelElementTest(edge.target) instanceof DefaultUnit);
 
-      const unit = MxGraphHelper.getModelElement<DefaultUnit>(obsoleteEdge.target);
+      const unit = MxGraphHelper.getModelElementTest<DefaultUnit>(obsoleteEdge.target);
       MxGraphHelper.removeRelation(parentMetaModel, unit);
 
       if (unit.isPredefined) {

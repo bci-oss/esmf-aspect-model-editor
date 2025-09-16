@@ -14,7 +14,7 @@
 import {MxGraphService} from '@ame/mx-graph';
 import {inject, Injectable} from '@angular/core';
 import {DefaultCharacteristic, DefaultConstraint, DefaultTrait} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MultiShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
@@ -23,7 +23,7 @@ export class TraitWithCharacteristicOrConstraintConnectionHandler
 {
   private mxGraphService = inject(MxGraphService);
 
-  public connect(parentMetaModel: DefaultTrait, childMetaModel: DefaultCharacteristic, parent: mxgraph.mxCell, child: mxgraph.mxCell) {
+  public connect(parentMetaModel: DefaultTrait, childMetaModel: DefaultCharacteristic, parent: Cell, child: Cell) {
     if (childMetaModel instanceof DefaultConstraint) {
       parentMetaModel.constraints.push(childMetaModel);
     } else parentMetaModel.baseCharacteristic = childMetaModel;

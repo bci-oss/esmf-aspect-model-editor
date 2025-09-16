@@ -15,7 +15,7 @@ import {ModelInfo} from '@ame/mx-graph';
 import {NotificationsService} from '@ame/shared';
 import {inject, Injectable} from '@angular/core';
 import {DefaultCharacteristic, DefaultEither} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {BaseConnectionHandler} from '../base-connection-handler.service';
 import {SingleShapeConnector} from '../models';
 
@@ -23,7 +23,7 @@ import {SingleShapeConnector} from '../models';
 export class EitherConnectionHandler extends BaseConnectionHandler implements SingleShapeConnector<DefaultEither> {
   private notificationsService = inject(NotificationsService);
 
-  public connect(either: DefaultEither, source: mxgraph.mxCell, modelInfo: ModelInfo) {
+  public connect(either: DefaultEither, source: Cell, modelInfo: ModelInfo) {
     const defaultCharacteristic = this.elementCreator.createEmptyElement(DefaultCharacteristic);
 
     if (ModelInfo.IS_EITHER_LEFT === modelInfo) {

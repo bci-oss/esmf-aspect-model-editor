@@ -11,4 +11,9 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+<<<<<<<< HEAD:core/libs/aspect-exporter/src/lib/visitor/value/index.ts
 export * from './value-visitor';
+========
+export * from './services';
+export * from './utils';
+>>>>>>>> 562d8251 (Remove vocabulary library and refactor RDF helpers):core/libs/rdf/src/lib/index.ts

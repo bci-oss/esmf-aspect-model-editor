@@ -34,8 +34,7 @@ import {
   DefaultUnit,
   NamedElement,
 } from '@esmf/aspect-model-loader';
-import {Cell, CellOverlay, Geometry, ImageBox, InternalEvent} from '@maxgraph/core';
-import {AlignValue} from '@maxgraph/core/lib/esm/types';
+import {AlignValue, Cell, CellOverlay, Geometry, ImageBox, InternalEvent} from '@maxgraph/core';
 import {MxGraphAttributeService, MxGraphShapeSelectorService} from '.';
 import {MxGraphHelper, MxGraphVisitorHelper, ShapeAttribute} from '../helpers';
 import {ModelInfo} from '../models';

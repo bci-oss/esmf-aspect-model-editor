@@ -13,7 +13,6 @@
 
 import {Injectable} from '@angular/core';
 import {Cell, CellStyle, Graph} from '@maxgraph/core';
-import {darkColors} from './dark-theme';
 import {lightColors} from './light-theme';
 
 @Injectable({providedIn: 'root'})
@@ -79,7 +78,7 @@ export class ThemeService {
   }
 
   setCssVars(theme: string) {
-    this.currentColors = theme === 'light' ? lightColors : darkColors;
+    this.currentColors = theme === 'light' ? lightColors : null;
     Object.entries(this.currentColors).forEach(([key, color]: any) => this.root.style.setProperty(`--ame-${key}`, color));
   }
 }

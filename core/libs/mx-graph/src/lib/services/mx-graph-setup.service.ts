@@ -25,6 +25,7 @@ import {DefaultEntity, DefaultEntityInstance, DefaultProperty, DefaultTrait} fro
 import {
   Cell,
   CellState,
+  domUtils,
   Graph,
   InternalEvent,
   Outline,
@@ -33,9 +34,8 @@ import {
   Rectangle,
   SelectionHandler,
   StackLayout,
-  VertexHandlerConfig,
-  domUtils,
   styleUtils,
+  VertexHandlerConfig,
 } from '@maxgraph/core';
 import {MxGraphHelper, ShapeAttribute} from '../helpers';
 import {MxGraphAttributeService} from './mx-graph-attribute.service';

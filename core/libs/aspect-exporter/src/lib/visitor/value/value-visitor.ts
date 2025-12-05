@@ -11,19 +11,15 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {LoadedFilesService} from '@ame/cache';
 import {getDescriptionsLocales, getPreferredNamesLocales} from '@ame/utils';
 import {inject, Injectable} from '@angular/core';
-import {DefaultCharacteristic, DefaultValue} from '@esmf/aspect-model-loader';
-import {RdfListService} from '../../rdf-list';
+import {DefaultValue} from '@esmf/aspect-model-loader';
 import {RdfNodeService} from '../../rdf-node';
 import {BaseVisitor} from '../base-visitor';
 
 @Injectable({providedIn: 'root'})
 export class ValueVisitor extends BaseVisitor<DefaultValue> {
   public rdfNodeService = inject(RdfNodeService);
-  public rdfListService = inject(RdfListService);
-  public loadedFilesService = inject(LoadedFilesService);
 
   visit(value: DefaultValue): DefaultValue {
     if (value.isPredefined) {
@@ -32,9 +28,9 @@ export class ValueVisitor extends BaseVisitor<DefaultValue> {
 
     this.setPrefix(value.aspectModelUrn);
     const newAspectModelUrn = `${value.aspectModelUrn.split('#')[0]}#${value.name}`;
-    this.updateParents(value);
     value.aspectModelUrn = newAspectModelUrn;
     this.updateProperties(value);
+
     return value;
   }
 
@@ -49,12 +45,7 @@ export class ValueVisitor extends BaseVisitor<DefaultValue> {
         value: value.getDescription(language),
       })),
       see: value.getSee() || [],
+      value: value.getValue(),
     });
-  }
-
-  private updateParents(value: DefaultValue) {
-    for (const parent of value.parents || []) {
-      parent instanceof DefaultCharacteristic && this.rdfNodeService.update(parent, {dataType: value.aspectModelUrn});
-    }
   }
 }

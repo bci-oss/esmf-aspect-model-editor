@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Robert Bosch Manufacturing Solutions GmbH
+ * Copyright (c) 2025 Robert Bosch Manufacturing Solutions GmbH
  *
  * See the AUTHORS file(s) distributed with this work for
  * additional information regarding authorship.
@@ -15,10 +15,10 @@ import {RdfNodeService} from '@ame/aspect-exporter';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {MxGraphService} from '@ame/mx-graph';
 import {TestBed} from '@angular/core/testing';
-import {DefaultValue, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
+import {DefaultValue, ModelElementCache, RdfModel, Samm} from '@esmf/aspect-model-loader';
 import {describe, expect, it} from '@jest/globals';
+import {Store} from 'n3';
 import {MockProvider, MockProviders} from 'ng-mocks';
-import {RdfListService} from '../../rdf-list';
 import {ValueVisitor} from './value-visitor';
 
 jest.mock('@ame/editor', () => ({
@@ -27,6 +27,9 @@ jest.mock('@ame/editor', () => ({
 
 jest.mock('@esmf/aspect-model-loader', () => {
   class NamedElement {}
+  class Samm {
+    constructor(public base: string) {}
+  }
   return {
     DefaultValue: class DefaultValue extends NamedElement {
       constructor(data: any) {
@@ -34,15 +37,15 @@ jest.mock('@esmf/aspect-model-loader', () => {
         Object.assign(this, data);
       }
     },
+    Samm,
+    ModelElementCache: class ModelElementCache {},
   };
 });
 describe('Value Visitor', () => {
   let service: ValueVisitor;
-
   const rdfModel: RdfModel = {
-    // store: new Store(),
-    // samm: new Samm(''),
-    // sammC: {ConstraintProperty: () => 'constraintProperty'} as any,
+    store: new Store(),
+    samm: new Samm(''),
     hasDependency: jest.fn(() => false),
     addPrefix: jest.fn(() => {}),
   } as any;
@@ -59,10 +62,6 @@ describe('Value Visitor', () => {
         ValueVisitor,
         MockProviders(MxGraphService),
         MockProvider(MxGraphService),
-        MockProvider(RdfListService, {
-          push: jest.fn(),
-          createEmpty: jest.fn(),
-        }),
         MockProvider(RdfNodeService, {
           update: jest.fn(),
         }),
@@ -84,6 +83,7 @@ describe('Value Visitor', () => {
       preferredName: [],
       description: [],
       see: [],
+      value: 'value_test',
     });
   });
 });

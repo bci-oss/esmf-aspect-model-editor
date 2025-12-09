@@ -11,14 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {RdfNodeService} from '@ame/aspect-exporter';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
-import {MxGraphService} from '@ame/mx-graph';
 import {TestBed} from '@angular/core/testing';
 import {DefaultValue, ModelElementCache, RdfModel, Samm} from '@esmf/aspect-model-loader';
-import {describe, expect, it} from '@jest/globals';
-import {Store} from 'n3';
-import {MockProvider, MockProviders} from 'ng-mocks';
+import {DataFactory, Store} from 'n3';
+import {MockProvider} from 'ng-mocks';
+import {RdfNodeService} from '../../rdf-node';
 import {ValueVisitor} from './value-visitor';
 
 jest.mock('@ame/editor', () => ({
@@ -29,42 +27,75 @@ jest.mock('@esmf/aspect-model-loader', () => {
   class NamedElement {}
   class Samm {
     constructor(public base: string) {}
+    Value() {
+      return DataFactory.namedNode('http://samm/value');
+    }
   }
-  return {
-    DefaultValue: class DefaultValue extends NamedElement {
-      constructor(data: any) {
-        super();
-        Object.assign(this, data);
-      }
-    },
-    Samm,
-    ModelElementCache: class ModelElementCache {},
-  };
+  class DefaultValue extends NamedElement {
+    metaModelVersion!: string;
+    aspectModelUrn!: string;
+    name!: string;
+    value!: string;
+    isPredefined?: boolean;
+
+    constructor(data: any) {
+      super();
+      Object.assign(this, data);
+    }
+    getPreferredName(lang: string) {
+      if (lang === 'en') return 'Value EN';
+      return undefined;
+    }
+    getDescription(lang: string) {
+      if (lang === 'en') return 'Description EN';
+      return undefined;
+    }
+    getSee() {
+      return [];
+    }
+
+    getValue() {
+      return this.value;
+    }
+  }
+  class ModelElementCache {}
+  return {DefaultValue, Samm, ModelElementCache};
 });
-describe('Value Visitor', () => {
+
+jest.mock('@ame/utils', () => ({
+  getPreferredNamesLocales: (v: any) => ['en'],
+  getDescriptionsLocales: (v: any) => ['en'],
+}));
+
+describe('ValueVisitor', () => {
   let service: ValueVisitor;
+  let rdfNodeServiceUpdate: jest.Mock;
+
+  const store = new Store();
+  const addQuadSpy = jest.spyOn(store, 'addQuad');
+
   const rdfModel: RdfModel = {
-    store: new Store(),
+    store,
     samm: new Samm(''),
     hasDependency: jest.fn(() => false),
-    addPrefix: jest.fn(() => {}),
+    addPrefix: jest.fn(),
   } as any;
-  const value = new DefaultValue({
+
+  const defaultValue = new DefaultValue({
     metaModelVersion: '1',
-    aspectModelUrn: 'samm#value1',
+    aspectModelUrn: 'samm#old',
     name: 'value1',
-    value: 'value_test',
+    value: 'http://example.com/value_test',
+    isPredefined: false,
   });
 
   beforeEach(() => {
+    rdfNodeServiceUpdate = jest.fn();
+
     TestBed.configureTestingModule({
       providers: [
         ValueVisitor,
-        MockProviders(MxGraphService),
-        MockProvider(MxGraphService),
-        MockProvider(RdfNodeService, {
-          update: jest.fn(),
-        }),
+        MockProvider(RdfNodeService, {update: rdfNodeServiceUpdate}),
         MockProvider(LoadedFilesService, {
           currentLoadedFile: new NamespaceFile(rdfModel, new ModelElementCache(), null),
           externalFiles: [],
@@ -73,17 +104,35 @@ describe('Value Visitor', () => {
     });
 
     service = TestBed.inject(ValueVisitor);
+    addQuadSpy.mockClear();
+    rdfNodeServiceUpdate.mockClear();
   });
 
-  it('should update store with default value', () => {
-    service.visit(value);
+  it('should return null when value is predefined', () => {
+    const predefined = new DefaultValue({
+      metaModelVersion: '1',
+      aspectModelUrn: 'samm#pre',
+      name: 'pre',
+      value: 'http://example.com/ignored',
+      isPredefined: true,
+    });
+    const result = service.visit(predefined);
 
-    expect(value.aspectModelUrn).toBe('samm#value1');
-    expect(service.rdfNodeService.update).toHaveBeenCalledWith(value, {
-      preferredName: [],
-      description: [],
+    expect(result).toBeNull();
+    expect(rdfNodeServiceUpdate).not.toHaveBeenCalled();
+    expect(addQuadSpy).not.toHaveBeenCalled();
+  });
+
+  it('should update aspectModelUrn to include name and calls rdfNodeService.update', () => {
+    const updated = service.visit(defaultValue);
+
+    expect(updated).toBe(defaultValue);
+    expect(defaultValue.aspectModelUrn).toBe('samm#value1');
+    expect(rdfNodeServiceUpdate).toHaveBeenCalledWith(defaultValue, {
+      preferredName: [{language: 'en', value: 'Value EN'}],
+      description: [{language: 'en', value: 'Description EN'}],
       see: [],
-      value: 'value_test',
+      value: 'http://example.com/value_test',
     });
   });
 });

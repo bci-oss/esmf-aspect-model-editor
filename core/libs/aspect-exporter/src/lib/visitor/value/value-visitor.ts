@@ -28,10 +28,6 @@ export class ValueVisitor extends BaseVisitor<DefaultValue> {
   private samm: Samm;
 
   visit(value: DefaultValue): DefaultValue {
-    if (value.isPredefined) {
-      return null;
-    }
-
     this.store = this.loadedFilesService.currentLoadedFile.rdfModel.store;
     this.samm = this.loadedFilesService.currentLoadedFile.rdfModel.samm;
 
@@ -39,7 +35,8 @@ export class ValueVisitor extends BaseVisitor<DefaultValue> {
     const newAspectModelUrn = `${value.aspectModelUrn.split('#')[0]}#${value.name}`;
     value.aspectModelUrn = newAspectModelUrn;
     this.updateProperties(value);
-    this.updateStore(value);
+    this.addValueProperty(value);
+
     return value;
   }
 
@@ -54,11 +51,10 @@ export class ValueVisitor extends BaseVisitor<DefaultValue> {
         value: value.getDescription(language),
       })),
       see: value.getSee() || [],
-      value: value.getValue(),
     });
   }
 
-  private updateStore(value: DefaultValue) {
-    this.store.addQuad(DataFactory.namedNode(value.aspectModelUrn), this.samm.Value(), DataFactory.namedNode(value.value));
+  private addValueProperty(value: DefaultValue) {
+    this.store.addQuad(DataFactory.namedNode(value.aspectModelUrn), this.samm.ValueProperty(), DataFactory.literal(value.getValue()));
   }
 }

@@ -27,7 +27,7 @@ jest.mock('@esmf/aspect-model-loader', () => {
   class NamedElement {}
   class Samm {
     constructor(public base: string) {}
-    Value() {
+    ValueProperty() {
       return DataFactory.namedNode('http://samm/value');
     }
   }
@@ -108,21 +108,6 @@ describe('ValueVisitor', () => {
     rdfNodeServiceUpdate.mockClear();
   });
 
-  it('should return null when value is predefined', () => {
-    const predefined = new DefaultValue({
-      metaModelVersion: '1',
-      aspectModelUrn: 'samm#pre',
-      name: 'pre',
-      value: 'http://example.com/ignored',
-      isPredefined: true,
-    });
-    const result = service.visit(predefined);
-
-    expect(result).toBeNull();
-    expect(rdfNodeServiceUpdate).not.toHaveBeenCalled();
-    expect(addQuadSpy).not.toHaveBeenCalled();
-  });
-
   it('should update aspectModelUrn to include name and calls rdfNodeService.update', () => {
     const updated = service.visit(defaultValue);
 
@@ -132,7 +117,6 @@ describe('ValueVisitor', () => {
       preferredName: [{language: 'en', value: 'Value EN'}],
       description: [{language: 'en', value: 'Description EN'}],
       see: [],
-      value: 'http://example.com/value_test',
     });
   });
 });

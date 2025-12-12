@@ -14,6 +14,7 @@ import {ElementSet} from '../../shared/elements-set';
 import {EnumerationProps} from '../../shared/props';
 import {DefaultEntityInstance, EntityInstance} from '../default-entity-instance';
 import {DefaultValue} from '../default-value';
+import {NamedElement} from '../named-element';
 import {Value} from '../value';
 import {Characteristic, DefaultCharacteristic} from './default-characteristic';
 
@@ -26,7 +27,7 @@ export class DefaultEnumeration extends DefaultCharacteristic implements Enumera
   values: (Value | DefaultEntityInstance | DefaultValue)[];
 
   override get children(): ElementSet {
-    const elementValues = this.values.filter(v => v instanceof DefaultEntityInstance);
+    const elementValues = this.values.filter(v => v instanceof NamedElement);
     return super.children.append(elementValues as any[]);
   }
 

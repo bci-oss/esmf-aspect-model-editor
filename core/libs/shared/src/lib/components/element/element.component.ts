@@ -23,7 +23,7 @@ import {MatTooltipModule} from '@angular/material/tooltip';
   imports: [CommonModule, MatTooltipModule],
 })
 export class ElementIconComponent implements OnChanges {
-  @Input() type!: any;
+  @Input() type!: {name: string; symbol?: string};
   @Input() size: 'small' | 'medium' | 'large' = 'large';
   @Input() name = '';
   @Input() description = '';

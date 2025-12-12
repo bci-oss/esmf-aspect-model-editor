@@ -18,3 +18,17 @@
 .entity-values {
   margin-bottom: 24px;
 }
+
+.is-value {
+  background-color: var(--ame-value) !important;
+}
+
+.inline {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+
+  ame-element {
+    margin-right: 5px;
+  }
+}

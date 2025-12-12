@@ -294,8 +294,14 @@ export class MxGraphVisitorHelper {
   }
 
   static addExampleValue(property: Property): ShapeAttribute {
-    if (property.exampleValue) {
-      return {label: `exampleValue = ${property.exampleValue}`, key: 'exampleValue'};
+    const value = property.exampleValue
+      ? property.exampleValue instanceof DefaultValue
+        ? property.exampleValue.name
+        : `"${property.exampleValue.value}"`
+      : '';
+
+    if (value) {
+      return {label: `exampleValue = ${value}`, key: 'exampleValue'};
     }
     return null;
   }

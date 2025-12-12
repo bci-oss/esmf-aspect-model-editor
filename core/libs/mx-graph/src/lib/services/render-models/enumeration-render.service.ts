@@ -22,6 +22,8 @@ import {
   DefaultEntityInstance,
   DefaultEnumeration,
   DefaultProperty,
+  DefaultValue,
+  ScalarValue,
 } from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
 import {MxGraphHelper} from '../../helpers';
@@ -58,11 +60,56 @@ export class EnumerationRenderService extends BaseRenderService {
     } else {
       this.removeFloatingEntityValues(cell);
     }
+    this.handleValues(cell, form.enumValues || []);
     this.handleComplexValues(cell, form);
     this.removeElementCharacteristic(cell);
     this.unitRendererService.removeFrom(cell);
     this.removeStructuredValueProperties(cell);
     super.update({cell, form});
+  }
+
+  private handleValues(cell: mxgraph.mxCell, valuesList: (ScalarValue | DefaultValue)[]) {
+    const existentValues = (
+      this.mxGraphService.graph
+        .getOutgoingEdges(cell)
+        ?.map(edge => ({edge, modelElement: MxGraphHelper.getModelElement<DefaultValue>(edge.target)})) || []
+    ).reduce(
+      (acc, curr) => {
+        acc[curr.modelElement.aspectModelUrn] = curr;
+        return acc;
+      },
+      {} as Record<string, {edge: mxgraph.mxCell; modelElement: DefaultValue}>,
+    );
+
+    for (const value of valuesList) {
+      if (value instanceof ScalarValue) {
+        continue;
+      }
+
+      if (existentValues[value.aspectModelUrn]) {
+        this.connectElements(cell, existentValues[value.aspectModelUrn].edge.target);
+        delete existentValues[value.aspectModelUrn];
+        continue;
+      }
+
+      const existingCell = this.inMxGraph(value);
+      if (existingCell) {
+        this.connectElements(cell, existingCell);
+        continue;
+      }
+
+      const valueModel = this.filtersService.createNode(value, {parent: MxGraphHelper.getModelElement(cell)});
+      const valueCell = this.mxGraphService.renderModelElement(valueModel);
+      this.connectElements(cell, valueCell);
+    }
+
+    this.mxGraphService.removeCells(Object.values(existentValues).map(value => value.edge));
+  }
+
+  private connectElements(parentCell: mxgraph.mxCell, childCell: mxgraph.mxCell) {
+    this.mxGraphService.assignToParent(childCell, parentCell);
+    this.mxGraphService.graph.labelChanged(parentCell, MxGraphHelper.createPropertiesLabel(parentCell));
+    this.mxGraphService.graph.labelChanged(childCell, MxGraphHelper.createPropertiesLabel(childCell));
   }
 
   private removeStructuredValueProperties(cell: mxgraph.mxCell) {

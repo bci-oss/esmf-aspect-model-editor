@@ -12,7 +12,7 @@
  */
 
 import {ModelApiService} from '@ame/api';
-import {LoadedFilesService} from '@ame/cache';
+import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {ConfirmDialogService, FileHandlingService, ModelSaverService} from '@ame/editor';
 import {ElectronSignals, ElectronSignalsService, NotificationsService} from '@ame/shared';
 import {FileStatus, SidebarStateService} from '@ame/sidebar';
@@ -26,6 +26,7 @@ import {MatInput} from '@angular/material/input';
 import {MatMenu, MatMenuItem, MatMenuTrigger} from '@angular/material/menu';
 import {MatTooltip} from '@angular/material/tooltip';
 import {TranslatePipe} from '@ngx-translate/core';
+import {filter, switchMap, tap} from 'rxjs';
 import {ConfirmDialogEnum} from '../../../../../editor/src/lib/models/confirm-dialog.enum';
 import {WorkspaceMigrateComponent} from '../workspace-migrate/workspace-migrate.component';
 
@@ -197,24 +198,23 @@ export class WorkspaceFileListComponent {
   public deleteFile() {
     const {namespace, file} = this.menuSelection;
     const aspectModelFileName = `${namespace}:${file.name}`;
-    this.confirmDialogService
-      .open({
-        phrases: [
-          this.translate.translateService.instant('CONFIRM_DIALOG.DELETE_FILE.PHRASE1', {fileName: file.name}),
-          this.translate.language.CONFIRM_DIALOG.DELETE_FILE.PHRASE2,
-        ],
-        title: this.translate.language.CONFIRM_DIALOG.DELETE_FILE.TITLE,
-      })
-      .subscribe(confirm => {
-        if (confirm !== ConfirmDialogEnum.cancel) {
-          this.modelApiService.deleteAspectModel(this.menuSelection.file.aspectModelUrn).subscribe(() => {
-            this.sidebarService.workspace.refresh();
-            this.electronSignalsService.call('requestRefreshWorkspaces');
-          });
+    const model = namespace.split(':');
+
+    this.fileHandlingService
+      .loadWorkspaceModelsByNamespace(model[0], model[1])
+      .pipe(
+        filter((models: NamespaceFile[]) => models.some(model => model.originalName === file.name)),
+        switchMap(() => this.confirmDialogService.open(this.deleteFileConfirmationData(file))),
+        filter(confirm => confirm !== ConfirmDialogEnum.cancel),
+        switchMap(() => this.modelApiService.deleteAspectModel(this.menuSelection.file.aspectModelUrn)),
+        tap(() => {
+          this.sidebarService.workspace.refresh();
+          this.electronSignalsService.call('requestRefreshWorkspaces');
           this.sidebarService.selection.reset();
           this.loadedFiles.removeFile(aspectModelFileName);
-        }
-      });
+        }),
+      )
+      .subscribe();
   }
 
   public copyNamespace() {
@@ -253,5 +253,15 @@ export class WorkspaceFileListComponent {
 
       return '';
     });
+  }
+
+  private deleteFileConfirmationData(file: FileStatus) {
+    return {
+      phrases: [
+        this.translate.translateService.instant('CONFIRM_DIALOG.DELETE_FILE.PHRASE1', {fileName: file.name}),
+        this.translate.language.CONFIRM_DIALOG.DELETE_FILE.PHRASE2,
+      ],
+      title: this.translate.language.CONFIRM_DIALOG.DELETE_FILE.TITLE,
+    };
   }
 }

@@ -38,6 +38,10 @@ export class DefaultProperty extends NamedElement implements Property {
       children.push(this.characteristic);
     }
 
+    if (this.exampleValue instanceof NamedElement) {
+      children.push(this.exampleValue);
+    }
+
     return children;
   }
 

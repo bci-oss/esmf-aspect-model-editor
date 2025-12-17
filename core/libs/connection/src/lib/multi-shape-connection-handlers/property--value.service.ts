@@ -11,18 +11,18 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
+import {MxGraphHelper} from '@ame/mx-graph';
 import {NotificationsService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {Injectable, inject} from '@angular/core';
 import {DefaultProperty, DefaultValue} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
+import {BaseConnectionHandler} from '../base-connection-handler.service';
 
 @Injectable({providedIn: 'root'})
-export class PropertyValueConnectionHandler {
+export class PropertyValueConnectionHandler extends BaseConnectionHandler {
   private notificationService = inject(NotificationsService);
   private translate = inject(LanguageTranslationService);
-  private mxGraphService = inject(MxGraphService);
 
   public connect(parentMetaModel: DefaultProperty, childMetaModel: DefaultValue, parentCell: mxgraph.mxCell, childCell: mxgraph.mxCell) {
     if (parentMetaModel.isPredefined) {
@@ -46,11 +46,18 @@ export class PropertyValueConnectionHandler {
         .getOutgoingEdges(parentCell)
         .find(edge => MxGraphHelper.getModelElement(edge.target) instanceof DefaultValue);
 
-      const exampleValue = MxGraphHelper.getModelElement<DefaultValue>(obsoleteEdge.target);
-      MxGraphHelper.removeRelation(parentMetaModel, exampleValue);
+      if (obsoleteEdge) {
+        const exampleValue = MxGraphHelper.getModelElement<DefaultValue>(obsoleteEdge.target);
+        MxGraphHelper.removeRelation(parentMetaModel, exampleValue);
 
-      this.mxGraphService.removeCells([obsoleteEdge]);
+        this.mxGraphService.removeCells([obsoleteEdge]);
+      }
     }
+
+    parentMetaModel.exampleValue = childMetaModel;
+    childMetaModel.parents.push(parentMetaModel);
+
+    this.refreshPropertiesLabel(parentCell, parentMetaModel);
 
     this.mxGraphService.assignToParent(childCell, parentCell);
   }

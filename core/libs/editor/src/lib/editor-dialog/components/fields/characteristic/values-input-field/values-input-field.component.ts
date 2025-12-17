@@ -36,7 +36,15 @@ import {MatChipEditedEvent, MatChipGrid, MatChipInput, MatChipRow, MatChipsModul
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatError, MatInput, MatLabel} from '@angular/material/input';
-import {DefaultEntity, DefaultEntityInstance, DefaultEnumeration, DefaultValue, NamedElement, ScalarValue} from '@esmf/aspect-model-loader';
+import {
+  DefaultEntity,
+  DefaultEntityInstance,
+  DefaultEnumeration,
+  DefaultValue,
+  NamedElement,
+  ScalarValue,
+  Value,
+} from '@esmf/aspect-model-loader';
 import {debounceTime} from 'rxjs/operators';
 import {EntityInstanceViewComponent} from '../../../entity-instance';
 import {InputFieldComponent} from '../../input-field.component';
@@ -77,8 +85,9 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
   public editable = true;
   public removable = true;
   public hasComplexValues = signal(false);
+  public initialValues: Record<string, boolean> = {};
 
-  public enumValues: WritableSignal<Array<ScalarValue | DefaultValue>> = signal([]);
+  public enumValues: WritableSignal<Array<Value | DefaultValue | DefaultEntityInstance>> = signal([]);
   public enumEntityValues = computed(() => this.enumValues().filter(v => v instanceof DefaultEntityInstance));
   public valuesElements = computed(() => this.enumValues().filter(v => v instanceof DefaultValue));
 
@@ -127,7 +136,7 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
   }
 
   onEnumChange() {
-    this.parentForm.setControl('enumValues', new FormControl(this.enumValues()));
+    this.parentForm.get('enumValues')?.setValue(this.enumValues());
   }
 
   addValue(value: ScalarValue | DefaultValue | string, isLiteral = true) {
@@ -147,12 +156,12 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
 
     this.enumValues.update(values => [...values, value]);
     this.parentForm.get('chipList').setValue(this.enumValues());
-    this.parentForm.setControl('enumValues', new FormControl(this.enumValues()));
+    this.onEnumChange();
 
     this.autoComplete().options.forEach(option => option.deselect());
   }
 
-  editValue(value: ScalarValue | DefaultValue, event: MatChipEditedEvent) {
+  editValue(value: Value | DefaultValue, event: MatChipEditedEvent) {
     if (value instanceof DefaultValue) {
       value.name = event.value;
     } else {
@@ -162,7 +171,6 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
 
   setValue(value: DefaultValue, stringValue: string) {
     value.value = stringValue;
-    console.log(this.valuesElements());
   }
 
   paste(event: ClipboardEvent): void {
@@ -180,7 +188,7 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
       });
   }
 
-  remove(value: ScalarValue | DefaultValue) {
+  remove(value: Value | DefaultValue) {
     const index = this.enumValues().indexOf(value);
 
     if (index >= 0) {
@@ -199,8 +207,11 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
       'chipList',
       new FormControl({value: this.enumValues(), disabled: this.loadedFiles.isElementExtern(this.metaModelElement)}, Validators.required),
     );
+    this.enumValues.set(this.metaModelElement.values || []);
+    this.parentForm.setControl('enumValues', new FormControl(this.enumValues()));
 
     if (this.parentForm.get('dataTypeEntity').value instanceof DefaultEntity) {
+      this.enumValueChange((this.metaModelElement.values as DefaultEntityInstance[]) || []);
       this.hasComplexValues.set(true);
     }
 
@@ -216,6 +227,12 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
         this.hasComplexValues.set(!!entity);
       }),
     );
+
+    for (const value of this.enumValues()) {
+      if (!(value instanceof DefaultValue)) continue;
+
+      this.initialValues[value.aspectModelUrn] = true;
+    }
   }
 
   private changeValuesByDataType(dataType: string) {

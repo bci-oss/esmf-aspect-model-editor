@@ -14,7 +14,7 @@
 import {ShapeConnectorService} from '@ame/connection';
 import {FiltersService} from '@ame/loader-filters';
 import {inject, Injectable} from '@angular/core';
-import {DefaultProperty, DefaultValue} from '@esmf/aspect-model-loader';
+import {DefaultProperty, DefaultValue, NamedElement} from '@esmf/aspect-model-loader';
 import {mxgraph} from 'mxgraph-factory';
 import {MxGraphHelper} from '../../helpers';
 import {RendererUpdatePayload} from '../../models';
@@ -39,10 +39,14 @@ export class PropertyRenderService extends BaseRenderService {
   private handleExampleValueElement(cell: mxgraph.mxCell) {
     const element = MxGraphHelper.getElementNode<DefaultProperty>(cell).element;
     if (!element.exampleValue) {
+      this.removeExampleValueConnection(cell);
       return;
     }
 
-    if (!(element.exampleValue instanceof DefaultValue)) return;
+    if (!(element.exampleValue instanceof DefaultValue)) {
+      this.removeExampleValueConnection(cell);
+      return;
+    }
 
     const existing = this.mxGraphService.resolveCellByModelElement(element.exampleValue);
 
@@ -74,5 +78,17 @@ export class PropertyRenderService extends BaseRenderService {
           node.children.find(childNode => childNode.element.aspectModelUrn === extendsElement.aspectModelUrn),
         );
     this.shapeConnectorService.connectShapes(metaModelElement, extendsElement, cell, entityCell);
+  }
+
+  private removeExampleValueConnection(cell: mxgraph.mxCell) {
+    this.mxGraphService.graph
+      .getOutgoingEdges(cell)
+      .filter(edge => {
+        const targetModel = MxGraphHelper.getModelElement<NamedElement>(edge.target);
+        return targetModel instanceof DefaultValue;
+      })
+      .forEach(edgeToRemove => {
+        this.mxGraphService.removeCells([cell.removeEdge(edgeToRemove, true)]);
+      });
   }
 }

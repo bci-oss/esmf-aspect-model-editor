@@ -19,7 +19,7 @@ import {Value} from '../value';
 import {Characteristic, DefaultCharacteristic} from './default-characteristic';
 
 export interface Enumeration extends Characteristic {
-  values: Value[];
+  values: (Value | DefaultEntityInstance | DefaultValue)[];
 }
 
 export class DefaultEnumeration extends DefaultCharacteristic implements Enumeration {

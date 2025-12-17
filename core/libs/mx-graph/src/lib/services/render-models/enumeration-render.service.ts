@@ -60,6 +60,7 @@ export class EnumerationRenderService extends BaseRenderService {
     } else {
       this.removeFloatingEntityValues(cell);
     }
+
     this.handleValues(cell, form.enumValues || []);
     this.handleComplexValues(cell, form);
     this.removeElementCharacteristic(cell);
@@ -69,6 +70,8 @@ export class EnumerationRenderService extends BaseRenderService {
   }
 
   private handleValues(cell: mxgraph.mxCell, valuesList: (ScalarValue | DefaultValue)[]) {
+    if (valuesList.some(value => value instanceof DefaultEntityInstance)) return;
+
     const existentValues = (
       this.mxGraphService.graph
         .getOutgoingEdges(cell)
@@ -108,8 +111,8 @@ export class EnumerationRenderService extends BaseRenderService {
 
   private connectElements(parentCell: mxgraph.mxCell, childCell: mxgraph.mxCell) {
     this.mxGraphService.assignToParent(childCell, parentCell);
-    this.mxGraphService.graph.labelChanged(parentCell, MxGraphHelper.createPropertiesLabel(parentCell));
-    this.mxGraphService.graph.labelChanged(childCell, MxGraphHelper.createPropertiesLabel(childCell));
+    MxGraphHelper.updateLabel(parentCell, this.mxGraphService.graph, this.sammLangService);
+    MxGraphHelper.updateLabel(childCell, this.mxGraphService.graph, this.sammLangService);
   }
 
   private removeStructuredValueProperties(cell: mxgraph.mxCell) {

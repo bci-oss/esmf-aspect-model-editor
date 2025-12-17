@@ -35,19 +35,29 @@
     <mat-autocomplete #auto="matAutocomplete" [hideSingleSelectionIndicator]="true">
       @if (exampleValueInput.value) {
         <mat-option [value]="exampleValueInput.value" (click)="selectExampleValue(exampleValueInput.value)">
-          + New scalar value: {{ exampleValueInput.value }}
+          <ame-element
+            [isNewValue]="true"
+            [type]="{type: 'text', symbol: 'T'}"
+            [name]="exampleValueInput.value"
+            size="medium"
+          ></ame-element>
         </mat-option>
       }
 
       @let fValues = filteredValues();
       @if (fValues.length === 0 && exampleValueInput.value) {
         <mat-option [value]="exampleValueInput.value" (click)="selectExampleValue(exampleValueInput.value, false)">
-          <ame-element [type]="{name: 'value', symbol: 'V'}" [name]="`+ New Value: ${exampleValueInput.value}`" size="medium"></ame-element>
+          <ame-element
+            [isNewValue]="true"
+            [type]="{type: 'value', symbol: 'V'}"
+            [name]="exampleValueInput.value"
+            size="medium"
+          ></ame-element>
         </mat-option>
       } @else {
         @for (value of fValues; track value.name) {
           <mat-option [value]="value.name" (click)="selectExampleValue(value)">
-            <ame-element [type]="{name: 'value', symbol: 'V'}" [name]="value.name" size="medium"></ame-element>
+            <ame-element [type]="{type: 'value', symbol: 'V'}" [name]="value.name" size="medium"></ame-element>
           </mat-option>
         }
       }

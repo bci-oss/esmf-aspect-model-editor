@@ -21,7 +21,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIcon} from '@angular/material/icon';
 import {MatInput, MatLabel} from '@angular/material/input';
 import {DefaultEntity, DefaultEntityInstance, DefaultState, DefaultValue, ScalarValue} from '@esmf/aspect-model-loader';
-import {map, tap} from 'rxjs';
+import {map} from 'rxjs';
 import {InputFieldComponent} from '../../input-field.component';
 
 @Component({
@@ -50,11 +50,13 @@ export class DefaultValueInputFieldComponent extends InputFieldComponent<Default
   public isComplexDatatype: Signal<boolean>;
 
   public filteredValues = computed(() => {
-    return this.createdValues().filter(v => v.name.match(new RegExp(this.displaySignalValue(), 'i')));
+    return this.createdValues().filter(v => v instanceof DefaultValue && v.name.match(new RegExp(this.displaySignalValue(), 'i')));
   });
 
   public filteredEntityValues = computed(() => {
-    return this.createdEntityValues().filter(v => v.name.match(new RegExp(this.displaySignalValue(), 'i')));
+    return this.createdEntityValues().filter(
+      v => v instanceof DefaultEntityInstance && v.name.match(new RegExp(this.displaySignalValue(), 'i')),
+    );
   });
 
   private get samm() {
@@ -82,8 +84,6 @@ export class DefaultValueInputFieldComponent extends InputFieldComponent<Default
   }
 
   initForm() {
-    this.parentForm.valueChanges.subscribe(console.log);
-
     const defaultValue = this.metaModelElement.defaultValue;
 
     this.displayControl.setValue(defaultValue?.['name'] || defaultValue?.['value'] || '');
@@ -108,24 +108,7 @@ export class DefaultValueInputFieldComponent extends InputFieldComponent<Default
       }),
     );
 
-    runInInjectionContext(this.injector, () => {
-      this.createdValues = toSignal(
-        this.parentForm.get<string>('enumValues').valueChanges.pipe(map(values => values.filter(value => value instanceof DefaultValue))),
-        {initialValue: this.parentForm.get<string>('enumValues').value || []},
-      );
-
-      this.createdEntityValues = toSignal(
-        this.parentForm.get<string>('chipList').valueChanges.pipe(
-          map(values => values.filter(value => value instanceof DefaultEntityInstance)),
-          tap(console.log),
-        ),
-        {initialValue: this.parentForm.get<string>('chipList').value || []},
-      );
-
-      this.isComplexDatatype = toSignal(this.parentForm.get('dataTypeEntity').valueChanges, {
-        initialValue: this.dataType instanceof DefaultEntity,
-      });
-    });
+    this.setValueSignals();
   }
 
   addValue(value: ScalarValue | DefaultValue | string, isLiteral = true) {
@@ -152,5 +135,27 @@ export class DefaultValueInputFieldComponent extends InputFieldComponent<Default
     this.parentForm.get(this.fieldName).setValue(new ScalarValue({value: '', type: this.dataType || null}));
 
     this.autoComplete().options.forEach(option => option.deselect());
+  }
+
+  private setValueSignals() {
+    const filterByType =
+      <T>(type: {new (...x: any[]): T}) =>
+      (values: T[]) =>
+        values.filter(value => value instanceof type);
+
+    runInInjectionContext(this.injector, () => {
+      this.createdValues = toSignal(this.parentForm.get<string>('enumValues').valueChanges.pipe(map(filterByType(DefaultValue))), {
+        initialValue: filterByType(DefaultValue)(this.parentForm.get<string>('enumValues').value || []),
+      });
+
+      this.createdEntityValues = toSignal(
+        this.parentForm.get<string>('chipList').valueChanges.pipe(map(filterByType(DefaultEntityInstance))),
+        {initialValue: filterByType(DefaultEntityInstance)(this.parentForm.get<string>('chipList').value || [])},
+      );
+
+      this.isComplexDatatype = toSignal(this.parentForm.get('dataTypeEntity').valueChanges, {
+        initialValue: this.dataType instanceof DefaultEntity,
+      });
+    });
   }
 }

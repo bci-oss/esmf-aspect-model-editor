@@ -91,8 +91,17 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
   public enumEntityValues = computed(() => this.enumValues().filter(v => v instanceof DefaultEntityInstance));
   public valuesElements = computed(() => this.enumValues().filter(v => v instanceof DefaultValue));
 
+  private valuesElementsMap = computed(() => {
+    const map: Record<string, boolean> = {};
+    for (const value of this.valuesElements()) {
+      map[value.name] = true;
+    }
+    return map;
+  });
+
   public filteredValues = computed(() => {
-    return this.values().filter(v => v.name.match(new RegExp(this.valueControlSignal(), 'i')));
+    const valuesElementsMap = this.valuesElementsMap();
+    return this.values().filter(v => !valuesElementsMap[v.name] && v.name.match(new RegExp(this.valueControlSignal(), 'i')));
   });
 
   get samm() {

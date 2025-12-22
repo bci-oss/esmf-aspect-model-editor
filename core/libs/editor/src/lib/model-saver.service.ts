@@ -1,5 +1,6 @@
 import {ModelApiService} from '@ame/api';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
+import {FileHandlingService} from '@ame/editor';
 import {ModelService, RdfSerializerService} from '@ame/rdf/services';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {ModelSavingTrackerService, NotificationsService, SaveValidateErrorsCodes} from '@ame/shared';
@@ -8,7 +9,22 @@ import {LanguageTranslationService} from '@ame/translation';
 import {DestroyRef, Injectable, inject} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {RdfModel} from '@esmf/aspect-model-loader';
-import {Observable, Subscription, catchError, delayWhen, first, map, of, retry, switchMap, tap, throwError, timer} from 'rxjs';
+import {
+  Observable,
+  Subscription,
+  catchError,
+  concatMap,
+  delayWhen,
+  filter,
+  first,
+  map,
+  of,
+  retry,
+  switchMap,
+  tap,
+  throwError,
+  timer,
+} from 'rxjs';
 
 @Injectable({providedIn: 'root'})
 export class ModelSaverService {
@@ -22,6 +38,7 @@ export class ModelSaverService {
   private sidebarService = inject(SidebarStateService);
   private translate = inject(LanguageTranslationService);
   private configurationService = inject(ConfigurationService);
+  private fileHandlingService = inject(FileHandlingService);
 
   private saveModelSubscription$: Subscription;
 
@@ -111,13 +128,18 @@ export class ModelSaverService {
 
         const saveModel = () =>
           this.modelApiService.saveAspectModel(contentWithCopyright, newAspectModelUrn, this.currentFile?.absoluteName || '');
-
         if (this.currentFile) {
           this.currentFile.originalAspectModelUrn = newAspectModelUrn;
         }
 
         if (this.currentFile?.isNameChanged || this.currentFile?.isNamespaceChanged) {
-          return this.modelApiService.deleteAspectModel(originalAspectModelUrn).pipe(switchMap(saveModel));
+          return this.fileHandlingService
+            .isFileExistOnWorkspace(this.currentFile.name, this.currentFile.namespace, this.currentFile.name)
+            .pipe(
+              filter(Boolean),
+              switchMap(() => this.modelApiService.deleteAspectModel(originalAspectModelUrn)),
+              concatMap(saveModel),
+            );
         }
 
         return saveModel();

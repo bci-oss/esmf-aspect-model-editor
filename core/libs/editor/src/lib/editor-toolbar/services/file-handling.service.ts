@@ -764,4 +764,10 @@ export class FileHandlingService {
       } as LoadedFilePayload;
     });
   }
+
+  isFileExistOnWorkspace(namespaceName: string, namespaceVersion: string, fileName: string): Observable<boolean> {
+    return this.loadWorkspaceModelsByNamespace(namespaceName, namespaceVersion).pipe(
+      map((models: NamespaceFile[]) => models.some(model => model.originalName === fileName)),
+    );
+  }
 }

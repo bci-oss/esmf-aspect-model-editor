@@ -766,8 +766,8 @@ export class FileHandlingService {
   }
 
   isFileExistOnWorkspace(namespaceName: string, namespaceVersion: string, fileName: string): Observable<boolean> {
-    return this.loadWorkspaceModelsByNamespace(namespaceName, namespaceVersion).pipe(
-      map((models: NamespaceFile[]) => models.some(model => model.originalName === fileName)),
+    return this.getAllWorkspaceModelsByNamespace(namespaceName, namespaceVersion).pipe(
+      map((models: ModelData[]) => models.some((model: ModelData) => model.model === fileName)),
     );
   }
 }

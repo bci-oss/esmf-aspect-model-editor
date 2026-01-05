@@ -76,19 +76,6 @@
       }
     </mat-autocomplete>
   </mat-form-field>
-
-  <div class="value-elements">
-    @for (value of valuesElements(); track $index) {
-      @if (!initialValues[value?.['aspectModelUrn'] || '']) {
-        <mat-form-field floatLabel="always" subscriptSizing="dynamic">
-          <mat-label class="inline"
-            ><ame-element [type]="{type: 'value', symbol: 'V'}" size="small"></ame-element> {{ value.name }}</mat-label
-          >
-          <input [value]="value.value" (change)="setValue(value, $event.target.value)" matInput placeholder="{{ value.name }} value" />
-        </mat-form-field>
-      }
-    }
-  </div>
 } @else {
   <ame-entity-instance-view
     class="entity-values"

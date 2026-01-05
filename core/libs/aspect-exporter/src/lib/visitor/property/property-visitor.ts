@@ -57,7 +57,10 @@ export class PropertyVisitor extends BaseVisitor<DefaultProperty> {
       this.samm.ExampleValueProperty(),
       property.exampleValue instanceof DefaultValue
         ? DataFactory.namedNode(property.exampleValue.aspectModelUrn)
-        : DataFactory.literal(property.exampleValue.value.toString(), property.characteristic.dataType?.aspectModelUrn),
+        : DataFactory.literal(
+            property.exampleValue.value.toString(),
+            DataFactory.namedNode(property.characteristic.dataType?.aspectModelUrn),
+          ),
     );
   }
 

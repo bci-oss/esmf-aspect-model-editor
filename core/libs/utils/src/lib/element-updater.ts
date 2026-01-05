@@ -129,7 +129,7 @@ const enumeration = (enumeration: DefaultEnumeration): ElementUpdater => ({
 
     if (toRemove instanceof DefaultValue) {
       enumeration.values = enumeration.values.filter(
-        value => value instanceof DefaultValue && value.aspectModelUrn !== toRemove.aspectModelUrn,
+        value => !(value instanceof DefaultValue) || value.aspectModelUrn !== toRemove.aspectModelUrn,
       );
     }
   },

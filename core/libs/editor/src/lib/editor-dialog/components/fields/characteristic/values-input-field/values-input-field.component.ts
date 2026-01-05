@@ -157,7 +157,7 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
     } else if (typeof value === 'string') {
       value = new DefaultValue({
         aspectModelUrn: this.metaModelElement.namespace + `#${value}`,
-        value: '',
+        value: 'Value',
         name: value,
         metaModelVersion: this.samm.version,
       });
@@ -176,10 +176,6 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
     } else {
       value.value = event.value;
     }
-  }
-
-  setValue(value: DefaultValue, stringValue: string) {
-    value.value = stringValue;
   }
 
   paste(event: ClipboardEvent): void {

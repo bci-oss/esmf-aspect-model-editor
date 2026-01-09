@@ -11,6 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-export * from './light-theme';
-export * from './styles';
-export * from './theme.service';
+export const COLORS = {
+  text: '#000000',
+  propertyFill: '#C5C8D4',
+} as const;
+
+export const FONT = {
+  edge: 10,
+  node: 12,
+} as const;

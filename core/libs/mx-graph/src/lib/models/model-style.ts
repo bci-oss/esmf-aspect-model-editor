@@ -43,6 +43,21 @@ export enum ModelStyle {
   ABSTRACT_ENTITY = 'abstractEntity',
   EVENT = 'event',
   VALUE = 'value',
+
+  ASPECT_PROP = 'aspect_property',
+  PROPERTY_PROP = 'property_property',
+  OPERATION_PROP = 'operation_property',
+  EVENT_PROP = 'event_property',
+  CHARACTERISTIC_PROP = 'characteristic_property',
+  CONSTRAINT_PROP = 'constraint_property',
+  ENTITY_PROP = 'entity_property',
+  ABSTRACT_ENTITY_PROP = 'abstractEntity_property',
+  ABSTRACT_PROPERTY_PROP = 'abstractProperty_property',
+  UNIT_PROP = 'unit_property',
+  TRAIT_PROP = 'trait_property',
+  ENTITY_VALUE = 'entityValue',
+  FILTERED_ENTITY = 'filteredProperties_entity',
+  FILTERED_EITHER = 'filteredProperties_either',
 }
 
 export enum EdgeStyles {

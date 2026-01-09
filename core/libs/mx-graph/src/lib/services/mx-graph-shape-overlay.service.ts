@@ -32,6 +32,7 @@ import {
   DefaultStructuredValue,
   DefaultTrait,
   DefaultUnit,
+  DefaultValue,
   NamedElement,
 } from '@esmf/aspect-model-loader';
 import {AlignValue, Cell, CellOverlay, Geometry, ImageBox, InternalEvent} from '@maxgraph/core';
@@ -161,10 +162,7 @@ export class MxGraphShapeOverlayService {
 
     if (!this.filtersService.currentFilter.hasOverlay(modelElement)) return;
     if (modelElement?.isPredefined) return;
-    if (cell.style.fillColor?.includes('unit')) return;
-    if (cell.style.fillColor?.includes('constraint')) return;
-    if (cell.style.fillColor?.includes('entityValue')) return;
-    if ([DefaultConstraint, DefaultEntityInstance, DefaultUnit].some(c => modelElement instanceof c)) return;
+    if ([DefaultConstraint, DefaultEntityInstance, DefaultUnit, DefaultValue].some(c => modelElement instanceof c)) return;
 
     const elementOffset = 40;
 

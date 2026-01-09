@@ -38,7 +38,7 @@ class SidebarStateWithRefresh extends SidebarState {
   readonly refreshTick = signal(0);
 
   refresh() {
-    this.refreshTick.update(n => n + 1);
+    this.refreshTick.update(n => (n + 1) % 10);
   }
 }
 
@@ -72,6 +72,7 @@ export class FileStatus {
   public loaded: boolean;
   public outdated: boolean;
   public errored: boolean;
+  public isLoadedInWorkspace: boolean;
   public sammVersion: string;
   public dependencies: string[];
   public missingDependencies: string[];
@@ -153,15 +154,15 @@ export class SidebarStateService {
     return false;
   }
 
-  updateWorkspace(files: Record<string, FileStatus>) {
-    this.namespacesState.clear();
+  updateWorkspace(fileStatus: FileStatus[]) {
     let hasOutdated = false;
-    for (const absolute of Object.keys(files)) {
-      const fs = files[absolute];
-      const [namespace, version] = RdfModelUtil.splitRdfIntoChunks(absolute);
-      this.namespacesState.setFile(`${namespace}:${version}`, fs);
-      hasOutdated ||= fs.outdated;
+    for (const status of fileStatus) {
+      status.isLoadedInWorkspace = true;
+      const [, , namespace, version] = RdfModelUtil.splitAspectModelUrnIntoChunks(status.aspectModelUrn);
+      this.namespacesState.setFile(`${namespace}:${version}`, status);
+      hasOutdated ||= status.outdated;
     }
+
     this.namespacesState.hasOutdatedFiles.set(hasOutdated);
     this.getLockedFiles(true);
     return this.namespacesState.namespaces();

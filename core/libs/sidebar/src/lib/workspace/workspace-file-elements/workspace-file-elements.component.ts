@@ -17,12 +17,14 @@ import {ModelLoaderService} from '@ame/editor';
 import {MxGraphService} from '@ame/mx-graph';
 import {ElementIconComponent, ElementType, sammElements} from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
-import {ChangeDetectorRef, Component, OnInit, inject} from '@angular/core';
+import {ChangeDetectorRef, Component, effect, inject, signal} from '@angular/core';
 import {MatMiniFabButton} from '@angular/material/button';
 import {MatCheckbox} from '@angular/material/checkbox';
+import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
-import {MatFormField, MatInput} from '@angular/material/input';
+import {MatInput} from '@angular/material/input';
 import {MatMenu, MatMenuTrigger} from '@angular/material/menu';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatTooltip} from '@angular/material/tooltip';
 import {NamedElement} from '@esmf/aspect-model-loader';
 import {TranslatePipe} from '@ngx-translate/core';
@@ -43,11 +45,12 @@ import {DraggableElementComponent} from '../../draggable-element/draggable-eleme
     MatMenu,
     MatTooltip,
     MatIconModule,
-    MatFormField,
+    MatFormFieldModule,
     TranslatePipe,
+    MatProgressSpinnerModule,
   ],
 })
-export class WorkspaceFileElementsComponent implements OnInit {
+export class WorkspaceFileElementsComponent {
   private mxGraphService = inject(MxGraphService);
   private changeDetector = inject(ChangeDetectorRef);
   private modelApiService = inject(ModelApiService);
@@ -58,6 +61,7 @@ export class WorkspaceFileElementsComponent implements OnInit {
 
   public elements: Record<string, any> = {};
   public searched: Record<string, any[]> = {};
+  public loadingElements = signal(false);
 
   public elementsOrder: ElementType[] = [
     'property',
@@ -70,6 +74,7 @@ export class WorkspaceFileElementsComponent implements OnInit {
     'trait',
     'operation',
     'event',
+    'value',
   ];
   public get selection() {
     return this.sidebarService.selection.selection();
@@ -77,25 +82,32 @@ export class WorkspaceFileElementsComponent implements OnInit {
 
   private searchThrottle: NodeJS.Timeout;
 
-  ngOnInit(): void {
-    if (this.selection) {
-      this.elements = {};
-      this.searched = {};
+  constructor() {
+    effect(() => {
+      this.sidebarService.selection.selection();
+      if (this.selection) {
+        this.elements = {};
+        this.searched = {};
 
-      for (const element of this.elementsOrder) {
-        this.elements[element] = {
-          ...sammElements[element],
-          elements: [],
-          hidden: true,
-          displayed: true,
-        };
-        this.searched[element] = this.elements[element].elements;
+        for (const element of this.elementsOrder) {
+          this.elements[element] = {
+            ...sammElements[element],
+            elements: [],
+            hidden: true,
+            displayed: true,
+          };
+          this.searched[element] = this.elements[element].elements;
+        }
+
+        const namespaceFile = this.loadedFilesService.getFile(`${this.selection.namespace}:${this.selection.file}`);
+
+        if (namespaceFile?.cachedFile.getAllElements().length) {
+          this.updateElements(this.loadedFilesService.getFile(`${this.selection.namespace}:${this.selection.file}`));
+        } else {
+          this.requestFile(`${this.selection.namespace}:${this.selection.file}`, this.selection.aspectModelUrn);
+        }
       }
-
-      if (this.loadedFilesService.getFile(`${this.selection.namespace}:${this.selection.file}`)) {
-        this.updateElements(this.loadedFilesService.getFile(`${this.selection.namespace}:${this.selection.file}`));
-      } else this.requestFile(`${this.selection.namespace}:${this.selection.file}`, this.selection.aspectModelUrn);
-    }
+    });
   }
 
   public elementImported(element: NamedElement): boolean {
@@ -142,6 +154,7 @@ export class WorkspaceFileElementsComponent implements OnInit {
   }
 
   private requestFile(absoluteName: string, aspectModelUrn: string) {
+    this.loadingElements.set(true);
     this.modelApiService
       .fetchAspectMetaModel(aspectModelUrn)
       .pipe(
@@ -155,7 +168,16 @@ export class WorkspaceFileElementsComponent implements OnInit {
         ),
         first(),
       )
-      .subscribe({next: file => this.updateElements(file), error: e => console.log(e)});
+      .subscribe({
+        next: file => {
+          this.updateElements(file);
+          this.loadingElements.set(false);
+        },
+        error: e => {
+          console.log(e);
+          this.loadingElements.set(false);
+        },
+      });
   }
 
   protected readonly sammElements = sammElements;

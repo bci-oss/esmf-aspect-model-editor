@@ -23,8 +23,8 @@ export class ShapeLanguageRemover {
   private mxGraphAttributeService = inject(MxGraphAttributeService);
 
   removeUnnecessaryLanguages(locales: string[]) {
-    this.mxGraphAttributeService.graph.getChildCells(this.mxGraphAttributeService.graph.getDefaultParent()).forEach(cell => {
-      const modelElement = MxGraphHelper.getModelElement(cell);
+    this.mxGraphAttributeService.graph.getChildCells(this.mxGraphAttributeService.graph.getDefaultParent()).forEach(mxCell => {
+      const modelElement = MxGraphHelper.getModelElement(mxCell);
       if (!modelElement) {
         return;
       }

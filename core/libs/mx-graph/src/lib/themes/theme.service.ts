@@ -13,6 +13,7 @@
 
 import {Injectable} from '@angular/core';
 import {Cell, CellStyle, Graph} from '@maxgraph/core';
+import {ThemeColors} from '../models';
 import {lightColors} from './light-theme';
 
 @Injectable({providedIn: 'root'})
@@ -20,7 +21,7 @@ export class ThemeService {
   private root: HTMLElement = document.documentElement;
   private graph: Graph;
 
-  public currentColors: any = lightColors;
+  public currentColors: ThemeColors = lightColors;
 
   private static STROKE_WIDTH = 'strokeWidth';
   private static STROKE_Color = 'strokeColor';
@@ -50,6 +51,7 @@ export class ThemeService {
       entityValue: {[ThemeService.FILL_COLOR]: this.currentColors.entityValue},
       filteredProperties_entity: {[ThemeService.FILL_COLOR]: this.currentColors.entity},
       filteredProperties_either: {[ThemeService.FILL_COLOR]: this.currentColors.characteristic},
+      value: {[ThemeService.FILL_COLOR]: this.currentColors.value},
     };
   }
 
@@ -60,7 +62,6 @@ export class ThemeService {
   applyTheme(theme: string) {
     this.setCssVars(theme);
     this.graph.getChildVertices(this.graph.getDefaultParent()).forEach((cell: Cell) => {
-      //debugger;
       this.graph.setCellStyle(this.generateThemeStyle(cell.id), [cell]);
     });
   }

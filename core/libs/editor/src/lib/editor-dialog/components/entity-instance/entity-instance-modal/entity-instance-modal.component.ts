@@ -15,11 +15,12 @@ import {LoadedFilesService} from '@ame/cache';
 import {config} from '@ame/shared';
 import {NgClass} from '@angular/common';
 import {Component, inject} from '@angular/core';
-import {FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle} from '@angular/material/dialog';
+import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
-import {MatError, MatFormField, MatInput, MatLabel} from '@angular/material/input';
+import {MatError, MatInput, MatLabel} from '@angular/material/input';
 import {DefaultEntity, DefaultEntityInstance, DefaultEnumeration, DefaultProperty, Value} from '@esmf/aspect-model-loader';
 import {TranslatePipe} from '@ngx-translate/core';
 import {EditorModelService} from '../../../editor-model.service';
@@ -40,7 +41,7 @@ export interface NewEntityInstanceDialogOptions {
     MatDialogTitle,
     MatIconModule,
     MatIconButton,
-    MatFormField,
+    MatFormFieldModule,
     MatDialogContent,
     MatLabel,
     ReactiveFormsModule,
@@ -51,6 +52,7 @@ export interface NewEntityInstanceDialogOptions {
     TranslatePipe,
     EntityInstanceModalTableComponent,
     MatDialogActions,
+    FormsModule,
   ],
 })
 export class EntityInstanceModalComponent {

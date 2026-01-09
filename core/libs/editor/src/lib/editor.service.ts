@@ -115,8 +115,6 @@ export class EditorService {
       }
     };
 
-    container.addEventListener('wheel', onWheel, {passive: false});
-
     // TODO Check this when refactoring editor service
     // enforce parent domain object will be updated if an cell e.g. unit will be deleted
     // this.mxGraphAttributeService.graph.addListener(

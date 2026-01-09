@@ -14,7 +14,8 @@
 import {Component, inject, OnDestroy, OnInit} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule, Validators} from '@angular/forms';
-import {MatError, MatFormField, MatInput, MatLabel} from '@angular/material/input';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatError, MatInput, MatLabel} from '@angular/material/input';
 import {
   DefaultAspect,
   DefaultCharacteristic,
@@ -23,6 +24,7 @@ import {
   DefaultEntityInstance,
   DefaultProperty,
   DefaultUnit,
+  DefaultValue,
   NamedElement,
 } from '@esmf/aspect-model-loader';
 import {TranslatePipe} from '@ngx-translate/core';
@@ -33,7 +35,7 @@ import {InputFieldComponent} from '../../input-field.component';
   selector: 'ame-name-input-field',
   templateUrl: './name-input-field.component.html',
   styleUrls: ['../../field.scss'],
-  imports: [MatFormField, MatLabel, ReactiveFormsModule, MatInput, MatError, TranslatePipe],
+  imports: [MatFormFieldModule, MatLabel, ReactiveFormsModule, MatInput, MatError, TranslatePipe],
 })
 export class NameInputFieldComponent extends InputFieldComponent<NamedElement> implements OnInit, OnDestroy {
   private editorDialogValidators = inject(EditorDialogValidators);
@@ -70,20 +72,11 @@ export class NameInputFieldComponent extends InputFieldComponent<NamedElement> i
         },
         {
           validators: this.getNameValidators(),
+          asyncValidators: [this.editorDialogValidators.duplicateName(this.metaModelElement)],
         },
       ),
     );
     nameControl = this.parentForm.get('name');
-
-    nameControl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-      const validation = this.editorDialogValidators.duplicateName(this.metaModelElement)(nameControl);
-      if (validation) {
-        nameControl.setErrors({
-          ...(nameControl.errors || {}),
-          ...(validation || {}),
-        });
-      }
-    });
     nameControl.markAsTouched();
   }
 
@@ -98,7 +91,7 @@ export class NameInputFieldComponent extends InputFieldComponent<NamedElement> i
       return nameValidators;
     }
 
-    if (!(this.metaModelElement instanceof DefaultEntityInstance)) {
+    if (![DefaultEntityInstance, DefaultValue].some(el => this.metaModelElement instanceof el)) {
       nameValidators.push(this.isUpperCaseName() ? EditorDialogValidators.namingUpperCase : EditorDialogValidators.namingLowerCase);
     } else {
       nameValidators.push(EditorDialogValidators.noWhiteSpace);
@@ -114,7 +107,8 @@ export class NameInputFieldComponent extends InputFieldComponent<NamedElement> i
       this.metaModelElement instanceof DefaultEntity ||
       (this.metaModelElement instanceof DefaultEntity && this.metaModelElement.isAbstractEntity()) ||
       this.metaModelElement instanceof DefaultConstraint ||
-      this.metaModelElement instanceof DefaultCharacteristic
+      this.metaModelElement instanceof DefaultCharacteristic ||
+      this.metaModelElement instanceof DefaultValue
     );
   }
 }

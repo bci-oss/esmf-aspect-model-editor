@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+ * Copyright (c) 2024 Robert Bosch Manufacturing Solutions GmbH
  *
  * See the AUTHORS file(s) distributed with this work for
  * additional information regarding authorship.
@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-export * from './light-theme';
-export * from './styles';
-export * from './theme.service';
+export * from './graph-style-builder';
+export * from './graph-styles.names';
+export * from './graph-styles.registry';
+export * from './graph-styles.tokens';

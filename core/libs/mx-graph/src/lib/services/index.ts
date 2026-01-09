@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+export * from '../themes/styles/graph-style-builder';
 export * from './mx-graph-attribute.service';
 export * from './mx-graph-geometry-provider.service';
 export * from './mx-graph-setup.service';

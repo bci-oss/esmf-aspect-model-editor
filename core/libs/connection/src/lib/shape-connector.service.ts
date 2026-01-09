@@ -133,8 +133,8 @@ export class ShapeConnectorService {
       return this.notificationsService.error({title: this.translate.language.NOTIFICATION_SERVICE.ONLY_TWO_ELEMENTS_CONNECTION});
     }
 
-    const firstElement = selectedCells[0].style.split(';')[0];
-    const secondElement = selectedCells[1].style.split(';')[0];
+    const firstElement = selectedCells[0].style.baseStyleNames[0];
+    const secondElement = selectedCells[1].style.baseStyleNames[0];
     const modelElements = selectedCells.map(e => MxGraphHelper.getModelElement(e));
 
     if (

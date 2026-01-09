@@ -11,11 +11,6 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-/**
- * Code taken from mxGraph github and updated per requirements
- * https://github.com/jgraph/mxgraph/blob/master/javascript/examples/extendcanvas.html
- */
-
 import {LoadedFilesService} from '@ame/cache';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {APP_CONFIG, AssetsPath, BindingsService, BrowserService} from '@ame/shared';
@@ -32,12 +27,17 @@ import {
   Point,
   PopupMenuHandler,
   Rectangle,
+  registerDefaultEdgeMarkers,
+  registerDefaultEdgeStyles,
+  registerDefaultPerimeters,
+  registerDefaultShapes,
   SelectionHandler,
   StackLayout,
   styleUtils,
   VertexHandlerConfig,
 } from '@maxgraph/core';
 import {MxGraphHelper, ShapeAttribute} from '../helpers';
+import {GraphStylesRegistry} from '../themes';
 import {MxGraphAttributeService} from './mx-graph-attribute.service';
 import {MxGraphShapeSelectorService} from './mx-graph-shape-selector.service';
 
@@ -65,10 +65,16 @@ export class MxGraphSetupService {
 
   setUp() {
     this.ngZone.runOutsideAngular(() => {
-      const container = <HTMLElement>document.getElementById('graph');
+      registerDefaultEdgeMarkers();
+      registerDefaultEdgeStyles();
+      registerDefaultPerimeters();
+      registerDefaultShapes();
+
+      const container = document.getElementById('graph') as HTMLElement;
       InternalEvent.disableContextMenu(container);
 
       this.graph = new Graph(container);
+      GraphStylesRegistry.setupStyles(this.graph);
 
       // const editor = (this.mxGraphAttributeService.editor = new mxEditor(
       //   mxUtils.load(this.appConfig.editorConfiguration).getDocumentElement(),

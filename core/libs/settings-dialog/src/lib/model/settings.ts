@@ -22,10 +22,8 @@ export interface Settings {
   enableHierarchicalLayout: boolean;
   validationTimerSeconds: number;
   saveTimerSeconds: number;
-  showEntityValueEntityEdge: boolean;
   showConnectionLabels: boolean;
   useSaturatedColors: boolean;
-  showAbstractPropertyConnection: boolean;
   copyrightHeader: Array<string>;
   aspectModelLanguages: Array<string>;
   toolbarVisibility: boolean;

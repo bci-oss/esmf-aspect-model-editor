@@ -26,9 +26,7 @@ export class EditorConfigurationUpdateStrategy implements SettingsUpdateStrategy
     if (!editorConfiguration) return;
 
     settings.enableHierarchicalLayout = editorConfiguration.get('enableHierarchicalLayout')?.value;
-    settings.showEntityValueEntityEdge = editorConfiguration.get('showEntityValueEntityEdge')?.value;
     settings.showConnectionLabels = editorConfiguration.get('showConnectionLabels')?.value;
-    settings.showAbstractPropertyConnection = editorConfiguration.get('showAbstractPropertyConnection')?.value;
 
     this.mxGraphService.formatShapes(true);
   }

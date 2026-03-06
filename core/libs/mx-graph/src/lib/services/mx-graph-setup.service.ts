@@ -16,13 +16,15 @@ import {ConfigurationService} from '@ame/settings-dialog';
 import {APP_CONFIG, AssetsPath, BindingsService, BrowserService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {inject, Injectable, NgZone} from '@angular/core';
-import {DefaultEntity, DefaultEntityInstance, DefaultProperty, DefaultTrait} from '@esmf/aspect-model-loader';
+import {DefaultEntityInstance, DefaultTrait} from '@esmf/aspect-model-loader';
 import {
   Cell,
   CellState,
   domUtils,
   Graph,
   InternalEvent,
+  LayoutManager,
+  MaxPopupMenu,
   Outline,
   Point,
   PopupMenuHandler,
@@ -76,10 +78,6 @@ export class MxGraphSetupService {
       this.graph = new Graph(container);
       GraphStylesRegistry.setupStyles(this.graph);
 
-      // const editor = (this.mxGraphAttributeService.editor = new mxEditor(
-      //   mxUtils.load(this.appConfig.editorConfiguration).getDocumentElement(),
-      // ));
-
       this.mxGraphAttributeService.graph = this.graph;
 
       this.scrollTileSize = new Rectangle(0, 0, this.graph.container.clientWidth, this.graph.container.clientHeight);
@@ -98,11 +96,10 @@ export class MxGraphSetupService {
       this.graph.convertValueToString = (cell: Cell) => this.convertValueToString(cell);
       this.graph.cellRenderer.redraw = (state: CellState, force: boolean, rendering: boolean) => this.redraw(state, force, rendering);
       this.graph.getTooltipForCell = (cell: Cell) => this.getTooltipForCell(cell);
-      // this.graph.isCellVisible = (cell: Cell) => this.isCellVisible(cell);
 
       const popupMenuHandler = this.graph.getPlugin<PopupMenuHandler>('PopupMenuHandler')!;
       if (popupMenuHandler) {
-        popupMenuHandler.factoryMethod = (menu: any, cell: Cell | null): void => {
+        popupMenuHandler.factoryMethod = (menu: MaxPopupMenu, cell: Cell | null): void => {
           return this.getPopupFactoryMethod(menu, cell);
         };
       }
@@ -207,16 +204,16 @@ export class MxGraphSetupService {
     elementLayout.resizeParentMax = true;
     elementLayout.borderCollapse = false;
 
-    // new LayoutManager(this.graph).getLayout = mxUtils.bind(this, (cell: Cell) => {
-    //   if (cell.vertex && cell.connectable) {
-    //     return elementLayout;
-    //   }
-    //   return null;
-    // });
+    const layoutManager = new LayoutManager(this.graph);
+    layoutManager.getLayout = (cell: Cell) => {
+      if (cell.isVertex() && cell.connectable) {
+        return elementLayout;
+      }
+      return null;
+    };
 
     // Necessary to display the minimap
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    new Outline(this.graph, document.getElementById('outline')); //NOSONAR
+    new Outline(this.graph, document.getElementById('outline'));
   }
 
   private convertValueToString(cell: Cell): any {
@@ -338,34 +335,6 @@ export class MxGraphSetupService {
     }
   }
 
-  private isCellVisible(cell: Cell): boolean {
-    if (!cell.isEdge()) {
-      return true;
-    }
-
-    const target = MxGraphHelper.getModelElement(cell.target);
-    const source = MxGraphHelper.getModelElement(cell.source);
-
-    if (
-      !this.configurationService.getSettings().showEntityValueEntityEdge &&
-      source instanceof DefaultEntityInstance &&
-      target instanceof DefaultEntity
-    ) {
-      return false;
-    }
-
-    if (
-      !this.configurationService.getSettings().showAbstractPropertyConnection &&
-      source instanceof DefaultProperty &&
-      target instanceof DefaultProperty &&
-      target.isAbstract
-    ) {
-      return false;
-    }
-
-    return true;
-  }
-
   private redraw(state: CellState, force: boolean, rendering: boolean): boolean {
     const cellHeight = MxGraphHelper.getCellHeight(state.cell);
     if (cellHeight) {
@@ -374,7 +343,7 @@ export class MxGraphSetupService {
     return this.graphCellRedraw.apply(this.graph.cellRenderer, [state, force, rendering]);
   }
 
-  private getPopupFactoryMethod(menu: PopupMenuHandler, cell: Cell) {
+  private getPopupFactoryMethod(menu: MaxPopupMenu, cell: Cell) {
     const selectedCells: Array<Cell> = this.mxGraphShapeSelectorService.getSelectedCells();
     if (cell && !cell.edge) {
       const modelElement = MxGraphHelper.getModelElement(cell);

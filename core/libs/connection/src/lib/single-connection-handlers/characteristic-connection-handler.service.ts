@@ -107,8 +107,8 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
           sourceElementModel.elementCharacteristic = defaultTrait;
         } else if (sourceElementModel instanceof DefaultEither) {
           sourceElementModel.left.aspectModelUrn === MxGraphHelper.getModelElement(edge.target).aspectModelUrn
-            ? (sourceElementModel.left = defaultTrait) // NOSONAR
-            : (sourceElementModel.right = defaultTrait); // NOSONAR
+            ? (sourceElementModel.left = defaultTrait)
+            : (sourceElementModel.right = defaultTrait);
         } else {
           return;
         }

@@ -115,9 +115,7 @@ export class SettingsFormService {
       }),
       editorConfiguration: this.formBuilder.group({
         enableHierarchicalLayout: [settings.enableHierarchicalLayout],
-        showEntityValueEntityEdge: [settings.showEntityValueEntityEdge],
         showConnectionLabels: [settings.showConnectionLabels],
-        showAbstractPropertyConnection: [settings.showAbstractPropertyConnection],
       }),
       languageConfiguration: this.formBuilder.group({
         userInterface: [this.translate.translateService.currentLang],

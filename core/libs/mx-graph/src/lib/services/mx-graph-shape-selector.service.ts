@@ -31,7 +31,7 @@ export class MxGraphShapeSelectorService {
     // only return the parent elements in case of child cells
     const selectedElementCells: Array<Cell> = [];
     this.mxGraphAttributeService.graph.selectionModel.cells.forEach((cell: Cell) => {
-      if (cell.style?.fillColor.includes('_property')) {
+      if (cell.style?.fillColor?.includes('_property')) {
         const parentCell: Cell = cell.getParent();
         if (!selectedElementCells.includes(parentCell)) {
           selectedElementCells.push(parentCell);

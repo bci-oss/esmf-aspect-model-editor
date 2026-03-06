@@ -266,7 +266,7 @@ export class MxGraphService {
       return null;
     }
 
-    this.graph.selectCellForEvent(cell, null);
+    this.graph.setSelectionCell(cell);
     this.graph.scrollCellToVisible(cell, center);
 
     return cell;

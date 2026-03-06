@@ -40,7 +40,7 @@ import {LanguageTranslationService} from '@ame/translation';
 import {useUpdater} from '@ame/utils';
 import {Injectable, Injector, NgZone, inject} from '@angular/core';
 import {DefaultAspect, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
-import {Cell, EventObject, FitPlugin, Graph, GraphDataModel, GraphView, InternalEvent, gestureUtils} from '@maxgraph/core';
+import {Cell, EventObject, FitPlugin, Graph, GraphDataModel, InternalEvent, gestureUtils} from '@maxgraph/core';
 import {environment} from 'environments/environment';
 import {BehaviorSubject, Observable, Subscription, catchError, delayWhen, first, of, retry, switchMap, tap, throwError, timer} from 'rxjs';
 import {ConfirmDialogService} from './confirm-dialog/confirm-dialog.service';

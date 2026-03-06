@@ -55,8 +55,6 @@ export class ShapeSettingsService {
   }
 
   setHotKeysActions() {
-    this.editorService.bindAction('deleteElement', () => this.ngZone.run(() => this.editorService.deleteSelectedElements()));
-
     this.mxGraphService.graph.container.addEventListener('wheel', evt => {
       if (evt.altKey) {
         evt.preventDefault();

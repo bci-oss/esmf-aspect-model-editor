@@ -391,8 +391,8 @@ export class MxGraphShapeOverlayService {
       baseProperties: MxGraphVisitorHelper.getModelInfo(node.element, this.loadedFilesService.currentLoadedFile),
       fields: cellConfiguration,
     };
-    // TODO check if we can enable folding again after we implemented the new way of handling connections and overlays, because currently it causes some issues with the overlays
-    // graph.foldingEnabled = false;
+
+    graph.options.foldingEnabled = false;
     return modelElementCell;
   }
 }

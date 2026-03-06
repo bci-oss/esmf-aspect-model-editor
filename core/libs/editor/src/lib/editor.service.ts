@@ -37,9 +37,10 @@ import {
   sammElements,
 } from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
+import {useUpdater} from '@ame/utils';
 import {Injectable, Injector, NgZone, inject} from '@angular/core';
 import {DefaultAspect, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
-import {Cell, FitPlugin, gestureUtils} from '@maxgraph/core';
+import {Cell, EventObject, FitPlugin, Graph, GraphDataModel, GraphView, InternalEvent, gestureUtils} from '@maxgraph/core';
 import {environment} from 'environments/environment';
 import {BehaviorSubject, Observable, Subscription, catchError, delayWhen, first, of, retry, switchMap, tap, throwError, timer} from 'rxjs';
 import {ConfirmDialogService} from './confirm-dialog/confirm-dialog.service';
@@ -79,7 +80,6 @@ export class EditorService {
   private isAllShapesExpandedSubject = new BehaviorSubject<boolean>(true);
 
   public isAllShapesExpanded$ = this.isAllShapesExpandedSubject.asObservable();
-  public delayedBindings: Array<any> = [];
 
   private get settings() {
     return this.configurationService.getSettings();
@@ -117,55 +117,38 @@ export class EditorService {
 
     container.addEventListener('wheel', onWheel, {passive: false});
 
-    // TODO Check this when refactoring editor service
-    // enforce parent domain object will be updated if an cell e.g. unit will be deleted
-    // this.mxGraphAttributeService.graph.addListener(
-    //   InternalEvents.CELLS_REMOVED,
-    //   mxUtils.bind(this, (_source: mxgraph.mxGraph, event: mxgraph.mxEventObject) => {
-    //     this.ngZone.run(() => {
-    //       if (this.filterAttributes.isFiltering) {
-    //         return;
-    //       }
-    //
-    //       const changedCells: Array<mxgraph.mxCell> = event.getProperty('cells');
-    //       changedCells.forEach(cell => {
-    //         if (!MxGraphHelper.getModelElement(cell)) {
-    //           return;
-    //         }
-    //
-    //         const edgeParent = changedCells.find(edge => edge.isEdge() && edge.target && edge.target.id === cell.id);
-    //         if (!edgeParent) {
-    //           return;
-    //         }
-    //
-    //         const sourceElement = MxGraphHelper.getModelElement<NamedElement>(edgeParent.source);
-    //         if (sourceElement && this.loadedFilesService.isElementInCurrentFile(sourceElement)) {
-    //           useUpdater(sourceElement).delete(MxGraphHelper.getModelElement(cell));
-    //         }
-    //       });
-    //     });
-    //   }),
-    // );
+    // Enforce parent domain object will be updated if a cell e.g. unit will be deleted
+    this.mxGraphAttributeService.graph.addListener(InternalEvent.CELLS_REMOVED, (_source: Graph, event: EventObject) => {
+      this.ngZone.run(() => {
+        if (this.filterAttributes.isFiltering) {
+          return;
+        }
 
-    // increase performance by not passing the event to the parent(s)
-    // this.mxGraphAttributeService.graph.getDataModel().addListener(InternalEvents.CHANGE, function (sender, evt) {
-    //   evt.consume();
-    // });
+        const changedCells: Array<Cell> = event.getProperty('cells');
+        changedCells.forEach(cell => {
+          if (!MxGraphHelper.getModelElement(cell)) {
+            return;
+          }
 
-    this.delayedBindings.forEach(binding => this.bindAction(binding.actionname, binding.funct));
-    this.delayedBindings = [];
-    // this.mxGraphAttributeService.graph.view.setTranslate(0, 0);
-  }
+          const edgeParent = changedCells.find(edge => edge.isEdge() && edge.target && edge.target.id === cell.id);
+          if (!edgeParent) {
+            return;
+          }
 
-  bindAction(actionName: string, callback: Function) {
-    // if (!this.mxGraphAttributeService.graph) {
-    //   this.delayedBindings.push({
-    //     actionname: actionName,
-    //     funct: callback,
-    //   });
-    //   return;
-    // }
-    // this.mxGraphAttributeService.editor.addAction(actionName, callback);
+          const sourceElement = MxGraphHelper.getModelElement<NamedElement>(edgeParent.source);
+          if (sourceElement && this.loadedFilesService.isElementInCurrentFile(sourceElement)) {
+            useUpdater(sourceElement).delete(MxGraphHelper.getModelElement(cell));
+          }
+        });
+      });
+    });
+
+    // Increase performance by not passing the event to the parent(s)
+    this.mxGraphAttributeService.graph.getDataModel().addListener(InternalEvent.CHANGE, (_sender: GraphDataModel, evt: EventObject) => {
+      evt.consume();
+    });
+
+    this.mxGraphAttributeService.graph.view.setTranslate(0, 0);
   }
 
   generateJsonSample(rdfModel: RdfModel): Observable<string> {

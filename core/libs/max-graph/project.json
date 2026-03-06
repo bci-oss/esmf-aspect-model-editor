@@ -2,15 +2,15 @@
   "name": "max-graph",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "library",
-  "sourceRoot": "libs/mx-graph/src",
+  "sourceRoot": "libs/max-graph/src",
   "prefix": "ame",
   "targets": {
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/libs/mx-graph"],
+      "outputs": ["{workspaceRoot}/coverage/libs/max-graph"],
       "options": {
-        "jestConfig": "libs/mx-graph/jest.config.ts",
-        "tsConfig": "libs/mx-graph/tsconfig.spec.json"
+        "jestConfig": "libs/max-graph/jest.config.ts",
+        "tsConfig": "libs/max-graph/tsconfig.spec.json"
       }
     },
     "lint": {

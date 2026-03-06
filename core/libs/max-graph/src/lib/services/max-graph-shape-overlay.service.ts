@@ -62,7 +62,7 @@ export class MaxGraphShapeOverlayService {
   /**
    * Adds the available connection/s for a cell, marked by a + sign.
    *
-   * @param cell mx element
+   * @param cell maxgraph element
    */
   addTopShapeOverlay(cell: Cell): void {
     const modelElement = MaxGraphHelper.getModelElement(cell);
@@ -82,7 +82,7 @@ export class MaxGraphShapeOverlayService {
    * Removes the connection of the specified cell and changes the internal model to reflect the change
    *
    * @param element internal model
-   * @param cell mx element
+   * @param cell maxgraph element
    */
   removeOverlaysByConnection(element: NamedElement, cell: Cell): void {
     if (element instanceof DefaultAspect) return;
@@ -155,7 +155,7 @@ export class MaxGraphShapeOverlayService {
   /**
    * Adds connector element on the bottom of a shape
    *
-   * @param cell mx element
+   * @param cell maxgraph element
    */
   addBottomShapeOverlay(cell: Cell): void {
     const modelElement = MaxGraphHelper.getModelElement(cell);
@@ -252,7 +252,7 @@ export class MaxGraphShapeOverlayService {
    * Removes the available connection/s for a cell, on load
    *
    * @param modelElement internal model
-   * @param cell mx element
+   * @param cell maxgraph element
    */
   removeShapeActionIconsByLoading(modelElement: NamedElement, cell: Cell): void {
     if (modelElement instanceof DefaultEntity) return;

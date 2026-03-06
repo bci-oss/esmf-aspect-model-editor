@@ -16,7 +16,7 @@ export default {
   preset: '../../jest.preset.cjs',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
   globals: {},
-  coverageDirectory: '../../coverage/libs/mx-graph',
+  coverageDirectory: '../../coverage/libs/max-graph',
   transform: {
     '^.+\\.(ts|mjs|js|html)$': [
       'jest-preset-angular',

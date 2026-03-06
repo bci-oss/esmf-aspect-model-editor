@@ -42,7 +42,7 @@ export class MaxGraphHelper {
   /**
    * Gets the node element for a cell
    *
-   * @param cell mx element
+   * @param cell maxgraph element
    */
   static getElementNode<U extends NamedElement = NamedElement>(cell: Cell): ModelTree<U> {
     if (typeof cell?.['getMetaModelElement'] === 'function') {
@@ -54,7 +54,7 @@ export class MaxGraphHelper {
   /**
    * Gets the element model for a cell
    *
-   * @param cell mx element
+   * @param cell maxgraph element
    */
   static getModelElement<U extends NamedElement = NamedElement>(cell: Cell): U {
     const node = this.getElementNode<U>(cell);
@@ -125,7 +125,7 @@ export class MaxGraphHelper {
   /**
    * Sets the model element for a cell
    *
-   * @param cell mx element
+   * @param cell maxgraph element
    * @param metaModelObject internal model
    */
   static setElementNode(cell: Cell, node: ModelTree<NamedElement>) {

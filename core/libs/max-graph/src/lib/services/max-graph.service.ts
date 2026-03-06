@@ -63,7 +63,6 @@ export class MaxGraphService {
   }
 
   constructor() {
-    // this.document = mxUtils.createXmlDocument();
     if (!environment.production) {
       window['angular.maxgraphService'] = this;
     }
@@ -123,7 +122,7 @@ export class MaxGraphService {
   /**
    * Gets cell parents
    *
-   * @param cell most basic entity of a mx-graph model,
+   * @param cell most basic entity of a maxgraph model,
    * @returns array of parent cells
    */
   resolveParents(cell: Cell): Array<Cell> {
@@ -255,7 +254,7 @@ export class MaxGraphService {
   /**
    * Navigate to a cell
    *
-   * @param cell mx element
+   * @param cell maxgraph element
    * @param center flag to signal if the cell should be visible on the center
    * @returns navigated cell
    */
@@ -354,7 +353,7 @@ export class MaxGraphService {
   /**
    * Expand a targeted cell
    *
-   * @param cell mx element
+   * @param cell maxgraph element
    */
   expandCell(cell: Cell): void {
     this.graph.foldCells(false, false, [cell]);
@@ -369,7 +368,7 @@ export class MaxGraphService {
   /**
    * Collapse a targeted cell
    *
-   * @param cell mx element
+   * @param cell maxgraph element
    */
   foldCell(cell: Cell): void {
     this.graph.foldCells(true, false, [cell]);
@@ -437,8 +436,8 @@ export class MaxGraphService {
   /**
    * Connect a cell to parent
    *
-   * @param child child mx element
-   * @param parent parent mx element
+   * @param child child maxgraph element
+   * @param parent parent maxgraph element
    */
   assignToParent(child: Cell, parent?: Cell, edgeStyle?: string): void {
     if (!parent) {
@@ -520,7 +519,7 @@ export class MaxGraphService {
 
   /**
    *
-   * @returns array with all available cells(mx elements)
+   * @returns array with all available cells(maxgraph elements)
    */
   getAllCells(): Cell[] {
     return this.graph?.getChildVertices?.(this.graph.getDefaultParent());

@@ -13,8 +13,8 @@
 
 import {LoadedFilesService} from '@ame/cache';
 import {EditorService, EditorToolbarComponent, ShapeSettingsComponent, ShapeSettingsService, ShapeSettingsStateService} from '@ame/editor';
+import {MaxGraphService} from '@ame/max-graph';
 import {ElementModelService} from '@ame/meta-model';
-import {MxGraphService} from '@ame/mx-graph';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {ElementsSearchComponent, FilesSearchComponent, SearchesStateService} from '@ame/utils';
 import {CdkDrag, CdkDragEnd, CdkDragHandle} from '@angular/cdk/drag-drop';
@@ -57,7 +57,7 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
   private destroyRef = inject(DestroyRef);
   private shapeSettingsService = inject(ShapeSettingsService);
   private shapeSettingsStateService = inject(ShapeSettingsStateService);
-  private mxGraphService = inject(MxGraphService);
+  private maxgraphService = inject(MaxGraphService);
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private loadedFiles = inject(LoadedFilesService);
@@ -88,7 +88,7 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
   }
 
   get isModelEmpty(): boolean {
-    return !this.mxGraphService.getAllCells()?.length;
+    return !this.maxgraphService.getAllCells()?.length;
   }
 
   constructor() {
@@ -107,7 +107,7 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
         map(params => params?.get('urn')),
         filter(urn => !!urn),
         tap(urn =>
-          this.mxGraphService.navigateToCellByUrn(urn) ? this.shapeSettingsService.editSelectedCell() : this.closeShapeSettings(),
+          this.maxgraphService.navigateToCellByUrn(urn) ? this.shapeSettingsService.editSelectedCell() : this.closeShapeSettings(),
         ),
         switchMap(() =>
           this.router.navigate([], {
@@ -178,7 +178,7 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         debounceTime(250),
-        tap(event => this.mxGraphService.setScrollPosition(event)),
+        tap(event => this.maxgraphService.setScrollPosition(event)),
       )
       .subscribe();
   }

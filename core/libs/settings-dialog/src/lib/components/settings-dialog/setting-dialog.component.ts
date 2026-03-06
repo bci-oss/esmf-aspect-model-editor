@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 import {LoadedFilesService} from '@ame/cache';
-import {MxGraphService, ShapeLanguageRemover} from '@ame/mx-graph';
+import {MaxGraphService, ShapeLanguageRemover} from '@ame/max-graph';
 import {AlertService, LoadingScreenService, TitleService} from '@ame/shared';
 import {FlatTreeControl} from '@angular/cdk/tree';
 import {NgClass} from '@angular/common';
@@ -130,7 +130,7 @@ export class SettingDialogComponent {
   private settingDialogComponentMatDialogRef = inject(MatDialogRef<SettingDialogComponent>);
   private formService = inject(SettingsFormService);
   private alertService = inject(AlertService);
-  private mxGraphService = inject(MxGraphService);
+  private maxgraphService = inject(MaxGraphService);
   private sammLangService = inject(SammLanguageSettingsService);
   private shapeLanguageRemover = inject(ShapeLanguageRemover);
   private loadingScreen = inject(LoadingScreenService);
@@ -304,13 +304,13 @@ export class SettingDialogComponent {
         .value.map(entry => entry.language.tag);
 
       try {
-        this.mxGraphService.updateGraph((): void => {
+        this.maxgraphService.updateGraph((): void => {
           const languagesToRemove = this.formService.getLanguagesToBeRemove().map((entry: string) => entry);
           this.shapeLanguageRemover.removeUnnecessaryLanguages(languagesToRemove);
         });
       } finally {
         this.sammLangService.setSammLanguageCodes(aspectModelLanguages);
-        this.mxGraphService.formatShapes();
+        this.maxgraphService.formatShapes();
         loadingScreen.close();
       }
     }

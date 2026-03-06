@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {EntityValueRenderService, MxGraphHelper} from '@ame/mx-graph';
+import {EntityValueRenderService, MaxGraphHelper} from '@ame/max-graph';
 import {inject, Injectable} from '@angular/core';
 import {DefaultEntity, DefaultEntityInstance, NamedElement, Value} from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
@@ -26,7 +26,7 @@ export class EntityValueModelService extends BaseModelService {
   }
 
   update(cell: Cell, form: {[key: string]: any}): void {
-    const modelElement = MxGraphHelper.getModelElement<DefaultEntityInstance>(cell);
+    const modelElement = MaxGraphHelper.getModelElement<DefaultEntityInstance>(cell);
     // update name
     const aspectModelUrn = this.loadedFile?.rdfModel?.getAspectModelUrn();
     this.currentCachedFile.updateElementKey(`${aspectModelUrn}${modelElement.name}`, `${aspectModelUrn}${form.name}`);

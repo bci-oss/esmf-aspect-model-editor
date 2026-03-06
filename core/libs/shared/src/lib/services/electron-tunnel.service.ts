@@ -23,7 +23,7 @@ import {
   TextModelLoaderModalComponent,
 } from '@ame/editor';
 import {FiltersService, ModelFilter} from '@ame/loader-filters';
-import {MxGraphService} from '@ame/mx-graph';
+import {MaxGraphService} from '@ame/max-graph';
 import {NamespacesManagerService} from '@ame/namespace-manager';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {IPC_RENDERER} from '@ame/shared';
@@ -50,7 +50,7 @@ export class ElectronTunnelService {
   private notificationsService = inject(NotificationsService);
   private modelSavingTracker = inject(ModelSavingTrackerService);
   private saveModelDialogService = inject(SaveModelDialogService);
-  private mxGraphService = inject(MxGraphService);
+  private maxgraphService = inject(MaxGraphService);
   private shapeSettingsService = inject(ShapeSettingsService);
   private namespacesManagerService = inject(NamespacesManagerService);
   private sidebarService = inject(SidebarStateService);
@@ -181,7 +181,7 @@ export class ElectronTunnelService {
       const element = this.currentFile.cachedFile.get<NamedElement>(modelUrn);
       if (element) {
         this.shapeSettingsService.editModel(element);
-        requestAnimationFrame(() => this.mxGraphService.navigateToCellByUrn(element.aspectModelUrn));
+        requestAnimationFrame(() => this.maxgraphService.navigateToCellByUrn(element.aspectModelUrn));
       }
     });
   }

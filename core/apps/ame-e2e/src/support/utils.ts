@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MxGraphAttributeService} from '@ame/mx-graph';
+import {MaxGraphAttributeService} from '@ame/max-graph';
 import {cyHelp} from './helpers';
 
 export function connectElements(parent: string, child: string, expected: boolean) {
@@ -70,7 +70,7 @@ export function checkAspectTree(aspect) {
 }
 
 export const dragExternalReferenceWithChildren = (selector: string, x: number, y: number) => {
-  cy.getMxgraphAttributeService().then((service: MxGraphAttributeService) => {
+  cy.getMaxgraphAttributeService().then((service: MaxGraphAttributeService) => {
     const container = service.graph.container;
     const {scrollLeft, scrollTop} = container;
 

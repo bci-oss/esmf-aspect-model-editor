@@ -12,7 +12,7 @@
  */
 
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
-import {MxGraphService} from '@ame/mx-graph';
+import {MaxGraphService} from '@ame/max-graph';
 import {RdfService} from '@ame/rdf/services';
 import {NotificationsService, SearchService} from '@ame/shared';
 import {provideHttpClient} from '@angular/common/http';
@@ -76,7 +76,7 @@ describe('EntityExtendsFieldComponent', () => {
         MockProvider(EditorModelService),
         MockProvider(RdfService),
         MockProvider(SearchService),
-        MockProvider(MxGraphService),
+        MockProvider(MaxGraphService),
       ],
     });
 

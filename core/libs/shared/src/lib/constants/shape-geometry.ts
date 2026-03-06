@@ -19,7 +19,7 @@ export type ShapeGeometry = {
   expandedHeight: number;
   collapsedWidth: number;
   collapsedHeight: number;
-  mxGraphStyle?: CellStyle;
+  maxgraphStyle?: CellStyle;
 };
 
 export const basicShapeGeometry: ShapeGeometry = {

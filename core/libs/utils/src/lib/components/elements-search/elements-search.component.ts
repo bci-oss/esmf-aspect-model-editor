@@ -15,7 +15,7 @@ import {Component, inject} from '@angular/core';
 
 import {LoadedFilesService} from '@ame/cache';
 import {ConfirmDialogService, ShapeSettingsService} from '@ame/editor';
-import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
+import {MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {
   ElectronSignals,
   ElectronSignalsService,
@@ -57,7 +57,7 @@ import {SearchesStateService} from '../../search-state.service';
 })
 export class ElementsSearchComponent {
   private electronSignalsService: ElectronSignals = inject(ElectronSignalsService);
-  private mxGraphService = inject(MxGraphService);
+  private maxgraphService = inject(MaxGraphService);
   private shapeSettingsService = inject(ShapeSettingsService);
   private searchesStateService = inject(SearchesStateService);
   private confirmDialogService = inject(ConfirmDialogService);
@@ -72,8 +72,8 @@ export class ElementsSearchComponent {
   constructor() {
     this.searchControl.valueChanges.pipe(startWith(''), throttleTime(150)).subscribe(value => {
       this.elements = this.searchService
-        .search<Cell>(value, this.mxGraphService.getAllCells(), mxCellSearchOption)
-        ?.map(cell => MxGraphHelper.getModelElement(cell));
+        .search<Cell>(value, this.maxgraphService.getAllCells(), mxCellSearchOption)
+        ?.map(cell => MaxGraphHelper.getModelElement(cell));
     });
   }
 
@@ -100,7 +100,7 @@ export class ElementsSearchComponent {
     } else {
       this.shapeSettingsService.editModel(element);
       requestAnimationFrame(() => {
-        this.mxGraphService.navigateToCellByUrn(element.aspectModelUrn);
+        this.maxgraphService.navigateToCellByUrn(element.aspectModelUrn);
       });
     }
 

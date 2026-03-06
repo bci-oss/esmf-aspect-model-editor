@@ -12,7 +12,7 @@
  */
 
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
-import {MxGraphService} from '@ame/mx-graph';
+import {MaxGraphService} from '@ame/max-graph';
 import {TestBed} from '@angular/core/testing';
 import {DefaultEntity, DefaultProperty, ModelElementCache, RdfModel, Samm} from '@esmf/aspect-model-loader';
 import {describe, expect, it} from '@jest/globals';
@@ -47,7 +47,7 @@ describe('Abstract Entity Visitor', () => {
     TestBed.configureTestingModule({
       providers: [
         AbstractEntityVisitor,
-        MockProviders(MxGraphService),
+        MockProviders(MaxGraphService),
         MockProvider(RdfListService, {
           push: jest.fn(),
         }),

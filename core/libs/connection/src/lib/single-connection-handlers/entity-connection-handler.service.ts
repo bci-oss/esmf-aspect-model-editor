@@ -28,8 +28,8 @@ export class EntityConnectionHandler extends BaseConnectionHandler implements Si
     this.refreshPropertiesLabel(child, defaultProperty);
 
     entity.properties.push(defaultProperty);
-    this.mxGraphService.assignToParent(child, source);
+    this.maxgraphService.assignToParent(child, source);
     this.entityInstanceService.onNewProperty(defaultProperty, entity);
-    this.mxGraphService.formatCell(source, true);
+    this.maxgraphService.formatCell(source, true);
   }
 }

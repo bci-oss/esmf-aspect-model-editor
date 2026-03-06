@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
+import {MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {RdfService} from '@ame/rdf/services';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {config, DataTypeService, ElementIconComponent} from '@ame/shared';
@@ -63,7 +63,7 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
   private editorDialogValidators = inject(EditorDialogValidators);
 
   public dataTypeService = inject(DataTypeService);
-  public mxGraphService = inject(MxGraphService);
+  public maxgraphService = inject(MaxGraphService);
   public rdfService = inject(RdfService);
 
   public filteredDataTypes$: Observable<any[]>;
@@ -211,13 +211,13 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
   }
 
   private hasStructuredValueAsGrandParent() {
-    const cell = this.mxGraphService.resolveCellByModelElement(this.metaModelElement);
-    return this.mxGraphService.graph
+    const cell = this.maxgraphService.resolveCellByModelElement(this.metaModelElement);
+    return this.maxgraphService.graph
       .getIncomingEdges(cell, null)
       .some(firstEdge =>
-        this.mxGraphService.graph
+        this.maxgraphService.graph
           .getIncomingEdges(firstEdge.source, null)
-          .some(secondEdge => MxGraphHelper.getModelElement(secondEdge.source) instanceof DefaultStructuredValue),
+          .some(secondEdge => MaxGraphHelper.getModelElement(secondEdge.source) instanceof DefaultStructuredValue),
       );
   }
 }

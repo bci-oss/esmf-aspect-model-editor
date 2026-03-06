@@ -12,7 +12,7 @@
  */
 
 import {ModelElementParserPipe} from '@ame/editor';
-import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
+import {MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {CommonModule} from '@angular/common';
 import {Component, inject} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
@@ -37,7 +37,7 @@ interface Element {
   providers: [ModelElementParserPipe],
 })
 export class ConnectWithDialogComponent {
-  private mxGraphService = inject(MxGraphService);
+  private maxgraphService = inject(MaxGraphService);
   private dialogRef = inject(MatDialogRef<ConnectWithDialogComponent>);
   private elementParser = inject(ModelElementParserPipe);
 
@@ -48,9 +48,9 @@ export class ConnectWithDialogComponent {
   public connectWithModel: NamedElement;
 
   constructor() {
-    this.connectWithModel = MxGraphHelper.getModelElement(this.connectWithCell);
-    this.elements = this.mxGraphService.getAllCells().map(e => {
-      return {model: MxGraphHelper.getModelElement(e), cell: e};
+    this.connectWithModel = MaxGraphHelper.getModelElement(this.connectWithCell);
+    this.elements = this.maxgraphService.getAllCells().map(e => {
+      return {model: MaxGraphHelper.getModelElement(e), cell: e};
     });
   }
 

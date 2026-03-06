@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MxGraphHelper} from '@ame/mx-graph';
+import {MaxGraphHelper} from '@ame/max-graph';
 import {useUpdater} from '@ame/utils';
 import {Injectable} from '@angular/core';
 import {DefaultCharacteristic, DefaultConstraint, DefaultTrait} from '@esmf/aspect-model-loader';
@@ -26,16 +26,16 @@ export class TraitConnectionHandler extends BaseConnectionHandler implements Sin
       trait.getBaseCharacteristic() == null
         ? this.elementCreator.createEmptyElement(DefaultCharacteristic)
         : this.elementCreator.createEmptyElement(DefaultConstraint);
-    const child = this.mxGraphService.renderModelElement(
-      this.filtersService.createNode(defaultElement, {parent: MxGraphHelper.getModelElement(source)}),
+    const child = this.maxgraphService.renderModelElement(
+      this.filtersService.createNode(defaultElement, {parent: MaxGraphHelper.getModelElement(source)}),
     );
 
     useUpdater(trait).update(defaultElement);
     this.refreshPropertiesLabel(child, defaultElement);
 
-    this.mxGraphService.assignToParent(child, source);
-    this.mxGraphService.moveCells([child], source.getGeometry().x + 30, source.getGeometry().y + 60);
-    this.mxGraphService.formatCell(child);
-    this.mxGraphService.formatShapes();
+    this.maxgraphService.assignToParent(child, source);
+    this.maxgraphService.moveCells([child], source.getGeometry().x + 30, source.getGeometry().y + 60);
+    this.maxgraphService.formatCell(child);
+    this.maxgraphService.formatShapes();
   }
 }

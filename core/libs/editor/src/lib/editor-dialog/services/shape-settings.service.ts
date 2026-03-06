@@ -12,7 +12,7 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {MxGraphAttributeService, MxGraphHelper, MxGraphService, MxGraphShapeSelectorService} from '@ame/mx-graph';
+import {MaxGraphAttributeService, MaxGraphHelper, MaxGraphService, MaxGraphShapeSelectorService} from '@ame/max-graph';
 import {BindingsService} from '@ame/shared';
 import {inject, Injectable, NgZone} from '@angular/core';
 import {NamedElement} from '@esmf/aspect-model-loader';
@@ -25,9 +25,9 @@ import {ShapeSettingsStateService} from './shape-settings-state.service';
 @Injectable({providedIn: 'root'})
 export class ShapeSettingsService {
   private ngZone = inject(NgZone);
-  private mxGraphAttributeService = inject(MxGraphAttributeService);
-  private mxGraphService = inject(MxGraphService);
-  private mxGraphShapeSelectorService = inject(MxGraphShapeSelectorService);
+  private maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private maxgraphService = inject(MaxGraphService);
+  private maxgraphShapeSelectorService = inject(MaxGraphShapeSelectorService);
   private bindingsService = inject(BindingsService);
   private editorService = inject(EditorService);
   private shapeSettingsStateService = inject(ShapeSettingsStateService);
@@ -55,7 +55,7 @@ export class ShapeSettingsService {
   }
 
   setHotKeysActions() {
-    this.mxGraphService.graph.container.addEventListener('wheel', evt => {
+    this.maxgraphService.graph.container.addEventListener('wheel', evt => {
       if (evt.altKey) {
         evt.preventDefault();
       }
@@ -63,9 +63,9 @@ export class ShapeSettingsService {
   }
 
   setCellAddedListener(): void {
-    const graph = this.mxGraphAttributeService.graph;
+    const graph = this.maxgraphAttributeService.graph;
     graph.addListener(InternalEvent.CELLS_ADDED, () => {
-      const graph = this.mxGraphAttributeService.graph;
+      const graph = this.maxgraphAttributeService.graph;
       const vertexCount = Object.values(graph.getDataModel().cells).filter(cell => cell.isVertex()).length > 0;
 
       this.ngZone.run(() => this.hasCellsSubject.next(vertexCount));
@@ -73,23 +73,23 @@ export class ShapeSettingsService {
   }
 
   setSelectCellListener() {
-    this.mxGraphAttributeService.graph
+    this.maxgraphAttributeService.graph
       .getSelectionModel()
       .addListener(InternalEvent.CHANGE, selectionModel => this.ngZone.run(() => this.selectedCellsSubject.next(selectionModel.cells)));
   }
 
   setMoveCellsListener() {
-    this.mxGraphAttributeService.graph.addListener(InternalEvent.MOVE_CELLS, () =>
-      this.ngZone.run(() => (this.mxGraphAttributeService.graph.resetEdgesOnMove = true)),
+    this.maxgraphAttributeService.graph.addListener(InternalEvent.MOVE_CELLS, () =>
+      this.ngZone.run(() => (this.maxgraphAttributeService.graph.resetEdgesOnMove = true)),
     );
   }
 
   setFoldListener() {
-    this.mxGraphAttributeService.graph.addListener(InternalEvent.FOLD_CELLS, () => this.mxGraphService.formatShapes());
+    this.maxgraphAttributeService.graph.addListener(InternalEvent.FOLD_CELLS, () => this.maxgraphService.formatShapes());
   }
 
   setDblClickListener() {
-    this.mxGraphAttributeService.graph.addListener(InternalEvent.DOUBLE_CLICK, () => this.ngZone.run(() => this.editSelectedCell()));
+    this.maxgraphAttributeService.graph.addListener(InternalEvent.DOUBLE_CLICK, () => this.ngZone.run(() => this.editSelectedCell()));
   }
 
   unselectShapeForUpdate() {
@@ -97,7 +97,7 @@ export class ShapeSettingsService {
   }
 
   editSelectedCell() {
-    this.shapeSettingsStateService.selectedShapeForUpdate = this.mxGraphShapeSelectorService.getSelectedShape();
+    this.shapeSettingsStateService.selectedShapeForUpdate = this.maxgraphShapeSelectorService.getSelectedShape();
     const selectedElement = this.shapeSettingsStateService.selectedShapeForUpdate;
 
     if (!selectedElement || selectedElement?.isEdge()) {
@@ -105,7 +105,7 @@ export class ShapeSettingsService {
       return;
     }
 
-    this.modelElement = MxGraphHelper.getModelElement(selectedElement);
+    this.modelElement = MaxGraphHelper.getModelElement(selectedElement);
     if (this.loadedFiles.isElementExtern(this.modelElement) && !this.modelElement.isPredefined) {
       this.openReferencedElementService.openReferencedElement(this.modelElement);
       return;

@@ -25,8 +25,8 @@ export class EventConnectionHandler extends BaseConnectionHandler implements Sin
     this.refreshPropertiesLabel(child, defaultProperty);
 
     event.properties.push(defaultProperty);
-    this.mxGraphService.assignToParent(child, source);
-    this.mxGraphService.formatCell(source);
-    this.mxGraphService.formatShapes();
+    this.maxgraphService.assignToParent(child, source);
+    this.maxgraphService.formatCell(source);
+    this.maxgraphService.formatShapes();
   }
 }

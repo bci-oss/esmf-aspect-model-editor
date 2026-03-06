@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelInfo} from '@ame/mx-graph';
+import {ModelInfo} from '@ame/max-graph';
 import {NotificationsService} from '@ame/shared';
 import {inject, Injectable} from '@angular/core';
 import {DefaultProperty, Operation} from '@esmf/aspect-model-loader';
@@ -38,8 +38,8 @@ export class OperationConnectionHandler extends BaseConnectionHandler implements
 
     const child = this.renderTree(defaultProperty, source);
     this.refreshPropertiesLabel(child, defaultProperty);
-    this.mxGraphService.assignToParent(child, source);
-    this.mxGraphService.formatCell(source);
-    this.mxGraphService.formatShapes();
+    this.maxgraphService.assignToParent(child, source);
+    this.maxgraphService.formatCell(source);
+    this.maxgraphService.formatShapes();
   }
 }

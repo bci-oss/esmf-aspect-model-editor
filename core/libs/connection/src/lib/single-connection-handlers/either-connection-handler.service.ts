@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelInfo} from '@ame/mx-graph';
+import {ModelInfo} from '@ame/max-graph';
 import {NotificationsService} from '@ame/shared';
 import {inject, Injectable} from '@angular/core';
 import {DefaultCharacteristic, DefaultEither} from '@esmf/aspect-model-loader';
@@ -42,8 +42,8 @@ export class EitherConnectionHandler extends BaseConnectionHandler implements Si
 
     const child = this.renderTree(defaultCharacteristic, source);
     this.refreshPropertiesLabel(child, defaultCharacteristic);
-    this.mxGraphService.assignToParent(child, source);
-    this.mxGraphService.formatCell(source);
-    this.mxGraphService.formatShapes();
+    this.maxgraphService.assignToParent(child, source);
+    this.maxgraphService.formatCell(source);
+    this.maxgraphService.formatShapes();
   }
 }

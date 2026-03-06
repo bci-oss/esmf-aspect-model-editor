@@ -12,7 +12,7 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {MxGraphAttributeService} from '@ame/mx-graph';
+import {MaxGraphAttributeService} from '@ame/max-graph';
 import {ModelService} from '@ame/rdf/services';
 import {Injectable, inject} from '@angular/core';
 import {
@@ -46,7 +46,7 @@ import {
 
 @Injectable({providedIn: 'root'})
 export class DomainModelToRdfService {
-  private mxGraphAttributeService = inject(MxGraphAttributeService);
+  private maxgraphAttributeService = inject(MaxGraphAttributeService);
   private loadedFiles = inject(LoadedFilesService);
   private aspectVisitorService = inject(AspectVisitor);
   private propertyVisitorService = inject(PropertyVisitor);
@@ -62,7 +62,7 @@ export class DomainModelToRdfService {
   private cleanupVisitorService = inject(CleanupVisitor);
 
   get graph(): Graph {
-    return this.mxGraphAttributeService.graph;
+    return this.maxgraphAttributeService.graph;
   }
 
   get currentCachedFile() {

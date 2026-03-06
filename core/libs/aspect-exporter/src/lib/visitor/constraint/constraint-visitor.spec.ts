@@ -15,8 +15,8 @@ import {TestBed} from '@angular/core/testing';
 
 import {RdfNodeService} from '@ame/aspect-exporter';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
+import {MaxGraphService} from '@ame/max-graph';
 import {BoundDefinition} from '@ame/meta-model';
-import {MxGraphService} from '@ame/mx-graph';
 import {
   DefaultConstraint,
   DefaultEncodingConstraint,
@@ -103,9 +103,9 @@ describe('Constraint Visitor', () => {
     TestBed.configureTestingModule({
       providers: [
         ConstraintVisitor,
-        MockProviders(MxGraphService),
-        MockProviders(MxGraphService),
-        MockProvider(MxGraphService),
+        MockProviders(MaxGraphService),
+        MockProviders(MaxGraphService),
+        MockProvider(MaxGraphService),
         MockProvider(RdfListService, {
           push: jest.fn(),
           createEmpty: jest.fn(),

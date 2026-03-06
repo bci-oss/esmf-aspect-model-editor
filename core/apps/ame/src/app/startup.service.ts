@@ -12,7 +12,7 @@
  */
 
 import {FileHandlingService, ModelLoaderService} from '@ame/editor';
-import {MxGraphService} from '@ame/mx-graph';
+import {MaxGraphService} from '@ame/max-graph';
 import {ElectronSignalsService, ElectronTunnelService, LoadingScreenService, ModelSavingTrackerService, StartupPayload} from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
@@ -23,7 +23,7 @@ import {filter} from 'rxjs/operators';
 
 @Injectable({providedIn: 'root'})
 export class StartupService {
-  private mxGraphService = inject(MxGraphService);
+  private maxgraphService = inject(MaxGraphService);
   private electronSignalsService = inject(ElectronSignalsService);
   private electronTunnelService = inject(ElectronTunnelService);
   private modelLoaderService = inject(ModelLoaderService);
@@ -39,7 +39,7 @@ export class StartupService {
     return this.router.events.pipe(
       filter(ev => ev instanceof NavigationEnd && ev.url.includes('/editor')),
       switchMap(() => this.electronTunnelService.startUpData$.asObservable()),
-      sample(this.mxGraphService.graphInitialized$.pipe(filter(Boolean))),
+      sample(this.maxgraphService.graphInitialized$.pipe(filter(Boolean))),
       switchMap(data =>
         data?.model
           ? this.loadModel(data.model).pipe(

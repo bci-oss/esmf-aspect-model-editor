@@ -26,7 +26,7 @@ export class EnumerationValueConnectionHandler
     childMetaModel.addParent(parentMetaModel);
     parentMetaModel.values.push(childMetaModel);
 
-    this.mxGraphService.assignToParent(child, parent);
+    this.maxgraphService.assignToParent(child, parent);
     this.refreshPropertiesLabel(parent, parentMetaModel);
   }
 }

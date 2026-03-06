@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MxGraphAttributeService, MxGraphHelper, MxGraphService, MxGraphVisitorHelper} from '@ame/mx-graph';
+import {MaxGraphAttributeService, MaxGraphHelper, MaxGraphService, MaxGraphVisitorHelper} from '@ame/max-graph';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {NotificationsService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
@@ -21,8 +21,8 @@ import {Cell} from '@maxgraph/core';
 import {BaseConnectionHandler} from '../base-connection-handler.service';
 
 export abstract class InheritanceConnector extends BaseConnectionHandler {
-  protected mxGraphService = inject(MxGraphService);
-  protected mxGraphAttributeService = inject(MxGraphAttributeService);
+  protected maxgraphService = inject(MaxGraphService);
+  protected maxgraphAttributeService = inject(MaxGraphAttributeService);
   protected sammLangService = inject(SammLanguageSettingsService);
   protected notificationsService = inject(NotificationsService);
   protected translate = inject(LanguageTranslationService);
@@ -38,18 +38,18 @@ export abstract class InheritanceConnector extends BaseConnectionHandler {
     }
 
     this.checkAndRemoveExtendElement(parentCell);
-    this.mxGraphService.assignToParent(childCell, parentCell);
-    parentCell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(parentMetaModel, this.sammLangService);
-    this.mxGraphAttributeService.graph.labelChanged(parentCell, MxGraphHelper.createPropertiesLabel(parentCell), null);
+    this.maxgraphService.assignToParent(childCell, parentCell);
+    parentCell['configuration'].fields = MaxGraphVisitorHelper.getElementProperties(parentMetaModel, this.sammLangService);
+    this.maxgraphAttributeService.graph.labelChanged(parentCell, MaxGraphHelper.createPropertiesLabel(parentCell), null);
   }
 
   public checkAndRemoveExtendElement(parentCell: Cell) {
-    const parentElementModel = MxGraphHelper.getModelElement(parentCell);
-    this.mxGraphAttributeService.graph.getOutgoingEdges(parentCell, null).forEach((outEdge: Cell) => {
-      const targetElementModel = MxGraphHelper.getModelElement(outEdge.target);
+    const parentElementModel = MaxGraphHelper.getModelElement(parentCell);
+    this.maxgraphAttributeService.graph.getOutgoingEdges(parentCell, null).forEach((outEdge: Cell) => {
+      const targetElementModel = MaxGraphHelper.getModelElement(outEdge.target);
       if (this.isInheritedElement(targetElementModel)) {
-        this.mxGraphService.removeCells([parentCell.removeEdge(outEdge, true)]);
-        MxGraphHelper.removeRelation(parentElementModel, targetElementModel);
+        this.maxgraphService.removeCells([parentCell.removeEdge(outEdge, true)]);
+        MaxGraphHelper.removeRelation(parentElementModel, targetElementModel);
       }
     });
   }

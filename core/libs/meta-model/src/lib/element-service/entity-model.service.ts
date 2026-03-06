@@ -14,12 +14,12 @@
 import {EntityInstanceService} from '@ame/editor';
 import {
   EntityRenderService,
-  MxGraphAttributeService,
-  MxGraphHelper,
-  MxGraphService,
-  MxGraphShapeOverlayService,
-  MxGraphVisitorHelper,
-} from '@ame/mx-graph';
+  MaxGraphAttributeService,
+  MaxGraphHelper,
+  MaxGraphService,
+  MaxGraphShapeOverlayService,
+  MaxGraphVisitorHelper,
+} from '@ame/max-graph';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {useUpdater} from '@ame/utils';
 import {inject, Injectable} from '@angular/core';
@@ -30,10 +30,10 @@ import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
 export class EntityModelService extends BaseModelService {
-  private mxGraphShapeOverlayService = inject(MxGraphShapeOverlayService);
+  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
   private entityInstanceService = inject(EntityInstanceService);
-  private mxGraphService = inject(MxGraphService);
-  private mxGraphAttributeService = inject(MxGraphAttributeService);
+  private maxgraphService = inject(MaxGraphService);
+  private maxgraphAttributeService = inject(MaxGraphAttributeService);
   private entityRenderer = inject(EntityRenderService);
   private languageService = inject(SammLanguageSettingsService);
   private baseEntityModel = inject(BaseEntityModelService);
@@ -43,7 +43,7 @@ export class EntityModelService extends BaseModelService {
   }
 
   update(cell: Cell, form: {[key: string]: any}) {
-    const modelElement = MxGraphHelper.getModelElement<DefaultEntity>(cell);
+    const modelElement = MaxGraphHelper.getModelElement<DefaultEntity>(cell);
 
     if (form.editedProperties) {
       for (const property of modelElement.properties) {
@@ -69,21 +69,21 @@ export class EntityModelService extends BaseModelService {
   delete(cell: Cell) {
     this.updateExtends(cell);
     super.delete(cell);
-    const modelElement = MxGraphHelper.getModelElement<DefaultEntity>(cell);
-    const outgoingEdges = this.mxGraphAttributeService.graph.getOutgoingEdges(cell, null);
-    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell, null);
-    this.mxGraphShapeOverlayService.checkAndAddTopShapeActionIcon(outgoingEdges, modelElement);
-    this.mxGraphShapeOverlayService.checkAndAddShapeActionIcon(incomingEdges, modelElement);
+    const modelElement = MaxGraphHelper.getModelElement<DefaultEntity>(cell);
+    const outgoingEdges = this.maxgraphAttributeService.graph.getOutgoingEdges(cell, null);
+    const incomingEdges = this.maxgraphAttributeService.graph.getIncomingEdges(cell, null);
+    this.maxgraphShapeOverlayService.checkAndAddTopShapeActionIcon(outgoingEdges, modelElement);
+    this.maxgraphShapeOverlayService.checkAndAddShapeActionIcon(incomingEdges, modelElement);
 
     this.entityInstanceService.onEntityRemove(modelElement, () => {
       if (!cell?.edges) {
-        this.mxGraphService.removeCells([cell]);
+        this.maxgraphService.removeCells([cell]);
         return;
       }
 
       const entityValuesToDelete = [];
       for (const edge of cell.edges) {
-        const sourceModelElement = MxGraphHelper.getModelElement<NamedElement>(edge.source);
+        const sourceModelElement = MaxGraphHelper.getModelElement<NamedElement>(edge.source);
         if (sourceModelElement && this.loadedFilesService.isElementInCurrentFile(sourceModelElement)) {
           this.currentCachedFile.removeElement(modelElement.aspectModelUrn);
           useUpdater(sourceModelElement).delete(modelElement);
@@ -91,33 +91,33 @@ export class EntityModelService extends BaseModelService {
 
         if (sourceModelElement instanceof DefaultEnumeration) {
           // we need to remove and add back the + button for enumeration
-          this.mxGraphShapeOverlayService.removeComplexTypeShapeOverlays(edge.source);
-          this.mxGraphShapeOverlayService.addBottomShapeOverlay(edge.source);
+          this.maxgraphShapeOverlayService.removeComplexTypeShapeOverlays(edge.source);
+          this.maxgraphShapeOverlayService.addBottomShapeOverlay(edge.source);
         }
 
         if (sourceModelElement instanceof DefaultEntityInstance && edge.source.style.fillColor.includes('entityValue')) {
           entityValuesToDelete.push(edge.source);
-          MxGraphHelper.removeRelation(sourceModelElement, modelElement);
+          MaxGraphHelper.removeRelation(sourceModelElement, modelElement);
         }
       }
 
-      this.mxGraphService.updateEntityValuesWithCellReference(entityValuesToDelete);
-      this.mxGraphService.removeCells([cell, ...entityValuesToDelete]);
+      this.maxgraphService.updateEntityValuesWithCellReference(entityValuesToDelete);
+      this.maxgraphService.removeCells([cell, ...entityValuesToDelete]);
     });
   }
 
   private updateExtends(cell: Cell) {
-    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell, null);
+    const incomingEdges = this.maxgraphAttributeService.graph.getIncomingEdges(cell, null);
     for (const edge of incomingEdges) {
-      const entity = MxGraphHelper.getModelElement<DefaultEntity>(edge.source);
+      const entity = MaxGraphHelper.getModelElement<DefaultEntity>(edge.source);
       if (!(entity instanceof DefaultEntity)) {
         continue;
       }
 
       entity.extends_ = null;
-      MxGraphHelper.removeRelation(entity, MxGraphHelper.getModelElement(cell));
-      edge.source['configuration'].fields = MxGraphVisitorHelper.getElementProperties(entity, this.languageService);
-      this.mxGraphService.graph.labelChanged(edge.source, MxGraphHelper.createPropertiesLabel(edge.source), null);
+      MaxGraphHelper.removeRelation(entity, MaxGraphHelper.getModelElement(cell));
+      edge.source['configuration'].fields = MaxGraphVisitorHelper.getElementProperties(entity, this.languageService);
+      this.maxgraphService.graph.labelChanged(edge.source, MaxGraphHelper.createPropertiesLabel(edge.source), null);
     }
   }
 }

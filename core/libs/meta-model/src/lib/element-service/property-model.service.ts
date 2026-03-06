@@ -12,7 +12,7 @@
  */
 
 import {EntityInstanceService} from '@ame/editor';
-import {MxGraphAttributeService, MxGraphHelper, MxGraphService, MxGraphVisitorHelper, PropertyRenderService} from '@ame/mx-graph';
+import {MaxGraphAttributeService, MaxGraphHelper, MaxGraphService, MaxGraphVisitorHelper, PropertyRenderService} from '@ame/max-graph';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {useUpdater} from '@ame/utils';
 import {inject, Injectable} from '@angular/core';
@@ -23,17 +23,16 @@ import {BaseModelService} from './base-model-service';
 @Injectable({providedIn: 'root'})
 export class PropertyModelService extends BaseModelService {
   private entityInstanceService = inject(EntityInstanceService);
-  private mxGraphService = inject(MxGraphService);
+  private maxgraphService = inject(MaxGraphService);
   private sammLangService = inject(SammLanguageSettingsService);
   private propertyRenderer = inject(PropertyRenderService);
-  private mxGraphAttributeService = inject(MxGraphAttributeService);
-
+  private maxgraphAttributeService = inject(MaxGraphAttributeService);
   isApplicable(metaModelElement: NamedElement): boolean {
     return metaModelElement instanceof DefaultProperty;
   }
 
   update(cell: Cell, form: {[key: string]: any}) {
-    const modelElement = MxGraphHelper.getModelElement<DefaultProperty>(cell);
+    const modelElement = MaxGraphHelper.getModelElement<DefaultProperty>(cell);
     if (modelElement.extends_) {
       return;
     }
@@ -55,14 +54,14 @@ export class PropertyModelService extends BaseModelService {
   }
 
   delete(cell: Cell) {
-    const node = MxGraphHelper.getModelElement<DefaultProperty>(cell);
+    const node = MaxGraphHelper.getModelElement<DefaultProperty>(cell);
 
-    const parents = this.mxGraphService.resolveParents(cell);
+    const parents = this.maxgraphService.resolveParents(cell);
     for (const parent of parents) {
-      const parentModel = MxGraphHelper.getModelElement(parent);
+      const parentModel = MaxGraphHelper.getModelElement(parent);
       if (parentModel instanceof DefaultStructuredValue) {
         useUpdater(parent).delete(node);
-        MxGraphHelper.updateLabel(parent, this.mxGraphService.graph, this.sammLangService);
+        MaxGraphHelper.updateLabel(parent, this.maxgraphService.graph, this.sammLangService);
       }
     }
 
@@ -70,17 +69,17 @@ export class PropertyModelService extends BaseModelService {
 
     super.delete(cell);
     this.entityInstanceService.onPropertyRemove(node, () => {
-      this.mxGraphService.removeCells([cell]);
+      this.maxgraphService.removeCells([cell]);
     });
   }
 
   private updatePropertiesNames(cell: Cell) {
     const parents =
-      this.mxGraphService.resolveParents(cell)?.filter(e => MxGraphHelper.getModelElement(e) instanceof DefaultProperty) || [];
-    const modelElement = MxGraphHelper.getModelElement(cell);
+      this.maxgraphService.resolveParents(cell)?.filter(e => MaxGraphHelper.getModelElement(e) instanceof DefaultProperty) || [];
+    const modelElement = MaxGraphHelper.getModelElement(cell);
 
     for (const parentCell of parents) {
-      const parentModelElement = MxGraphHelper.getModelElement(parentCell);
+      const parentModelElement = MaxGraphHelper.getModelElement(parentCell);
       parentModelElement.name = `[${modelElement.name}]`;
       parentModelElement.aspectModelUrn = `${parentModelElement.aspectModelUrn.split('#')[0]}#${parentModelElement.name}`;
       this.updateCell(parentCell);
@@ -88,17 +87,17 @@ export class PropertyModelService extends BaseModelService {
   }
 
   private updateCell(cell: Cell) {
-    cell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(MxGraphHelper.getModelElement(cell), this.sammLangService);
-    this.mxGraphService.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabel(cell), null);
+    cell['configuration'].fields = MaxGraphVisitorHelper.getElementProperties(MaxGraphHelper.getModelElement(cell), this.sammLangService);
+    this.maxgraphService.graph.labelChanged(cell, MaxGraphHelper.createPropertiesLabel(cell), null);
   }
 
   private updateExtends(cell: Cell, isDeleting = true) {
-    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell, null);
+    const incomingEdges = this.maxgraphAttributeService.graph.getIncomingEdges(cell, null);
     for (const edge of incomingEdges) {
-      const element = MxGraphHelper.getModelElement<HasExtends>(edge.source);
+      const element = MaxGraphHelper.getModelElement<HasExtends>(edge.source);
       if (element instanceof DefaultProperty && isDeleting) {
         element.extends_ = null;
-        this.mxGraphService.removeCells([edge.source]);
+        this.maxgraphService.removeCells([edge.source]);
         continue;
       }
 

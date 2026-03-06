@@ -12,7 +12,7 @@
  */
 
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
-import {MxGraphService} from '@ame/mx-graph';
+import {MaxGraphService} from '@ame/max-graph';
 import {ModelService} from '@ame/rdf/services';
 import {TestBed} from '@angular/core/testing';
 import {DefaultProperty, ModelElementCache, RdfModel, Samm} from '@esmf/aspect-model-loader';
@@ -45,7 +45,7 @@ describe('Property Visitor', () => {
     TestBed.configureTestingModule({
       providers: [
         AbstractPropertyVisitor,
-        MockProvider(MxGraphService),
+        MockProvider(MaxGraphService),
         MockProvider(RdfListService, {
           push: jest.fn(),
         }),

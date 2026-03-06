@@ -25,7 +25,7 @@ import {
   ModelSaverService,
   ShapeSettingsStateService,
 } from '@ame/editor';
-import {MxGraphService} from '@ame/mx-graph';
+import {MaxGraphService} from '@ame/max-graph';
 import {ModelService, RdfService} from '@ame/rdf/services';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {ConfigurationService} from '@ame/settings-dialog';
@@ -96,7 +96,7 @@ export class FileHandlingService {
   private modelSaveTracker = inject(ModelSavingTrackerService);
   private fileUploadService = inject(FileUploadService);
   private shapeSettingsStateService = inject(ShapeSettingsStateService);
-  private mxGraphService = inject(MxGraphService);
+  private maxgraphService = inject(MaxGraphService);
   private modelLoaderService = inject(ModelLoaderService);
   private loadedFilesService = inject(LoadedFilesService);
   private modelSaverService = inject(ModelSaverService);
@@ -228,8 +228,8 @@ export class FileHandlingService {
       map(() => {
         this.sidebarService.sammElements.open();
 
-        if (this.mxGraphService.graph?.model) {
-          this.mxGraphService.deleteAllShapes();
+        if (this.maxgraphService.graph?.model) {
+          this.maxgraphService.deleteAllShapes();
         }
 
         this.modelSaveTracker.updateSavedModel(true);

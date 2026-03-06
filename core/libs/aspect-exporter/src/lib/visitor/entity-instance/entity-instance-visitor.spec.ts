@@ -13,7 +13,7 @@
 
 import {EntityInstanceVisitor, RdfListService, RdfNodeService} from '@ame/aspect-exporter';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
-import {MxGraphService} from '@ame/mx-graph';
+import {MaxGraphService} from '@ame/max-graph';
 import {TestBed} from '@angular/core/testing';
 import {
   DefaultCharacteristic,
@@ -99,8 +99,8 @@ describe('Entity instance visitor', () => {
     TestBed.configureTestingModule({
       providers: [
         EntityInstanceVisitor,
-        MockProviders(MxGraphService),
-        MockProvider(MxGraphService),
+        MockProviders(MaxGraphService),
+        MockProvider(MaxGraphService),
         MockProvider(RdfListService, {
           push: jest.fn(),
           createEmpty: jest.fn(),

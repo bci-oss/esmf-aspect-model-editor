@@ -11,14 +11,13 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MxGraphService} from '@ame/mx-graph';
+import {MaxGraphService} from '@ame/max-graph';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
-import {DefaultAspect, DefaultCharacteristic, DefaultEntity, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
+import {DefaultAspect, DefaultCharacteristic, DefaultEntity, DefaultProperty} from '@esmf/aspect-model-loader';
 import {provideMockObject} from 'jest-helpers';
-import {mxgraph} from 'mxgraph-factory';
 import {ModelElementParserPipe} from '../editor-dialog';
 import {ConnectWithDialogComponent} from './connect-with-dialog.component';
 
@@ -26,17 +25,16 @@ jest.mock('../editor-dialog/components/entity-instance/entity-instance-table/ent
   EntityInstanceTableComponent: class {},
 }));
 
-type Cell = Partial<mxgraph.mxCell & {getMetaModelElement: () => {element: NamedElement}}>;
-
-const cell: Cell = {
+const cell: any = {
   getMetaModelElement: () =>
     new DefaultAspect({name: 'aspect', aspectModelUrn: 'urn#aspect', metaModelVersion: 'aspect', properties: [], events: []}) as any,
-  style: 'aspect',
+  style: {
+    baseStyleNames: ['aspect'],
+  },
 };
 
-const cells: Cell[] = [
+const cells: any[] = [
   {
-    style: 'property',
     getMetaModelElement: () =>
       ({
         element: new DefaultProperty({
@@ -48,7 +46,7 @@ const cells: Cell[] = [
       }) as any,
   },
   {
-    style: 'characteristic',
+    style: {baseStyleNames: ['characteristic']},
     getMetaModelElement: () =>
       ({
         element: new DefaultCharacteristic({
@@ -59,7 +57,7 @@ const cells: Cell[] = [
       }) as any,
   },
   {
-    style: 'entity',
+    style: {baseStyleNames: ['entity']},
     getMetaModelElement: () =>
       ({element: new DefaultEntity({name: 'entity', aspectModelUrn: 'urn#entity', metaModelVersion: 'entity', properties: []})}) as any,
   },
@@ -68,7 +66,7 @@ const cells: Cell[] = [
 describe('RdfNodeService', () => {
   let component: ConnectWithDialogComponent;
   let fixture: ComponentFixture<ConnectWithDialogComponent>;
-  let mxGraphService: MxGraphService;
+  let maxgraphService: MaxGraphService;
   let dialogRef: MatDialogRef<ConnectWithDialogComponent>;
 
   beforeEach(() => {
@@ -77,8 +75,8 @@ describe('RdfNodeService', () => {
       providers: [
         ModelElementParserPipe,
         {
-          provide: MxGraphService,
-          useValue: provideMockObject(MxGraphService),
+          provide: MaxGraphService,
+          useValue: provideMockObject(MaxGraphService),
         },
         {
           provide: MatDialogRef,
@@ -91,8 +89,8 @@ describe('RdfNodeService', () => {
       ],
     });
 
-    mxGraphService = TestBed.inject(MxGraphService);
-    mxGraphService.getAllCells = jest.fn(() => cells as any[]);
+    maxgraphService = TestBed.inject(MaxGraphService);
+    maxgraphService.getAllCells = jest.fn(() => cells as any[]);
 
     dialogRef = TestBed.inject(MatDialogRef);
 

@@ -250,7 +250,6 @@
     "@swc-node/register": "1.9.2",
     "@swc/core": "1.5.7",
     "@swc/helpers": "0.5.17",
-    "@typed-mxgraph/typed-mxgraph": "^1.0.4",
     "@types/electron": "^1.4.38",
     "@types/file-saver": "^2.0.5",
     "@types/jasmine": "~4.0.0",

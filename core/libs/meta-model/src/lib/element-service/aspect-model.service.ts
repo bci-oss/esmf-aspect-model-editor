@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {AspectRenderService, MxGraphHelper, MxGraphService} from '@ame/mx-graph';
+import {AspectRenderService, MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {TitleService} from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
 import {inject, Injectable} from '@angular/core';
@@ -23,7 +23,7 @@ import {BaseModelService} from './base-model-service';
 export class AspectModelService extends BaseModelService {
   private aspectRenderer = inject(AspectRenderService);
   private titleService = inject(TitleService);
-  private mxGraphService = inject(MxGraphService);
+  private maxgraphService = inject(MaxGraphService);
   private sidebarStateService = inject(SidebarStateService);
 
   isApplicable(metaModelElement: NamedElement): boolean {
@@ -31,7 +31,7 @@ export class AspectModelService extends BaseModelService {
   }
 
   update(cell: Cell, form: {[key: string]: any}) {
-    const metaModelElement = MxGraphHelper.getModelElement<DefaultAspect>(cell);
+    const metaModelElement = MaxGraphHelper.getModelElement<DefaultAspect>(cell);
     if (form.name && form.name !== metaModelElement.name) {
       this.loadedFilesService.currentLoadedFile.originalAspectModelUrn = metaModelElement.aspectModelUrn;
       this.loadedFilesService.updateAbsoluteName(this.loadedFile.absoluteName, `${this.loadedFile.namespace}:${form.name}.ttl`);
@@ -57,9 +57,9 @@ export class AspectModelService extends BaseModelService {
   }
 
   delete(cell: Cell) {
-    const aspect = MxGraphHelper.getModelElement(cell);
-    for (const {target} of this.mxGraphService.graph.getOutgoingEdges(cell, null)) {
-      MxGraphHelper.removeRelation(aspect, MxGraphHelper.getModelElement(target));
+    const aspect = MaxGraphHelper.getModelElement(cell);
+    for (const {target} of this.maxgraphService.graph.getOutgoingEdges(cell, null)) {
+      MaxGraphHelper.removeRelation(aspect, MaxGraphHelper.getModelElement(target));
     }
     super.delete(cell);
     this.aspectRenderer.delete(cell);

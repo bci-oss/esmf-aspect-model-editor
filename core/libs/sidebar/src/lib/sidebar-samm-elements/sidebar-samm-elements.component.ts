@@ -12,7 +12,7 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {MxGraphService} from '@ame/mx-graph';
+import {MaxGraphService} from '@ame/max-graph';
 import {ElementIconComponent, ElementType, sammElements} from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
 import {Component, inject} from '@angular/core';
@@ -29,7 +29,7 @@ import {DraggableElementComponent} from '../draggable-element/draggable-element.
   imports: [MatIconModule, DraggableElementComponent, MatMiniFabButton, ElementIconComponent, TranslatePipe],
 })
 export class SidebarSAMMElementsComponent {
-  private mxGraphService = inject(MxGraphService);
+  private maxgraphService = inject(MaxGraphService);
   private loadedFiles = inject(LoadedFilesService);
 
   public sidebarService = inject(SidebarStateService);
@@ -50,7 +50,7 @@ export class SidebarSAMMElementsComponent {
   ];
 
   public get isEmptyModel(): boolean {
-    return !this.mxGraphService.getAllCells()?.length;
+    return !this.maxgraphService.getAllCells()?.length;
   }
 
   public isAspectAvailable(): Aspect {

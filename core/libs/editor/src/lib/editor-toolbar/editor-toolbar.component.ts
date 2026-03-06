@@ -13,7 +13,7 @@
 
 import {ShapeConnectorService} from '@ame/connection';
 import {FiltersService} from '@ame/loader-filters';
-import {MxGraphService, MxGraphShapeSelectorService} from '@ame/mx-graph';
+import {MaxGraphService, MaxGraphShapeSelectorService} from '@ame/max-graph';
 import {ConfigurationService, Settings} from '@ame/settings-dialog';
 import {BindingsService, NotificationsService} from '@ame/shared';
 import {AsyncPipe, CommonModule} from '@angular/common';
@@ -45,10 +45,10 @@ export class EditorToolbarComponent implements AfterViewInit, OnInit, OnDestroy 
   private shapeConnectorService = inject(ShapeConnectorService);
   private configurationService = inject(ConfigurationService);
   private bindingsService = inject(BindingsService);
-  private mxGraphShapeSelectorService = inject(MxGraphShapeSelectorService);
+  private maxgraphShapeSelectorService = inject(MaxGraphShapeSelectorService);
   private matDialog = inject(MatDialog);
   private shapeSettingsService = inject(ShapeSettingsService);
-  private mxGraphService = inject(MxGraphService);
+  private maxgraphService = inject(MaxGraphService);
 
   public notificationsService = inject(NotificationsService);
 
@@ -57,11 +57,11 @@ export class EditorToolbarComponent implements AfterViewInit, OnInit, OnDestroy 
   public settings$: Observable<Settings>;
 
   public get isModelEmpty() {
-    return !this.mxGraphService.getAllCells()?.length;
+    return !this.maxgraphService.getAllCells()?.length;
   }
 
   public get selectedCells() {
-    return this.mxGraphShapeSelectorService.getSelectedCells();
+    return this.maxgraphShapeSelectorService.getSelectedCells();
   }
 
   private checkChangesInterval: NodeJS.Timeout;
@@ -76,7 +76,7 @@ export class EditorToolbarComponent implements AfterViewInit, OnInit, OnDestroy 
     this.bindingsService.registerAction('format', () => this.onFormat());
     this.bindingsService.registerAction('copy-to-clipboard', () => this.fileHandlingService.copyToClipboard());
     this.bindingsService.registerAction('connect-with', () => this.openConnectWithDialog());
-    this.bindingsService.registerAction('select-tree', () => this.mxGraphShapeSelectorService.selectTree());
+    this.bindingsService.registerAction('select-tree', () => this.maxgraphShapeSelectorService.selectTree());
   }
 
   ngOnDestroy() {

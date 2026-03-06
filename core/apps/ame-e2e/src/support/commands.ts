@@ -13,18 +13,16 @@
  */
 
 import {FileHandlingService, GenerateHandlingService} from '@ame/editor';
-import {MxGraphAttributeService} from '@ame/mx-graph';
+import {MaxGraphAttributeService} from '@ame/max-graph';
 import {NamespacesManagerService} from '@ame/namespace-manager';
 import {ModelService} from '@ame/rdf/services';
 import {SearchesStateService} from '@ame/utils';
 import {Aspect} from '@esmf/aspect-model-loader';
 import 'cypress-file-upload';
-import {mxgraphFactory} from 'mxgraph-factory';
 import {NAMESPACES_URL} from './api-mocks';
 import {FIELD_see, SELECTOR_editorSaveButton, SELECTOR_tbConnectButton} from './constants';
 import {cyHelp} from './helpers';
-
-const {mxEventObject, mxEvent} = mxgraphFactory({});
+import {EventObject, InternalEvent} from '@maxgraph/core';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -116,16 +114,16 @@ declare global {
       getModelService(): Chainable;
 
       /**
-       * Custom command to access the mxGraph service.
+       * Custom command to access the maxgraph service.
        * @returns {Cypress.Chainable} A chainable Cypress object.
        */
-      getMxgraphService(): Chainable;
+      getMaxgraphService(): Chainable;
 
       /**
-       * Custom command to access the mxGraph attribute service.
+       * Custom command to access the maxGraph attribute service.
        * @returns {Cypress.Chainable} A chainable Cypress object.
        */
-      getMxgraphAttributeService(): Chainable;
+      getMaxgraphAttributeService(): Chainable;
 
       /**
        * Custom command to get the HTML cell containing all information about a specific cell by name.
@@ -293,9 +291,9 @@ Cypress.Commands.add('visitDefault', () => cy.visit('/editor?e2e=true').wait(200
 Cypress.Commands.add('getAspect', () => cy.window().then(win => win['angular.LoadedFilesService'].currentLoadedFile.aspect as Aspect));
 
 Cypress.Commands.add('getEditorService', () => cy.window().then(win => win['angular.editorService']));
-Cypress.Commands.add('getMxgraphService', () => cy.window().then(win => win['angular.mxGraphService']));
+Cypress.Commands.add('getMaxgraphService', () => cy.window().then(win => win['angular.maxgraphService']));
 
-Cypress.Commands.add('getMxgraphAttributeService', () => cy.window().then(win => win['angular.mxGraphAttributeService']));
+Cypress.Commands.add('getMaxgraphAttributeService', () => cy.window().then(win => win['angular.maxgraphAttributeService']));
 
 Cypress.Commands.add('getModelService', () => cy.window().then(win => win['angular.modelService']));
 
@@ -332,7 +330,7 @@ Cypress.Commands.add('clickAddShapePlusIcon', (name: string) =>
       if (!plusIcon) {
         throw new Error('Add Shape Overlay not found');
       }
-      plusIcon.fireEvent(new mxEventObject(mxEvent.CLICK));
+      plusIcon.fireEvent(new EventObject(InternalEvent.CLICK));
       return foundShape;
     })
     .wait(250),
@@ -350,7 +348,7 @@ Cypress.Commands.add('clickAddInputShapeIcon', (name: string) =>
       if (!inputIcon) {
         throw new Error('Add Shape Overlay not found');
       }
-      inputIcon.fireEvent(new mxEventObject(mxEvent.CLICK));
+      inputIcon.fireEvent(new EventObject(InternalEvent.CLICK));
       return foundShape;
     })
     .wait(250),
@@ -368,7 +366,7 @@ Cypress.Commands.add('clickAddOutputShapeIcon', (name: string) =>
       if (!outputIcon) {
         throw new Error('Add Shape Overlay not found');
       }
-      outputIcon.fireEvent(new mxEventObject(mxEvent.CLICK));
+      outputIcon.fireEvent(new EventObject(InternalEvent.CLICK));
       return foundShape;
     })
     .wait(250),
@@ -386,7 +384,7 @@ Cypress.Commands.add('clickAddLeftShapeIcon', (name: string) =>
       if (!leftIcon) {
         throw new Error('Add Shape Overlay not found');
       }
-      leftIcon.fireEvent(new mxEventObject(mxEvent.CLICK));
+      leftIcon.fireEvent(new EventObject(InternalEvent.CLICK));
       return foundShape;
     })
     .wait(250),
@@ -404,7 +402,7 @@ Cypress.Commands.add('clickAddRightShapeIcon', (name: string) =>
       if (!rightIcon) {
         throw new Error('Add Shape Overlay not found');
       }
-      rightIcon.fireEvent(new mxEventObject(mxEvent.CLICK));
+      rightIcon.fireEvent(new EventObject(InternalEvent.CLICK));
       return foundShape;
     })
     .wait(250),
@@ -422,7 +420,7 @@ Cypress.Commands.add('clickAddTraitPlusIcon', (characteristicName: string) =>
       if (!constraintIcon) {
         throw new Error('Add Constrain Overlay not found');
       }
-      constraintIcon.fireEvent(new mxEventObject(mxEvent.CLICK));
+      constraintIcon.fireEvent(new EventObject(InternalEvent.CLICK));
       return foundShape;
     })
     .wait(250),
@@ -438,7 +436,7 @@ Cypress.Commands.add('clickConnectShapes', (nameSource, nameTarget) =>
 Cypress.Commands.add('getFormField', (name: string) => cy.get(`[ng-reflect-model="${name}"]`));
 
 Cypress.Commands.add('dragElement', (selector: string, x: number, y: number) =>
-  cy.getMxgraphAttributeService().then((service: MxGraphAttributeService) => {
+  cy.getMaxgraphAttributeService().then((service: MaxGraphAttributeService) => {
     const container = service.graph.container;
     const {scrollLeft, scrollTop} = container;
 
@@ -487,8 +485,8 @@ Cypress.Commands.add('shapesConnected', (sourceShapeName: string, targetShapeNam
     if (!targetCell) {
       throw new Error(`Shape ${targetShapeName} not found`);
     }
-    const mxGraphAttributeService: MxGraphAttributeService = win['angular.mxGraphAttributeService'];
-    const shapesConnected = mxGraphAttributeService.graph.getOutgoingEdges(sourceCell, null).some(edge => edge.target === targetCell);
+    const maxgraphAttributeService: MaxGraphAttributeService = win['angular.maxgraphAttributeService'];
+    const shapesConnected = maxgraphAttributeService.graph.getOutgoingEdges(sourceCell, null).some(edge => edge.target === targetCell);
     if (!shapesConnected) {
       throw new Error(`Shape ${sourceShapeName} is not connected to ${targetShapeName}`);
     }
@@ -668,8 +666,8 @@ Cypress.Commands.add(
       if (!targetCell) {
         throw new Error(`Shape ${targetShapeParams.name} not found`);
       }
-      const mxGraphAttributeService: MxGraphAttributeService = win['angular.mxGraphAttributeService'];
-      return mxGraphAttributeService.graph.getOutgoingEdges(sourceCell, null).some(edge => edge.target === targetCell);
+      const maxgraphAttributeService: MaxGraphAttributeService = win['angular.maxgraphAttributeService'];
+      return maxgraphAttributeService.graph.getOutgoingEdges(sourceCell, null).some(edge => edge.target === targetCell);
     });
   },
 );

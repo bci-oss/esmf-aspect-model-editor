@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MxGraphService} from '@ame/mx-graph';
+import {MaxGraphService} from '@ame/max-graph';
 import {Settings} from '@ame/settings-dialog';
 import {inject, Injectable} from '@angular/core';
 import {FormGroup} from '@angular/forms';
@@ -19,7 +19,7 @@ import {SettingsUpdateStrategy} from './settings-update.strategy';
 
 @Injectable({providedIn: 'root'})
 export class EditorConfigurationUpdateStrategy implements SettingsUpdateStrategy {
-  private mxGraphService = inject(MxGraphService);
+  private maxgraphService = inject(MaxGraphService);
 
   updateSettings(form: FormGroup, settings: Settings): void {
     const editorConfiguration = form.get('editorConfiguration');
@@ -28,6 +28,6 @@ export class EditorConfigurationUpdateStrategy implements SettingsUpdateStrategy
     settings.enableHierarchicalLayout = editorConfiguration.get('enableHierarchicalLayout')?.value;
     settings.showConnectionLabels = editorConfiguration.get('showConnectionLabels')?.value;
 
-    this.mxGraphService.formatShapes(true);
+    this.maxgraphService.formatShapes(true);
   }
 }

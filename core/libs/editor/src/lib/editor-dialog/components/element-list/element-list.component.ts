@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 import {LoadedFilesService} from '@ame/cache';
-import {MxGraphService} from '@ame/mx-graph';
+import {MaxGraphService} from '@ame/max-graph';
 import {ElementIconComponent, sammElements} from '@ame/shared';
 import {CounterPipe} from '@ame/shared/pipes';
 import {NgClass} from '@angular/common';
@@ -51,7 +51,7 @@ export class ElementListComponent implements OnInit {
   @Input() public elements: NamedElement[] = [];
   @Input() public isAspect? = false;
 
-  private mxGraphService = inject(MxGraphService);
+  private maxgraphService = inject(MaxGraphService);
   private shapeSettingsService = inject(ShapeSettingsService);
   private shapeSettingsStateService = inject(ShapeSettingsStateService);
   private openReferencedElementService = inject(OpenReferencedElementService);
@@ -65,20 +65,20 @@ export class ElementListComponent implements OnInit {
   }
 
   openElementModel(elementModel: NamedElement) {
-    const cell = this.mxGraphService.resolveCellByModelElement(elementModel);
+    const cell = this.maxgraphService.resolveCellByModelElement(elementModel);
     this.shapeSettingsService.editModel(elementModel);
     if (cell) {
-      this.mxGraphService.navigateToCell(cell, true);
+      this.maxgraphService.navigateToCell(cell, true);
       this.shapeSettingsStateService.selectedShapeForUpdate = cell;
     }
   }
 
   navigateToCell(elementModel: NamedElement) {
-    this.mxGraphService.navigateToCellByUrn(elementModel.aspectModelUrn);
+    this.maxgraphService.navigateToCellByUrn(elementModel.aspectModelUrn);
   }
 
   cellExists(elementModel: NamedElement): boolean {
-    return !!this.mxGraphService.resolveCellByModelElement(elementModel);
+    return !!this.maxgraphService.resolveCellByModelElement(elementModel);
   }
 
   openReferencedElement(element: NamedElement) {

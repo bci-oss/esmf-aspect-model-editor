@@ -14,7 +14,7 @@
 import {ModelApiService} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
 import {EditorService} from '@ame/editor';
-import {MxGraphHelper} from '@ame/mx-graph';
+import {MaxGraphHelper} from '@ame/max-graph';
 import {ModelService, RdfService} from '@ame/rdf/services';
 import {useUpdater} from '@ame/utils';
 import {inject} from '@angular/core';
@@ -39,7 +39,7 @@ export abstract class BaseModelService {
   abstract isApplicable(metaModelElement: NamedElement): boolean;
 
   update(cell: Cell, form: {[key: string]: any}) {
-    const modelElement = MxGraphHelper.getModelElement(cell);
+    const modelElement = MaxGraphHelper.getModelElement(cell);
     if (!modelElement) {
       return;
     }
@@ -69,9 +69,9 @@ export abstract class BaseModelService {
 
   delete(cell: Cell) {
     // Add common operations
-    const modelElement = MxGraphHelper.getModelElement(cell);
+    const modelElement = MaxGraphHelper.getModelElement(cell);
     for (const edge of (cell.edges?.length && cell.edges) || []) {
-      const sourceNode = MxGraphHelper.getModelElement<NamedElement>(edge.source);
+      const sourceNode = MaxGraphHelper.getModelElement<NamedElement>(edge.source);
       if (sourceNode && !(sourceNode instanceof DefaultEnumeration) && this.loadedFilesService.isElementInCurrentFile(sourceNode)) {
         this.currentCachedFile.removeElement(modelElement.aspectModelUrn);
         useUpdater(sourceNode).delete(modelElement);
@@ -138,13 +138,13 @@ export abstract class BaseModelService {
 
   protected addNewEntityValues(newEntityValues: DefaultEntityInstance[], parent: NamedElement) {
     for (const entityValue of newEntityValues) {
-      MxGraphHelper.establishRelation(parent, entityValue);
+      MaxGraphHelper.establishRelation(parent, entityValue);
       this.currentCachedFile.resolveInstance(entityValue);
     }
   }
 
   protected deleteEntityValue(entityValue: DefaultEntityInstance, parent: NamedElement) {
-    MxGraphHelper.removeRelation(parent, entityValue);
+    MaxGraphHelper.removeRelation(parent, entityValue);
     // delete the element
     this.loadedFile.cachedFile.removeElement(entityValue.aspectModelUrn);
     // now delete other underlying entity values that don't belong to an enumeration

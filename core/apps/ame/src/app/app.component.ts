@@ -13,7 +13,7 @@
 
 import {StartupService} from '@ame/app/startup.service';
 import {DomainModelToRdfService} from '@ame/aspect-exporter';
-import {MxGraphAttributeService, MxGraphHelper, ThemeService} from '@ame/mx-graph';
+import {MaxGraphAttributeService, MaxGraphHelper, ThemeService} from '@ame/max-graph';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {BrowserService, ElectronTunnelService, IPC_RENDERER, TitleService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
@@ -43,7 +43,7 @@ export class AppComponent implements OnInit {
   private themeService = inject(ThemeService);
   private translate = inject(LanguageTranslationService);
   private searchesStateService = inject(SearchesStateService);
-  private mxGraphAttributeService = inject(MxGraphAttributeService);
+  private maxgraphAttributeService = inject(MaxGraphAttributeService);
   private startupService = inject(StartupService);
   private injector = inject(Injector);
 
@@ -56,7 +56,7 @@ export class AppComponent implements OnInit {
 
   constructor() {
     this.domainModelToRdf.listenForStoreUpdates();
-    MxGraphHelper.injector = this.injector;
+    MaxGraphHelper.injector = this.injector;
   }
 
   ngOnInit(): void {
@@ -81,7 +81,7 @@ export class AppComponent implements OnInit {
   }
 
   openSearchElements(): void {
-    const graph = this.mxGraphAttributeService.graph;
+    const graph = this.maxgraphAttributeService.graph;
     const vertexCount = Object.values(graph.getDataModel().cells).filter(cell => cell.isVertex()).length > 0;
 
     if (vertexCount) this.searchesStateService.elementsSearch.toggle();

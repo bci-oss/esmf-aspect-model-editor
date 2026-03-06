@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MxGraphAttributeService, MxGraphHelper, MxGraphService} from '@ame/mx-graph';
+import {MaxGraphAttributeService, MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {Injectable, inject} from '@angular/core';
 import {DefaultCharacteristic, DefaultCollection, DefaultEntity} from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
@@ -19,23 +19,22 @@ import {MultiShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class CollectionCharacteristicConnectionHandler implements MultiShapeConnector<DefaultCollection, DefaultCharacteristic> {
-  private mxGraphService = inject(MxGraphService);
-  private mxGraphAttributeService = inject(MxGraphAttributeService);
-
+  private maxgraphService = inject(MaxGraphService);
+  private maxgraphAttributeService = inject(MaxGraphAttributeService);
   public connect(parentMetaModel: DefaultCollection, childMetaModel: DefaultCharacteristic, parent: Cell, child: Cell) {
-    this.mxGraphAttributeService.graph.getOutgoingEdges(parent, null).forEach(outEdge => {
+    this.maxgraphAttributeService.graph.getOutgoingEdges(parent, null).forEach(outEdge => {
       if (outEdge.target && !((outEdge.target as any).getMetaModelElement() instanceof DefaultEntity)) {
         const entity = (outEdge.target as any).getMetaModelElement();
-        MxGraphHelper.removeRelation(parentMetaModel, entity);
-        this.mxGraphService.removeCells([parent.removeEdge(outEdge, true)]);
+        MaxGraphHelper.removeRelation(parentMetaModel, entity);
+        this.maxgraphService.removeCells([parent.removeEdge(outEdge, true)]);
       }
     });
 
     parentMetaModel.elementCharacteristic = childMetaModel;
-    this.mxGraphService.assignToParent(child, parent);
+    this.maxgraphService.assignToParent(child, parent);
 
     if (parentMetaModel.elementCharacteristic) {
-      this.mxGraphService.graph.labelChanged(parent, MxGraphHelper.createPropertiesLabel(parent), null);
+      this.maxgraphService.graph.labelChanged(parent, MaxGraphHelper.createPropertiesLabel(parent), null);
     }
   }
 }

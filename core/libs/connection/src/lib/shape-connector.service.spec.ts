@@ -49,7 +49,7 @@ import {
   TraitConnectionHandler,
   TraitWithCharacteristicOrConstraintConnectionHandler,
 } from '@ame/connection';
-import {MxGraphAttributeService, MxGraphService, MxGraphShapeOverlayService} from '@ame/mx-graph';
+import {MaxGraphAttributeService, MaxGraphService, MaxGraphShapeOverlayService} from '@ame/max-graph';
 import {NotificationsService} from '@ame/shared';
 import {provideHttpClient} from '@angular/common/http';
 import {provideHttpClientTesting} from '@angular/common/http/testing';
@@ -103,20 +103,20 @@ describe('Test Shape connector service', () => {
         provideHttpClientTesting(),
         ShapeConnectorService,
         {
-          provide: MxGraphShapeOverlayService,
-          useValue: provideMockObject(MxGraphShapeOverlayService),
+          provide: MaxGraphShapeOverlayService,
+          useValue: provideMockObject(MaxGraphShapeOverlayService),
         },
         {
           provide: NotificationsService,
           useValue: provideMockObject(NotificationsService),
         },
         {
-          provide: MxGraphService,
-          useValue: provideMockObject(MxGraphService),
+          provide: MaxGraphService,
+          useValue: provideMockObject(MaxGraphService),
         },
         {
-          provide: MxGraphAttributeService,
-          useValue: provideMockObject(MxGraphAttributeService),
+          provide: MaxGraphAttributeService,
+          useValue: provideMockObject(MaxGraphAttributeService),
         },
         {
           provide: AspectConnectionHandler,

@@ -14,7 +14,7 @@ import {inject, Injectable} from '@angular/core';
 import {ShapeConnectorUtil} from './shape-connector-util';
 
 import {LoadedFilesService} from '@ame/cache';
-import {ModelInfo, MxGraphAttributeService, MxGraphHelper, MxGraphShapeOverlayService} from '@ame/mx-graph';
+import {MaxGraphAttributeService, MaxGraphHelper, MaxGraphShapeOverlayService, ModelInfo} from '@ame/max-graph';
 import {cellRelations, NotificationsService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {
@@ -78,8 +78,8 @@ import {
 @Injectable({providedIn: 'root'})
 export class ShapeConnectorService {
   private notificationsService = inject(NotificationsService);
-  private mxGraphAttributeService = inject(MxGraphAttributeService);
-  private mxGraphShapeOverlayService = inject(MxGraphShapeOverlayService);
+  private maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
   private aspectConnectionHandler = inject(AspectConnectionHandler);
   private propertyConnectionHandler = inject(PropertyConnectionHandler);
   private operationConnectionHandler = inject(OperationConnectionHandler);
@@ -127,7 +127,7 @@ export class ShapeConnectorService {
   }
 
   connectSelectedElements(cells?: Cell[]) {
-    const selectedCells = cells || [...this.mxGraphAttributeService.graph.selectionModel.cells];
+    const selectedCells = cells || [...this.maxgraphAttributeService.graph.selectionModel.cells];
 
     if (selectedCells.length !== 2) {
       return this.notificationsService.error({title: this.translate.language.NOTIFICATION_SERVICE.ONLY_TWO_ELEMENTS_CONNECTION});
@@ -135,7 +135,7 @@ export class ShapeConnectorService {
 
     const firstElement = selectedCells[0].style.baseStyleNames[0];
     const secondElement = selectedCells[1].style.baseStyleNames[0];
-    const modelElements = selectedCells.map(e => MxGraphHelper.getModelElement(e));
+    const modelElements = selectedCells.map(e => MaxGraphHelper.getModelElement(e));
 
     if (
       secondElement !== firstElement &&
@@ -153,8 +153,8 @@ export class ShapeConnectorService {
     const newConnection = this.connectShapes(modelElements[0], modelElements[1], selectedCells[0], selectedCells[1]);
 
     if (newConnection && !(modelElements[1] instanceof DefaultEntity)) {
-      this.mxGraphShapeOverlayService.removeOverlaysByConnection(modelElements[0], selectedCells[0]);
-      this.mxGraphAttributeService.graph.clearSelection();
+      this.maxgraphShapeOverlayService.removeOverlaysByConnection(modelElements[0], selectedCells[0]);
+      this.maxgraphAttributeService.graph.clearSelection();
     }
   }
 

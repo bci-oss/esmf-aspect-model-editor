@@ -14,13 +14,13 @@
 import {inject, Injectable} from '@angular/core';
 import {Cell} from '@maxgraph/core';
 
-import {MxGraphHelper, MxGraphService, ValueRenderService} from '@ame/mx-graph';
+import {MaxGraphHelper, MaxGraphService, ValueRenderService} from '@ame/max-graph';
 import {DefaultValue, NamedElement} from '@esmf/aspect-model-loader';
 import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
 export class ValueModelService extends BaseModelService {
-  private mxGraphService = inject(MxGraphService);
+  private maxgraphService = inject(MaxGraphService);
   private valueRender = inject(ValueRenderService);
 
   isApplicable(metaModelElement: NamedElement): boolean {
@@ -28,7 +28,7 @@ export class ValueModelService extends BaseModelService {
   }
 
   update(cell: Cell, form: {[key: string]: any}) {
-    const modelElement = MxGraphHelper.getModelElement<DefaultValue>(cell);
+    const modelElement = MaxGraphHelper.getModelElement<DefaultValue>(cell);
     super.update(cell, form);
     modelElement.value = form.value;
 
@@ -37,6 +37,6 @@ export class ValueModelService extends BaseModelService {
 
   delete(cell: Cell) {
     super.delete(cell);
-    this.mxGraphService.removeCells([cell]);
+    this.maxgraphService.removeCells([cell]);
   }
 }

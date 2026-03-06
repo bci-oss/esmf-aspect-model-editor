@@ -12,7 +12,7 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {EdgeStyles, MxGraphHelper} from '@ame/mx-graph';
+import {EdgeStyles, MaxGraphHelper} from '@ame/max-graph';
 import {ShapeGeometry, basicShapeGeometry, circleShapeGeometry, smallBasicShapeGeometry} from '@ame/shared';
 import {
   DefaultAspect,
@@ -88,7 +88,7 @@ export class DefaultFilter implements FilterLoader {
       element,
       fromParentArrow: this.getArrowStyle(element, options?.parent),
       children: new ChildrenArray(),
-      shape: {...this.getShapeGeometry(element), mxGraphStyle: {baseStyleNames: [this.getMxGraphStyle(element)]}},
+      shape: {...this.getShapeGeometry(element), maxgraphStyle: {baseStyleNames: [this.getMaxgraphStyle(element)]}},
       filterType: this.filterType,
     };
 
@@ -114,7 +114,7 @@ export class DefaultFilter implements FilterLoader {
 
     return parent instanceof DefaultEntityInstance && !(element instanceof DefaultEntityInstance)
       ? EdgeStyles.entityValueEntityEdge
-      : MxGraphHelper.isOptionalProperty(element as DefaultProperty, parent)
+      : MaxGraphHelper.isOptionalProperty(element as DefaultProperty, parent)
         ? EdgeStyles.optionalPropertyEdge
         : element instanceof DefaultProperty && element.isAbstract && parent instanceof DefaultProperty
           ? EdgeStyles.abstractPropertyEdge
@@ -135,7 +135,7 @@ export class DefaultFilter implements FilterLoader {
     return basicShapeGeometry;
   }
 
-  getMxGraphStyle(element: NamedElement): string {
+  getMaxgraphStyle(element: NamedElement): string {
     if (element instanceof DefaultAspect) {
       return ModelStyle.ASPECT;
     } else if (element instanceof DefaultProperty && !element.isAbstract) {

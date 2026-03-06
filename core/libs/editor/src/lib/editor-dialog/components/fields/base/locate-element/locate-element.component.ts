@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MxGraphService} from '@ame/mx-graph';
+import {MaxGraphService} from '@ame/max-graph';
 import {Component, DestroyRef, inject} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatIconButton} from '@angular/material/button';
@@ -45,7 +45,7 @@ import {EditorModelService} from '../../../../editor-model.service';
 export class LocateElementComponent {
   public destroyRef = inject(DestroyRef);
   public metaModelDialogService = inject(EditorModelService);
-  private mxgraphService = inject(MxGraphService);
+  private maxgraphService = inject(MaxGraphService);
 
   public element: NamedElement;
 
@@ -57,6 +57,6 @@ export class LocateElementComponent {
   }
 
   locate() {
-    if (this.element) this.mxgraphService.navigateToCellByUrn(this.element.aspectModelUrn);
+    if (this.element) this.maxgraphService.navigateToCellByUrn(this.element.aspectModelUrn);
   }
 }

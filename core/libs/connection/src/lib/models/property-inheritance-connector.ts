@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MxGraphHelper} from '@ame/mx-graph';
+import {MaxGraphHelper} from '@ame/max-graph';
 import {DefaultEntity, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
 import {ScalarValue} from '../../../../aspect-model-loader/src/lib/aspect-meta-model/scalar-value';
@@ -38,6 +38,6 @@ export class PropertyInheritanceConnector extends InheritanceConnector {
   }
 
   protected hasEntityParent(cell: Cell) {
-    return !this.mxGraphService.resolveParents(cell)?.some(cell => MxGraphHelper.getModelElement(cell) instanceof DefaultEntity);
+    return !this.maxgraphService.resolveParents(cell)?.some(cell => MaxGraphHelper.getModelElement(cell) instanceof DefaultEntity);
   }
 }

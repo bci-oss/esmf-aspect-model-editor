@@ -13,7 +13,7 @@
 
 import {LoadedFilesService} from '@ame/cache';
 import {EditorService} from '@ame/editor';
-import {MxGraphAttributeService, MxGraphHelper, MxGraphRenderer, MxGraphService, MxGraphShapeOverlayService} from '@ame/mx-graph';
+import {MaxGraphAttributeService, MaxGraphHelper, MaxGraphRenderer, MaxGraphService, MaxGraphShapeOverlayService} from '@ame/max-graph';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {LoadingScreenService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
@@ -79,7 +79,7 @@ export class FiltersService {
     node.fromParentArrow = options?.parent ? this.currentFilter.getArrowStyle(node.element, options.parent) : null;
     node.shape = {
       ...this.currentFilter.getShapeGeometry(node.element),
-      mxGraphStyle: {baseStyleNames: [this.currentFilter.getMxGraphStyle(node.element)]},
+      maxgraphStyle: {baseStyleNames: [this.currentFilter.getMaxgraphStyle(node.element)]},
     };
     node.filterType = this.currentFilter.filterType;
     return node;
@@ -92,10 +92,10 @@ export class FiltersService {
   }
 
   renderByFilter(filter: ModelFilter) {
-    const mxGraphService = runInInjectionContext(this.injector, () => inject(MxGraphService));
+    const maxgraphService = runInInjectionContext(this.injector, () => inject(MaxGraphService));
     const editorService = runInInjectionContext(this.injector, () => inject(EditorService));
-    let selectedCell = mxGraphService.graph.selectionModel.cells?.[0];
-    const selectedModelElement = selectedCell && MxGraphHelper.getModelElement(selectedCell);
+    let selectedCell = maxgraphService.graph.selectionModel.cells?.[0];
+    const selectedModelElement = selectedCell && MaxGraphHelper.getModelElement(selectedCell);
 
     this.loadingScreen
       .open({
@@ -105,13 +105,13 @@ export class FiltersService {
       .afterOpened()
       .pipe(
         switchMap(() => {
-          MxGraphHelper.filterMode = filter;
+          MaxGraphHelper.filterMode = filter;
           this.filterAttributesService.isFiltering = true;
           this.filtersMethods[filter]?.();
           const loadedFilesService = runInInjectionContext(this.injector, () => inject(LoadedFilesService));
-          const mxGraphRenderer = new MxGraphRenderer(
-            mxGraphService,
-            runInInjectionContext(this.injector, () => inject(MxGraphShapeOverlayService)),
+          const maxgraphRenderer = new MaxGraphRenderer(
+            maxgraphService,
+            runInInjectionContext(this.injector, () => inject(MaxGraphShapeOverlayService)),
             runInInjectionContext(this.injector, () => inject(SammLanguageSettingsService)),
             runInInjectionContext(this.injector, () => inject(LoadedFilesService))?.currentLoadedFile?.rdfModel,
           );
@@ -125,20 +125,20 @@ export class FiltersService {
           }, []);
           const filteredElements = this.filter(rootElements);
 
-          mxGraphService.deleteAllShapes();
+          maxgraphService.deleteAllShapes();
 
-          return mxGraphService.updateGraph(() => {
+          return maxgraphService.updateGraph(() => {
             for (const elementTree of filteredElements) {
-              mxGraphRenderer.render(elementTree, null);
+              maxgraphRenderer.render(elementTree, null);
             }
-            this.injector.get(MxGraphAttributeService).inCollapsedMode && mxGraphService.foldCells();
+            this.injector.get(MaxGraphAttributeService).inCollapsedMode && maxgraphService.foldCells();
           });
         }),
         switchMap(() => {
-          mxGraphService.formatShapes(true);
+          maxgraphService.formatShapes(true);
           this.filterAttributesService.isFiltering = false;
-          selectedCell = selectedModelElement && mxGraphService.resolveCellByModelElement(selectedModelElement);
-          if (selectedCell) mxGraphService.navigateToCellByUrn(selectedModelElement.aspectModelUrn);
+          selectedCell = selectedModelElement && maxgraphService.resolveCellByModelElement(selectedModelElement);
+          if (selectedCell) maxgraphService.navigateToCellByUrn(selectedModelElement.aspectModelUrn);
 
           return editorService.validate();
         }),

@@ -60,13 +60,13 @@ export class EntityInheritanceConnector extends InheritanceConnector {
         newProperties[i],
         abstractProperties[i],
         propertyCell,
-        this.mxGraphService.resolveCellByModelElement(abstractProperties[i]),
+        this.maxgraphService.resolveCellByModelElement(abstractProperties[i]),
       );
     }
 
-    this.mxGraphService.formatCell(parent);
-    this.mxGraphService.formatCell(child);
-    this.mxGraphService.formatShapes();
+    this.maxgraphService.formatCell(parent);
+    this.maxgraphService.formatCell(child);
+    this.maxgraphService.formatShapes();
   }
 
   isInheritedElement(element: NamedElement): boolean {

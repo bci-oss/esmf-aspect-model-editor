@@ -24,8 +24,8 @@ export class AspectConnectionHandler extends BaseConnectionHandler implements Si
     const child = this.renderTree(defaultProperty, source);
     aspect.properties.push(defaultProperty);
 
-    this.mxGraphService.assignToParent(child, source);
-    this.mxGraphService.formatCell(source);
-    this.mxGraphService.formatShapes();
+    this.maxgraphService.assignToParent(child, source);
+    this.maxgraphService.formatCell(source);
+    this.maxgraphService.formatShapes();
   }
 }

@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
+import {MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {inject, Injectable} from '@angular/core';
 import {NamedElement, PredefinedEntitiesEnum, PredefinedPropertiesEnum} from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
@@ -20,10 +20,10 @@ import {PredefinedRemove} from './predefined-remove.type';
 @Injectable({providedIn: 'root'})
 export class Point3dRemoveService implements PredefinedRemove {
   private modelRootService = inject(ModelRootService);
-  private mxGraphService = inject(MxGraphService);
+  private maxgraphService = inject(MaxGraphService);
 
   delete(cell: Cell): boolean {
-    const modelElement = MxGraphHelper.getModelElement(cell);
+    const modelElement = MaxGraphHelper.getModelElement(cell);
     if (!this.modelRootService.isPredefined(modelElement)) {
       return false;
     }
@@ -33,9 +33,9 @@ export class Point3dRemoveService implements PredefinedRemove {
         modelElement.name as PredefinedPropertiesEnum,
       )
     ) {
-      const parent = this.mxGraphService
+      const parent = this.maxgraphService
         .resolveParents(cell)
-        .find(p => MxGraphHelper.getModelElement(p).name === PredefinedEntitiesEnum.Point3d);
+        .find(p => MaxGraphHelper.getModelElement(p).name === PredefinedEntitiesEnum.Point3d);
       return this.removeTree(parent);
     }
 
@@ -63,12 +63,12 @@ export class Point3dRemoveService implements PredefinedRemove {
       return false;
     }
 
-    for (const edge of this.mxGraphService.graph.getIncomingEdges(cell, null)) {
-      MxGraphHelper.removeRelation(MxGraphHelper.getModelElement(edge.source), MxGraphHelper.getModelElement(cell));
+    for (const edge of this.maxgraphService.graph.getIncomingEdges(cell, null)) {
+      MaxGraphHelper.removeRelation(MaxGraphHelper.getModelElement(edge.source), MaxGraphHelper.getModelElement(cell));
     }
 
-    [cell, ...this.mxGraphService.graph.getOutgoingEdges(cell, null).map(e => e.target)].forEach(c => {
-      const modelElement = MxGraphHelper.getModelElement(c);
+    [cell, ...this.maxgraphService.graph.getOutgoingEdges(cell, null).map(e => e.target)].forEach(c => {
+      const modelElement = MaxGraphHelper.getModelElement(c);
       const elementModelService = this.modelRootService.getElementModelService(modelElement);
       elementModelService?.delete(c);
     });

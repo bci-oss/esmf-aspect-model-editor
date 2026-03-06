@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MxGraphAttributeService, MxGraphHelper, MxGraphService} from '@ame/mx-graph';
+import {MaxGraphAttributeService, MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {basicShapeGeometry} from '@ame/shared';
 import {Injectable, inject} from '@angular/core';
 import {DefaultCharacteristic, DefaultProperty, DefaultValue, NamedElement} from '@esmf/aspect-model-loader';
@@ -20,27 +20,26 @@ import {MultiShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class PropertyCharacteristicConnectionHandler implements MultiShapeConnector<DefaultProperty, DefaultCharacteristic> {
-  private mxGraphService = inject(MxGraphService);
-  private mxGraphAttributeService = inject(MxGraphAttributeService);
-
+  private maxgraphService = inject(MaxGraphService);
+  private maxgraphAttributeService = inject(MaxGraphAttributeService);
   public connect(parentMetaModel: DefaultProperty, childMetaModel: DefaultCharacteristic, parent: Cell, child: Cell) {
-    this.mxGraphAttributeService.graph.getOutgoingEdges(parent, null).forEach((outEdge: Cell) => {
+    this.maxgraphAttributeService.graph.getOutgoingEdges(parent, null).forEach((outEdge: Cell) => {
       // Moves the cell being disconnected(arrow removal) in order to prevent overlapping overlays
       if (outEdge.target?.geometry?.x < basicShapeGeometry.expandedWith) {
         outEdge.target.geometry.translate(basicShapeGeometry.expandedWith, 0);
       }
 
-      const targetModel = MxGraphHelper.getModelElement<NamedElement>(outEdge.target);
+      const targetModel = MaxGraphHelper.getModelElement<NamedElement>(outEdge.target);
       if (targetModel instanceof DefaultProperty || targetModel instanceof DefaultValue) {
         return;
       }
 
-      MxGraphHelper.removeRelation(parentMetaModel, targetModel);
-      this.mxGraphService.removeCells([parent.removeEdge(outEdge, true)]);
+      MaxGraphHelper.removeRelation(parentMetaModel, targetModel);
+      this.maxgraphService.removeCells([parent.removeEdge(outEdge, true)]);
     });
 
     parentMetaModel.characteristic = childMetaModel;
-    this.mxGraphService.assignToParent(child, parent);
-    this.mxGraphService.formatShapes();
+    this.maxgraphService.assignToParent(child, parent);
+    this.maxgraphService.formatShapes();
   }
 }

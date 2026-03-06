@@ -33,10 +33,10 @@ export class StructuredValueConnectionHandler extends BaseConnectionHandler impl
     const child = this.renderTree(property, source);
 
     this.refreshPropertiesLabel(child, property);
-    this.mxGraphService.assignToParent(child, source);
+    this.maxgraphService.assignToParent(child, source);
     this.currentCachedFile.resolveInstance(property);
 
-    this.mxGraphService.formatCell(source);
-    this.mxGraphService.formatShapes();
+    this.maxgraphService.formatCell(source);
+    this.maxgraphService.formatShapes();
   }
 }

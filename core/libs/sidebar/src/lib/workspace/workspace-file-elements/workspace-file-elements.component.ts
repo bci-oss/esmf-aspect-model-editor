@@ -14,7 +14,7 @@
 import {ModelApiService} from '@ame/api';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {ModelLoaderService} from '@ame/editor';
-import {MxGraphService} from '@ame/mx-graph';
+import {MaxGraphService} from '@ame/max-graph';
 import {ElementIconComponent, ElementType, sammElements} from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
 import {ChangeDetectorRef, Component, effect, inject, signal} from '@angular/core';
@@ -51,7 +51,7 @@ import {DraggableElementComponent} from '../../draggable-element/draggable-eleme
   ],
 })
 export class WorkspaceFileElementsComponent {
-  private mxGraphService = inject(MxGraphService);
+  private maxgraphService = inject(MaxGraphService);
   private changeDetector = inject(ChangeDetectorRef);
   private modelApiService = inject(ModelApiService);
   private modelLoaderService = inject(ModelLoaderService);
@@ -112,7 +112,7 @@ export class WorkspaceFileElementsComponent {
 
   public elementImported(element: NamedElement): boolean {
     if (element?.aspectModelUrn) {
-      return !!this.mxGraphService.resolveCellByModelElement(element);
+      return !!this.maxgraphService.resolveCellByModelElement(element);
     }
     return false;
   }

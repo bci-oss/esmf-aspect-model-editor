@@ -13,13 +13,13 @@
 
 import {ShapeConnectorService} from '@ame/connection';
 import {
+  MaxGraphAttributeService,
+  MaxGraphHelper,
+  MaxGraphService,
+  MaxGraphShapeOverlayService,
   ModelInfo,
-  MxGraphAttributeService,
-  MxGraphHelper,
-  MxGraphService,
-  MxGraphShapeOverlayService,
   TraitRenderService,
-} from '@ame/mx-graph';
+} from '@ame/max-graph';
 import {inject, Injectable} from '@angular/core';
 import {DefaultCharacteristic, DefaultEither, DefaultEntity, DefaultProperty, DefaultTrait, NamedElement} from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
@@ -33,9 +33,9 @@ interface EitherInformation {
 
 @Injectable({providedIn: 'root'})
 export class TraitModelService extends BaseModelService {
-  private mxGraphAttributeService = inject(MxGraphAttributeService);
-  private mxGraphShapeOverlayService = inject(MxGraphShapeOverlayService);
-  private mxGraphService = inject(MxGraphService);
+  private maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
+  private maxgraphService = inject(MaxGraphService);
   private shapeConnectorService = inject(ShapeConnectorService);
   private traitRendererService = inject(TraitRenderService);
 
@@ -53,7 +53,7 @@ export class TraitModelService extends BaseModelService {
 
     const informationOfEithers: Array<EitherInformation> = [];
     Array.from(sourceTargetPair.keys()).forEach(source => {
-      const sourceMetaModel = MxGraphHelper.getModelElement(source);
+      const sourceMetaModel = MaxGraphHelper.getModelElement(source);
       if (sourceMetaModel instanceof DefaultEither) {
         informationOfEithers.push({
           urn: sourceMetaModel.aspectModelUrn,
@@ -70,26 +70,26 @@ export class TraitModelService extends BaseModelService {
     });
 
     super.delete(cell);
-    const elementModel = MxGraphHelper.getModelElement(cell);
-    const outgoingEdges = this.mxGraphAttributeService.graph.getOutgoingEdges(cell, null);
-    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell, null);
-    this.mxGraphShapeOverlayService.checkAndAddTopShapeActionIcon(outgoingEdges, elementModel);
-    this.mxGraphShapeOverlayService.checkAndAddShapeActionIcon(incomingEdges, elementModel);
-    this.mxGraphService.removeCells([cell]);
+    const elementModel = MaxGraphHelper.getModelElement(cell);
+    const outgoingEdges = this.maxgraphAttributeService.graph.getOutgoingEdges(cell, null);
+    const incomingEdges = this.maxgraphAttributeService.graph.getIncomingEdges(cell, null);
+    this.maxgraphShapeOverlayService.checkAndAddTopShapeActionIcon(outgoingEdges, elementModel);
+    this.maxgraphShapeOverlayService.checkAndAddShapeActionIcon(incomingEdges, elementModel);
+    this.maxgraphService.removeCells([cell]);
     this.reconnectShapePair(sourceTargetPair, informationOfEithers);
   }
 
   // Used to reconnect Characteristic with Properties if you delete theTrait
   private getSourceTargetPairForReconnect(cell: Cell) {
     const sourceTargetPair = new Map();
-    const elementModel = MxGraphHelper.getModelElement(cell);
+    const elementModel = MaxGraphHelper.getModelElement(cell);
     if (this.loadedFilesService.isElementInCurrentFile(elementModel)) {
-      const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell, null);
-      const outgoingEdges = this.mxGraphAttributeService.graph.getOutgoingEdges(cell, null);
+      const incomingEdges = this.maxgraphAttributeService.graph.getIncomingEdges(cell, null);
+      const outgoingEdges = this.maxgraphAttributeService.graph.getOutgoingEdges(cell, null);
 
       // outgoingEdges[0].target can be characteristic or constraint.
       // In this case we need to make sure that we relink property only to characteristic
-      const characteristicEdge = outgoingEdges.find(edge => MxGraphHelper.getModelElement(edge.target) instanceof DefaultCharacteristic);
+      const characteristicEdge = outgoingEdges.find(edge => MaxGraphHelper.getModelElement(edge.target) instanceof DefaultCharacteristic);
       if (incomingEdges.length && outgoingEdges.length && characteristicEdge) {
         incomingEdges.forEach(incomingEdge => sourceTargetPair.set(incomingEdge.source, characteristicEdge.target));
       }
@@ -102,8 +102,8 @@ export class TraitModelService extends BaseModelService {
     sourceTargetPair.forEach((target, source) => {
       let modelInfo = null;
 
-      const targetModelElement = MxGraphHelper.getModelElement(target);
-      const sourceModelElement = MxGraphHelper.getModelElement(source);
+      const targetModelElement = MaxGraphHelper.getModelElement(target);
+      const sourceModelElement = MaxGraphHelper.getModelElement(source);
 
       if (sourceModelElement instanceof DefaultEither) {
         const either = informationOfEithers.find(eitherInfo => eitherInfo.urn === sourceModelElement.aspectModelUrn);
@@ -117,17 +117,17 @@ export class TraitModelService extends BaseModelService {
       const newConnection = this.shapeConnectorService.connectShapes(sourceModelElement, targetModelElement, source, target, modelInfo);
 
       if (newConnection) {
-        this.mxGraphShapeOverlayService.removeOverlay(target, MxGraphHelper.getTopOverlayButton(target));
-        this.mxGraphShapeOverlayService.removeOverlaysByConnection(sourceModelElement, source);
-        this.mxGraphShapeOverlayService.addTopShapeOverlay(target);
+        this.maxgraphShapeOverlayService.removeOverlay(target, MaxGraphHelper.getTopOverlayButton(target));
+        this.maxgraphShapeOverlayService.removeOverlaysByConnection(sourceModelElement, source);
+        this.maxgraphShapeOverlayService.addTopShapeOverlay(target);
         if (
           targetModelElement instanceof DefaultCharacteristic &&
           sourceModelElement instanceof DefaultProperty &&
           !(targetModelElement.dataType instanceof DefaultEntity)
         ) {
-          this.mxGraphShapeOverlayService.addBottomShapeOverlay(target);
+          this.maxgraphShapeOverlayService.addBottomShapeOverlay(target);
         }
-        this.mxGraphService.formatShapes();
+        this.maxgraphService.formatShapes();
       }
     });
   }

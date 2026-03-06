@@ -90,6 +90,6 @@ export interface FilterLoader<T extends NamedElement = NamedElement> {
   generateTree(element: T, options?: ModelTreeOptions): ModelTree<T>;
   getArrowStyle(element: T, parent: T): ArrowStyle;
   getShapeGeometry(element: T): ShapeGeometry;
-  getMxGraphStyle(element: T): string;
+  getMaxgraphStyle(element: T): string;
   hasOverlay(element?: T): boolean;
 }

@@ -13,7 +13,7 @@
 
 import {LoadedFilesService} from '@ame/cache';
 import {ShapeSettingsStateService} from '@ame/editor';
-import {MxGraphHelper} from '@ame/mx-graph';
+import {MaxGraphHelper} from '@ame/max-graph';
 import {ShapeGeometry, basicShapeGeometry, smallCircleShapeGeometry} from '@ame/shared';
 import {Injector} from '@angular/core';
 import {
@@ -64,7 +64,7 @@ export class PropertiesFilterLoader implements FilterLoader {
     const elementTree: ModelTree<NamedElement> = {
       element,
       fromParentArrow: options?.parent ? this.getArrowStyle(element, options.parent) : null,
-      shape: {...this.getShapeGeometry(element), mxGraphStyle: {baseStyleNames: [this.getMxGraphStyle(element)]}},
+      shape: {...this.getShapeGeometry(element), maxgraphStyle: {baseStyleNames: [this.getMaxgraphStyle(element)]}},
       children: new ChildrenArray(),
       filterType: this.filterType,
     };
@@ -128,7 +128,7 @@ export class PropertiesFilterLoader implements FilterLoader {
     if (
       element instanceof DefaultProperty &&
       (parent instanceof DefaultEntity || parent instanceof DefaultAspect) &&
-      MxGraphHelper.isOptionalProperty(element as DefaultProperty, parent)
+      MaxGraphHelper.isOptionalProperty(element as DefaultProperty, parent)
     ) {
       return 'optionalPropertyEdge';
     }
@@ -149,7 +149,7 @@ export class PropertiesFilterLoader implements FilterLoader {
     return element instanceof DefaultProperty ? basicShapeGeometry : smallCircleShapeGeometry;
   }
 
-  getMxGraphStyle(element: NamedElement): string {
+  getMaxgraphStyle(element: NamedElement): string {
     return element instanceof DefaultAspect
       ? 'aspect'
       : element instanceof DefaultProperty

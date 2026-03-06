@@ -12,7 +12,7 @@
  */
 
 import {EntityInstanceService} from '@ame/editor';
-import {MxGraphHelper} from '@ame/mx-graph';
+import {MaxGraphHelper} from '@ame/max-graph';
 import {inject, Injectable} from '@angular/core';
 import {DefaultCharacteristic, DefaultEntity, DefaultProperty, Entity} from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
@@ -28,19 +28,19 @@ export class AbstractEntityConnectionHandler extends BaseConnectionHandler imple
 
   public connect(abstractEntity: DefaultEntity, source: Cell) {
     const abstractProperty = this.elementCreator.createEmptyElement(DefaultProperty, {isAbstract: true});
-    const abstractPropertyCell = this.mxGraphService.renderModelElement(
-      this.filtersService.createNode(abstractProperty, {parent: MxGraphHelper.getModelElement(source)}),
+    const abstractPropertyCell = this.maxgraphService.renderModelElement(
+      this.filtersService.createNode(abstractProperty, {parent: MaxGraphHelper.getModelElement(source)}),
     );
     abstractEntity.properties.push(abstractProperty);
     this.entityInstanceService.onNewProperty(abstractProperty, abstractEntity);
 
-    this.mxGraphService.assignToParent(abstractPropertyCell, source);
-    this.mxGraphService.formatCell(source, true);
+    this.maxgraphService.assignToParent(abstractPropertyCell, source);
+    this.maxgraphService.formatCell(source, true);
 
-    const entities = this.mxGraphService.graph
+    const entities = this.maxgraphService.graph
       .getIncomingEdges(source, null)
       .map(edge => edge.source)
-      .filter(cell => MxGraphHelper.getModelElement(cell) instanceof DefaultEntity);
+      .filter(cell => MaxGraphHelper.getModelElement(cell) instanceof DefaultEntity);
 
     this.refreshPropertiesLabel(abstractPropertyCell, abstractProperty);
 
@@ -57,7 +57,7 @@ export class AbstractEntityConnectionHandler extends BaseConnectionHandler imple
       const newPropertyCell = this.renderTree(newProperty, source);
 
       for (const entity of entities) {
-        const entityModel = MxGraphHelper.getModelElement<DefaultEntity>(entity);
+        const entityModel = MaxGraphHelper.getModelElement<DefaultEntity>(entity);
         entityModel.properties.push(newProperty);
         this.entityPropertyConnector.connect(entityModel, newProperty, entity, newPropertyCell);
       }
@@ -65,6 +65,6 @@ export class AbstractEntityConnectionHandler extends BaseConnectionHandler imple
       this.propertyAbstractPropertyConnector.connect(newProperty, abstractProperty, newPropertyCell, abstractPropertyCell);
     }
 
-    this.mxGraphService.formatShapes();
+    this.maxgraphService.formatShapes();
   }
 }

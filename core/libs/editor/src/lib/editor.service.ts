@@ -14,16 +14,16 @@
 import {ModelApiService} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
 import {FILTER_ATTRIBUTES, FilterAttributesService, FiltersService} from '@ame/loader-filters';
-import {ElementModelService} from '@ame/meta-model';
 import {
-  MxGraphAttributeService,
-  MxGraphHelper,
-  MxGraphRenderer,
-  MxGraphService,
-  MxGraphShapeOverlayService,
-  MxGraphShapeSelectorService,
+  MaxGraphAttributeService,
+  MaxGraphHelper,
+  MaxGraphRenderer,
+  MaxGraphService,
+  MaxGraphShapeOverlayService,
+  MaxGraphShapeSelectorService,
   ShapeConfiguration,
-} from '@ame/mx-graph';
+} from '@ame/max-graph';
+import {ElementModelService} from '@ame/meta-model';
 import {ModelService, RdfService} from '@ame/rdf/services';
 import {ConfigurationService, SammLanguageSettingsService} from '@ame/settings-dialog';
 import {
@@ -55,10 +55,10 @@ export class EditorService {
   private filterAttributes: FilterAttributesService = inject(FILTER_ATTRIBUTES);
   private configurationService: ConfigurationService = inject(ConfigurationService);
   private modelSaverService: ModelSaverService = inject(ModelSaverService);
-  private mxGraphService = inject(MxGraphService);
-  private mxGraphShapeOverlayService = inject(MxGraphShapeOverlayService);
-  private mxGraphShapeSelectorService = inject(MxGraphShapeSelectorService);
-  private mxGraphAttributeService = inject(MxGraphAttributeService);
+  private maxgraphService = inject(MaxGraphService);
+  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
+  private maxgraphShapeSelectorService = inject(MaxGraphShapeSelectorService);
+  private maxgraphAttributeService = inject(MaxGraphAttributeService);
   private notificationsService = inject(NotificationsService);
   private modelApiService = inject(ModelApiService);
   private modelService = inject(ModelService);
@@ -100,17 +100,17 @@ export class EditorService {
   }
 
   initCanvas(): void {
-    this.mxGraphService.initGraph();
+    this.maxgraphService.initGraph();
 
     this.enableAutoValidation();
     this.modelSaverService.enableAutoSave();
 
-    const container = this.mxGraphAttributeService.graph.getContainer();
+    const container = this.maxgraphAttributeService.graph.getContainer();
     const onWheel = (evt: WheelEvent) => {
       if (!evt.defaultPrevented && evt.altKey) {
         evt.preventDefault();
         this.ngZone.run(() => {
-          evt.deltaY < 0 ? this.mxGraphAttributeService.graph.zoomIn() : this.mxGraphAttributeService.graph.zoomOut();
+          evt.deltaY < 0 ? this.maxgraphAttributeService.graph.zoomIn() : this.maxgraphAttributeService.graph.zoomOut();
         });
       }
     };
@@ -118,7 +118,7 @@ export class EditorService {
     container.addEventListener('wheel', onWheel, {passive: false});
 
     // Enforce parent domain object will be updated if a cell e.g. unit will be deleted
-    this.mxGraphAttributeService.graph.addListener(InternalEvent.CELLS_REMOVED, (_source: Graph, event: EventObject) => {
+    this.maxgraphAttributeService.graph.addListener(InternalEvent.CELLS_REMOVED, (_source: Graph, event: EventObject) => {
       this.ngZone.run(() => {
         if (this.filterAttributes.isFiltering) {
           return;
@@ -126,7 +126,7 @@ export class EditorService {
 
         const changedCells: Array<Cell> = event.getProperty('cells');
         changedCells.forEach(cell => {
-          if (!MxGraphHelper.getModelElement(cell)) {
+          if (!MaxGraphHelper.getModelElement(cell)) {
             return;
           }
 
@@ -135,20 +135,20 @@ export class EditorService {
             return;
           }
 
-          const sourceElement = MxGraphHelper.getModelElement<NamedElement>(edgeParent.source);
+          const sourceElement = MaxGraphHelper.getModelElement<NamedElement>(edgeParent.source);
           if (sourceElement && this.loadedFilesService.isElementInCurrentFile(sourceElement)) {
-            useUpdater(sourceElement).delete(MxGraphHelper.getModelElement(cell));
+            useUpdater(sourceElement).delete(MaxGraphHelper.getModelElement(cell));
           }
         });
       });
     });
 
     // Increase performance by not passing the event to the parent(s)
-    this.mxGraphAttributeService.graph.getDataModel().addListener(InternalEvent.CHANGE, (_sender: GraphDataModel, evt: EventObject) => {
+    this.maxgraphAttributeService.graph.getDataModel().addListener(InternalEvent.CHANGE, (_sender: GraphDataModel, evt: EventObject) => {
       evt.consume();
     });
 
-    this.mxGraphAttributeService.graph.view.setTranslate(0, 0);
+    this.maxgraphAttributeService.graph.view.setTranslate(0, 0);
   }
 
   generateJsonSample(rdfModel: RdfModel): Observable<string> {
@@ -183,7 +183,7 @@ export class EditorService {
   makeDraggable(element: HTMLDivElement, dragElement: HTMLDivElement) {
     const ds = gestureUtils.makeDraggable(
       element,
-      this.mxGraphAttributeService.graph,
+      this.maxgraphAttributeService.graph,
       (_graph, _evt, _cell, x, y) => {
         const elementType: string = element.dataset.type;
         const urn: string = element.dataset.urn;
@@ -216,23 +216,23 @@ export class EditorService {
         this.createAspect(newInstance, {x, y});
         return;
       }
-      const mxGraphRenderer = new MxGraphRenderer(this.mxGraphService, this.mxGraphShapeOverlayService, this.sammLangService, null);
+      const maxgraphRenderer = new MaxGraphRenderer(this.maxgraphService, this.maxgraphShapeOverlayService, this.sammLangService, null);
 
       const node = this.filtersService.createNode(newInstance);
-      this.mxGraphService.setCoordinatesForNextCellRender(x, y);
-      const cell = mxGraphRenderer.render(node, null);
-      this.mxGraphService.formatCell(cell, true);
+      this.maxgraphService.setCoordinatesForNextCellRender(x, y);
+      const cell = maxgraphRenderer.render(node, null);
+      this.maxgraphService.formatCell(cell, true);
     } else {
       const element: NamedElement = this.loadedFilesService.findElementOnExtReferences(aspectModelUrn);
-      if (!this.mxGraphService.resolveCellByModelElement(element)) {
-        const mxGraphRenderer = new MxGraphRenderer(this.mxGraphService, this.mxGraphShapeOverlayService, this.sammLangService, null);
+      if (!this.maxgraphService.resolveCellByModelElement(element)) {
+        const maxgraphRenderer = new MaxGraphRenderer(this.maxgraphService, this.maxgraphShapeOverlayService, this.sammLangService, null);
 
-        this.mxGraphService.setCoordinatesForNextCellRender(x, y);
+        this.maxgraphService.setCoordinatesForNextCellRender(x, y);
 
         const filteredElements = this.filtersService.filter([element]);
-        const cell = mxGraphRenderer.render(filteredElements[0], null);
+        const cell = maxgraphRenderer.render(filteredElements[0], null);
 
-        this.mxGraphService.formatCell(cell);
+        this.maxgraphService.formatCell(cell);
       } else {
         this.notificationsService.warning({
           title: 'Element is already used',
@@ -262,7 +262,7 @@ export class EditorService {
         this.loadedFilesService.updateFileNaming(this.currentLoadedFile, {aspect: aspectInstance, name: `${aspectInstance.name}.ttl`});
 
         aspectInstance
-          ? this.mxGraphService.renderModelElement(this.filtersService.createNode(aspectInstance), {
+          ? this.maxgraphService.renderModelElement(this.filtersService.createNode(aspectInstance), {
               shapeAttributes: [],
               geometry,
             })
@@ -273,12 +273,12 @@ export class EditorService {
 
   deleteSelectedElements() {
     const result: Cell[] = [];
-    const selectedCells = this.mxGraphShapeSelectorService.getSelectedCells();
+    const selectedCells = this.maxgraphShapeSelectorService.getSelectedCells();
 
     result.push(...selectedCells);
 
     const externElements = result.filter((cell: Cell) => {
-      const element = MxGraphHelper.getModelElement(cell);
+      const element = MaxGraphHelper.getModelElement(cell);
       if (!element) {
         return false;
       }
@@ -294,14 +294,14 @@ export class EditorService {
       return;
     }
 
-    const element = MxGraphHelper.getModelElement(cell);
+    const element = MaxGraphHelper.getModelElement(cell);
     if (!element || !element.aspectModelUrn) {
       return;
     }
 
     const rdfModel = this.loadedFilesService.currentLoadedFile?.rdfModel;
 
-    const aspectModelUrnToBeRemoved = MxGraphHelper.getModelElement(cell).aspectModelUrn;
+    const aspectModelUrnToBeRemoved = MaxGraphHelper.getModelElement(cell).aspectModelUrn;
     const urnToBeChecked = aspectModelUrnToBeRemoved.substring(0, aspectModelUrnToBeRemoved.indexOf('#'));
 
     const nodeNames = rdfModel.store.getObjects(null, null, null).map((el: any) => el.id);
@@ -337,10 +337,10 @@ export class EditorService {
     }
 
     cells.forEach((cell: Cell) => {
-      this.mxGraphAttributeService.graph.setCellStyles(
+      this.maxgraphAttributeService.graph.setCellStyles(
         'strokeColor',
         'black',
-        this.mxGraphService.graph.getOutgoingEdges(cell, null).map(edge => edge.target),
+        this.maxgraphService.graph.getOutgoingEdges(cell, null).map(edge => edge.target),
       );
       this.elementModelService.deleteElement(cell);
     });
@@ -354,7 +354,7 @@ export class EditorService {
       })
       .afterOpened()
       .subscribe(() => {
-        this.mxGraphAttributeService.graph.zoomIn();
+        this.maxgraphAttributeService.graph.zoomIn();
         this.loadingScreenService.close();
       });
   }
@@ -367,7 +367,7 @@ export class EditorService {
       })
       .afterOpened()
       .subscribe(() => {
-        this.mxGraphAttributeService.graph.zoomOut();
+        this.maxgraphAttributeService.graph.zoomOut();
         this.loadingScreenService.close();
       });
   }
@@ -380,7 +380,7 @@ export class EditorService {
       })
       .afterOpened()
       .subscribe(() => {
-        this.mxGraphAttributeService.graph.getPlugin<FitPlugin>('FitPlugin').fit();
+        this.maxgraphAttributeService.graph.getPlugin<FitPlugin>('FitPlugin').fit();
         this.loadingScreenService.close();
       });
   }
@@ -393,7 +393,7 @@ export class EditorService {
       })
       .afterOpened()
       .subscribe(() => {
-        this.mxGraphAttributeService.graph.zoomActual();
+        this.maxgraphAttributeService.graph.zoomActual();
         this.loadingScreenService.close();
       });
   }
@@ -406,10 +406,10 @@ export class EditorService {
         content: this.translate.language.LOADING_SCREEN_DIALOG.ACTION_WAIT,
       })
       .afterOpened()
-      .pipe(switchMap(() => (isExpanded ? this.mxGraphService.foldCells() : this.mxGraphService.expandCells())))
+      .pipe(switchMap(() => (isExpanded ? this.maxgraphService.foldCells() : this.maxgraphService.expandCells())))
       .subscribe(() => {
         this.isAllShapesExpandedSubject.next(!isExpanded);
-        this.mxGraphService.formatShapes(true);
+        this.maxgraphService.formatShapes(true);
         this.loadingScreenService.close();
       });
   }
@@ -422,7 +422,7 @@ export class EditorService {
       })
       .afterOpened()
       .subscribe(() => {
-        this.mxGraphService.formatShapes(true, true);
+        this.maxgraphService.formatShapes(true, true);
         this.loadingScreenService.close();
       });
   }
@@ -469,7 +469,7 @@ export class EditorService {
   }
 
   validate(): Observable<Array<ViolationError>> {
-    this.mxGraphService.resetValidationErrorOnAllShapes();
+    this.maxgraphService.resetValidationErrorOnAllShapes();
 
     return this.modelService.synchronizeModelToRdf().pipe(
       switchMap(value =>

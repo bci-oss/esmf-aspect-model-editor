@@ -12,7 +12,13 @@
  */
 
 import {FiltersService} from '@ame/loader-filters';
-import {ConstraintRenderService, MxGraphAttributeService, MxGraphHelper, MxGraphService, MxGraphShapeOverlayService} from '@ame/mx-graph';
+import {
+  ConstraintRenderService,
+  MaxGraphAttributeService,
+  MaxGraphHelper,
+  MaxGraphService,
+  MaxGraphShapeOverlayService,
+} from '@ame/max-graph';
 import {useUpdater} from '@ame/utils';
 import {inject, Injectable} from '@angular/core';
 import {
@@ -32,28 +38,28 @@ import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
 export class ConstraintModelService extends BaseModelService {
-  private mxGraphShapeOverlayService = inject(MxGraphShapeOverlayService);
-  private mxGraphAttributeService = inject(MxGraphAttributeService);
-  private mxGraphService = inject(MxGraphService);
+  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
+  private maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private maxgraphService = inject(MaxGraphService);
   private constraintRenderer = inject(ConstraintRenderService);
   private filtersService = inject(FiltersService);
 
   update(cell: Cell, form: {[key: string]: any}) {
-    let metaModelElement = MxGraphHelper.getModelElement<DefaultConstraint>(cell);
+    let metaModelElement = MaxGraphHelper.getModelElement<DefaultConstraint>(cell);
     if (form.changedMetaModel) {
       this.currentCachedFile.removeElement(metaModelElement?.aspectModelUrn);
       this.currentCachedFile.resolveInstance(form.changedMetaModel);
-      cell = this.mxGraphService.resolveCellByModelElement(metaModelElement);
+      cell = this.maxgraphService.resolveCellByModelElement(metaModelElement);
 
       cell.edges?.forEach(({source}) => {
-        const trait = MxGraphHelper.getModelElement<DefaultTrait>(source);
+        const trait = MaxGraphHelper.getModelElement<DefaultTrait>(source);
         trait.constraints = trait.constraints.filter(constraint => constraint.aspectModelUrn !== metaModelElement.aspectModelUrn);
-        MxGraphHelper.removeRelation(trait, metaModelElement);
-        MxGraphHelper.establishRelation(trait, form.changedMetaModel);
+        MaxGraphHelper.removeRelation(trait, metaModelElement);
+        MaxGraphHelper.establishRelation(trait, form.changedMetaModel);
       });
 
       this.updateModelOfParent(cell, form.changedMetaModel);
-      MxGraphHelper.setElementNode(cell, this.filtersService.createNode(form.changedMetaModel));
+      MaxGraphHelper.setElementNode(cell, this.filtersService.createNode(form.changedMetaModel));
       metaModelElement = form.changedMetaModel; // set the changed meta model as the actual
     }
     super.update(cell, form);
@@ -68,17 +74,17 @@ export class ConstraintModelService extends BaseModelService {
 
   delete(cell: Cell) {
     super.delete(cell);
-    const elementModel = MxGraphHelper.getModelElement(cell);
-    const outgoingEdges = this.mxGraphAttributeService.graph.getOutgoingEdges(cell, null);
-    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell, null);
-    this.mxGraphShapeOverlayService.checkAndAddTopShapeActionIcon(outgoingEdges, elementModel);
-    this.mxGraphShapeOverlayService.checkAndAddShapeActionIcon(incomingEdges, elementModel);
-    this.mxGraphService.removeCells([cell]);
+    const elementModel = MaxGraphHelper.getModelElement(cell);
+    const outgoingEdges = this.maxgraphAttributeService.graph.getOutgoingEdges(cell, null);
+    const incomingEdges = this.maxgraphAttributeService.graph.getIncomingEdges(cell, null);
+    this.maxgraphShapeOverlayService.checkAndAddTopShapeActionIcon(outgoingEdges, elementModel);
+    this.maxgraphShapeOverlayService.checkAndAddShapeActionIcon(incomingEdges, elementModel);
+    this.maxgraphService.removeCells([cell]);
   }
 
   private updateModelOfParent(cell: Cell, value: any) {
-    this.mxGraphAttributeService.graph.getIncomingEdges(cell, null).forEach(cellParent => {
-      const parentModel = MxGraphHelper.getModelElement<NamedElement>(cellParent.source);
+    this.maxgraphAttributeService.graph.getIncomingEdges(cell, null).forEach(cellParent => {
+      const parentModel = MaxGraphHelper.getModelElement<NamedElement>(cellParent.source);
       useUpdater(parentModel).update(value);
     });
   }

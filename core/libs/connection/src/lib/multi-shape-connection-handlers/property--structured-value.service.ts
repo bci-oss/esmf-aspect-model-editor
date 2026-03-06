@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MxGraphHelper} from '@ame/mx-graph';
+import {MaxGraphHelper} from '@ame/max-graph';
 import {NotificationsService} from '@ame/shared';
 import {inject, Injectable} from '@angular/core';
 import {DefaultProperty, DefaultStructuredValue} from '@esmf/aspect-model-loader';
@@ -25,7 +25,7 @@ export class PropertyStructuredValueConnectionHandler implements MultiShapeConne
   private propertyCharacteristicConnectionHandler = inject(PropertyCharacteristicConnectionHandler);
 
   connect(parentMetaModel: DefaultProperty, childMetaModel: DefaultStructuredValue, parent: Cell, child: Cell): void {
-    const isRecursiveConnection = MxGraphHelper.isChildOf(childMetaModel, parentMetaModel);
+    const isRecursiveConnection = MaxGraphHelper.isChildOf(childMetaModel, parentMetaModel);
 
     if (isRecursiveConnection) {
       return this.notificationsService.warning({

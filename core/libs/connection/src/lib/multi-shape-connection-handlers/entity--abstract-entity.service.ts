@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MxGraphHelper} from '@ame/mx-graph';
+import {MaxGraphHelper} from '@ame/max-graph';
 import {NotificationsService} from '@ame/shared';
 import {Injectable, inject} from '@angular/core';
 import {DefaultEntity} from '@esmf/aspect-model-loader';
@@ -26,7 +26,7 @@ export class EntityAbstractEntityConnectionHandler
   private notificationService = inject(NotificationsService);
 
   public connect(parentMetaModel: DefaultEntity, childMetaModel: DefaultEntity, parent: Cell, child: Cell): void {
-    if (MxGraphHelper.isEntityCycleInheritance(child, parentMetaModel, this.mxGraphService.graph)) {
+    if (MaxGraphHelper.isEntityCycleInheritance(child, parentMetaModel, this.maxgraphService.graph)) {
       this.notificationService.warning({
         title: this.translate.language.NOTIFICATION_SERVICE.RECURSIVE_ELEMENTS,
         message: this.translate.language.NOTIFICATION_SERVICE.CIRCULAR_CONNECTION_MESSAGE,

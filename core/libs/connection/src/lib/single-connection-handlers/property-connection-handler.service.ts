@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MxGraphHelper, MxGraphShapeOverlayService} from '@ame/mx-graph';
+import {MaxGraphHelper, MaxGraphShapeOverlayService} from '@ame/max-graph';
 import {Injectable, inject} from '@angular/core';
 import {DefaultCharacteristic, Property} from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
@@ -20,7 +20,7 @@ import {SingleShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class PropertyConnectionHandler extends BaseConnectionHandler implements SingleShapeConnector<Property> {
-  private mxGraphShapeOverlayService = inject(MxGraphShapeOverlayService);
+  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
 
   public connect(property: Property, source: Cell) {
     if (property.characteristic) {
@@ -29,15 +29,15 @@ export class PropertyConnectionHandler extends BaseConnectionHandler implements 
 
     property.characteristic = this.elementCreator.createEmptyElement(DefaultCharacteristic);
     const child = this.renderTree(property.characteristic, source);
-    this.mxGraphService.assignToParent(child, source);
+    this.maxgraphService.assignToParent(child, source);
 
-    if (MxGraphHelper.hasGrandParentStructuredValue(child, this.mxGraphService.graph)) {
-      this.mxGraphShapeOverlayService.removeOverlay(child, MxGraphHelper.getNewShapeOverlayButton(child));
+    if (MaxGraphHelper.hasGrandParentStructuredValue(child, this.maxgraphService.graph)) {
+      this.maxgraphShapeOverlayService.removeOverlay(child, MaxGraphHelper.getNewShapeOverlayButton(child));
     }
 
     this.refreshPropertiesLabel(child, property.characteristic);
 
-    this.mxGraphService.formatCell(source);
-    this.mxGraphService.formatShapes();
+    this.maxgraphService.formatCell(source);
+    this.maxgraphService.formatShapes();
   }
 }

@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MxGraphHelper, MxGraphService} from '@ame/mx-graph';
+import {MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {AsyncPipe} from '@angular/common';
 import {Component, inject, OnInit, ViewChild} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
@@ -75,13 +75,13 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
   }
 
   get modelElements() {
-    return this.mxGraphService.getAllCells().map(cell => MxGraphHelper.getModelElement(cell));
+    return this.maxgraphService.getAllCells().map(cell => MaxGraphHelper.getModelElement(cell));
   }
 
   constructor() {
     super();
     this.fieldName = 'see';
-    this.mxGraphService = inject(MxGraphService);
+    this.maxgraphService = inject(MaxGraphService);
   }
 
   ngOnInit(): void {

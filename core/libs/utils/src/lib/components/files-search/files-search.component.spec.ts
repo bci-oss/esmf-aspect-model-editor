@@ -1,5 +1,5 @@
 import {FileHandlingService, ModelCheckerService, SaveModelDialogService} from '@ame/editor';
-import {MxGraphAttributeService, MxGraphService, MxGraphShapeOverlayService} from '@ame/mx-graph';
+import {MaxGraphAttributeService, MaxGraphService, MaxGraphShapeOverlayService} from '@ame/max-graph';
 import {ModelSavingTrackerService, NotificationsService, SearchService} from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
@@ -39,10 +39,10 @@ describe('Files search', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         MockProvider(MatDialogRef),
-        MockProvider(MxGraphService),
+        MockProvider(MaxGraphService),
         MockProvider(NotificationsService),
-        MockProvider(MxGraphShapeOverlayService),
-        MockProvider(MxGraphAttributeService),
+        MockProvider(MaxGraphShapeOverlayService),
+        MockProvider(MaxGraphAttributeService),
         MockProvider(TranslateService, {
           onTranslationChange: new Subject(),
           onLangChange: new Subject(),

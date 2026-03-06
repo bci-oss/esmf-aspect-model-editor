@@ -1,9 +1,5 @@
 /*
-<<<<<<<< HEAD:core/libs/editor/src/lib/rename-model/rename-model.component.scss
  * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
-========
- * Copyright (c) 2024 Robert Bosch Manufacturing Solutions GmbH
->>>>>>>> 7f1265c1 (Refactor migrator components and update migration flow):core/libs/editor/src/lib/models/named-rdf-mode.ts
  *
  * See the AUTHORS file(s) distributed with this work for
  * additional information regarding authorship.
@@ -15,7 +11,6 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-<<<<<<<< HEAD:core/libs/editor/src/lib/rename-model/rename-model.component.scss
 .input-suffix {
   padding-right: 5px;
 }
@@ -25,12 +20,4 @@
   flex-direction: column;
   align-items: center;
   padding: 2rem 0;
-========
-import {RdfModel} from 'libs/aspect-model-loader/src/lib';
-
-export interface NamedRdfModel {
-  name: string;
-  version: string;
-  rdfModel: RdfModel;
->>>>>>>> 7f1265c1 (Refactor migrator components and update migration flow):core/libs/editor/src/lib/models/named-rdf-mode.ts
 }

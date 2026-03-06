@@ -13,7 +13,7 @@
 
 import {Injectable} from '@angular/core';
 import {DefaultValue} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MxGraphHelper} from '../../helpers';
 import {RendererUpdatePayload} from '../../models';
 import {BaseRenderService} from './base-render-service';
@@ -25,7 +25,7 @@ export class ValueRenderService extends BaseRenderService {
     super.update({cell, callback});
   }
 
-  isApplicable(cell: mxgraph.mxCell): boolean {
+  isApplicable(cell: Cell): boolean {
     return MxGraphHelper.getModelElement(cell) instanceof DefaultValue;
   }
 }

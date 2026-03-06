@@ -17,7 +17,7 @@ import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {useUpdater} from '@ame/utils';
 import {inject, Injectable} from '@angular/core';
 import {DefaultProperty, DefaultStructuredValue, DefaultValue, HasExtends, NamedElement, ScalarValue} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
@@ -32,7 +32,7 @@ export class PropertyModelService extends BaseModelService {
     return metaModelElement instanceof DefaultProperty;
   }
 
-  update(cell: mxgraph.mxCell, form: {[key: string]: any}) {
+  update(cell: Cell, form: {[key: string]: any}) {
     const modelElement = MxGraphHelper.getModelElement<DefaultProperty>(cell);
     if (modelElement.extends_) {
       return;
@@ -54,7 +54,7 @@ export class PropertyModelService extends BaseModelService {
     this.propertyRenderer.update({cell});
   }
 
-  delete(cell: mxgraph.mxCell) {
+  delete(cell: Cell) {
     const node = MxGraphHelper.getModelElement<DefaultProperty>(cell);
 
     const parents = this.mxGraphService.resolveParents(cell);
@@ -74,7 +74,7 @@ export class PropertyModelService extends BaseModelService {
     });
   }
 
-  private updatePropertiesNames(cell: mxgraph.mxCell) {
+  private updatePropertiesNames(cell: Cell) {
     const parents =
       this.mxGraphService.resolveParents(cell)?.filter(e => MxGraphHelper.getModelElement(e) instanceof DefaultProperty) || [];
     const modelElement = MxGraphHelper.getModelElement(cell);
@@ -87,13 +87,13 @@ export class PropertyModelService extends BaseModelService {
     }
   }
 
-  private updateCell(cell: mxgraph.mxCell) {
+  private updateCell(cell: Cell) {
     cell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(MxGraphHelper.getModelElement(cell), this.sammLangService);
-    this.mxGraphService.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabel(cell));
+    this.mxGraphService.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabel(cell), null);
   }
 
-  private updateExtends(cell: mxgraph.mxCell, isDeleting = true) {
-    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell);
+  private updateExtends(cell: Cell, isDeleting = true) {
+    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell, null);
     for (const edge of incomingEdges) {
       const element = MxGraphHelper.getModelElement<HasExtends>(edge.source);
       if (element instanceof DefaultProperty && isDeleting) {

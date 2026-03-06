@@ -86,8 +86,8 @@ export abstract class BaseRenderService {
     }
   }
 
-  protected refreshPropertiesLabel(cell: mxgraph.mxCell, modelElement: NamedElement) {
+  protected refreshPropertiesLabel(cell: Cell, modelElement: NamedElement) {
     cell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(modelElement, this.sammLangService);
-    this.mxGraphAttributeService.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabel(cell));
+    this.mxGraphAttributeService.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabel(cell), null);
   }
 }

@@ -66,11 +66,11 @@ export class ShapeSettingsService {
 
   setCellAddedListener(): void {
     const graph = this.mxGraphAttributeService.graph;
-    graph.addListener(mxEvent.CELLS_ADDED, () => {
+    graph.addListener(InternalEvent.CELLS_ADDED, () => {
       const graph = this.mxGraphAttributeService.graph;
-      const hasAnyChildren = graph.getModel().getChildCount(graph.getDefaultParent()) > 0;
+      const vertexCount = Object.values(graph.getDataModel().cells).filter(cell => cell.isVertex()).length > 0 ;
 
-      this.ngZone.run(() => this.hasCellsSubject.next(hasAnyChildren));
+      this.ngZone.run(() => this.hasCellsSubject.next(vertexCount));
     });
   }
 

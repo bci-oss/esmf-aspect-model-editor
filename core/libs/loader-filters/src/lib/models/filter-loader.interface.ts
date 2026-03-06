@@ -42,7 +42,7 @@ export interface ModelTree<T extends NamedElement> {
    */
   element: T;
   /**
-   * Geometrical shape the element will have in the mxGraph
+   * Geometrical shape the element will have in the maxGraph
    *
    * `default` - rectangle shape |
    * `connector` - small circle shape

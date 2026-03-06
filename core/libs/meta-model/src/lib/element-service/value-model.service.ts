@@ -12,7 +12,7 @@
  */
 
 import {inject, Injectable} from '@angular/core';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 
 import {MxGraphHelper, MxGraphService, ValueRenderService} from '@ame/mx-graph';
 import {DefaultValue, NamedElement} from '@esmf/aspect-model-loader';
@@ -27,7 +27,7 @@ export class ValueModelService extends BaseModelService {
     return metaModelElement instanceof DefaultValue;
   }
 
-  update(cell: mxgraph.mxCell, form: {[key: string]: any}) {
+  update(cell: Cell, form: {[key: string]: any}) {
     const modelElement = MxGraphHelper.getModelElement<DefaultValue>(cell);
     super.update(cell, form);
     modelElement.value = form.value;
@@ -35,7 +35,7 @@ export class ValueModelService extends BaseModelService {
     this.valueRender.update({cell, form});
   }
 
-  delete(cell: mxgraph.mxCell) {
+  delete(cell: Cell) {
     super.delete(cell);
     this.mxGraphService.removeCells([cell]);
   }

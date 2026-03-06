@@ -15,20 +15,12 @@
         "polyfills": ["apps/ame/src/polyfills.ts"],
         "tsConfig": "apps/ame/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
-        "assets": [
-          "apps/ame/src/assets",
-          {
-            "glob": "**/*",
-            "input": "./node_modules/mxgraph/javascript/src",
-            "output": "apps/ame/src/assets/mxgraph"
-          }
-        ],
+        "assets": ["apps/ame/src/assets"],
         "styles": ["node_modules/ngx-toastr/toastr.css", "apps/ame/src/styles.scss"],
         "scripts": ["apps/ame/src/assets/samm-units.js"],
         "allowedCommonJsDependencies": [
           "file-saver",
           "urn-lib",
-          "mxgraph-factory",
           "locale-codes",
           "rdf-parse",
           "streamify-string",

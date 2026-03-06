@@ -25,7 +25,7 @@ import {
   DefaultValue,
   ScalarValue,
 } from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MxGraphHelper} from '../../helpers';
 import {BaseRenderService} from './base-render-service';
 import {EntityValueRenderService} from './entity-value-render.service';
@@ -46,7 +46,7 @@ export class EnumerationRenderService extends BaseRenderService {
   private mxGraphShapeOverlayService = inject(MxGraphShapeOverlayService);
   private unitRendererService = inject(UnitRenderService);
 
-  isApplicable(cell: mxgraph.mxCell): boolean {
+  isApplicable(cell: Cell): boolean {
     return MxGraphHelper.getModelElement(cell) instanceof DefaultEnumeration;
   }
 
@@ -69,19 +69,19 @@ export class EnumerationRenderService extends BaseRenderService {
     super.update({cell, form});
   }
 
-  private handleValues(cell: mxgraph.mxCell, valuesList: (ScalarValue | DefaultValue)[]) {
+  private handleValues(cell: Cell, valuesList: (ScalarValue | DefaultValue)[]) {
     if (valuesList.some(value => value instanceof DefaultEntityInstance)) return;
 
     const existentValues = (
       this.mxGraphService.graph
-        .getOutgoingEdges(cell)
+        .getOutgoingEdges(cell, null)
         ?.map(edge => ({edge, modelElement: MxGraphHelper.getModelElement<DefaultValue>(edge.target)})) || []
     ).reduce(
       (acc, curr) => {
         acc[curr.modelElement.aspectModelUrn] = curr;
         return acc;
       },
-      {} as Record<string, {edge: mxgraph.mxCell; modelElement: DefaultValue}>,
+      {} as Record<string, {edge: Cell; modelElement: DefaultValue}>,
     );
 
     for (const value of valuesList) {
@@ -109,14 +109,14 @@ export class EnumerationRenderService extends BaseRenderService {
     this.mxGraphService.removeCells(Object.values(existentValues).map(value => value.edge));
   }
 
-  private connectElements(parentCell: mxgraph.mxCell, childCell: mxgraph.mxCell) {
+  private connectElements(parentCell: Cell, childCell: Cell) {
     this.mxGraphService.assignToParent(childCell, parentCell);
     MxGraphHelper.updateLabel(parentCell, this.mxGraphService.graph, this.sammLangService);
     MxGraphHelper.updateLabel(childCell, this.mxGraphService.graph, this.sammLangService);
   }
 
-  private removeStructuredValueProperties(cell: mxgraph.mxCell) {
-    const outGoingEdges = this.mxGraphService.graph.getOutgoingEdges(cell);
+  private removeStructuredValueProperties(cell: Cell) {
+    const outGoingEdges = this.mxGraphService.graph.getOutgoingEdges(cell, null);
     const toRemove = [];
     for (const edge of outGoingEdges) {
       const metaModel = MxGraphHelper.getModelElement(edge.target);
@@ -126,17 +126,17 @@ export class EnumerationRenderService extends BaseRenderService {
     this.mxGraphService.removeCells(toRemove);
   }
 
-  private handleEntityDataType(cell: mxgraph.mxCell, dataType: DefaultEntity) {
+  private handleEntityDataType(cell: Cell, dataType: DefaultEntity) {
     if (dataType instanceof DefaultEntity) {
       const entityCell = this.mxGraphService.resolveCellByModelElement(dataType);
       this.mxGraphService.assignToParent(entityCell, cell);
     }
   }
 
-  private removeFloatingEntityValues(cell: mxgraph.mxCell) {
+  private removeFloatingEntityValues(cell: Cell) {
     const modelElement = MxGraphHelper.getModelElement<DefaultEnumeration>(cell);
     const outGoingCells =
-      this.mxGraphService.graph.getOutgoingEdges(cell)?.filter(edge => {
+      this.mxGraphService.graph.getOutgoingEdges(cell, null)?.filter(edge => {
         const childModelElement = MxGraphHelper.getModelElement<DefaultEntityInstance>(edge.target);
 
         if (childModelElement instanceof DefaultEntity) {
@@ -173,7 +173,7 @@ export class EnumerationRenderService extends BaseRenderService {
     );
   }
 
-  private handleBottomOverlay(cell: mxgraph.mxCell) {
+  private handleBottomOverlay(cell: Cell) {
     const modelElement = MxGraphHelper.getModelElement<DefaultCharacteristic>(cell);
     if (!(modelElement instanceof DefaultEither)) {
       this.mxGraphShapeOverlayService.removeOverlay(cell);
@@ -186,7 +186,7 @@ export class EnumerationRenderService extends BaseRenderService {
     }
   }
 
-  private handleNewDataType(cell: mxgraph.mxCell, newDataType: DefaultEntity) {
+  private handleNewDataType(cell: Cell, newDataType: DefaultEntity) {
     if (this.inMxGraph(newDataType)) {
       return;
     }
@@ -199,7 +199,7 @@ export class EnumerationRenderService extends BaseRenderService {
     }
   }
 
-  private removeElementCharacteristic(cell: mxgraph.mxCell) {
+  private removeElementCharacteristic(cell: Cell) {
     const modelElement = MxGraphHelper.getModelElement(cell);
     const edgesToRemove = cell.edges?.filter(edge => {
       const sourceNode = MxGraphHelper.getModelElement(edge.source);
@@ -214,7 +214,7 @@ export class EnumerationRenderService extends BaseRenderService {
     this.mxGraphService.removeCells(edgesToRemove || []);
   }
 
-  private handleComplexValues(cell: mxgraph.mxCell, form: EnumerationForm) {
+  private handleComplexValues(cell: Cell, form: EnumerationForm) {
     const metaModel = MxGraphHelper.getModelElement<DefaultEnumeration>(cell);
     if (!(metaModel.dataType instanceof DefaultEntity)) {
       return;

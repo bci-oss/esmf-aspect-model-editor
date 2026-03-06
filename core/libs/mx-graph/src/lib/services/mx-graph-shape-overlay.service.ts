@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+ * Copyright (c) 2024 Robert Bosch Manufacturing Solutions GmbH
  *
  * See the AUTHORS file(s) distributed with this work for
  * additional information regarding authorship.
@@ -35,11 +35,10 @@ import {
   DefaultValue,
   NamedElement,
 } from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {AlignValue, Cell, CellOverlay, Geometry, ImageBox, InternalEvent} from '@maxgraph/core';
 import {MxGraphAttributeService, MxGraphShapeSelectorService} from '.';
 import {MxGraphHelper, MxGraphVisitorHelper, ShapeAttribute} from '../helpers';
 import {ModelInfo} from '../models';
-import {mxCellOverlay, mxConstants, mxEvent, mxImage} from '../providers';
 
 @Injectable({providedIn: 'root'})
 export class MxGraphShapeOverlayService {
@@ -51,12 +50,12 @@ export class MxGraphShapeOverlayService {
   private sammLangService = inject(SammLanguageSettingsService);
   protected loadedFilesService = inject(LoadedFilesService);
 
-  removeOverlay(cell: mxgraph.mxCell, overlay?: mxgraph.mxCellOverlay): void {
+  removeOverlay(cell: Cell, overlay?: CellOverlay): void {
     const modelElement = MxGraphHelper.getModelElement(cell);
     overlay
       ? this.mxGraphAttributeService.graph.removeCellOverlay(cell, overlay)
       : !(modelElement instanceof DefaultCharacteristic)
-        ? this.mxGraphAttributeService.graph.removeCellOverlay(cell)
+        ? this.mxGraphAttributeService.graph.removeCellOverlay(cell, null)
         : null;
   }
 
@@ -65,16 +64,16 @@ export class MxGraphShapeOverlayService {
    *
    * @param cell mx element
    */
-  addTopShapeOverlay(cell: mxgraph.mxCell): void {
+  addTopShapeOverlay(cell: Cell): void {
     const modelElement = MxGraphHelper.getModelElement(cell);
 
     if (!this.filtersService.currentFilter.hasOverlay(modelElement)) return;
     if (modelElement instanceof DefaultEither) return;
-    if (!cell.style?.includes('characteristic')) return;
+    if (!cell.style?.fillColor.includes('characteristic')) return;
 
     const overlay = this.createIconShapeOverlay('add-outline-frame', 'Add Trait');
-    overlay.align = mxConstants.ALIGN_CENTER;
-    overlay.verticalAlign = mxConstants.ALIGN_TOP;
+    overlay.align = 'center';
+    overlay.verticalAlign = 'top';
     overlay.offset.x += cell.geometry.width / 8;
     this.addShapeOverlayListener(overlay, cell, ModelInfo.IS_CHARACTERISTIC);
   }
@@ -85,7 +84,7 @@ export class MxGraphShapeOverlayService {
    * @param element internal model
    * @param cell mx element
    */
-  removeOverlaysByConnection(element: NamedElement, cell: mxgraph.mxCell): void {
+  removeOverlaysByConnection(element: NamedElement, cell: Cell): void {
     if (element instanceof DefaultAspect) return;
     if (element instanceof DefaultEnumeration) return;
 
@@ -96,36 +95,36 @@ export class MxGraphShapeOverlayService {
         : undefined;
   }
 
-  createIconShapeOverlay(svgFileName: string, tooltip: string): mxgraph.mxCellOverlay {
+  createIconShapeOverlay(svgFileName: string, tooltip: string): CellOverlay {
     const src = `${this.browserService.getAssetBasePath()}/config/editor/img/${svgFileName}.svg`;
-    const image = new mxImage(src, 20, 20);
-    const overlay = new mxCellOverlay(image, tooltip);
+    const image = new ImageBox(src, 20, 20);
+    const overlay = new CellOverlay(image, tooltip);
     overlay.cursor = 'hand';
     return overlay;
   }
 
-  private createAndConnectShape(cell: mxgraph.mxCell, modelInfo: ModelInfo): void {
+  private createAndConnectShape(cell: Cell, modelInfo: ModelInfo): void {
     const mxGraphConnectorService = this.injector.get(ShapeConnectorService);
 
     const modelElement = MxGraphHelper.getModelElement(this.mxGraphShapeSelectorService.getSelectedShape());
     mxGraphConnectorService.createAndConnectShape(modelElement, cell, modelInfo);
 
     cell['configuration'].fields = MxGraphVisitorHelper.getElementProperties(modelElement, this.sammLangService);
-    this.mxGraphAttributeService.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabel(cell));
+    this.mxGraphAttributeService.graph.labelChanged(cell, MxGraphHelper.createPropertiesLabel(cell), null);
 
     this.removeOverlaysByConnection(modelElement, cell);
     this.mxGraphAttributeService.graph.clearSelection();
   }
 
-  private addShapeAction(cell: mxgraph.mxCell, modelInfo: ModelInfo): void {
-    this.mxGraphAttributeService.graph.selectCellForEvent(cell);
+  private addShapeAction(cell: Cell, event: MouseEvent, modelInfo: ModelInfo): void {
+    this.mxGraphAttributeService.graph.selectCellForEvent(cell, event);
     this.createAndConnectShape(cell, modelInfo);
   }
 
-  private removeCharacteristicOverlays(cell: mxgraph.mxCell): void {
+  private removeCharacteristicOverlays(cell: Cell): void {
     const graph = this.mxGraphAttributeService.graph;
-    const outgoingEdges = graph.getOutgoingEdges(cell);
-    const incomingEdges = graph.getIncomingEdges(cell);
+    const outgoingEdges = graph.getOutgoingEdges(cell, null);
+    const incomingEdges = graph.getIncomingEdges(cell, null);
     let characteristic;
 
     // remove Add Trait when you first create a treat from a characteristic
@@ -158,7 +157,7 @@ export class MxGraphShapeOverlayService {
    *
    * @param cell mx element
    */
-  addBottomShapeOverlay(cell: mxgraph.mxCell): void {
+  addBottomShapeOverlay(cell: Cell): void {
     const modelElement = MxGraphHelper.getModelElement(cell);
 
     if (!this.filtersService.currentFilter.hasOverlay(modelElement)) return;
@@ -168,45 +167,17 @@ export class MxGraphShapeOverlayService {
     const elementOffset = 40;
 
     if (modelElement instanceof DefaultEither) {
-      this.createConnectorElement(
-        'Left Characteristic',
-        cell,
-        ModelInfo.IS_EITHER_LEFT,
-        -elementOffset,
-        'arrow-left-frame',
-        mxConstants.ALIGN_LEFT,
-      );
+      this.createConnectorElement('Left Characteristic', cell, ModelInfo.IS_EITHER_LEFT, -elementOffset, 'arrow-left-frame', 'left');
 
-      this.createConnectorElement(
-        'Right Characteristic',
-        cell,
-        ModelInfo.IS_EITHER_RIGHT,
-        elementOffset,
-        'arrow-right-frame',
-        mxConstants.ALIGN_RIGHT,
-      );
+      this.createConnectorElement('Right Characteristic', cell, ModelInfo.IS_EITHER_RIGHT, elementOffset, 'arrow-right-frame', 'right');
 
       return;
     }
 
     if (modelElement instanceof DefaultOperation) {
-      this.createConnectorElement(
-        'Input Property',
-        cell,
-        ModelInfo.IS_OPERATION_INPUT,
-        -elementOffset,
-        'arrow-up-frame',
-        mxConstants.ALIGN_LEFT,
-      );
+      this.createConnectorElement('Input Property', cell, ModelInfo.IS_OPERATION_INPUT, -elementOffset, 'arrow-up-frame', 'left');
 
-      this.createConnectorElement(
-        'Output Property',
-        cell,
-        ModelInfo.IS_OPERATION_OUTPUT,
-        elementOffset,
-        'arrow-down-frame',
-        mxConstants.ALIGN_RIGHT,
-      );
+      this.createConnectorElement('Output Property', cell, ModelInfo.IS_OPERATION_OUTPUT, elementOffset, 'arrow-down-frame', 'right');
 
       return;
     }
@@ -242,18 +213,18 @@ export class MxGraphShapeOverlayService {
 
   private createConnectorElement(
     connectableElementName: string,
-    cell: mxgraph.mxCell,
+    cell: Cell,
     modelInfo: ModelInfo,
     offset = 0,
     svgFileName = 'add-frame',
-    align = mxConstants.ALIGN_CENTER,
+    align = 'center',
   ): void {
     const modelElement = MxGraphHelper.getModelElement(cell);
     if (!this.filtersService.currentFilter.hasOverlay(modelElement)) return;
 
     const tooltipText = connectableElementName ? `Add ${connectableElementName}` : '';
     const overlay = this.createIconShapeOverlay(svgFileName, tooltipText);
-    overlay.align = align;
+    overlay.align = align as AlignValue;
 
     if (offset) {
       overlay.offset.x = overlay.offset.x - offset;
@@ -262,15 +233,15 @@ export class MxGraphShapeOverlayService {
     this.addShapeOverlayListener(overlay, cell, modelInfo);
   }
 
-  private addShapeOverlayListener(overlay: mxgraph.mxCellOverlay, cell: mxgraph.mxCell, modelInfo: ModelInfo): void {
-    overlay.addListener(mxEvent.CLICK, () => this.addShapeAction(cell, modelInfo));
+  private addShapeOverlayListener(overlay: CellOverlay, cell: Cell, modelInfo: ModelInfo): void {
+    overlay.addListener(InternalEvent.CLICK, (event: MouseEvent) => this.addShapeAction(cell, event, modelInfo));
     this.mxGraphAttributeService.graph.addCellOverlay(cell, overlay);
   }
 
   /**
    * Checks and adds complex enumeration icon and + button for adding new entity value if special conditions are fulfilled.
    */
-  checkComplexEnumerationOverlays(modelElement: NamedElement, cell: mxgraph.mxCell): void {
+  checkComplexEnumerationOverlays(modelElement: NamedElement, cell: Cell): void {
     if (MxGraphHelper.isComplexEnumeration(modelElement)) {
       this.addComplexEnumerationShapeOverlay(cell);
       this.addBottomShapeOverlay(cell);
@@ -283,10 +254,10 @@ export class MxGraphShapeOverlayService {
    * @param modelElement internal model
    * @param cell mx element
    */
-  removeShapeActionIconsByLoading(modelElement: NamedElement, cell: mxgraph.mxCell): void {
+  removeShapeActionIconsByLoading(modelElement: NamedElement, cell: Cell): void {
     if (modelElement instanceof DefaultEntity) return;
 
-    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell);
+    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(cell, null);
 
     if (modelElement instanceof DefaultCharacteristic) {
       this.removeOverlaysOnLoad(modelElement, incomingEdges);
@@ -299,8 +270,8 @@ export class MxGraphShapeOverlayService {
     }
   }
 
-  private removeOverlaysOnLoad(modelElement: DefaultCharacteristic, incomingEdges: Array<mxgraph.mxCell>): void {
-    const incomingEdge = incomingEdges.find((edge: mxgraph.mxCell) => edge?.source?.overlays?.length);
+  private removeOverlaysOnLoad(modelElement: DefaultCharacteristic, incomingEdges: Array<Cell>): void {
+    const incomingEdge = incomingEdges.find((edge: Cell) => edge?.source?.overlays?.length);
 
     if (!incomingEdge) return;
 
@@ -323,23 +294,23 @@ export class MxGraphShapeOverlayService {
   }
 
   /**
-   * Add icon in to mxGraph cell for complex data type enumerations
+   * Add icon in to maxGraph cell for complex data type enumerations
    */
-  addComplexEnumerationShapeOverlay(cell: mxgraph.mxCell): void {
+  addComplexEnumerationShapeOverlay(cell: Cell): void {
     const modelElement = MxGraphHelper.getModelElement(cell);
     if (!this.filtersService.currentFilter.hasOverlay(modelElement)) return;
-    if (this.mxGraphAttributeService.graph.isCellCollapsed(cell)) return;
+    if (cell.isCollapsed()) return;
 
     const overlay = this.createIconShapeOverlay('batch', 'Complex data types Enumeration');
-    overlay.align = mxConstants.ALIGN_RIGHT;
-    overlay.verticalAlign = mxConstants.ALIGN_TOP;
+    overlay.align = 'right';
+    overlay.verticalAlign = 'top';
     overlay.offset.x -= 15;
     overlay.offset.y += 15;
 
     this.mxGraphAttributeService.graph.addCellOverlay(cell, overlay);
   }
 
-  removeComplexTypeShapeOverlays(cell: mxgraph.mxCell): void {
+  removeComplexTypeShapeOverlays(cell: Cell): void {
     this.removeOverlay(cell, MxGraphHelper.getRightOverlayButton(cell));
     this.removeOverlay(cell, MxGraphHelper.getNewShapeOverlayButton(cell));
   }
@@ -347,7 +318,7 @@ export class MxGraphShapeOverlayService {
   /**
    * Check if a redraw of the overlay is necessary whenever we change metaModel from or into Either.
    */
-  changeEitherOverlay(cell: mxgraph.mxCell): void {
+  changeEitherOverlay(cell: Cell): void {
     this.removeOverlay(cell);
     this.addBottomShapeOverlay(cell);
   }
@@ -355,11 +326,11 @@ export class MxGraphShapeOverlayService {
   /**
    * Checks if we delete a trait and adds back the shape overlay for source characteristic
    */
-  checkAndAddTopShapeActionIcon(outgoingEdges: Array<mxgraph.mxCell>, modelElement: NamedElement): void {
+  checkAndAddTopShapeActionIcon(outgoingEdges: Array<Cell>, modelElement: NamedElement): void {
     if (!outgoingEdges.length) return;
     if (!(modelElement instanceof DefaultTrait)) return;
 
-    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(outgoingEdges[0].target);
+    const incomingEdges = this.mxGraphAttributeService.graph.getIncomingEdges(outgoingEdges[0].target, null);
     const incomingCharacteristics = incomingEdges.filter(edge => {
       const modelElement = MxGraphHelper.getModelElement(edge.source);
       return modelElement instanceof DefaultCharacteristic && !(modelElement instanceof DefaultEither);
@@ -370,7 +341,7 @@ export class MxGraphShapeOverlayService {
     }
   }
 
-  checkAndAddShapeActionIcon(incomingEdges: Array<mxgraph.mxCell>, modelElement: NamedElement): void {
+  checkAndAddShapeActionIcon(incomingEdges: Array<Cell>, modelElement: NamedElement): void {
     if (!incomingEdges.length) return;
     if (!this.filtersService.currentFilter.hasOverlay(modelElement)) return;
 
@@ -395,7 +366,7 @@ export class MxGraphShapeOverlayService {
     }
   }
 
-  createShape(node: ModelTree<NamedElement>, geometry?: mxgraph.mxGeometry, cellConfiguration?: ShapeAttribute[]): mxgraph.mxCell {
+  createShape(node: ModelTree<NamedElement>, geometry?: Geometry, cellConfiguration?: ShapeAttribute[]): Cell {
     const graph = this.mxGraphAttributeService.graph;
     const element = document.createElement('model');
 
@@ -403,6 +374,7 @@ export class MxGraphShapeOverlayService {
     element.setAttribute('parent', 'yes');
     element.setAttribute('name', node.element.name);
 
+    //debugger;
     const modelElementCell = graph.insertVertex(
       graph.getDefaultParent(),
       node.element.name,
@@ -419,7 +391,8 @@ export class MxGraphShapeOverlayService {
       baseProperties: MxGraphVisitorHelper.getModelInfo(node.element, this.loadedFilesService.currentLoadedFile),
       fields: cellConfiguration,
     };
-    graph.foldingEnabled = false;
+    // TODO check if we can enable folding again after we implemented the new way of handling connections and overlays, because currently it causes some issues with the overlays
+    // graph.foldingEnabled = false;
     return modelElementCell;
   }
 }

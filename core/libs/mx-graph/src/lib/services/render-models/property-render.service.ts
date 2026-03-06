@@ -15,7 +15,7 @@ import {ShapeConnectorService} from '@ame/connection';
 import {FiltersService} from '@ame/loader-filters';
 import {inject, Injectable} from '@angular/core';
 import {DefaultProperty, DefaultValue, NamedElement} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MxGraphHelper} from '../../helpers';
 import {RendererUpdatePayload} from '../../models';
 import {BaseRenderService} from './base-render-service';
@@ -32,11 +32,11 @@ export class PropertyRenderService extends BaseRenderService {
     super.update({cell, callback});
   }
 
-  isApplicable(cell: mxgraph.mxCell): boolean {
+  isApplicable(cell: Cell): boolean {
     return MxGraphHelper.getModelElement(cell) instanceof DefaultProperty;
   }
 
-  private handleExampleValueElement(cell: mxgraph.mxCell) {
+  private handleExampleValueElement(cell: Cell) {
     const element = MxGraphHelper.getElementNode<DefaultProperty>(cell).element;
     if (!element.exampleValue) {
       this.removeExampleValueConnection(cell);
@@ -60,7 +60,7 @@ export class PropertyRenderService extends BaseRenderService {
     this.refreshPropertiesLabel(exampleValueToConnect, element.exampleValue);
   }
 
-  private handleExtendsElement(cell: mxgraph.mxCell) {
+  private handleExtendsElement(cell: Cell) {
     const node = MxGraphHelper.getElementNode<DefaultProperty>(cell);
     const metaModelElement = node.element;
     if (!metaModelElement.exampleValue) {
@@ -80,9 +80,9 @@ export class PropertyRenderService extends BaseRenderService {
     this.shapeConnectorService.connectShapes(metaModelElement, extendsElement, cell, entityCell);
   }
 
-  private removeExampleValueConnection(cell: mxgraph.mxCell) {
+  private removeExampleValueConnection(cell: Cell) {
     this.mxGraphService.graph
-      .getOutgoingEdges(cell)
+      .getOutgoingEdges(cell, null)
       .filter(edge => {
         const targetModel = MxGraphHelper.getModelElement<NamedElement>(edge.target);
         return targetModel instanceof DefaultValue;

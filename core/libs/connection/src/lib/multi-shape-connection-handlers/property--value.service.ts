@@ -16,7 +16,7 @@ import {NotificationsService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {Injectable, inject} from '@angular/core';
 import {DefaultProperty, DefaultValue} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {BaseConnectionHandler} from '../base-connection-handler.service';
 
 @Injectable({providedIn: 'root'})
@@ -24,7 +24,7 @@ export class PropertyValueConnectionHandler extends BaseConnectionHandler {
   private notificationService = inject(NotificationsService);
   private translate = inject(LanguageTranslationService);
 
-  public connect(parentMetaModel: DefaultProperty, childMetaModel: DefaultValue, parentCell: mxgraph.mxCell, childCell: mxgraph.mxCell) {
+  public connect(parentMetaModel: DefaultProperty, childMetaModel: DefaultValue, parentCell: Cell, childCell: Cell) {
     if (parentMetaModel.isPredefined) {
       this.notificationService.warning({title: this.translate.language.NOTIFICATION_SERVICE.CHILD_FOR_PREDEFINED_ELEMENT_ERROR});
       return;
@@ -43,7 +43,7 @@ export class PropertyValueConnectionHandler extends BaseConnectionHandler {
 
     if (currentExampleValue && currentExampleValue.aspectModelUrn !== childMetaModel.aspectModelUrn) {
       const obsoleteEdge = this.mxGraphService.graph
-        .getOutgoingEdges(parentCell)
+        .getOutgoingEdges(parentCell, null)
         .find(edge => MxGraphHelper.getModelElement(edge.target) instanceof DefaultValue);
 
       if (obsoleteEdge) {

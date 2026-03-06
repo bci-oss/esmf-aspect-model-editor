@@ -422,7 +422,7 @@ export class MxGraphHelper {
     div.removeChild(elementToRemove);
     infoElements.push(iconsBar);
 
-    // calculating the height for the cell for mxGraph relative with html height (41 - html, 35 - mxgraph, result: 41/35)
+    // calculating the height for the cell for maxGraph relative with HTML height (41 - HTML, 35 - maxgraph, result: 41/35)
     const elementsSize = (elementHeight * infoElements.length + title.clientHeight) / (41 / 35) + (infoElements.length ? 30 : 0);
 
     if (cell.collapsed) {

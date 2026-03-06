@@ -78,7 +78,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
    * Creates a Trait and a new Constraint and connects them with the characteristic from
    * which the plus button was clicked
    *
-   * @param source mxgraph shape from which the plus button was clicked
+   * @param source maxgraph shape from which the plus button was clicked
    */
   private createTrait(source: Cell) {
     // Add Trait Shape when clicking upper plus of characteristic
@@ -135,7 +135,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
    * Creates an entity and connects it with characteristic
    *
    * @param characteristic model element from which the plus button was clicked
-   * @param source mxgraph shape from which the plus button was clicked
+   * @param source maxgraph shape from which the plus button was clicked
    */
   private createEntity(characteristic: Characteristic, source: Cell) {
     const defaultEntity = this.elementCreator.createEmptyElement(DefaultEntity);
@@ -175,7 +175,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
   /**
    *
    * @param characteristic model element from which the plus button was clicked
-   * @param source mxgraph shape from which the plus button was clicked
+   * @param source maxgraph shape from which the plus button was clicked
    * @returns a cell and model element for newly created Entity Value
    */
   private createEntityValue(characteristic: DefaultEnumeration, source: Cell): [Cell, DefaultEntityInstance] {
@@ -204,7 +204,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
    * Creates a new Entity Value and connects it with Entity and Enumeration
    *
    * @param characteristic model element from which the plus button was clicked
-   * @param source mxgraph shape from which the plus button was clicked
+   * @param source maxgraph shape from which the plus button was clicked
    */
   private handleEnumeration(characteristic: DefaultEnumeration, source: Cell) {
     // create new entity value

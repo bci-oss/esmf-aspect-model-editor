@@ -15,7 +15,7 @@ import {MxGraphAttributeService, MxGraphHelper, MxGraphService} from '@ame/mx-gr
 import {basicShapeGeometry} from '@ame/shared';
 import {Injectable, inject} from '@angular/core';
 import {DefaultCharacteristic, DefaultProperty, DefaultValue, NamedElement} from '@esmf/aspect-model-loader';
-import {mxgraph} from 'mxgraph-factory';
+import {Cell} from '@maxgraph/core';
 import {MultiShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
@@ -23,9 +23,9 @@ export class PropertyCharacteristicConnectionHandler implements MultiShapeConnec
   private mxGraphService = inject(MxGraphService);
   private mxGraphAttributeService = inject(MxGraphAttributeService);
 
-  public connect(parentMetaModel: DefaultProperty, childMetaModel: DefaultCharacteristic, parent: mxgraph.mxCell, child: mxgraph.mxCell) {
-    this.mxGraphAttributeService.graph.getOutgoingEdges(parent).forEach((outEdge: mxgraph.mxCell) => {
-      // moves the cell being disconnected(arrow removal) in order to prevent overlapping overlays
+  public connect(parentMetaModel: DefaultProperty, childMetaModel: DefaultCharacteristic, parent: Cell, child: Cell) {
+    this.mxGraphAttributeService.graph.getOutgoingEdges(parent, null).forEach((outEdge: Cell) => {
+      // Moves the cell being disconnected(arrow removal) in order to prevent overlapping overlays
       if (outEdge.target?.geometry?.x < basicShapeGeometry.expandedWith) {
         outEdge.target.geometry.translate(basicShapeGeometry.expandedWith, 0);
       }

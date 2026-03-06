@@ -106,7 +106,6 @@ export class NamespacesManager {
 @Injectable({providedIn: 'root'})
 export class SidebarStateService {
   private loadedFilesService = inject(LoadedFilesService);
-  private browserService = inject(BrowserService);
 
   public sammElements = new SidebarState();
   public workspace = new SidebarStateWithRefresh();

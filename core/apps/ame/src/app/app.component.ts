@@ -82,9 +82,9 @@ export class AppComponent implements OnInit {
 
   openSearchElements(): void {
     const graph = this.mxGraphAttributeService.graph;
-    const hasAnyChildren = graph.getModel().getChildCount(graph.getDefaultParent()) > 0;
+    const vertexCount = Object.values(graph.getDataModel().cells).filter(cell => cell.isVertex()).length > 0;
 
-    if (hasAnyChildren) this.searchesStateService.elementsSearch.toggle();
+    if (vertexCount) this.searchesStateService.elementsSearch.toggle();
   }
 
   openFilesElements(): void {

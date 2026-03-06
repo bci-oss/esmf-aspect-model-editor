@@ -79,7 +79,6 @@ export class ThemeService {
   }
 
   setCssVars(theme: string) {
-    // New Themes can be added here.
     this.currentColors = theme === 'light' ? lightColors : null;
     Object.entries(this.currentColors).forEach(([key, color]: any) => this.root.style.setProperty(`--ame-${key}`, color));
   }

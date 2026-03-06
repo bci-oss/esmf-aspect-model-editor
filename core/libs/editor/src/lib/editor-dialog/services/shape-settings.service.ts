@@ -68,7 +68,7 @@ export class ShapeSettingsService {
     const graph = this.mxGraphAttributeService.graph;
     graph.addListener(InternalEvent.CELLS_ADDED, () => {
       const graph = this.mxGraphAttributeService.graph;
-      const vertexCount = Object.values(graph.getDataModel().cells).filter(cell => cell.isVertex()).length > 0 ;
+      const vertexCount = Object.values(graph.getDataModel().cells).filter(cell => cell.isVertex()).length > 0;
 
       this.ngZone.run(() => this.hasCellsSubject.next(vertexCount));
     });

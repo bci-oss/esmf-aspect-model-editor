@@ -488,7 +488,7 @@ Cypress.Commands.add('shapesConnected', (sourceShapeName: string, targetShapeNam
       throw new Error(`Shape ${targetShapeName} not found`);
     }
     const mxGraphAttributeService: MxGraphAttributeService = win['angular.mxGraphAttributeService'];
-    const shapesConnected = mxGraphAttributeService.graph.getOutgoingEdges(sourceCell).some(edge => edge.target === targetCell);
+    const shapesConnected = mxGraphAttributeService.graph.getOutgoingEdges(sourceCell, null).some(edge => edge.target === targetCell);
     if (!shapesConnected) {
       throw new Error(`Shape ${sourceShapeName} is not connected to ${targetShapeName}`);
     }
@@ -669,7 +669,7 @@ Cypress.Commands.add(
         throw new Error(`Shape ${targetShapeParams.name} not found`);
       }
       const mxGraphAttributeService: MxGraphAttributeService = win['angular.mxGraphAttributeService'];
-      return mxGraphAttributeService.graph.getOutgoingEdges(sourceCell).some(edge => edge.target === targetCell);
+      return mxGraphAttributeService.graph.getOutgoingEdges(sourceCell, null).some(edge => edge.target === targetCell);
     });
   },
 );

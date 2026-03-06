@@ -18,9 +18,10 @@ import {Cell} from '@maxgraph/core';
 import {MultiShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
-export class TraitWithCharacteristicOrConstraintConnectionHandler
-  implements MultiShapeConnector<DefaultTrait, DefaultCharacteristic | DefaultConstraint>
-{
+export class TraitWithCharacteristicOrConstraintConnectionHandler implements MultiShapeConnector<
+  DefaultTrait,
+  DefaultCharacteristic | DefaultConstraint
+> {
   private mxGraphService = inject(MxGraphService);
 
   public connect(parentMetaModel: DefaultTrait, childMetaModel: DefaultCharacteristic, parent: Cell, child: Cell) {

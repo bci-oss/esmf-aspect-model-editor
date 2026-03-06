@@ -69,7 +69,7 @@ export class MxGraphShapeOverlayService {
 
     if (!this.filtersService.currentFilter.hasOverlay(modelElement)) return;
     if (modelElement instanceof DefaultEither) return;
-    if (!cell.style?.fillColor.includes('characteristic')) return;
+    if (!cell.style?.baseStyleNames.includes('characteristic')) return;
 
     const overlay = this.createIconShapeOverlay('add-outline-frame', 'Add Trait');
     overlay.align = 'center';

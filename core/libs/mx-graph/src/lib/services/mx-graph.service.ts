@@ -531,7 +531,7 @@ export class MxGraphService {
   }
 
   /**
-   * This method will search in cache for all entryValues, find the ones with properties = deleted entity value and clear this properties.
+   * This method will search in cache for all entryValues, find the ones with properties = deleted entity value and clear these properties.
    *
    * @param deletedEntityValue - EntityValueProperty.value that needs to be cleared.
    */

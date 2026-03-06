@@ -390,7 +390,7 @@ export class MxGraphHelper {
 
     const iconsBar = this.createShapeIconsBar(cell['configuration']?.baseProperties);
 
-    // Generates an one line property to exactly calculate the height
+    // Generates a one line property to exactly calculate the height
     // After getting the height, this element is removed
     const heightGenerator = MxGraphHelper.createSpanElement({label: 'x', key: ''});
     div.appendChild(heightGenerator);

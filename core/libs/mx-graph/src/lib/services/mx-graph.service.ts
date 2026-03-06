@@ -167,7 +167,6 @@ export class MxGraphService {
     this.nextCellCoordinates = null;
     const cellStyle = this.themeService.generateThemeStyle(node.shape?.mxGraphStyle?.baseStyleNames[0] || '');
 
-    //debugger;
     if (this.loadedFiles.isElementExtern(node.element)) {
       cellStyle.fillOpacity = 80;
     }
@@ -454,7 +453,6 @@ export class MxGraphService {
       return;
     }
 
-    //debugger;
     this.graph.insertEdge(this.graph.getDefaultParent(), null, null, parent, child, {
       baseStyleNames: [edgeStyle || childNode.fromParentArrow],
     } as CellStyle);
@@ -473,8 +471,8 @@ export class MxGraphService {
     Object.values<Cell>(this.graph.model.cells).forEach((cell: Cell) => {
       const modelElement = MxGraphHelper.getModelElement(cell);
       if (modelElement && modelElement.aspectModelUrn === focusNodeUrn) {
-        // this.graph.setCellStyles(mxConstants.STYLE_STROKECOLOR, 'red', [cell]);
-        // this.graph.setCellStyles(mxConstants.STYLE_STROKEWIDTH, 3, [cell]);
+        this.graph.setCellStyles('strokeColor', 'red', [cell]);
+        this.graph.setCellStyles('strokeWidth', 3, [cell]);
       }
     });
   }
@@ -484,8 +482,8 @@ export class MxGraphService {
     this.updateGraph(() => {
       Object.values<Cell>(this.graph.model.cells).forEach((cell: Cell) => {
         if (!cell.isEdge()) {
-          // this.graph.setCellStyles(mxConstants.STYLE_STROKECOLOR, this.themeService.currentColors.border, [cell]);
-          // this.graph.setCellStyles(mxConstants.STYLE_STROKEWIDTH, 2, [cell]);
+          this.graph.setCellStyles('strokeColor', this.themeService.currentColors.border, [cell]);
+          this.graph.setCellStyles('strokeWidth', 2, [cell]);
         }
       });
     });
@@ -529,7 +527,7 @@ export class MxGraphService {
   }
 
   setStrokeColor(color: string, shapesToHighlight: Cell[]) {
-    // this.graph.setCellStyles(mxConstants.STYLE_STROKECOLOR, color, shapesToHighlight);
+    this.graph.setCellStyles('strokeColor', color, shapesToHighlight);
   }
 
   /**

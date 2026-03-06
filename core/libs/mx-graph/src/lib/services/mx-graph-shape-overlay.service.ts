@@ -374,7 +374,6 @@ export class MxGraphShapeOverlayService {
     element.setAttribute('parent', 'yes');
     element.setAttribute('name', node.element.name);
 
-    //debugger;
     const modelElementCell = graph.insertVertex(
       graph.getDefaultParent(),
       node.element.name,

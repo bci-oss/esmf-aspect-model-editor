@@ -13,7 +13,7 @@
 
 import {ENTER} from '@angular/cdk/keycodes';
 import {AsyncPipe} from '@angular/common';
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, OnInit, viewChild} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOptgroup, MatOption} from '@angular/material/autocomplete';
@@ -49,7 +49,7 @@ declare const sammUDefinition: any;
   ],
 })
 export class QuantityKindsInputFieldComponent extends InputFieldComponent<DefaultUnit> implements OnInit {
-  @ViewChild('input') inputValue: any;
+  readonly inputValue = viewChild<any>('input');
   readonly separatorKeysCodes: number[] = [ENTER];
 
   public filteredQuantityKinds$: Observable<any[]>;
@@ -60,7 +60,7 @@ export class QuantityKindsInputFieldComponent extends InputFieldComponent<Defaul
   public quantityKindValues: Array<string>;
 
   get chipListControl(): FormControl {
-    return this.parentForm.get('quantityKindsChipList') as FormControl;
+    return this.parentForm().get('quantityKindsChipList') as FormControl;
   }
 
   ngOnInit(): void {
@@ -84,7 +84,7 @@ export class QuantityKindsInputFieldComponent extends InputFieldComponent<Defaul
       disabled: this.metaModelDialogService.isReadOnly(),
     });
 
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'quantityKindsChipList',
       new FormControl({
         value: this.quantityKindValues,
@@ -104,12 +104,12 @@ export class QuantityKindsInputFieldComponent extends InputFieldComponent<Defaul
   }
 
   onSelectionChange(newValue: string) {
-    this.inputValue.nativeElement.value = '';
+    this.inputValue().nativeElement.value = '';
     this.inputControl.reset();
     this.inputControl.markAllAsTouched();
 
     this.quantityKindValues.push(newValue);
-    this.parentForm.get('quantityKindsChipList').setValue(this.quantityKindValues);
+    this.parentForm().get('quantityKindsChipList').setValue(this.quantityKindValues);
   }
 
   remove(value: string) {
@@ -117,7 +117,7 @@ export class QuantityKindsInputFieldComponent extends InputFieldComponent<Defaul
 
     if (index >= 0) {
       this.quantityKindValues.splice(index, 1);
-      this.parentForm.get('quantityKindsChipList').setValue(this.quantityKindValues);
+      this.parentForm().get('quantityKindsChipList').setValue(this.quantityKindValues);
     }
   }
 }

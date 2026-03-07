@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 import {AsyncPipe} from '@angular/common';
-import {Component, Input, inject} from '@angular/core';
+import {Component, inject, input} from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
 import {TranslatePipe} from '@ngx-translate/core';
 import {EditorModelService} from '../../editor-model.service';
@@ -25,11 +25,11 @@ import {PropertiesButtonComponent, UpdatedProperties} from '../properties';
   imports: [BaseInputComponent, EntityExtendsFieldComponent, PropertiesButtonComponent, ElementListComponent, AsyncPipe, TranslatePipe],
 })
 export class EntityComponent {
-  @Input() parentForm: FormGroup;
+  readonly parentForm = input<FormGroup>();
   public metaModelDialogService = inject(EditorModelService);
   public element$ = this.metaModelDialogService.getMetaModelElement();
 
   overwriteProperties(data: UpdatedProperties) {
-    this.parentForm.setControl('editedProperties', new FormControl(data));
+    this.parentForm().setControl('editedProperties', new FormControl(data));
   }
 }

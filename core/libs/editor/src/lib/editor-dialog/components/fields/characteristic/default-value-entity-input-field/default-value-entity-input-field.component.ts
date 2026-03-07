@@ -41,14 +41,14 @@ export class DefaultValueEntityInputFieldComponent extends InputFieldComponent<D
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.parentForm.removeControl(this.fieldName);
+    this.parentForm().removeControl(this.fieldName);
   }
 
   initForm() {
     const defaultValue = this.getCurrentValue(this.fieldName);
     const defaultValueString = typeof defaultValue === 'string' ? defaultValue : defaultValue?.name;
 
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       this.fieldName,
       new FormControl({
         value: defaultValueString || this.metaModelElement?.defaultValue?.['name'] || '',
@@ -56,10 +56,10 @@ export class DefaultValueEntityInputFieldComponent extends InputFieldComponent<D
       }),
     );
 
-    const defaultValueControl = this.parentForm.get(this.fieldName);
+    const defaultValueControl = this.parentForm().get(this.fieldName);
     this.formSubscription.add(
       defaultValueControl.valueChanges.subscribe(value => {
-        const entityValues = this.parentForm?.get('chipList')?.value;
+        const entityValues = this.parentForm()?.get('chipList')?.value;
         this.entityValues = entityValues?.filter(({name}: DefaultEntityInstance) => name.includes(value));
       }),
     );

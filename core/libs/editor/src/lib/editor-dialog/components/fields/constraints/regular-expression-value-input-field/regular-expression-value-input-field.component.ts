@@ -35,7 +35,7 @@ export class RegularExpressionValueInputFieldComponent
   }
 
   getCurrentValue(key: string) {
-    return this.previousData[key]?.[this.metaModelElement.className] || this.metaModelElement?.[key] || '';
+    return this.previousData()[key]?.[this.metaModelElement.className] || this.metaModelElement?.[key] || '';
   }
 
   ngOnInit() {
@@ -46,11 +46,11 @@ export class RegularExpressionValueInputFieldComponent
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.parentForm.removeControl(this.fieldName);
+    this.parentForm().removeControl(this.fieldName);
   }
 
   initForm() {
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       this.fieldName,
       new FormControl(
         {

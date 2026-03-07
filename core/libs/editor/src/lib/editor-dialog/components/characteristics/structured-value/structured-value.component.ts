@@ -53,13 +53,15 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
       return false;
     }
     const hasErrors = this.groups.some(group => !group.property);
-    const controller = this.parentForm.get('elements');
+    const controller = this.parentForm().get('elements');
 
     hasErrors &&
-      this.parentForm.get('elements')?.setErrors({
-        ...controller.errors,
-        noFilledGroups: {error: true},
-      });
+      this.parentForm()
+        .get('elements')
+        ?.setErrors({
+          ...controller.errors,
+          noFilledGroups: {error: true},
+        });
     return hasErrors;
   }
 
@@ -82,8 +84,8 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.parentForm.removeControl('deconstructionRule');
-    this.parentForm.removeControl('elements');
+    this.parentForm().removeControl('deconstructionRule');
+    this.parentForm().removeControl('elements');
   }
 
   initForm() {
@@ -93,7 +95,7 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
 
     this.selectedRule = this.customRuleActive ? customRule : this.deconstructionRule;
 
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'deconstructionRule',
       new FormControl(
         {
@@ -103,9 +105,9 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
         {validators: [Validators.required, EditorDialogValidators.regexValidator]},
       ),
     );
-    this.parentForm.get('deconstructionRule').markAsTouched();
+    this.parentForm().get('deconstructionRule').markAsTouched();
 
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'elements',
       new FormControl({value: [...this.elements], disabled: this.loadedFiles.isElementExtern(this.metaModelElement)}),
     );
@@ -121,10 +123,12 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
 
     this.handlePredefinedRegex();
     this.selectedRule = selectedRule.regex;
-    const deconstructionRuleControl = this.parentForm.get('deconstructionRule');
+    const deconstructionRuleControl = this.parentForm().get('deconstructionRule');
     deconstructionRuleControl?.setValue(selectedRule.regex);
     deconstructionRuleControl?.disable();
-    this.parentForm.get('elements')?.setValue([...predefinedRule.elements]);
+    this.parentForm()
+      .get('elements')
+      ?.setValue([...predefinedRule.elements]);
   }
 
   openModal() {
@@ -149,19 +153,19 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
   }
 
   setCustomRule() {
-    const deconstructionRuleControl = this.parentForm.get('deconstructionRule');
+    const deconstructionRuleControl = this.parentForm().get('deconstructionRule');
     deconstructionRuleControl?.setValue(this.deconstructionRule);
     deconstructionRuleControl.enable();
   }
 
   private subscribeToRuleChanging() {
-    this.parentForm
+    this.parentForm()
       .get('deconstructionRule')
       ?.valueChanges.pipe(debounceTime(500))
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((value: string) => {
         this.selectedRule = this.predefinedRulesService.rules[value] ? value : customRule;
-        this.elements = this.parentForm.get('elements')?.value || this.elements;
+        this.elements = this.parentForm().get('elements')?.value || this.elements;
         this.rebuildElements();
       });
   }
@@ -188,13 +192,14 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
       }
     }
 
-    this.parentForm
+    this.parentForm()
       .get('elements')
       ?.setValue(allGroups.map(v => (v.isSplitter ? v.text : v.property)).filter(e => (typeof e === 'string' ? !!e.length : true)));
   }
 
   private handlePredefinedRegex() {
-    const deconstructionRule: string = this.parentForm.get('deconstructionRule')?.value;
+    const parentForm = this.parentForm();
+    const deconstructionRule: string = parentForm.get('deconstructionRule')?.value;
     const ruleName = Object.keys(this.predefinedRulesService.rules).find(
       key => this.predefinedRulesService.rules[key].rule === deconstructionRule,
     );
@@ -204,7 +209,7 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
       return;
     }
 
-    this.parentForm.get('elements')?.setValue(predefinedRule.elements);
+    parentForm.get('elements')?.setValue(predefinedRule.elements);
     this.elements = predefinedRule.elements;
 
     this.fillElementsWithBlanks();
@@ -222,7 +227,7 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
   }
 
   private serializeGroups() {
-    const deconstructionRule: string = this.parentForm.get('deconstructionRule')?.value;
+    const deconstructionRule: string = this.parentForm().get('deconstructionRule')?.value;
     if (!deconstructionRule) {
       return;
     }
@@ -282,7 +287,7 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
   }
 
   private fillElementsWithBlanks() {
-    if (this.parentForm.get('expertMode')?.value) {
+    if (this.parentForm().get('expertMode')?.value) {
       this.elements = [...(this.metaModelElement.elements || [])];
     } else {
       this.elements = this.elements || [];
@@ -315,7 +320,9 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
       .sort((a, b) => a.start - b.start)
       .map(v => (v.isSplitter ? v.text : v.property));
 
-    this.parentForm.get('elements')?.setValue([...this.elements.filter(e => (typeof e === 'string' ? !!e.length : true))]);
+    this.parentForm()
+      .get('elements')
+      ?.setValue([...this.elements.filter(e => (typeof e === 'string' ? !!e.length : true))]);
 
     if (setPropertiesFromElements) {
       const filtered = this.elements.filter(e => typeof e !== 'string');

@@ -14,7 +14,7 @@
 import {DataType, EditorDialogValidators, EntityInstanceUtil, FormFieldHelper} from '@ame/editor';
 import {isDataTypeLangString} from '@ame/shared';
 import {AsyncPipe, NgClass} from '@angular/common';
-import {ChangeDetectorRef, Component, inject, OnChanges, OnInit, QueryList, SimpleChanges, ViewChildren} from '@angular/core';
+import {ChangeDetectorRef, Component, inject, OnChanges, OnInit, SimpleChanges, viewChildren} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
@@ -72,7 +72,7 @@ import {InputFieldComponent} from '../../fields';
   ],
 })
 export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEntityInstance> implements OnInit, OnChanges {
-  @ViewChildren(MatAutocompleteTrigger) autocompleteTriggers: QueryList<MatAutocompleteTrigger>;
+  readonly autocompleteTriggers = viewChildren(MatAutocompleteTrigger);
 
   private changeDetector = inject(ChangeDetectorRef);
   private fb = inject(FormBuilder);
@@ -88,7 +88,7 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
   filteredLanguageValues$: {[key: string]: Observable<any[]>} = {};
 
   get entityValuePropertiesForm(): FormGroup {
-    return this.parentForm.get('entityValueProperties') as FormGroup;
+    return this.parentForm().get('entityValueProperties') as FormGroup;
   }
 
   ngOnInit(): void {
@@ -97,7 +97,7 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
       .subscribe((metaModelElement: NamedElement) => {
         this.propertiesForm = new FormGroup({});
         this.metaModelElement = metaModelElement as DefaultEntityInstance;
-        this.parentForm.setControl('entityValueProperties', this.propertiesForm);
+        this.parentForm().setControl('entityValueProperties', this.propertiesForm);
 
         const {assertions: properties, type: entity} = this.metaModelElement;
 
@@ -239,14 +239,15 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if ('parentForm' in changes && this.parentForm) {
-      this.parentForm.setControl('entityValueProperties', this.propertiesForm);
+    const parentForm = this.parentForm();
+    if ('parentForm' in changes && parentForm) {
+      parentForm.setControl('entityValueProperties', this.propertiesForm);
     }
   }
 
   private getPropertyValues(property: DefaultProperty): DefaultEntityInstance[] {
     const existingEntityValues = EntityInstanceUtil.existingEntityValues(this.currentCachedFile, property);
-    const entityValues = EntityInstanceUtil.entityValues(this.parentForm, property);
+    const entityValues = EntityInstanceUtil.entityValues(this.parentForm(), property);
     return [...existingEntityValues, ...entityValues];
   }
 
@@ -263,13 +264,13 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
   }
 
   private closeAllAutocompletePanels() {
-    this.autocompleteTriggers.forEach(trigger => {
+    this.autocompleteTriggers().forEach(trigger => {
       trigger.closePanel();
     });
   }
 
   createNewEntityValue(property: DefaultProperty, entityValue: string) {
-    EntityInstanceUtil.createNewEntityValue(this.parentForm, property, entityValue);
+    EntityInstanceUtil.createNewEntityValue(this.parentForm(), property, entityValue);
     this.changeDetector.detectChanges();
   }
 

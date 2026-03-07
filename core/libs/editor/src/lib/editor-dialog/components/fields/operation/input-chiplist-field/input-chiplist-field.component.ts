@@ -14,7 +14,7 @@
 import {CacheUtils} from '@ame/cache';
 import {ENTER} from '@angular/cdk/keycodes';
 import {AsyncPipe} from '@angular/common';
-import {Component, ElementRef, inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, inject, OnDestroy, OnInit, viewChild} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatAutocomplete, MatAutocompleteTrigger} from '@angular/material/autocomplete';
@@ -51,7 +51,7 @@ import {InputFieldComponent} from '../../input-field.component';
   ],
 })
 export class InputChiplistFieldComponent extends InputFieldComponent<DefaultOperation> implements OnInit, OnDestroy {
-  @ViewChild('searchInput') searchInput: ElementRef<HTMLInputElement>;
+  readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
 
   private editorDialogValidators = inject(EditorDialogValidators);
 
@@ -103,7 +103,7 @@ export class InputChiplistFieldComponent extends InputFieldComponent<DefaultOper
       },
     );
 
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'inputChipList',
       new FormControl({
         value: this.inputValues,
@@ -150,14 +150,18 @@ export class InputChiplistFieldComponent extends InputFieldComponent<DefaultOper
 
     if (index >= 0) {
       this.inputValues.splice(index, 1);
-      this.parentForm.get('inputChipList').setValue([...this.inputValues]);
+      this.parentForm()
+        .get('inputChipList')
+        .setValue([...this.inputValues]);
     }
   }
 
   private addProperty(property: DefaultProperty | Property) {
     this.inputValues.push(property);
-    this.parentForm.get('inputChipList').setValue([...this.inputValues]);
-    this.searchInput.nativeElement.value = '';
+    this.parentForm()
+      .get('inputChipList')
+      .setValue([...this.inputValues]);
+    this.searchInput().nativeElement.value = '';
     this.searchControl.setValue(null);
   }
 }

@@ -32,7 +32,7 @@ export class SymbolInputFieldComponent extends InputFieldComponent<DefaultUnit> 
   }
 
   initSymbolControl() {
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'symbol',
       new FormControl({
         value: this.metaModelElement?.symbol,

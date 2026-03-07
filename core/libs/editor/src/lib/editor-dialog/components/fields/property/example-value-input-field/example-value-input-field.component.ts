@@ -82,7 +82,7 @@ export class ExampleValueInputFieldComponent extends InputFieldComponent<Default
   initForm() {
     this.hasComplexDataType = this.dataType?.isComplexType();
     const value = this.metaModelElement?.exampleValue;
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'exampleValue',
       new FormControl<DefaultValue | ScalarValue>({
         value: value || new ScalarValue({value: '', type: this.dataType || null}),
@@ -110,7 +110,7 @@ export class ExampleValueInputFieldComponent extends InputFieldComponent<Default
       });
     }
 
-    this.parentForm.get('exampleValue').setValue(value);
+    this.parentForm().get('exampleValue').setValue(value);
 
     this.displayControl.setValue(typeof value === 'string' ? value : this.stringifyValue(value));
     if (!this.isDataTypeBoolean) {
@@ -121,8 +121,10 @@ export class ExampleValueInputFieldComponent extends InputFieldComponent<Default
   unlockExampleValue(autocomplete: MatAutocomplete) {
     this.displayControl.enable();
     this.displayControl.setValue('');
-    this.parentForm.get('exampleValue').enable();
-    this.parentForm.get('exampleValue').setValue(new ScalarValue({value: '', type: this.dataType || null}));
+    this.parentForm().get('exampleValue').enable();
+    this.parentForm()
+      .get('exampleValue')
+      .setValue(new ScalarValue({value: '', type: this.dataType || null}));
 
     autocomplete.options.forEach(option => option.deselect());
   }

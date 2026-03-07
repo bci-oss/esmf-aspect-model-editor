@@ -32,7 +32,7 @@ export class MinLengthInputFieldComponent extends InputFieldComponent<DefaultLen
   }
 
   getCurrentValue(key: string) {
-    return this.previousData[key]?.[this.metaModelElement.className] || this.metaModelElement?.[key] || '';
+    return this.previousData()[key]?.[this.metaModelElement.className] || this.metaModelElement?.[key] || '';
   }
 
   ngOnInit() {
@@ -45,11 +45,11 @@ export class MinLengthInputFieldComponent extends InputFieldComponent<DefaultLen
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.parentForm.removeControl(this.fieldName);
+    this.parentForm().removeControl(this.fieldName);
   }
 
   initForm() {
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       this.fieldName,
       new FormControl({
         value: this.getCurrentValue(this.fieldName),

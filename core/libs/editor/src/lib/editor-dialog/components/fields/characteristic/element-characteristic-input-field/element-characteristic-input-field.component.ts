@@ -77,19 +77,19 @@ export class ElementCharacteristicInputFieldComponent extends InputFieldComponen
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.parentForm.removeControl('elementCharacteristicDisplay');
-    this.parentForm.removeControl('elementCharacteristic');
+    this.parentForm().removeControl('elementCharacteristicDisplay');
+    this.parentForm().removeControl('elementCharacteristic');
   }
 
   getCurrentValue() {
-    return this.previousData?.[this.fieldName] || this.metaModelElement?.elementCharacteristic || null;
+    return this.previousData()?.[this.fieldName] || this.metaModelElement?.elementCharacteristic || null;
   }
 
   setElementCharacteristicControl() {
     const elementCharacteristic = this.getCurrentValue();
     const value = elementCharacteristic?.name || '';
 
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'elementCharacteristicDisplay',
       new FormControl(
         {
@@ -102,7 +102,7 @@ export class ElementCharacteristicInputFieldComponent extends InputFieldComponen
       ),
     );
     this.getControl('elementCharacteristicDisplay').markAsTouched();
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'elementCharacteristic',
       new FormControl({
         value: elementCharacteristic,
@@ -110,8 +110,8 @@ export class ElementCharacteristicInputFieldComponent extends InputFieldComponen
       }),
     );
 
-    this.elementCharacteristicDisplayControl = this.parentForm.get('elementCharacteristicDisplay') as FormControl;
-    this.elementCharacteristicControl = this.parentForm.get('elementCharacteristic') as FormControl;
+    this.elementCharacteristicDisplayControl = this.parentForm().get('elementCharacteristicDisplay') as FormControl;
+    this.elementCharacteristicControl = this.parentForm().get('elementCharacteristic') as FormControl;
 
     this.filteredCharacteristicTypes$ = this.initFilteredCharacteristicTypes(
       this.elementCharacteristicDisplayControl,
@@ -136,7 +136,7 @@ export class ElementCharacteristicInputFieldComponent extends InputFieldComponen
       defaultCharacteristic = this.loadedFiles.findElementOnExtReferences<Characteristic>(newValue.urn);
     }
 
-    this.parentForm.get('elementCharacteristic').setValue(defaultCharacteristic);
+    this.parentForm().get('elementCharacteristic').setValue(defaultCharacteristic);
 
     this.elementCharacteristicDisplayControl.patchValue(newValue.name);
     this.elementCharacteristicControl.setValue(defaultCharacteristic);
@@ -150,7 +150,8 @@ export class ElementCharacteristicInputFieldComponent extends InputFieldComponen
 
     const urn = `${this.metaModelElement.aspectModelUrn.split('#')?.[0]}#${characteristicName}`;
 
-    if (this.metaModelElement.aspectModelUrn === urn || this.parentForm.get('name').value === characteristicName) {
+    const parentForm = this.parentForm();
+    if (this.metaModelElement.aspectModelUrn === urn || parentForm.get('name').value === characteristicName) {
       this.notificationsService.error({title: 'Element characteristic cannot link itself.'});
       this.elementCharacteristicDisplayControl.setValue('');
       return;
@@ -161,7 +162,7 @@ export class ElementCharacteristicInputFieldComponent extends InputFieldComponen
       cached: false,
       aspectModelUrn: urn,
     });
-    this.parentForm.get('elementCharacteristic').setValue(newCharacteristic);
+    parentForm.get('elementCharacteristic').setValue(newCharacteristic);
 
     this.elementCharacteristicDisplayControl.patchValue(characteristicName);
     this.elementCharacteristicControl.setValue(newCharacteristic);
@@ -172,7 +173,7 @@ export class ElementCharacteristicInputFieldComponent extends InputFieldComponen
     this.elementCharacteristicDisplayControl.enable();
     this.elementCharacteristicDisplayControl.patchValue('');
     this.elementCharacteristicControl.patchValue('');
-    this.parentForm.get('elementCharacteristic').setValue(null);
+    this.parentForm().get('elementCharacteristic').setValue(null);
     this.elementCharacteristicControl.markAllAsTouched();
   }
 }

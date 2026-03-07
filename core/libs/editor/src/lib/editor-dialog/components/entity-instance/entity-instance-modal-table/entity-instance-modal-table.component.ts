@@ -14,7 +14,7 @@
 import {LoadedFilesService} from '@ame/cache';
 import {DataType, EditorDialogValidators, FormFieldHelper} from '@ame/editor';
 import {AsyncPipe, NgClass} from '@angular/common';
-import {ChangeDetectorRef, Component, DestroyRef, inject, Input, OnChanges, QueryList, SimpleChanges, ViewChildren} from '@angular/core';
+import {ChangeDetectorRef, Component, DestroyRef, inject, input, OnChanges, SimpleChanges, viewChildren} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, UntypedFormGroup} from '@angular/forms';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOptgroup, MatOption} from '@angular/material/autocomplete';
@@ -64,12 +64,12 @@ import {EntityInstanceUtil} from '../utils/EntityInstanceUtil';
   ],
 })
 export class EntityInstanceModalTableComponent implements OnChanges {
-  @ViewChildren(MatAutocompleteTrigger) autocompleteTriggers: QueryList<MatAutocompleteTrigger>;
+  readonly autocompleteTriggers = viewChildren(MatAutocompleteTrigger);
 
-  @Input() form: FormGroup;
-  @Input() entity: DefaultEntity;
-  @Input() enumeration: DefaultEnumeration;
-  @Input() entityValue: DefaultEntityInstance;
+  readonly form = input<FormGroup>();
+  readonly entity = input<DefaultEntity>();
+  readonly enumeration = input<DefaultEnumeration>();
+  readonly entityValue = input<DefaultEntityInstance>();
 
   private destroyRef = inject(DestroyRef);
   private loadedFiles = inject(LoadedFilesService);
@@ -86,7 +86,7 @@ export class EntityInstanceModalTableComponent implements OnChanges {
   filteredLanguageValues$: {[key: string]: Observable<any[]>} = {};
 
   get propertiesForm(): FormGroup {
-    return this.form.get('properties') as FormGroup;
+    return this.form().get('properties') as FormGroup;
   }
 
   get currentCachedFile(): CacheStrategy {
@@ -94,10 +94,11 @@ export class EntityInstanceModalTableComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if ('entity' in changes && this.entity) {
+    const entity = this.entity();
+    if ('entity' in changes && entity) {
       this.sources = this.buildEntityValueArray();
 
-      this.entity.properties.forEach((property: DefaultProperty) => {
+      entity.properties.forEach((property: DefaultProperty) => {
         const propertyName = property.name;
 
         this.filteredEntityValues$[propertyName] = of(this.getPropertyValues(property));
@@ -114,11 +115,11 @@ export class EntityInstanceModalTableComponent implements OnChanges {
   }
 
   getPropertyPayload(propertyUrn: string): PropertyPayload {
-    return this.entity.propertiesPayload[propertyUrn];
+    return this.entity().propertiesPayload[propertyUrn];
   }
 
   private buildEntityValueArray(): EntityInstanceProperty<DefaultProperty>[] {
-    return this.entity.properties.map(prop => this.createEntityValueProp(prop));
+    return this.entity().properties.map(prop => this.createEntityValueProp(prop));
   }
 
   private createEntityValueProp(prop: DefaultProperty): EntityInstanceProperty<DefaultProperty> {
@@ -138,7 +139,7 @@ export class EntityInstanceModalTableComponent implements OnChanges {
   }
 
   private createFormControl(prop: DefaultProperty): FormControl {
-    const propertyPayload = this.entity.propertiesPayload[prop.aspectModelUrn];
+    const propertyPayload = this.entity().propertiesPayload[prop.aspectModelUrn];
     return new FormControl('', propertyPayload?.optional ? null : EditorDialogValidators.requiredObject);
   }
 
@@ -165,7 +166,7 @@ export class EntityInstanceModalTableComponent implements OnChanges {
 
   private getPropertyValues(property: DefaultProperty): DefaultEntityInstance[] {
     const existingEntityValues = EntityInstanceUtil.existingEntityValues(this.currentCachedFile, property);
-    const entityValues = EntityInstanceUtil.entityValues(this.form, property);
+    const entityValues = EntityInstanceUtil.entityValues(this.form(), property);
     return [...existingEntityValues, ...entityValues];
   }
 
@@ -182,18 +183,18 @@ export class EntityInstanceModalTableComponent implements OnChanges {
   }
 
   private closeAllAutocompletePanels() {
-    this.autocompleteTriggers.forEach(trigger => {
+    this.autocompleteTriggers().forEach(trigger => {
       trigger.closePanel();
     });
   }
 
   createNewEntityValue(property: DefaultProperty, entityValue: string) {
-    EntityInstanceUtil.createNewEntityValue(this.form, property, entityValue);
+    EntityInstanceUtil.createNewEntityValue(this.form(), property, entityValue);
     this.changeDetector.detectChanges();
   }
 
   addLanguage([property]: EntityInstanceProperty<DefaultProperty>): void {
-    const propertyPayload = this.entity.propertiesPayload[property.aspectModelUrn];
+    const propertyPayload = this.entity().propertiesPayload[property.aspectModelUrn];
 
     const fieldValidators = propertyPayload?.optional ? null : EditorDialogValidators.requiredObject;
     const languagesFormArray = this.propertiesForm.get(property.name) as FormArray;

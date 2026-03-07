@@ -41,11 +41,11 @@ export class ScaleInputFieldComponent extends InputFieldComponent<DefaultFixedPo
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.parentForm.removeControl(this.fieldName);
+    this.parentForm().removeControl(this.fieldName);
   }
 
   initForm() {
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       this.fieldName,
       new FormControl(
         {

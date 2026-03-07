@@ -124,7 +124,7 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
         this.initForm();
 
         runInInjectionContext(this.injector, () => {
-          this.valueControlSignal = toSignal(this.parentForm.get('values').valueChanges, {initialValue: ''});
+          this.valueControlSignal = toSignal(this.parentForm().get('values').valueChanges, {initialValue: ''});
         });
       });
 
@@ -133,19 +133,19 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.parentForm.removeControl('enumValues');
-    this.parentForm.removeControl('chipList');
-    this.parentForm.removeControl('deletedEntityValues');
-    this.parentForm.removeControl('newEntityValues');
+    this.parentForm().removeControl('enumValues');
+    this.parentForm().removeControl('chipList');
+    this.parentForm().removeControl('deletedEntityValues');
+    this.parentForm().removeControl('newEntityValues');
     this.enumValues.set([]);
   }
 
   getCurrentValue() {
-    return this.previousData?.['chipList'] || this.metaModelElement.values || [];
+    return this.previousData()?.['chipList'] || this.metaModelElement.values || [];
   }
 
   onEnumChange() {
-    this.parentForm.get('enumValues')?.setValue(this.enumValues());
+    this.parentForm().get('enumValues')?.setValue(this.enumValues());
   }
 
   addValue(value: ScalarValue | DefaultValue | string, isLiteral = true) {
@@ -164,7 +164,7 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
     }
 
     this.enumValues.update(values => [...values, value]);
-    this.parentForm.get('chipList').setValue(this.enumValues());
+    this.parentForm().get('chipList').setValue(this.enumValues());
     this.onEnumChange();
 
     this.autoComplete().options.forEach(option => option.deselect());
@@ -203,32 +203,33 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
 
   enumValueChange(enumValues: DefaultEntityInstance[]) {
     this.enumValues.set(enumValues);
-    this.parentForm.get('chipList').setValue(this.enumEntityValues());
+    this.parentForm().get('chipList').setValue(this.enumEntityValues());
   }
 
   initForm() {
-    this.parentForm.setControl('values', new FormControl({value: '', disabled: this.loadedFiles.isElementExtern(this.metaModelElement)}));
-    this.parentForm.setControl(
+    this.parentForm().setControl('values', new FormControl({value: '', disabled: this.loadedFiles.isElementExtern(this.metaModelElement)}));
+    this.parentForm().setControl(
       'chipList',
       new FormControl({value: this.enumValues(), disabled: this.loadedFiles.isElementExtern(this.metaModelElement)}, Validators.required),
     );
     this.enumValues.set(this.metaModelElement.values || []);
-    this.parentForm.setControl('enumValues', new FormControl(this.enumValues()));
+    this.parentForm().setControl('enumValues', new FormControl(this.enumValues()));
 
-    if (this.parentForm.get('dataTypeEntity').value instanceof DefaultEntity) {
+    if (this.parentForm().get('dataTypeEntity').value instanceof DefaultEntity) {
       this.enumValueChange((this.metaModelElement.values as DefaultEntityInstance[]) || []);
       this.hasComplexValues.set(true);
     }
 
+    const parentForm = this.parentForm();
     this.formSubscription.add(
-      this.parentForm
+      parentForm
         .get('dataType')
         .valueChanges.pipe(debounceTime(300))
         .subscribe(value => this.changeValuesByDataType(value)),
     );
 
     this.formSubscription.add(
-      this.parentForm.get('dataTypeEntity')?.valueChanges.subscribe(entity => {
+      parentForm.get('dataTypeEntity')?.valueChanges.subscribe(entity => {
         this.hasComplexValues.set(!!entity);
       }),
     );
@@ -248,7 +249,7 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
       return;
     }
 
-    this.parentForm.get('values').setValue([]);
+    this.parentForm().get('values').setValue([]);
     this.enumValueChange([]);
 
     CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntity)

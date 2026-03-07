@@ -13,7 +13,7 @@
 
 import {MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {AsyncPipe} from '@angular/common';
-import {Component, inject, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, inject, OnInit, viewChild} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from '@angular/material/autocomplete';
@@ -57,8 +57,8 @@ interface SeeElement {
   ],
 })
 export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> implements OnInit {
-  @ViewChild('see', {static: true}) seeInput;
-  @ViewChild('chipList', {static: true, read: MatChipGrid}) chipList: MatChipGrid;
+  public readonly seeInput = viewChild<ElementRef>('see');
+  public readonly chipList = viewChild('chipList', {read: MatChipGrid});
 
   public shapes$: Observable<NamedElement[]>;
   public searchControl = new FormControl('', {
@@ -69,7 +69,7 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
   public elements: SeeElement[] = [];
 
   get isInherited(): boolean {
-    const control = this.parentForm.get(this.fieldName);
+    const control = this.parentForm().get(this.fieldName);
     const extending = this.metaModelElement as HasExtends;
     return extending.extends_ && extending.extends_?.see && control.value === extending.extends_?.see?.join(',');
   }
@@ -90,13 +90,13 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
       .subscribe(() => this.setSeeControl());
 
     this.searchControl.statusChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(status => {
-      this.chipList.errorState = status === 'INVALID';
+      this.chipList().errorState = status === 'INVALID';
     });
   }
 
   getCurrentValue() {
     return (
-      this.previousData?.[this.fieldName] ||
+      this.previousData()?.[this.fieldName] ||
       this.metaModelElement?.see?.join(',') ||
       (this.metaModelElement as HasExtends)?.extends_?.see?.join(',') ||
       ''
@@ -105,20 +105,24 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
 
   removeElement(element: SeeElement) {
     this.elements = this.elements.filter(e => e !== element);
-    this.parentForm.get(this.fieldName).setValue(this.elements.map(({urn}) => urn).join(','));
+    this.parentForm()
+      .get(this.fieldName)
+      .setValue(this.elements.map(({urn}) => urn).join(','));
   }
 
   addElementToList(elementName?: string) {
     if (this.searchControl.valid) {
       this.elements.push({urn: this.searchControl.value, name: elementName || ''});
-      this.seeInput.nativeElement.value = '';
+      this.seeInput().nativeElement.value = '';
       this.searchControl.setValue('');
 
-      this.parentForm.get(this.fieldName).setValue(this.elements.map(({urn}) => urn).join(','));
-      this.chipList.errorState = false;
+      this.parentForm()
+        .get(this.fieldName)
+        .setValue(this.elements.map(({urn}) => urn).join(','));
+      this.chipList().errorState = false;
     } else {
-      this.chipList.errorState = true;
-      this.seeInput.nativeElement.blur();
+      this.chipList().errorState = true;
+      this.seeInput().nativeElement.blur();
     }
   }
 
@@ -127,7 +131,7 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
   }
 
   private setSeeControl() {
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       this.fieldName,
       new FormControl(
         {
@@ -141,7 +145,7 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
       ),
     );
 
-    if (this.parentForm.get(this.fieldName).disabled) {
+    if (this.parentForm().get(this.fieldName).disabled) {
       this.searchControl.disable();
       this.chipControl.disable();
     }

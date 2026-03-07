@@ -12,41 +12,41 @@
   -->
 
 <ame-constraint-name-dropdown-field
-  [parentForm]="parentForm"
+  [parentForm]="parentForm()"
   [previousDataSnapshot]="previousData"
   (selectedConstraint)="onClassChange($event)"
   (previousData)="onPreviousDataChange($event)"
 ></ame-constraint-name-dropdown-field>
-<ame-base-input [previousData]="previousData || {}" [parentForm]="parentForm"></ame-base-input>
+<ame-base-input [previousData]="previousData || {}" [parentForm]="parentForm()"></ame-base-input>
 
 @switch (selectedConstraint) {
   @case ('EncodingConstraint') {
-    <ame-encoding-input-field [previousData]="previousData || {}" [parentForm]="parentForm"></ame-encoding-input-field>
+    <ame-encoding-input-field [previousData]="previousData || {}" [parentForm]="parentForm()"></ame-encoding-input-field>
   }
   @case ('FixedPointConstraint') {
-    <ame-scale-input-field [previousData]="previousData || {}" [parentForm]="parentForm"></ame-scale-input-field>
-    <ame-integer-input-field [previousData]="previousData || {}" [parentForm]="parentForm"></ame-integer-input-field>
+    <ame-scale-input-field [previousData]="previousData || {}" [parentForm]="parentForm()"></ame-scale-input-field>
+    <ame-integer-input-field [previousData]="previousData || {}" [parentForm]="parentForm()"></ame-integer-input-field>
   }
   @case ('LanguageConstraint') {
-    <ame-language-code-input-field [previousData]="previousData || {}" [parentForm]="parentForm"></ame-language-code-input-field>
+    <ame-language-code-input-field [previousData]="previousData || {}" [parentForm]="parentForm()"></ame-language-code-input-field>
   }
   @case ('LengthConstraint') {
-    <ame-min-length-input-field [previousData]="previousData || {}" [parentForm]="parentForm"></ame-min-length-input-field>
-    <ame-max-length-input-field [previousData]="previousData || {}" [parentForm]="parentForm"></ame-max-length-input-field>
+    <ame-min-length-input-field [previousData]="previousData || {}" [parentForm]="parentForm()"></ame-min-length-input-field>
+    <ame-max-length-input-field [previousData]="previousData || {}" [parentForm]="parentForm()"></ame-max-length-input-field>
   }
   @case ('LocaleConstraint') {
-    <ame-locale-code-input-field [previousData]="previousData || {}" [parentForm]="parentForm"></ame-locale-code-input-field>
+    <ame-locale-code-input-field [previousData]="previousData || {}" [parentForm]="parentForm()"></ame-locale-code-input-field>
   }
   @case ('RangeConstraint') {
-    <ame-min-value-input-field [previousData]="previousData || {}" [parentForm]="parentForm"></ame-min-value-input-field>
-    <ame-max-value-input-field [previousData]="previousData || {}" [parentForm]="parentForm"></ame-max-value-input-field>
-    <ame-upper-bound-input-field [previousData]="previousData || {}" [parentForm]="parentForm"></ame-upper-bound-input-field>
-    <ame-lower-bound-input-field [previousData]="previousData || {}" [parentForm]="parentForm"></ame-lower-bound-input-field>
+    <ame-min-value-input-field [previousData]="previousData || {}" [parentForm]="parentForm()"></ame-min-value-input-field>
+    <ame-max-value-input-field [previousData]="previousData || {}" [parentForm]="parentForm()"></ame-max-value-input-field>
+    <ame-upper-bound-input-field [previousData]="previousData || {}" [parentForm]="parentForm()"></ame-upper-bound-input-field>
+    <ame-lower-bound-input-field [previousData]="previousData || {}" [parentForm]="parentForm()"></ame-lower-bound-input-field>
   }
   @case ('RegularExpressionConstraint') {
     <ame-regular-expression-value-input-field
       [previousData]="previousData || {}"
-      [parentForm]="parentForm"
+      [parentForm]="parentForm()"
     ></ame-regular-expression-value-input-field>
   }
 }

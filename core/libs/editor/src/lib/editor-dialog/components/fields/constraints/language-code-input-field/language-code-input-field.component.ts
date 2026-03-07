@@ -79,11 +79,11 @@ export class LanguageCodeInputFieldComponent extends InputFieldComponent<Default
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.parentForm.removeControl(this.fieldName);
+    this.parentForm().removeControl(this.fieldName);
   }
 
   initForm() {
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       this.fieldName,
       new FormControl(
         {
@@ -94,7 +94,7 @@ export class LanguageCodeInputFieldComponent extends InputFieldComponent<Default
       ),
     );
 
-    const languageCode = this.parentForm.get(this.fieldName);
+    const languageCode = this.parentForm().get(this.fieldName);
     this.formSubscription.add(
       languageCode.valueChanges.subscribe(value => {
         this.doFilterLanguages(value);

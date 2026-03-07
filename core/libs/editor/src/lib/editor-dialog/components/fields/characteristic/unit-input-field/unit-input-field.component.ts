@@ -82,8 +82,8 @@ export class UnitInputFieldComponent
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.parentForm.removeControl(this.fieldName);
-    this.parentForm.removeControl('changedUnit');
+    this.parentForm().removeControl(this.fieldName);
+    this.parentForm().removeControl('changedUnit');
   }
 
   onPredefinedUnitChange(predefinedUnit: Unit, event: MatOptionSelectionChange) {
@@ -94,7 +94,7 @@ export class UnitInputFieldComponent
       });
 
       const newPredefinedUnit = createUnit(predefinedUnit.name);
-      this.parentForm.get('unit').setValue(newPredefinedUnit);
+      this.parentForm().get('unit').setValue(newPredefinedUnit);
       this.unitDisplayControl.patchValue(newPredefinedUnit.name);
       this.unitDisplayControl.disable();
     }
@@ -102,7 +102,7 @@ export class UnitInputFieldComponent
 
   onExistingUnitChange(existingUnit) {
     this.unitDisplayControl.patchValue(existingUnit.name);
-    this.parentForm.get('unit').setValue(existingUnit);
+    this.parentForm().get('unit').setValue(existingUnit);
     this.unitDisplayControl.disable();
   }
 
@@ -117,7 +117,7 @@ export class UnitInputFieldComponent
       },
     );
 
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       this.fieldName,
       new FormControl(
         {
@@ -128,7 +128,7 @@ export class UnitInputFieldComponent
       ),
     );
 
-    this.parentForm.setControl('changedUnit', new FormControl(this.getPredefinedUnit(unitName) || unit));
+    this.parentForm().setControl('changedUnit', new FormControl(this.getPredefinedUnit(unitName) || unit));
     this.filteredUnits$ = this.initFilteredUnits(this.unitDisplayControl, this.searchService);
     this.filteredPredefinedUnits$ = this.initFilteredPredefinedUnits(this.unitDisplayControl, this.units, this.searchService);
   }
@@ -144,15 +144,15 @@ export class UnitInputFieldComponent
 
     // set the control of newDatatype
     this.unitDisplayControl.patchValue(unitName);
-    this.parentForm.get('unit').setValue(newUnit);
+    this.parentForm().get('unit').setValue(newUnit);
     this.unitDisplayControl.disable();
   }
 
   unlockUnit() {
     this.unitDisplayControl.enable();
     this.unitDisplayControl.patchValue('');
-    this.parentForm.get('unit').setValue(null);
-    this.parentForm.get('unit').markAllAsTouched();
+    this.parentForm().get('unit').setValue(null);
+    this.parentForm().get('unit').markAllAsTouched();
   }
 
   getPredefinedUnit(unitName: string) {

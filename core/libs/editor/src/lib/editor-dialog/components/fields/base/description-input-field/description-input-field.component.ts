@@ -57,18 +57,18 @@ export class DescriptionInputFieldComponent extends InputFieldComponent<NamedEle
 
     if (this.metaModelElement['extends_']) {
       return (
-        this.previousData?.[key] ||
+        this.previousData()?.[key] ||
         this.metaModelElement?.getDescription(locale) ||
         this.metaModelElement['extends_']?.getDescription(locale) ||
         ''
       );
     }
 
-    return this.previousData?.[key] || this.metaModelElement?.getDescription(locale) || '';
+    return this.previousData()?.[key] || this.metaModelElement?.getDescription(locale) || '';
   }
 
   isInherited(locale: string): boolean {
-    const control = this.parentForm.get('description' + locale);
+    const control = this.parentForm().get('description' + locale);
     const extending = this.metaModelElement as HasExtends;
     return (
       extending.extends_ &&
@@ -99,7 +99,7 @@ export class DescriptionInputFieldComponent extends InputFieldComponent<NamedEle
     [...this.metaModelElement.descriptions.keys()].forEach(locale => {
       const key = `description${locale}`;
 
-      const control = this.parentForm.get(key);
+      const control = this.parentForm().get(key);
       const previousDisabled = control?.disabled;
       const isNowPredefined = (this.metaModelElement as DefaultCharacteristic)?.isPredefined;
 
@@ -108,7 +108,7 @@ export class DescriptionInputFieldComponent extends InputFieldComponent<NamedEle
       }
 
       this.removeDescriptionControl(locale);
-      this.parentForm.setControl(
+      this.parentForm().setControl(
         key,
         new FormControl({
           value: this.getCurrentValue(key, locale) || this.metaModelElement?.getDescription(locale),
@@ -120,6 +120,6 @@ export class DescriptionInputFieldComponent extends InputFieldComponent<NamedEle
   }
 
   private removeDescriptionControl(locale: string): void {
-    this.parentForm.removeControl(`description${locale}`);
+    this.parentForm().removeControl(`description${locale}`);
   }
 }

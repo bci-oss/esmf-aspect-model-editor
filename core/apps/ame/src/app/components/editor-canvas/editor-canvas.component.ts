@@ -19,7 +19,7 @@ import {ConfigurationService} from '@ame/settings-dialog';
 import {ElementsSearchComponent, FilesSearchComponent, SearchesStateService} from '@ame/utils';
 import {CdkDrag, CdkDragEnd, CdkDragHandle} from '@angular/cdk/drag-drop';
 import {AsyncPipe, CommonModule} from '@angular/common';
-import {AfterViewInit, ChangeDetectorRef, Component, DestroyRef, ElementRef, inject, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, ChangeDetectorRef, Component, DestroyRef, ElementRef, inject, OnInit, viewChild} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormGroup} from '@angular/forms';
 import {MatIconModule} from '@angular/material/icon';
@@ -52,7 +52,7 @@ const SIDEBAR_DEFAULT_DRAG_POSITION = {x: -SIDEBAR_MIN_WIDTH, y: 0};
   ],
 })
 export class EditorCanvasComponent implements AfterViewInit, OnInit {
-  @ViewChild('graph') public graph: ElementRef;
+  public readonly graph = viewChild<ElementRef>('graph');
 
   private destroyRef = inject(DestroyRef);
   private shapeSettingsService = inject(ShapeSettingsService);
@@ -174,7 +174,7 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
   }
 
   watchScrollEvents(): void {
-    fromEvent<Event>(this.graph.nativeElement, 'scroll')
+    fromEvent<Event>(this.graph().nativeElement, 'scroll')
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         debounceTime(250),

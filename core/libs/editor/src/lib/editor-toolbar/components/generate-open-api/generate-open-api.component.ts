@@ -16,7 +16,7 @@ import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {NotificationsService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {CommonModule} from '@angular/common';
-import {Component, DestroyRef, ElementRef, OnInit, ViewChild, inject} from '@angular/core';
+import {Component, DestroyRef, ElementRef, OnInit, inject, viewChild} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
@@ -80,7 +80,7 @@ export interface OpenApi {
   ],
 })
 export class GenerateOpenApiComponent implements OnInit {
-  @ViewChild('dropArea') dropArea: ElementRef;
+  readonly dropArea = viewChild<ElementRef>('dropArea');
 
   private destroyRef = inject(DestroyRef);
   private dialogRef = inject(MatDialogRef<GenerateOpenApiComponent>);
@@ -180,7 +180,7 @@ export class GenerateOpenApiComponent implements OnInit {
 
   handleFileDrop(event: DragEvent): void {
     event.preventDefault();
-    if (!this.dropArea.nativeElement.contains(event.target)) return;
+    if (!this.dropArea().nativeElement.contains(event.target)) return;
 
     const files = event.dataTransfer?.files;
     if (files && files.length) {

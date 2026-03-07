@@ -63,14 +63,14 @@ export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperat
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.parentForm.removeControl('output');
+    this.parentForm().removeControl('output');
   }
 
   setOutputControl() {
     const property = this.metaModelElement?.output;
     const value = property?.name ? property?.name : '';
 
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'output',
       new FormControl(
         {
@@ -84,7 +84,7 @@ export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperat
     );
     this.getControl('output').markAsTouched();
 
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'outputValue',
       new FormControl({
         value: property,
@@ -92,8 +92,8 @@ export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperat
       }),
     );
 
-    this.outputControl = this.parentForm.get('output') as FormControl;
-    this.newPropertyControl = this.parentForm.get('outputValue') as FormControl;
+    this.outputControl = this.parentForm().get('output') as FormControl;
+    this.newPropertyControl = this.parentForm().get('outputValue') as FormControl;
 
     this.filteredPropertyTypes$ = this.initFilteredPropertyTypes(this.outputControl);
   }
@@ -115,7 +115,7 @@ export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperat
       property = this.loadedFiles.findElementOnExtReferences<Property>(newValue.urn);
     }
 
-    this.parentForm.setControl('outputValue', new FormControl(property));
+    this.parentForm().setControl('outputValue', new FormControl(property));
 
     this.outputControl.patchValue(newValue.name);
     this.newPropertyControl.setValue(property);
@@ -133,7 +133,7 @@ export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperat
       aspectModelUrn: urn,
       name: propertyName,
     });
-    this.parentForm.setControl('outputValue', new FormControl(newProperty));
+    this.parentForm().setControl('outputValue', new FormControl(newProperty));
 
     this.outputControl.patchValue(propertyName);
     this.newPropertyControl.setValue(newProperty);
@@ -144,7 +144,7 @@ export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperat
     this.outputControl.enable();
     this.outputControl.patchValue('');
     this.newPropertyControl.patchValue('');
-    this.parentForm.setControl('outputValue', new FormControl(null));
+    this.parentForm().setControl('outputValue', new FormControl(null));
     this.newPropertyControl.markAllAsTouched();
   }
 }

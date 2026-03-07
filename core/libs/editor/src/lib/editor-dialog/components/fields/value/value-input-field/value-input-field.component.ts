@@ -33,7 +33,7 @@ export class ValueInputFieldComponent extends InputFieldComponent<DefaultValue> 
   }
 
   initForm() {
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'value',
       new FormControl({value: this.metaModelElement?.value || '', disabled: false}, {validators: [Validators.required]}),
     );

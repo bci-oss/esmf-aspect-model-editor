@@ -23,7 +23,7 @@ import {
   ValuesInputFieldComponent,
 } from '@ame/editor';
 import {AsyncPipe} from '@angular/common';
-import {ChangeDetectorRef, Component, DestroyRef, Input, OnInit, inject} from '@angular/core';
+import {ChangeDetectorRef, Component, DestroyRef, OnInit, inject, input} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormGroup} from '@angular/forms';
 import {TranslatePipe} from '@ngx-translate/core';
@@ -52,7 +52,7 @@ import {PreviousFormDataSnapshot} from '../../interfaces';
   ],
 })
 export class CharacteristicComponent implements OnInit {
-  @Input() parentForm: FormGroup;
+  readonly parentForm = input<FormGroup>();
 
   private destroyRef = inject(DestroyRef);
   private changeDetector = inject(ChangeDetectorRef);

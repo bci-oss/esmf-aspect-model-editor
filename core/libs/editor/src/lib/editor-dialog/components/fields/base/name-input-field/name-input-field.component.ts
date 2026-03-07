@@ -57,12 +57,12 @@ export class NameInputFieldComponent extends InputFieldComponent<NamedElement> i
   }
 
   private setNameControl() {
-    let nameControl = this.parentForm.get('name');
+    let nameControl = this.parentForm().get('name');
     if (nameControl?.value) {
       nameControl.updateValueAndValidity();
     }
 
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'name',
       new FormControl(
         {
@@ -76,7 +76,7 @@ export class NameInputFieldComponent extends InputFieldComponent<NamedElement> i
         },
       ),
     );
-    nameControl = this.parentForm.get('name');
+    nameControl = this.parentForm().get('name');
     nameControl.markAsTouched();
   }
 

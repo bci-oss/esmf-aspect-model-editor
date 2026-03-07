@@ -99,19 +99,19 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.parentForm.removeControl('extendsValue');
-    this.parentForm.removeControl('extends');
+    this.parentForm().removeControl('extendsValue');
+    this.parentForm().removeControl('extends');
   }
 
   getCurrentValue() {
-    return this.previousData?.[this.fieldName] || this.metaModelElement?.extends_ || null;
+    return this.previousData()?.[this.fieldName] || this.metaModelElement?.extends_ || null;
   }
 
   setExtendsControl() {
     const extendsElement = this.getCurrentValue();
     const value = extendsElement?.name || '';
 
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'extendsValue',
       new FormControl(
         {
@@ -124,7 +124,7 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
       ),
     );
 
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'extends',
       new FormControl({
         value: extendsElement,
@@ -132,8 +132,8 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
       }),
     );
 
-    this.extendsValueControl = this.parentForm.get('extendsValue') as FormControl;
-    this.extendsControl = this.parentForm.get('extends') as FormControl;
+    this.extendsValueControl = this.parentForm().get('extendsValue') as FormControl;
+    this.extendsControl = this.parentForm().get('extends') as FormControl;
 
     this.filteredAbstractEntities$ = combineLatest([
       this.metaModelElement instanceof DefaultEntity ? this.initFilteredEntities(this.extendsValueControl) : of([]),
@@ -158,7 +158,7 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
       foundEntity = newValue.entity;
     }
 
-    this.parentForm.setControl('extends', new FormControl(foundEntity));
+    this.parentForm().setControl('extends', new FormControl(foundEntity));
 
     this.extendsValueControl.patchValue(newValue.name);
     this.extendsControl.setValue(foundEntity);
@@ -172,7 +172,8 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
 
     const urn = `${this.metaModelElement.aspectModelUrn.split('#')?.[0]}#${entityName}`;
 
-    if (this.metaModelElement.aspectModelUrn === urn || this.parentForm.get('name').value === entityName) {
+    const parentForm = this.parentForm();
+    if (this.metaModelElement.aspectModelUrn === urn || parentForm.get('name').value === entityName) {
       this.notificationsService.error({title: 'Element left cannot link itself'});
       this.extendsValueControl.setValue('');
       return;
@@ -184,7 +185,7 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
       aspectModelUrn: urn,
       metaModelVersion: this.metaModelElement.metaModelVersion,
     });
-    this.parentForm.setControl('extends', new FormControl(newAbstractEntity));
+    parentForm.setControl('extends', new FormControl(newAbstractEntity));
 
     this.extendsValueControl.patchValue(entityName);
     this.extendsControl.setValue(newAbstractEntity);
@@ -198,7 +199,8 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
 
     const urn = `${this.metaModelElement.aspectModelUrn.split('#')?.[0]}#${entityName}`;
 
-    if (this.metaModelElement.aspectModelUrn === urn || this.parentForm.get('name').value === entityName) {
+    const parentForm = this.parentForm();
+    if (this.metaModelElement.aspectModelUrn === urn || parentForm.get('name').value === entityName) {
       this.notificationsService.error({title: 'Element left cannot link itself'});
       this.extendsValueControl.setValue('');
       return;
@@ -209,7 +211,7 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
       aspectModelUrn: urn,
       metaModelVersion: this.metaModelElement.metaModelVersion,
     });
-    this.parentForm.setControl('extends', new FormControl(newAbstractEntity));
+    parentForm.setControl('extends', new FormControl(newAbstractEntity));
 
     this.extendsValueControl.patchValue(entityName);
     this.extendsControl.setValue(newAbstractEntity);

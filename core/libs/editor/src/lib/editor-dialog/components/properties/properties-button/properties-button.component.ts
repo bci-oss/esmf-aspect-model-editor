@@ -12,7 +12,7 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {Component, DestroyRef, EventEmitter, inject, OnInit, Output} from '@angular/core';
+import {Component, DestroyRef, inject, OnInit, output} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatButton} from '@angular/material/button';
 import {MatDialog} from '@angular/material/dialog';
@@ -39,7 +39,7 @@ export class PropertiesButtonComponent implements OnInit {
   private metaModelDialogService = inject(EditorModelService);
   private loadedFiles = inject(LoadedFilesService);
 
-  @Output() overwrite = new EventEmitter();
+  public readonly overwrite = output<UpdatedProperties>();
 
   private propertiesPayload: typeof this.metaModelElement.propertiesPayload = {};
 

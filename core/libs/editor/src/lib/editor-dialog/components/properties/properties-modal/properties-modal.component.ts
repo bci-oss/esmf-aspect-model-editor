@@ -13,7 +13,7 @@
 
 import {CacheUtils, LoadedFilesService} from '@ame/cache';
 import {NgClass} from '@angular/common';
-import {AfterViewInit, Component, inject, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, inject, OnInit, viewChild} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatCheckbox} from '@angular/material/checkbox';
@@ -104,7 +104,7 @@ export class PropertiesModalComponent implements OnInit, AfterViewInit {
   public enumerationEntityHeaders = ['name', 'optional', 'notInPayload', 'payloadName'];
   public dataSource: MatTableDataSource<PropertyStatus>;
 
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  readonly paginator = viewChild(MatPaginator);
 
   public get extendedProperties(): DefaultProperty[] {
     return (this.data.metaModelElement as DefaultEntity)?.extends_?.properties || [];
@@ -174,7 +174,7 @@ export class PropertiesModalComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
+    this.dataSource.paginator = this.paginator();
   }
 
   getControl(path: string | string[]): FormControl {

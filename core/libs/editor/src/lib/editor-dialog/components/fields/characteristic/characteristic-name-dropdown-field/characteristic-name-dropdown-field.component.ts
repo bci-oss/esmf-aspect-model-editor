@@ -18,7 +18,7 @@ import {ModelService} from '@ame/rdf/services';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {ElementCreatorService} from '@ame/shared';
 import {KeyValuePipe} from '@angular/common';
-import {Component, DestroyRef, EventEmitter, inject, OnInit, Output} from '@angular/core';
+import {Component, DestroyRef, inject, OnInit, output} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormsModule} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -68,7 +68,7 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
   public listCharacteristicGroup: Map<string, Array<string>> = new Map();
   public units: Array<Unit> = [];
 
-  @Output() selectedCharacteristic = new EventEmitter<CharacteristicClassType>();
+  readonly selectedCharacteristic = output<CharacteristicClassType>();
 
   ngOnInit(): void {
     this.initListCharacteristics();

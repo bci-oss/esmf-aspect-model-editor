@@ -32,7 +32,7 @@ export class NumericConversionFactorInputFieldComponent extends InputFieldCompon
   }
 
   initConversionFactorForm() {
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'numericConversionFactor',
       new FormControl({
         value: this.metaModelElement?.numericConversionFactor,

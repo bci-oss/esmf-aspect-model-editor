@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, Input} from '@angular/core';
+import {Component, input} from '@angular/core';
 import {FormGroup} from '@angular/forms';
 import {PreviousFormDataSnapshot} from '../../../../interfaces';
 import {DescriptionInputFieldComponent} from '../description-input-field/description-input-field.component';
@@ -25,8 +25,8 @@ import {SeeInputFieldComponent} from '../see-input-field/see-input-field.compone
   imports: [NameInputFieldComponent, PreferredNameInputFieldComponent, DescriptionInputFieldComponent, SeeInputFieldComponent],
 })
 export class BaseInputComponent {
-  @Input() hideDescription = false;
-  @Input() hideSee = false;
-  @Input() parentForm: FormGroup;
-  @Input() previousData: PreviousFormDataSnapshot;
+  readonly hideDescription = input(false);
+  readonly hideSee = input(false);
+  readonly parentForm = input<FormGroup>();
+  readonly previousData = input<PreviousFormDataSnapshot>();
 }

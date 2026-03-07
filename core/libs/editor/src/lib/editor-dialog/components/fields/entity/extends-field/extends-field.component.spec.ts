@@ -85,7 +85,7 @@ describe('EntityExtendsFieldComponent', () => {
 
     fixture = TestBed.createComponent(EntityExtendsFieldComponent);
     component = fixture.componentInstance;
-    component.parentForm = new FormGroup({});
+    fixture.componentRef.setInput('parentForm', new FormGroup({}));
     fixture.detectChanges();
   });
 

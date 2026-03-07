@@ -15,7 +15,7 @@ import {MaxGraphService} from '@ame/max-graph';
 import {ElementIconComponent, sammElements} from '@ame/shared';
 import {CounterPipe} from '@ame/shared/pipes';
 import {NgClass} from '@angular/common';
-import {Component, inject, Input, OnInit} from '@angular/core';
+import {Component, inject, input, OnInit} from '@angular/core';
 import {MatIconButton} from '@angular/material/button';
 import {MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle} from '@angular/material/expansion';
 import {MatIconModule} from '@angular/material/icon';
@@ -46,10 +46,12 @@ import {ModelElementParserPipe} from './element-list.pipe';
   ],
 })
 export class ElementListComponent implements OnInit {
-  @Input() public label = '';
-  @Input() public iconRotation: 'rotate0' | 'rotate90' | 'rotate270' = 'rotate90';
-  @Input() public elements: NamedElement[] = [];
-  @Input() public isAspect? = false;
+  public readonly label = input('');
+  public readonly iconRotation = input<'rotate0' | 'rotate90' | 'rotate270'>('rotate90');
+  public readonly isAspect = input<boolean>(false);
+  public readonly elements = input<NamedElement[]>([]);
+
+  public filteredElements: NamedElement[] = [];
 
   private maxgraphService = inject(MaxGraphService);
   private shapeSettingsService = inject(ShapeSettingsService);
@@ -58,9 +60,9 @@ export class ElementListComponent implements OnInit {
   public loadedFilesService = inject(LoadedFilesService);
 
   ngOnInit() {
-    this.elements = Array.from(this.elements).filter(e => e instanceof NamedElement);
-    if (this.elements.length > 1) {
-      this.elements = this.elements.sort(this.compareByName);
+    this.filteredElements = Array.from(this.elements()).filter(e => e instanceof NamedElement);
+    if (this.filteredElements.length > 1) {
+      this.filteredElements = this.filteredElements.sort(this.compareByName);
     }
   }
 

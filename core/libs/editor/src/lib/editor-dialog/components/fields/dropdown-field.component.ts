@@ -15,7 +15,7 @@ import {LoadedFilesService} from '@ame/cache';
 import {ModelService} from '@ame/rdf/services';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
-import {Directive, EventEmitter, inject, Input, Output} from '@angular/core';
+import {Directive, inject, input, output} from '@angular/core';
 import {FormGroup} from '@angular/forms';
 import {DefaultCharacteristic, DefaultConstraint, NamedElement} from '@esmf/aspect-model-loader';
 import {tap} from 'rxjs/operators';
@@ -24,8 +24,8 @@ import {PreviousFormDataSnapshot} from '../../interfaces';
 
 @Directive()
 export abstract class DropdownFieldComponent<T extends DefaultCharacteristic | DefaultConstraint> {
-  @Input() parentForm: FormGroup;
-  @Input() previousDataSnapshot: PreviousFormDataSnapshot = {};
+  readonly parentForm = input<FormGroup>();
+  readonly previousDataSnapshot = input<PreviousFormDataSnapshot>({});
 
   public editorModelService = inject(EditorModelService);
   public modelService = inject(ModelService);
@@ -41,7 +41,7 @@ export abstract class DropdownFieldComponent<T extends DefaultCharacteristic | D
 
   protected _previousData: PreviousFormDataSnapshot = {};
 
-  @Output() previousData = new EventEmitter<PreviousFormDataSnapshot>();
+  readonly previousData = output<PreviousFormDataSnapshot>();
 
   protected setPreviousData() {
     if (this.metaModelElement instanceof DefaultCharacteristic && this.metaModelElement.isPredefined) {
@@ -49,23 +49,23 @@ export abstract class DropdownFieldComponent<T extends DefaultCharacteristic | D
     }
 
     this._previousData = {
-      ...this.previousDataSnapshot,
+      ...this.previousDataSnapshot(),
       ...this._previousData,
-      ...(this.parentForm.value || {}),
+      ...(this.parentForm().value || {}),
       value: {
-        ...(this.previousDataSnapshot.value || {}),
+        ...(this.previousDataSnapshot().value || {}),
         ...(this._previousData.value || {}),
-        [this.metaModelElement.className]: this.parentForm.value?.value || '',
+        [this.metaModelElement.className]: this.parentForm().value?.value || '',
       },
       minValue: {
-        ...(this.previousDataSnapshot.minValue || {}),
+        ...(this.previousDataSnapshot().minValue || {}),
         ...(this._previousData.minValue || {}),
-        [this.metaModelElement.className]: this.parentForm.value?.minValue || '',
+        [this.metaModelElement.className]: this.parentForm().value?.minValue || '',
       },
       maxValue: {
-        ...(this.previousDataSnapshot.maxValue || {}),
+        ...(this.previousDataSnapshot().maxValue || {}),
         ...(this._previousData.maxValue || {}),
-        [this.metaModelElement.className]: this.parentForm.value?.maxValue || '',
+        [this.metaModelElement.className]: this.parentForm().value?.maxValue || '',
       },
     };
 
@@ -107,6 +107,6 @@ export abstract class DropdownFieldComponent<T extends DefaultCharacteristic | D
   public updateFields(modelElement: T) {
     this.metaModelElement.metaModelVersion = this.loadedFilesService.currentLoadedFile.rdfModel.getMetaModelVersion();
     this.editorModelService.updateMetaModelElement(this.metaModelElement);
-    this.parentForm.get('changedMetaModel').setValue(modelElement);
+    this.parentForm().get('changedMetaModel').setValue(modelElement);
   }
 }

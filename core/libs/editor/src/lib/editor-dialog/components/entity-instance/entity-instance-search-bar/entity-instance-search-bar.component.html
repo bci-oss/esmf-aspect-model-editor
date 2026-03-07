@@ -19,7 +19,7 @@
 
 <button
   class="add-button"
-  [disabled]="disableAddNewEntityValue"
+  [disabled]="disableAddNewEntityValue()"
   [matTooltip]="'Add a complex value'"
   (click)="add.emit()"
   mat-fab

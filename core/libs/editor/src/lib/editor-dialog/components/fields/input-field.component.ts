@@ -14,7 +14,7 @@
 import {CacheUtils, LoadedFilesService} from '@ame/cache';
 import {MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {SearchService, mxCellSearchOption, unitSearchOption} from '@ame/shared';
-import {DestroyRef, Directive, Input, OnChanges, OnDestroy, SimpleChanges, inject} from '@angular/core';
+import {DestroyRef, Directive, OnChanges, OnDestroy, SimpleChanges, inject, input} from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
 import {
   DefaultCharacteristic,
@@ -42,8 +42,8 @@ interface FilteredType {
 
 @Directive()
 export abstract class InputFieldComponent<T extends NamedElement> implements OnDestroy, OnChanges {
-  @Input() public parentForm: FormGroup;
-  @Input() previousData: PreviousFormDataSnapshot = {};
+  public readonly parentForm = input<FormGroup>();
+  readonly previousData = input<PreviousFormDataSnapshot>({});
 
   public destroyRef = inject(DestroyRef);
   public metaModelDialogService = inject(EditorModelService);
@@ -71,7 +71,7 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
       return this.metaModelElement?.[key] || '';
     }
 
-    return this.previousData?.[key] || this.metaModelElement?.[key] || '';
+    return this.previousData()?.[key] || this.metaModelElement?.[key] || '';
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -85,14 +85,15 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
 
     const multiLanguageFields = ['description', 'preferredName'];
 
-    for (const key in this.previousData) {
+    for (const key in this.previousData()) {
+      const parentForm = this.parentForm();
       if (key.startsWith(this.fieldName) && multiLanguageFields.includes(this.fieldName)) {
         const locale = key.substr(0, this.fieldName.length);
-        this.parentForm.get(key)?.patchValue(this.getCurrentValue(key, locale));
+        parentForm.get(key)?.patchValue(this.getCurrentValue(key, locale));
       }
 
       if (key === this.fieldName) {
-        this.parentForm.get(key)?.setValue(this.getCurrentValue(key));
+        parentForm.get(key)?.setValue(this.getCurrentValue(key));
       }
     }
   }
@@ -103,7 +104,7 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
   }
 
   getControl(path: string | string[]): FormControl {
-    return this.parentForm.get(path) as FormControl;
+    return this.parentForm().get(path) as FormControl;
   }
 
   getMetaModelData() {
@@ -339,8 +340,8 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
   }
 
   enableWhenEmpty(currentControl: () => FormControl, dependantControlKey: string) {
-    const subscription = this.parentForm.valueChanges.subscribe(() => {
-      const charElementControl = this.parentForm.get(dependantControlKey);
+    const subscription = this.parentForm().valueChanges.subscribe(() => {
+      const charElementControl = this.parentForm().get(dependantControlKey);
       if (!charElementControl) {
         return;
       }
@@ -363,22 +364,23 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
   }
 
   private resetForm() {
-    if (!this.parentForm) {
+    const parentForm = this.parentForm();
+    if (!parentForm) {
       return;
     }
     // we need to keep the meta model changed form field
-    const changedMetaModel = this.parentForm.value.changedMetaModel;
+    const changedMetaModel = parentForm.value.changedMetaModel;
     if (changedMetaModel) {
       return;
     }
-    Object.keys(this.parentForm.controls).forEach((key: string) => {
+    Object.keys(parentForm.controls).forEach((key: string) => {
       if (key === 'changedMetaModel') {
         return;
       }
-      this.parentForm.setControl(key, new FormControl());
+      this.parentForm().setControl(key, new FormControl());
     });
-    this.parentForm.reset();
-    this.parentForm.setControl('changedMetaModel', new FormControl());
+    parentForm.reset();
+    parentForm.setControl('changedMetaModel', new FormControl());
   }
 
   private searchExtElement(value: string): Cell[] {

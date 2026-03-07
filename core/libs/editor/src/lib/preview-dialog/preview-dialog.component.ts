@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 import {CdkTextareaAutosize} from '@angular/cdk/text-field';
-import {Component, inject, ViewChild} from '@angular/core';
+import {Component, inject, viewChild} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
@@ -35,7 +35,7 @@ interface PreviewDialogOptions {
   imports: [MatDialogModule, MatIconModule, MatFormFieldModule, FormsModule, MatInputModule, MatButtonModule, TranslatePipe],
 })
 export class PreviewDialogComponent {
-  @ViewChild('autosize') autosize: CdkTextareaAutosize;
+  readonly autosize = viewChild<CdkTextareaAutosize>('autosize');
 
   private data = inject<PreviewDialogOptions>(MAT_DIALOG_DATA);
   private dialogRef = inject(MatDialogRef<PreviewDialogComponent>);

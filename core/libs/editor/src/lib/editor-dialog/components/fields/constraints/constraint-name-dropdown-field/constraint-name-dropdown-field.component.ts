@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, DestroyRef, EventEmitter, inject, OnInit, Output} from '@angular/core';
+import {Component, DestroyRef, inject, OnInit, output} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormsModule} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -42,7 +42,7 @@ export class ConstraintNameDropdownFieldComponent extends DropdownFieldComponent
   public listConstraintNames: Array<string>;
   public listConstraints: Map<string, Function> = new Map();
 
-  @Output() selectedConstraint = new EventEmitter<string>();
+  readonly selectedConstraint = output<string>();
 
   ngOnInit(): void {
     this.initConstraintList();

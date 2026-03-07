@@ -96,15 +96,13 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.parentForm.removeControl('dataType');
+    this.parentForm().removeControl('dataType');
   }
 
   getCurrentValue() {
+    const previousData = this.previousData();
     return !this.metaModelElement.isPredefined
-      ? (this.previousData?.['dataType'] ??
-          this.previousData?.['newDataType'] ??
-          this.previousData?.[this.fieldName] ??
-          this.metaModelElement?.dataType)
+      ? (previousData?.['dataType'] ?? previousData?.['newDataType'] ?? previousData?.[this.fieldName] ?? this.metaModelElement?.dataType)
       : this.metaModelElement?.dataType;
   }
 
@@ -116,7 +114,7 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
     const dataType = this.getCurrentValue();
     const value = dataType ? RdfModelUtil.getValueWithoutUrnDefinition(dataType?.getUrn()) : null;
 
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'dataType',
       new FormControl(
         {
@@ -129,15 +127,15 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
       ),
     );
     this.getControl('dataType').markAsTouched();
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'dataTypeEntity',
       new FormControl({
         value: dataType,
         disabled: this.loadedFiles.isElementExtern(this.metaModelElement),
       }),
     );
-    this.dataTypeControl = this.parentForm.get('dataType') as FormControl;
-    this.dataTypeEntityControl = this.parentForm.get('dataTypeEntity') as FormControl;
+    this.dataTypeControl = this.parentForm().get('dataType') as FormControl;
+    this.dataTypeEntityControl = this.parentForm().get('dataTypeEntity') as FormControl;
 
     this.initFilteredDataTypes();
     this.filteredEntityTypes$ = this.initFilteredEntities(this.dataTypeControl, this.entitiesDisabled);
@@ -160,7 +158,7 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
       }
     }
 
-    this.parentForm.get('dataTypeEntity').setValue(newValue);
+    this.parentForm().get('dataTypeEntity').setValue(newValue);
     this.dataTypeControl.patchValue(newValue.name);
     this.dataTypeControl.disable();
   }
@@ -174,11 +172,11 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
     const newEntity = new DefaultEntity({metaModelVersion: this.metaModelElement.metaModelVersion, aspectModelUrn: urn, name: entityName});
 
     // set the control of newDatatype
-    const newDataTypeControl = this.parentForm.get('newDataType');
+    const newDataTypeControl = this.parentForm().get('newDataType');
     if (newDataTypeControl) {
       newDataTypeControl.setValue(newEntity);
     } else {
-      this.parentForm.setControl('newDataType', new FormControl(newEntity));
+      this.parentForm().setControl('newDataType', new FormControl(newEntity));
     }
 
     this.dataTypeControl.patchValue(entityName);
@@ -189,8 +187,8 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
   unlockDataType() {
     this.dataTypeControl.enable();
     this.dataTypeControl.patchValue('');
-    this.parentForm.get(this.fieldName).patchValue('');
-    this.parentForm.get('newDataType')?.setValue(null);
+    this.parentForm().get(this.fieldName).patchValue('');
+    this.parentForm().get('newDataType')?.setValue(null);
     this.dataTypeEntityControl.markAllAsTouched();
   }
 
@@ -210,10 +208,12 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
     );
   }
 
-  private hasStructuredValueAsGrandParent() {
+  private hasStructuredValueAsGrandParent(): boolean {
     const cell = this.maxgraphService.resolveCellByModelElement(this.metaModelElement);
+    if (!cell) return false;
+
     return this.maxgraphService.graph
-      .getIncomingEdges(cell, null)
+      .getIncomingEdges(cell, cell.parent)
       .some(firstEdge =>
         this.maxgraphService.graph
           .getIncomingEdges(firstEdge.source, null)

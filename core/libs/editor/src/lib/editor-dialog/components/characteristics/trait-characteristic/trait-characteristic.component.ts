@@ -12,7 +12,7 @@
  */
 
 import {AsyncPipe} from '@angular/common';
-import {Component, Input, inject} from '@angular/core';
+import {Component, inject, input} from '@angular/core';
 import {FormGroup} from '@angular/forms';
 import {TranslatePipe} from '@ngx-translate/core';
 import {EditorModelService} from '../../../editor-model.service';
@@ -25,7 +25,7 @@ import {BaseInputComponent} from '../../fields';
   imports: [BaseInputComponent, ElementListComponent, AsyncPipe, TranslatePipe],
 })
 export class TraitCharacteristicComponent {
-  @Input() parentForm: FormGroup;
+  readonly parentForm = input<FormGroup>();
   public metaModelDialogService = inject(EditorModelService);
   public element$ = this.metaModelDialogService.getMetaModelElement();
 }

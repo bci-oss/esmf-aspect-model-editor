@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 import {AsyncPipe} from '@angular/common';
-import {AfterViewInit, ChangeDetectorRef, Component, Input, OnDestroy, inject} from '@angular/core';
+import {AfterViewInit, ChangeDetectorRef, Component, OnDestroy, inject, input} from '@angular/core';
 import {FormGroup} from '@angular/forms';
 import {TranslatePipe} from '@ngx-translate/core';
 import {EditorModelService} from '../../editor-model.service';
@@ -58,7 +58,7 @@ import {
   ],
 })
 export class ConstraintComponent implements OnDestroy, AfterViewInit {
-  @Input() parentForm: FormGroup;
+  readonly parentForm = input<FormGroup>();
 
   private changeDetector = inject(ChangeDetectorRef);
 

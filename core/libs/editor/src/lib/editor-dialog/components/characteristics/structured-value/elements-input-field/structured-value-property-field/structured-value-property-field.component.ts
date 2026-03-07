@@ -15,7 +15,7 @@ import {CacheUtils, LoadedFilesService} from '@ame/cache';
 import {EditorDialogValidators} from '@ame/editor';
 import {ElementCreatorService} from '@ame/shared';
 import {AsyncPipe} from '@angular/common';
-import {Component, Input, OnInit, inject} from '@angular/core';
+import {Component, OnInit, inject, input} from '@angular/core';
 import {FormControl, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOptgroup, MatOption} from '@angular/material/autocomplete';
 import {MatIconButton} from '@angular/material/button';
@@ -45,8 +45,8 @@ import {Observable, debounceTime, map, startWith} from 'rxjs';
   ],
 })
 export class StructuredValuePropertyFieldComponent implements OnInit {
-  @Input() public defaultProperty: DefaultProperty = null;
-  @Input() public fieldControl: FormControl;
+  public defaultProperty = input<DefaultProperty>(null);
+  public readonly fieldControl = input<FormControl>();
 
   private elementCreator = inject(ElementCreatorService);
   public loadedFiles = inject(LoadedFilesService);
@@ -63,12 +63,13 @@ export class StructuredValuePropertyFieldComponent implements OnInit {
   }
 
   ngOnInit() {
+    const defaultProperty = this.defaultProperty();
     this.control = new FormControl(
       {
-        value: this.defaultProperty?.name || '',
+        value: this.defaultProperty()?.name || '',
         disabled:
-          this.defaultProperty instanceof DefaultProperty &&
-          (!!this.defaultProperty?.aspectModelUrn || this.loadedFiles.isElementExtern(this.defaultProperty)),
+          defaultProperty instanceof DefaultProperty &&
+          (!!defaultProperty?.aspectModelUrn || this.loadedFiles.isElementExtern(defaultProperty)),
       },
       [Validators.required, EditorDialogValidators.namingLowerCase],
     );
@@ -82,8 +83,7 @@ export class StructuredValuePropertyFieldComponent implements OnInit {
   unlock() {
     this.control.enable();
     this.control.patchValue('');
-    this.fieldControl.setValue('');
-    this.defaultProperty = null;
+    this.fieldControl().setValue('');
   }
 
   isLowerCase(value: string) {
@@ -105,12 +105,12 @@ export class StructuredValuePropertyFieldComponent implements OnInit {
       name,
       characteristic,
     });
-    this.fieldControl.setValue(newProperty);
+    this.fieldControl().setValue(newProperty);
     this.control.disable();
   }
 
   onSelectionChange(property: DefaultProperty) {
-    this.fieldControl.setValue(property);
+    this.fieldControl().setValue(property);
     this.control.disable();
   }
 }

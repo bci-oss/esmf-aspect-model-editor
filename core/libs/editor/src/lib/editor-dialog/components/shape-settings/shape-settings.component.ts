@@ -13,7 +13,7 @@
 
 import {LoadedFilesService} from '@ame/cache';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
-import {ChangeDetectorRef, Component, DestroyRef, EventEmitter, inject, Input, OnChanges, OnInit, Output} from '@angular/core';
+import {ChangeDetectorRef, Component, DestroyRef, inject, input, OnChanges, OnInit, output} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {MatButton, MatIconButton} from '@angular/material/button';
@@ -83,24 +83,25 @@ export class ShapeSettingsComponent implements OnInit, OnChanges {
     changedMetaModel: new FormControl(null),
   });
 
-  @Input() isOpened = false;
-  @Input() modelElement: NamedElement = null;
+  readonly isOpened = input(false);
+  readonly modelElement = input<NamedElement>(null);
 
-  @Output() save = new EventEmitter<FormGroup>();
-  @Output() afterClose = new EventEmitter();
+  readonly save = output<FormGroup>();
+  readonly afterClose = output();
 
   saveOnKeyControlEnterEvent() {
-    if (this.isOpened) {
+    if (this.isOpened()) {
       this.onSave();
     }
   }
 
   ngOnChanges(): void {
-    if (!this.modelElement) {
+    const modelElement = this.modelElement();
+    if (!modelElement) {
       return;
     }
 
-    this.onEdit(this.modelElement);
+    this.onEdit(modelElement);
   }
 
   ngOnInit() {
@@ -156,7 +157,7 @@ export class ShapeSettingsComponent implements OnInit, OnChanges {
   }
 
   isCharacteristic(): boolean {
-    return this.isOpened && this.metaModelElement instanceof DefaultCharacteristic;
+    return this.isOpened() && this.metaModelElement instanceof DefaultCharacteristic;
   }
 
   isConstraint(): boolean {

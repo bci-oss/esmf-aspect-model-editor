@@ -32,7 +32,7 @@ export class ConversionFactorInputFieldComponent extends InputFieldComponent<Def
   }
 
   initConversionFactorForm() {
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'conversionFactor',
       new FormControl({
         value: this.metaModelElement?.conversionFactor,

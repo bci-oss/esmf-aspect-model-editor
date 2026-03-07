@@ -74,7 +74,7 @@ export class ReferenceUnitInputFieldComponent extends InputFieldComponent<Defaul
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.parentForm.removeControl('referenceUnit');
+    this.parentForm().removeControl('referenceUnit');
   }
 
   initReferenceUnitControl() {
@@ -85,7 +85,7 @@ export class ReferenceUnitInputFieldComponent extends InputFieldComponent<Defaul
       disabled: !!referenceUnit || this.loadedFiles.isElementExtern(this.metaModelElement),
     });
 
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'referenceUnit',
       new FormControl({
         value: this.metaModelElement?.referenceUnit,
@@ -93,7 +93,7 @@ export class ReferenceUnitInputFieldComponent extends InputFieldComponent<Defaul
       }),
     );
 
-    this.referenceUnitControl = this.parentForm.get('referenceUnit') as FormControl;
+    this.referenceUnitControl = this.parentForm().get('referenceUnit') as FormControl;
 
     this.filteredUnits$ = this.initFilteredUnits(this.unitDisplayControl, this.searchService);
     this.filteredPredefinedUnits$ = this.initFilteredPredefinedUnits(this.unitDisplayControl, this.units, this.searchService);
@@ -102,7 +102,7 @@ export class ReferenceUnitInputFieldComponent extends InputFieldComponent<Defaul
   unlockUnit() {
     this.unitDisplayControl.enable();
     this.unitDisplayControl.patchValue('');
-    this.parentForm.setControl('referenceUnit', new FormControl(null));
+    this.parentForm().setControl('referenceUnit', new FormControl(null));
     this.referenceUnitControl.markAllAsTouched();
   }
 

@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {Component, Input} from '@angular/core';
+import {Component, input} from '@angular/core';
 import {DefaultEntity, DefaultState} from '@esmf/aspect-model-loader';
 import {PreviousFormDataSnapshot} from '../../../interfaces';
 import {DefaultValueEntityInputFieldComponent, DefaultValueInputFieldComponent, ValuesInputFieldComponent} from '../../fields';
@@ -22,8 +22,8 @@ import {ModelElementEditorComponent} from '../../model-element-editor-component'
   imports: [ValuesInputFieldComponent, DefaultValueEntityInputFieldComponent, DefaultValueInputFieldComponent],
 })
 export class StateCharacteristicComponent extends ModelElementEditorComponent<DefaultState> {
-  @Input() previousData: PreviousFormDataSnapshot = {};
-  @Input() parentForm: any;
+  readonly previousData = input<PreviousFormDataSnapshot>({});
+  readonly parentForm = input<any>();
 
   get hasEntityType(): boolean {
     return this.metaModelElement?.dataType instanceof DefaultEntity;

@@ -32,7 +32,7 @@ export class CodeInputFieldComponent extends InputFieldComponent<DefaultUnit> im
   }
 
   initCodeForm() {
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'code',
       new FormControl({
         value: this.metaModelElement?.code,

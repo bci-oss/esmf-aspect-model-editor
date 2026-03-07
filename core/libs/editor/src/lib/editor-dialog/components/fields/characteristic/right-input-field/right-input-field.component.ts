@@ -64,7 +64,7 @@ export class RightInputFieldComponent extends InputFieldComponent<DefaultEither>
   }
 
   getCurrentValue() {
-    return this.previousData?.[this.fieldName] || this.metaModelElement?.right || null;
+    return this.previousData()?.[this.fieldName] || this.metaModelElement?.right || null;
   }
 
   ngOnInit(): void {
@@ -75,15 +75,15 @@ export class RightInputFieldComponent extends InputFieldComponent<DefaultEither>
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.parentForm.removeControl('right');
-    this.parentForm.removeControl('rightCharacteristic');
+    this.parentForm().removeControl('right');
+    this.parentForm().removeControl('rightCharacteristic');
   }
 
   setRightControl() {
     const eitherRight = this.getCurrentValue();
     const value = eitherRight?.name || '';
 
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'right',
       new FormControl(
         {
@@ -98,7 +98,7 @@ export class RightInputFieldComponent extends InputFieldComponent<DefaultEither>
         },
       ),
     );
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'rightCharacteristic',
       new FormControl({
         value: eitherRight,
@@ -106,11 +106,11 @@ export class RightInputFieldComponent extends InputFieldComponent<DefaultEither>
       }),
     );
 
-    this.rightControl = this.parentForm.get('right') as FormControl;
-    this.rightCharacteristicControl = this.parentForm.get('rightCharacteristic') as FormControl;
+    this.rightControl = this.parentForm().get('right') as FormControl;
+    this.rightCharacteristicControl = this.parentForm().get('rightCharacteristic') as FormControl;
 
     this.filteredCharacteristicTypes$ = this.initFilteredCharacteristicTypes(this.rightControl, this.metaModelElement.aspectModelUrn).pipe(
-      map(charList => charList.filter(char => char.urn !== this.parentForm.get('leftCharacteristic')?.value?.aspectModelUrn)),
+      map(charList => charList.filter(char => char.urn !== this.parentForm().get('leftCharacteristic')?.value?.aspectModelUrn)),
     );
   }
 
@@ -131,7 +131,7 @@ export class RightInputFieldComponent extends InputFieldComponent<DefaultEither>
       defaultCharacteristic = this.loadedFiles.findElementOnExtReferences<Characteristic>(newValue.urn);
     }
 
-    this.parentForm.setControl('rightCharacteristic', new FormControl(defaultCharacteristic));
+    this.parentForm().setControl('rightCharacteristic', new FormControl(defaultCharacteristic));
 
     this.rightControl.patchValue(newValue.name);
     this.rightCharacteristicControl.setValue(defaultCharacteristic);
@@ -145,13 +145,14 @@ export class RightInputFieldComponent extends InputFieldComponent<DefaultEither>
 
     const urn = `${this.metaModelElement.aspectModelUrn.split('#')?.[0]}#${characteristicName}`;
 
-    if (this.metaModelElement.aspectModelUrn === urn || this.parentForm.get('name').value === characteristicName) {
+    const parentForm = this.parentForm();
+    if (this.metaModelElement.aspectModelUrn === urn || parentForm.get('name').value === characteristicName) {
       this.notificationsService.error({title: 'Element right cannot link itself'});
       this.rightControl.setValue('');
       return;
     }
 
-    if (characteristicName === this.parentForm.get('leftCharacteristic')?.value?.name) {
+    if (characteristicName === parentForm.get('leftCharacteristic')?.value?.name) {
       this.notificationsService.error({title: 'Element right cannot point to the same characteristic as the left element.'});
       this.rightControl.setValue('');
       return;
@@ -162,7 +163,7 @@ export class RightInputFieldComponent extends InputFieldComponent<DefaultEither>
       aspectModelUrn: urn,
       name: characteristicName,
     });
-    this.parentForm.setControl('rightCharacteristic', new FormControl(newCharacteristic));
+    parentForm.setControl('rightCharacteristic', new FormControl(newCharacteristic));
 
     this.rightControl.patchValue(characteristicName);
     this.rightCharacteristicControl.setValue(newCharacteristic);
@@ -173,7 +174,7 @@ export class RightInputFieldComponent extends InputFieldComponent<DefaultEither>
     this.rightControl.enable();
     this.rightControl.patchValue('');
     this.rightCharacteristicControl.patchValue('');
-    this.parentForm.setControl('rightCharacteristic', new FormControl(null));
+    this.parentForm().setControl('rightCharacteristic', new FormControl(null));
     this.rightCharacteristicControl.markAllAsTouched();
   }
 }

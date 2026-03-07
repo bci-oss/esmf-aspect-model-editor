@@ -81,11 +81,11 @@ export class LocaleCodeInputFieldComponent extends InputFieldComponent<DefaultLo
   ngOnDestroy() {
     super.ngOnDestroy();
 
-    this.parentForm.removeControl(this.fieldName);
+    this.parentForm().removeControl(this.fieldName);
   }
 
   initForm() {
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       this.fieldName,
       new FormControl(
         {
@@ -96,7 +96,7 @@ export class LocaleCodeInputFieldComponent extends InputFieldComponent<DefaultLo
       ),
     );
 
-    const localeCodeControl = this.parentForm.get(this.fieldName);
+    const localeCodeControl = this.parentForm().get(this.fieldName);
     this.formSubscription.add(
       localeCodeControl.valueChanges.subscribe(value => {
         this.doFilterLanguages(value);

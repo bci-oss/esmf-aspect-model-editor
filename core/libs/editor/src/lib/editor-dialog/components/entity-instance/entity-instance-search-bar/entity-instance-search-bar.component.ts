@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, input, output} from '@angular/core';
 import {MatFabButton} from '@angular/material/button';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
@@ -26,10 +26,10 @@ import {TranslatePipe} from '@ngx-translate/core';
   imports: [MatFormFieldModule, MatLabel, MatInput, MatIconModule, MatTooltipModule, MatFabButton, TranslatePipe],
 })
 export class EntityInstanceSearchBarComponent {
-  @Input() count: number;
-  @Input() disableAddNewEntityValue = false;
-  @Output() newSearch = new EventEmitter<string>();
-  @Output() add = new EventEmitter();
+  readonly count = input<number>();
+  readonly disableAddNewEntityValue = input(false);
+  readonly newSearch = output<string>();
+  readonly add = output();
 
   sendNewSearchValue(newString: Event & {target: EventTarget & {value?: string}}): void {
     this.newSearch.emit(newString.target.value);

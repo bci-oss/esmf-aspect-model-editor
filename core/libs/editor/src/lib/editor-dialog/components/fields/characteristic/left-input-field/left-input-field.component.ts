@@ -71,19 +71,19 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.parentForm.removeControl('left');
-    this.parentForm.removeControl('leftCharacteristic');
+    this.parentForm().removeControl('left');
+    this.parentForm().removeControl('leftCharacteristic');
   }
 
   getCurrentValue() {
-    return this.previousData?.[this.fieldName] || this.metaModelElement?.left || null;
+    return this.previousData()?.[this.fieldName] || this.metaModelElement?.left || null;
   }
 
   setLeftControl() {
     const eitherLeft = this.getCurrentValue();
     const value = eitherLeft?.name || '';
 
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'left',
       new FormControl(
         {
@@ -99,7 +99,7 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
       ),
     );
 
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       'leftCharacteristic',
       new FormControl({
         value: eitherLeft,
@@ -107,11 +107,11 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
       }),
     );
 
-    this.leftControl = this.parentForm.get('left') as FormControl;
-    this.leftCharacteristicControl = this.parentForm.get('leftCharacteristic') as FormControl;
+    this.leftControl = this.parentForm().get('left') as FormControl;
+    this.leftCharacteristicControl = this.parentForm().get('leftCharacteristic') as FormControl;
 
     this.filteredCharacteristicTypes$ = this.initFilteredCharacteristicTypes(this.leftControl, this.metaModelElement.aspectModelUrn).pipe(
-      map(charList => charList.filter(char => char.urn !== this.parentForm.get('rightCharacteristic')?.value?.aspectModelUrn)),
+      map(charList => charList.filter(char => char.urn !== this.parentForm().get('rightCharacteristic')?.value?.aspectModelUrn)),
     );
   }
 
@@ -132,7 +132,7 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
       defaultCharacteristic = this.loadedFiles.findElementOnExtReferences<Characteristic>(newValue.urn);
     }
 
-    this.parentForm.setControl('leftCharacteristic', new FormControl(defaultCharacteristic));
+    this.parentForm().setControl('leftCharacteristic', new FormControl(defaultCharacteristic));
 
     this.leftControl.patchValue(newValue.name);
     this.leftCharacteristicControl.setValue(defaultCharacteristic);
@@ -146,13 +146,14 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
 
     const urn = `${this.metaModelElement.aspectModelUrn.split('#')?.[0]}#${characteristicName}`;
 
-    if (this.metaModelElement.aspectModelUrn === urn || this.parentForm.get('name').value === characteristicName) {
+    const parentForm = this.parentForm();
+    if (this.metaModelElement.aspectModelUrn === urn || parentForm.get('name').value === characteristicName) {
       this.notificationsService.error({title: 'Element left cannot link itself'});
       this.leftControl.setValue('');
       return;
     }
 
-    if (characteristicName === this.parentForm.get('rightCharacteristic')?.value?.name) {
+    if (characteristicName === parentForm.get('rightCharacteristic')?.value?.name) {
       this.notificationsService.error({title: 'Element left cannot point to the same characteristic as the right element.'});
       this.leftControl.setValue('');
       return;
@@ -165,7 +166,7 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
       dataType: null,
     });
 
-    this.parentForm.setControl('leftCharacteristic', new FormControl(newCharacteristic));
+    parentForm.setControl('leftCharacteristic', new FormControl(newCharacteristic));
 
     this.leftControl.patchValue(characteristicName);
     this.leftCharacteristicControl.setValue(newCharacteristic);
@@ -176,7 +177,7 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
     this.leftControl.enable();
     this.leftControl.patchValue('');
     this.leftCharacteristicControl.patchValue('');
-    this.parentForm.setControl('leftCharacteristic', new FormControl(null));
+    this.parentForm().setControl('leftCharacteristic', new FormControl(null));
     this.leftCharacteristicControl.markAllAsTouched();
   }
 }

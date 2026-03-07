@@ -12,7 +12,7 @@
  */
 
 import {AsyncPipe} from '@angular/common';
-import {Component, Input} from '@angular/core';
+import {Component, input} from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
 import {DefaultAspect} from '@esmf/aspect-model-loader';
 import {TranslatePipe} from '@ngx-translate/core';
@@ -27,11 +27,11 @@ import {PropertiesButtonComponent, UpdatedProperties} from '../properties';
   imports: [BaseInputComponent, PropertiesButtonComponent, ElementListComponent, AsyncPipe, TranslatePipe],
 })
 export class AspectComponent extends ModelElementEditorComponent<DefaultAspect> {
-  @Input() parentForm: FormGroup;
+  readonly parentForm = input<FormGroup>();
 
   public element$ = this.metaModelDialogService.getMetaModelElement();
 
   overwriteProperties(data: UpdatedProperties) {
-    this.parentForm.setControl('editedProperties', new FormControl(data));
+    this.parentForm().setControl('editedProperties', new FormControl(data));
   }
 }

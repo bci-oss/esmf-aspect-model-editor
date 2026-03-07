@@ -49,11 +49,11 @@ export class UpperBoundInputFieldComponent extends InputFieldComponent<DefaultCo
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.parentForm.removeControl(this.fieldName);
+    this.parentForm().removeControl(this.fieldName);
   }
 
   initForm() {
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       this.fieldName,
       new FormControl({
         value: this.getCurrentValue(this.fieldName),

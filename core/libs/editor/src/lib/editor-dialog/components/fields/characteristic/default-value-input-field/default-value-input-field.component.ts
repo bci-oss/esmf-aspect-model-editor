@@ -80,7 +80,7 @@ export class DefaultValueInputFieldComponent extends InputFieldComponent<Default
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.parentForm.removeControl(this.fieldName);
+    this.parentForm().removeControl(this.fieldName);
   }
 
   initForm() {
@@ -89,7 +89,7 @@ export class DefaultValueInputFieldComponent extends InputFieldComponent<Default
     this.displayControl.setValue(defaultValue?.['name'] || defaultValue?.['value'] || '');
     this.displayControl.value && this.displayControl.disable();
 
-    this.parentForm.setControl(
+    this.parentForm().setControl(
       this.fieldName,
       new FormControl(
         {
@@ -101,11 +101,13 @@ export class DefaultValueInputFieldComponent extends InputFieldComponent<Default
     );
 
     this.formSubscription.add(
-      this.parentForm.get('dataTypeEntity').valueChanges.subscribe(dataType => {
-        if (dataType instanceof DefaultEntity) {
-          this.parentForm.get(this.fieldName).patchValue('');
-        }
-      }),
+      this.parentForm()
+        .get('dataTypeEntity')
+        .valueChanges.subscribe(dataType => {
+          if (dataType instanceof DefaultEntity) {
+            this.parentForm().get(this.fieldName).patchValue('');
+          }
+        }),
     );
 
     this.setValueSignals();
@@ -124,15 +126,17 @@ export class DefaultValueInputFieldComponent extends InputFieldComponent<Default
     }
 
     this.displayControl.disable();
-    this.parentForm.get(this.fieldName).setValue(value);
-    this.parentForm.get(this.fieldName).disable();
+    this.parentForm().get(this.fieldName).setValue(value);
+    this.parentForm().get(this.fieldName).disable();
   }
 
   unlockDefaultValue() {
     this.displayControl.enable();
     this.displayControl.setValue('');
-    this.parentForm.get(this.fieldName).enable();
-    this.parentForm.get(this.fieldName).setValue(new ScalarValue({value: '', type: this.dataType || null}));
+    this.parentForm().get(this.fieldName).enable();
+    this.parentForm()
+      .get(this.fieldName)
+      .setValue(new ScalarValue({value: '', type: this.dataType || null}));
 
     this.autoComplete().options.forEach(option => option.deselect());
   }
@@ -144,16 +148,23 @@ export class DefaultValueInputFieldComponent extends InputFieldComponent<Default
         values.filter(value => value instanceof type);
 
     runInInjectionContext(this.injector, () => {
-      this.createdValues = toSignal(this.parentForm.get<string>('enumValues').valueChanges.pipe(map(filterByType(DefaultValue))), {
-        initialValue: filterByType(DefaultValue)(this.parentForm.get<string>('enumValues').value || []),
-      });
-
-      this.createdEntityValues = toSignal(
-        this.parentForm.get<string>('chipList').valueChanges.pipe(map(filterByType(DefaultEntityInstance))),
-        {initialValue: filterByType(DefaultEntityInstance)(this.parentForm.get<string>('chipList').value || [])},
+      this.createdValues = toSignal(
+        this.parentForm()
+          .get<string>('enumValues')
+          .valueChanges.pipe(map(filterByType(DefaultValue))),
+        {
+          initialValue: filterByType(DefaultValue)(this.parentForm().get<string>('enumValues').value || []),
+        },
       );
 
-      this.isComplexDatatype = toSignal(this.parentForm.get('dataTypeEntity').valueChanges, {
+      this.createdEntityValues = toSignal(
+        this.parentForm()
+          .get<string>('chipList')
+          .valueChanges.pipe(map(filterByType(DefaultEntityInstance))),
+        {initialValue: filterByType(DefaultEntityInstance)(this.parentForm().get<string>('chipList').value || [])},
+      );
+
+      this.isComplexDatatype = toSignal(this.parentForm().get('dataTypeEntity').valueChanges, {
         initialValue: this.dataType instanceof DefaultEntity,
       });
     });

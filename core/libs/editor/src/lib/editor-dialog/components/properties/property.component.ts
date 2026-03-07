@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 import {AsyncPipe} from '@angular/common';
-import {Component, Input, inject} from '@angular/core';
+import {Component, inject, input} from '@angular/core';
 import {FormGroup} from '@angular/forms';
 import {TranslatePipe} from '@ngx-translate/core';
 import {EditorModelService} from '../../editor-model.service';
@@ -24,7 +24,7 @@ import {BaseInputComponent, ExampleValueInputFieldComponent} from '../fields';
   imports: [BaseInputComponent, ExampleValueInputFieldComponent, ElementListComponent, AsyncPipe, TranslatePipe],
 })
 export class PropertyComponent {
-  @Input() parentForm: FormGroup;
+  readonly parentForm = input<FormGroup>();
   private metaModelDialogService = inject(EditorModelService);
   public element$ = this.metaModelDialogService.getMetaModelElement();
 }

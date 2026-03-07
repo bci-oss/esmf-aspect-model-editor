@@ -42,14 +42,14 @@ export class PreferredNameInputFieldComponent extends InputFieldComponent<NamedE
     const extending = this.metaModelElement as HasExtends;
 
     if ((extending as HasExtends)?.extends_) {
-      return this.previousData?.[key] || extending?.getPreferredName(locale) || extending.extends_.preferredNames?.get(locale) || '';
+      return this.previousData()?.[key] || extending?.getPreferredName(locale) || extending.extends_.preferredNames?.get(locale) || '';
     }
 
-    return this.previousData?.[key] || this.metaModelElement?.getPreferredName(locale) || '';
+    return this.previousData()?.[key] || this.metaModelElement?.getPreferredName(locale) || '';
   }
 
   isInherited(locale: string): boolean {
-    const control = this.parentForm.get(this.fieldName + locale);
+    const control = this.parentForm().get(this.fieldName + locale);
     const extending = this.metaModelElement as HasExtends;
     return (
       extending.extends_ &&
@@ -79,7 +79,7 @@ export class PreferredNameInputFieldComponent extends InputFieldComponent<NamedE
 
     Array.from(this.metaModelElement?.preferredNames?.keys())?.forEach(locale => {
       const key = `preferredName${locale}`;
-      const control = this.parentForm.get(key);
+      const control = this.parentForm().get(key);
       const previousDisabled = control?.disabled;
       const isNowPredefined = this.metaModelElement?.isPredefined;
 
@@ -89,7 +89,7 @@ export class PreferredNameInputFieldComponent extends InputFieldComponent<NamedE
 
       this.removePreferredNameControl(locale);
 
-      this.parentForm.setControl(
+      this.parentForm().setControl(
         key,
         new FormControl({
           value: this.getCurrentValue(key, locale),
@@ -101,6 +101,6 @@ export class PreferredNameInputFieldComponent extends InputFieldComponent<NamedE
   }
 
   private removePreferredNameControl(locale: string): void {
-    this.parentForm.removeControl(`preferredName${locale}`);
+    this.parentForm().removeControl(`preferredName${locale}`);
   }
 }

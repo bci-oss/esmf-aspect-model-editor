@@ -38,7 +38,7 @@ The main structure of interest is
   - electron
   - libs
     - aspect-explorer
-    - aspect-model-loader _(library extracted from [Aspect Model Loader]() which will be removed in the future from this project and be imported as a npm library)_
+    - aspect-model-loader _(library extracted from [Aspect Model Loader]() which will be removed in the future from this project and be imported as a library)_
     - cache
       - src/lib
         - [loaded-files.service.ts](#loaded-filesservicets)

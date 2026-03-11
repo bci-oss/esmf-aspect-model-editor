@@ -308,12 +308,14 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
       ?.map((cell: Cell) => {
         const modelElement = MaxGraphHelper.getModelElement(cell);
         if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultEntity) {
+          const entity = this.loadedFiles.findElementOnExtReferences<DefaultEntity>(modelElement.aspectModelUrn);
           return {
             name: modelElement.name,
             description: modelElement.getDescription('en') || '',
             urn: modelElement.aspectModelUrn,
             namespace: modelElement.aspectModelUrn.split('#')[0],
             complex: true,
+            entity: entity,
           };
         }
         return null;
@@ -326,12 +328,14 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
       ?.map((cell: Cell) => {
         const modelElement = MaxGraphHelper.getModelElement(cell);
         if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultEntity && modelElement.isAbstractEntity()) {
+          const entity = this.loadedFiles.findElementOnExtReferences<DefaultEntity>(modelElement.aspectModelUrn);
           return {
             name: modelElement.name,
             description: modelElement.getDescription('en') || '',
             urn: modelElement.aspectModelUrn,
             namespace: modelElement.aspectModelUrn.split('#')[0],
             complex: true,
+            entity: entity,
           };
         }
         return null;

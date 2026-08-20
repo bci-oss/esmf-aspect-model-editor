@@ -5,7 +5,7 @@
   "productName": "Aspect-Model-Editor",
   "version": "",
   "packageManager": "pnpm",
-  "main": "dist/electron/main.js",
+  "main": "main.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/eclipse-esmf/esmf-aspect-model-editor.git"
@@ -17,7 +17,30 @@
       "target": "zip",
       "icon": "./apps/ame/src/assets/img/png/aspect-model-editor-targetsize-256.png",
       "files": [
-        "dist"
+        {
+          "from": "dist/electron",
+          "to": "electron",
+          "filter": [
+            "**/*",
+            "!main/**"
+          ]
+        },
+        {
+          "from": "dist",
+          "to": "dist",
+          "filter": [
+            "**/*",
+            "!electron/**"
+          ]
+        },
+        {
+          "from": "dist",
+          "to": ".",
+          "filter": [
+            "main.js",
+            "package.json"
+          ]
+        }
       ],
       "extraFiles": [
         {
@@ -42,7 +65,7 @@
           ]
         },
         {
-          "from": "./electron/loading-screen/",
+          "from": "./dist/electron/loading-screen/",
           "to": "loading-screen/",
           "filter": [
             "**/*"
@@ -54,7 +77,30 @@
       "target": "zip",
       "icon": "./apps/ame/src/assets/img/icns/aspect-model-editor-targetsize-192.icns",
       "files": [
-        "dist"
+        {
+          "from": "dist/electron",
+          "to": "electron",
+          "filter": [
+            "**/*",
+            "!main/**"
+          ]
+        },
+        {
+          "from": "dist",
+          "to": "dist",
+          "filter": [
+            "**/*",
+            "!electron/**"
+          ]
+        },
+        {
+          "from": "dist",
+          "to": ".",
+          "filter": [
+            "main.js",
+            "package.json"
+          ]
+        }
       ],
       "extraFiles": [
         {
@@ -79,7 +125,7 @@
           ]
         },
         {
-          "from": "./electron/loading-screen/",
+          "from": "./dist/electron/loading-screen/",
           "to": "loading-screen/",
           "filter": [
             "**/*"
@@ -91,7 +137,30 @@
       "target": "tar.gz",
       "icon": "./apps/ame/src/assets/img/icns/aspect-model-editor-targetsize-192.icns",
       "files": [
-        "dist"
+        {
+          "from": "dist/electron",
+          "to": "electron",
+          "filter": [
+            "**/*",
+            "!main/**"
+          ]
+        },
+        {
+          "from": "dist",
+          "to": "dist",
+          "filter": [
+            "**/*",
+            "!electron/**"
+          ]
+        },
+        {
+          "from": "dist",
+          "to": ".",
+          "filter": [
+            "main.js",
+            "package.json"
+          ]
+        }
       ],
       "extraFiles": [
         {
@@ -116,7 +185,7 @@
           ]
         },
         {
-          "from": "./electron/loading-screen/",
+          "from": "./dist/electron/loading-screen/",
           "to": "loading-screen/",
           "filter": [
             "**/*"
@@ -130,25 +199,25 @@
   },
   "scripts": {
     "start": "nx serve",
-    "start:electron:mac": "pnpm run build:electron && electron . --dev",
-    "start:electron:linux": "pnpm run build:electron && electron . --dev",
-    "start:electron:win": "pnpm run build:electron && .\\node_modules\\electron\\dist\\electron.exe . --dev",
-    "start:electron:mac:prod": "pnpm run build:electron:prod && electron .",
-    "start:electron:linux:prod": "pnpm run build:electron:prod electron .",
-    "start:electron:win:prod": "pnpm run build:electron:prod .\\node_modules\\electron\\dist\\electron.exe .",
+    "start:electron:mac": "pnpm build:electron && electron . --dev",
+    "start:electron:linux": "pnpm build:electron && electron . --dev",
+    "start:electron:win": "pnpm build:electron && .\\node_modules\\electron\\dist\\electron.exe . --dev",
+    "start:electron:mac:prod": "pnpm build:electron:prod && electron .",
+    "start:electron:linux:prod": "pnpm build:electron:prod electron .",
+    "start:electron:win:prod": "pnpm build:electron:prod && .\\node_modules\\electron\\dist\\electron.exe .",
     "build": "nx build",
     "build:prod": "nx build --configuration=production",
     "build:stats": "nx build --configuration=production --stats-json",
-    "build:electron": "tsc -p tsconfig.electron.json && cp -R ./electron/loading-screen ./dist/electron/",
-    "build:electron:prod": "tsc -p tsconfig.electron.prod.json && pnpm run electron:minify && pnpm run electron:obfuscate && cp -R ./electron/loading-screen ./dist/electron/",
-    "build:win": "pnpm run build:electron && nx build && electron-builder build --win",
-    "build:mac": "pnpm run build:electron && nx build && electron-builder build --mac",
-    "build:linux": "pnpm run build:electron && nx build && electron-builder build --linux",
-    "build:win:prod": "pnpm run build:electron:prod && nx build --configuration=production && electron-builder build --win",
-    "build:mac:prod": "pnpm run build:electron:prod && nx build --configuration=production && electron-builder build --mac",
-    "build:linux:prod": "pnpm run build:electron:prod && nx build --configuration=production && electron-builder build --linux",
-    "electron:minify": "esbuild 'dist/electron/**/*.js' --minify --platform=node --outdir=dist/electron --legal-comments=none --target=node20",
-    "electron:obfuscate": "javascript-obfuscator dist/electron --output dist/electron --compact true --self-defending true --overwrite",
+    "build:electron": "tsc -p tsconfig.electron.json && shx cp -R ./electron/loading-screen ./dist/electron/",
+    "build:electron:prod": "tsc -p tsconfig.electron.prod.json && pnpm electron:minify && pnpm electron:obfuscate && shx mkdir -p ./dist/electron/loading-screen && shx cp ./electron/loading-screen/*.html ./dist/electron/loading-screen/",
+    "build:win": "pnpm build:electron && nx build && electron-builder build --win",
+    "build:mac": "pnpm build:electron && nx build && electron-builder build --mac",
+    "build:linux": "pnpm build:electron && nx build && electron-builder build --linux",
+    "build:win:prod": "pnpm build:electron:prod && nx build --configuration=production && electron-builder build --win",
+    "build:mac:prod": "pnpm build:electron:prod && nx build --configuration=production && electron-builder build --mac",
+    "build:linux:prod": "pnpm build:electron:prod && nx build --configuration=production && electron-builder build --linux",
+    "electron:minify": "esbuild dist/electron/**/*.js --minify --platform=node --outdir=dist/electron --legal-comments=none --target=node20 --allow-overwrite",
+    "electron:obfuscate": "javascript-obfuscator \"dist/electron\" --output \"dist/electron\" --compact true --self-defending false",
     "lint": "nx run-many --all --target=lint --exclude=ame-e2e",
     "lint:affected": "nx affected:lint --exclude ame-e2e",
     "test": "nx run-many --all --target=test --maxWorkers=1",
@@ -266,7 +335,7 @@
     "cypress": "^14.5.4",
     "cypress-file-upload": "^5.0.8",
     "cypress-real-events": "^1.13.0",
-    "electron": "39.2.3",
+    "electron": "39.8.5",
     "electron-builder": "^26.0.12",
     "esbuild": "^0.27.3",
     "eslint": "8.57.0",
@@ -298,6 +367,7 @@
     "prettier-plugin-organize-imports": "^4.1.0",
     "replace-in-files-cli": "^2.0.0",
     "rimraf": "^3.0.2",
+    "shx": "^0.4.0",
     "source-map-support": "^0.5.19",
     "start-server-and-test": "^2.0.1",
     "ts-jest": "29.4.4",

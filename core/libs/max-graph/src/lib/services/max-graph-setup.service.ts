@@ -213,7 +213,9 @@ export class MaxGraphSetupService {
     };
 
     // Necessary to display the minimap
-    new Outline(this.graph, document.getElementById('outline'));
+    const outlineElement = document.getElementById('outline') as HTMLDivElement;
+    new Outline(this.graph, outlineElement);
+    outlineElement.style.maxWidth = '300px';
   }
 
   private convertValueToString(cell: Cell): any {

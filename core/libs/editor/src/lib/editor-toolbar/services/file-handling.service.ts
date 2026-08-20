@@ -224,7 +224,7 @@ export class FileHandlingService {
       fromWorkspace: false,
     });
 
-    return this.loadWorkspaceModelsByNamespace(namespaceName, namespaceVersion).pipe(
+    return of(true).pipe(
       map(() => {
         this.sidebarService.sammElements.open();
 

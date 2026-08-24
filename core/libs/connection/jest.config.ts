@@ -25,7 +25,6 @@ module.exports = {
         stringifyContentPathRegex: '\\.(html|svg)$',
       },
     ],
-    '^.+\\.js$': 'babel-jest',
   },
   transformIgnorePatterns: ['node_modules/?!(.*\\.mjs$|@ngneat)'],
   snapshotSerializers: [

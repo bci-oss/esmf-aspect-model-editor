@@ -23,7 +23,9 @@ export class ModelElementParserPipe implements PipeTransform {
       Object.entries(sammElements).find(([key, value]) => {
         const isAbstract =
           (element instanceof DefaultProperty && element.isAbstract) || (element instanceof DefaultEntity && element.isAbstractEntity());
-        const isOfClass = element instanceof value.class;
+
+        const isNotAbstractType = !isAbstract && !value.type.includes('abstract');
+        const isOfClass = isNotAbstractType && element instanceof value.class;
 
         return isAbstract ? key.includes('abstract') && isOfClass : isOfClass;
       }) || (['', null] as any)

@@ -11,9 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-const esModules = ['@angular', '@ngrx', '@agm', 'ngx-bootstrap'].join('|');
-
-export default {
+module.exports = {
   displayName: 'shared',
   preset: '../../jest.preset.cjs',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],

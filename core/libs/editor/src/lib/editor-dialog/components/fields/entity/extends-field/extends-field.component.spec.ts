@@ -15,7 +15,7 @@ import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {MaxGraphService} from '@ame/max-graph';
 import {RdfService} from '@ame/rdf/services';
 import {NotificationsService, SearchService} from '@ame/shared';
-import {provideHttpClient} from '@angular/common/http';
+import {provideHttpClient, withXhr} from '@angular/common/http';
 import {provideHttpClientTesting} from '@angular/common/http/testing';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {FormGroup, ReactiveFormsModule} from '@angular/forms';
@@ -60,7 +60,7 @@ describe('EntityExtendsFieldComponent', () => {
     TestBed.configureTestingModule({
       imports: [MatFormFieldModule, MatAutocompleteModule, ReactiveFormsModule, MatInputModule, BrowserAnimationsModule],
       providers: [
-        provideHttpClient(),
+        provideHttpClient(withXhr()),
         provideHttpClientTesting(),
         MockProvider(TranslateService, {
           onTranslationChange: new Subject(),

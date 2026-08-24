@@ -22,7 +22,6 @@ import {first} from 'rxjs';
 import {FileHandlingService} from '../../services';
 
 @Component({
-  standalone: true,
   templateUrl: './text-model-loader-modal.component.html',
   styles: [
     `

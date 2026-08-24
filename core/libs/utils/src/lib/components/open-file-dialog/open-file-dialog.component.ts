@@ -19,7 +19,6 @@ import {TranslatePipe} from '@ngx-translate/core';
 
 @Component({
   templateUrl: './open-file-dialog.component.html',
-  standalone: true,
   imports: [MatDialogModule, MatButtonModule, TranslatePipe],
   styles: [
     `

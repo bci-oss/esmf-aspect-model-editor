@@ -65,3 +65,4 @@ junit.xml
 # nx
 core/.nx
 .nx
+migrations.json

@@ -34,7 +34,6 @@ const SIDEBAR_MIN_WIDTH = 480;
 const SIDEBAR_DEFAULT_DRAG_POSITION = {x: -SIDEBAR_MIN_WIDTH, y: 0};
 
 @Component({
-  standalone: true,
   selector: 'ame-editor-canvas',
   templateUrl: './editor-canvas.component.html',
   styleUrls: ['./editor-canvas.component.scss'],
@@ -161,9 +160,11 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
   }
 
   onSave(formData: FormGroup) {
-    this.selectedShapeForUpdate
-      ? this.elementModelService.updateElement(this.selectedShapeForUpdate, formData)
-      : console.info('Skip shape update because nothing is selected.');
+    if (this.selectedShapeForUpdate) {
+      this.elementModelService.updateElement(this.selectedShapeForUpdate, formData);
+    } else {
+      console.info('Skip shape update because nothing is selected.');
+    }
 
     this.resetSelectedShapeForUpdate();
   }

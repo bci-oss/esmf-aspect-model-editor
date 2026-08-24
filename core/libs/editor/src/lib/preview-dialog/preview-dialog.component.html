@@ -11,14 +11,14 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-<h2 mat-dialog-title>{{ title }}</h2>
+<h2 mat-dialog-title>{{ title() }}</h2>
 <button class="close-button" (click)="onClose()" mat-icon-button tabindex="-1">
   <mat-icon>close</mat-icon>
 </button>
 
 <mat-dialog-content>
   <mat-form-field appearance="outline">
-    <textarea [(ngModel)]="content" data-cy="dialogContent" spellcheck="false" matInput></textarea>
+    <textarea [ngModel]="content()" (ngModelChange)="content.set($event)" data-cy="dialogContent" spellcheck="false" matInput></textarea>
   </mat-form-field>
 </mat-dialog-content>
 

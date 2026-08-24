@@ -81,11 +81,9 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
 
   readonly separatorKeysCodes: number[] = [ENTER];
 
-  public visible = true;
-  public editable = true;
-  public removable = true;
+  public removable = signal(true);
   public hasComplexValues = signal(false);
-  public initialValues: Record<string, boolean> = {};
+  public initialValues = signal<Record<string, boolean>>({});
 
   public enumValues: WritableSignal<Array<Value | DefaultValue | DefaultEntityInstance>> = signal([]);
   public enumEntityValues = computed(() => this.enumValues().filter(v => v instanceof DefaultEntityInstance));
@@ -237,7 +235,10 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
     for (const value of this.enumValues()) {
       if (!(value instanceof DefaultValue)) continue;
 
-      this.initialValues[value.aspectModelUrn] = true;
+      this.initialValues.set({
+        ...this.initialValues(),
+        [value.aspectModelUrn]: true,
+      });
     }
   }
 

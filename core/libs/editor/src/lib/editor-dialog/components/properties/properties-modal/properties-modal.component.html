@@ -68,8 +68,8 @@
         </mat-cell>
       </ng-container>
 
-      <mat-header-row *matHeaderRowDef="headers"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: headers"></mat-row>
+      <mat-header-row *matHeaderRowDef="headers()"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: headers()"></mat-row>
     </mat-table>
   }
   <mat-paginator [pageSizeOptions]="[5, 10, 15, 20]" showFirstLastButtons aria-label="Select page of properties"></mat-paginator>

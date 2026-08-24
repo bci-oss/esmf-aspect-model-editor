@@ -15,10 +15,9 @@ import {LoadedFilesService} from '@ame/cache';
 import {MaxGraphService} from '@ame/max-graph';
 import {ElementIconComponent, ElementType, sammElements} from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
-import {Component, inject} from '@angular/core';
+import {Component, computed, inject} from '@angular/core';
 import {MatMiniFabButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
-import {Aspect} from '@esmf/aspect-model-loader';
 import {TranslatePipe} from '@ngx-translate/core';
 import {DraggableElementComponent} from '../draggable-element/draggable-element.component';
 
@@ -32,28 +31,16 @@ export class SidebarSAMMElementsComponent {
   private maxgraphService = inject(MaxGraphService);
   private loadedFiles = inject(LoadedFilesService);
 
+  protected hasAspect = this.loadedFiles.hasAspect;
+
   public sidebarService = inject(SidebarStateService);
   public sammElements = sammElements;
-  public elementsOrder: ElementType[] = [
-    'aspect',
-    'abstract-property',
-    'property',
-    'characteristic',
-    'abstract-entity',
-    'entity',
-    'unit',
-    'constraint',
-    'trait',
-    'operation',
-    'event',
-    'value',
-  ];
+
+  protected availableElements = computed(() =>
+    (Object.keys(sammElements) as ElementType[]).filter(type => type !== 'entityInstance' && (type !== 'aspect' || !this.hasAspect())),
+  );
 
   public get isEmptyModel(): boolean {
     return !this.maxgraphService.getAllCells()?.length;
-  }
-
-  public isAspectAvailable(): Aspect {
-    return this.loadedFiles.currentLoadedFile?.aspect;
   }
 }

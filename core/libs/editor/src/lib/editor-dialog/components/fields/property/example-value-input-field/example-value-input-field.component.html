@@ -21,7 +21,7 @@
 } @else {
   <mat-form-field
     [floatLabel]="displayControl.disabled ? 'always' : 'auto'"
-    [matTooltip]="this.hasComplexDataType ? 'exampleValue disabled for complex datatypes' : ''"
+    [matTooltip]="hasComplexDataType() ? 'exampleValue disabled for complex datatypes' : ''"
     appearance="fill"
   >
     <mat-label for="exampleValue">exampleValue</mat-label>

@@ -21,15 +21,13 @@
 </div>
 
 <div class="content">
-  @for (element of elementsOrder; track element) {
-    @if (!(element === 'aspect' && isAspectAvailable())) {
-      <ame-draggable-element [type]="element">
-        <ame-element
-          [type]="sammElements[element]"
-          [name]="sammElements[element].name"
-          [description]="sammElements[element].description | translate"
-        ></ame-element>
-      </ame-draggable-element>
-    }
+  @for (element of availableElements(); track element) {
+    <ame-draggable-element [type]="element">
+      <ame-element
+        [type]="sammElements[element]"
+        [name]="sammElements[element].name"
+        [description]="sammElements[element].description | translate"
+      ></ame-element>
+    </ame-draggable-element>
   }
 </div>

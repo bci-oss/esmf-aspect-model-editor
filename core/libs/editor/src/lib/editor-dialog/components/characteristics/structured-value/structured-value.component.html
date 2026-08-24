@@ -14,10 +14,10 @@
 <!-- Select field -->
 <mat-form-field appearance="fill">
   <mat-label for="deconstructionRule">Deconstruction rule name</mat-label>
-  <mat-select [value]="selectedRule || ''" data-cy="deconstruction-rule-select">
-    <mat-option (click)="customRuleActive = true; setCustomRule()" value="--custom-rule--">Custom Rule</mat-option>
-    @for (predefinedRule of predefinedRules; track predefinedRule) {
-      <mat-option [value]="predefinedRule.regex" (click)="customRuleActive = false; selectPredefinedRule(predefinedRule)">
+  <mat-select [value]="selectedRule() || ''" data-cy="deconstruction-rule-select">
+    <mat-option (click)="customRuleActive.set(true); setCustomRule()" value="--custom-rule--">Custom Rule</mat-option>
+    @for (predefinedRule of predefinedRules(); track predefinedRule) {
+      <mat-option [value]="predefinedRule.regex" (click)="customRuleActive.set(false); selectPredefinedRule(predefinedRule)">
         {{ predefinedRule.name }}
       </mat-option>
     }

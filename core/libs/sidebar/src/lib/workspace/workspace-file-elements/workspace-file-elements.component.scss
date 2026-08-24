@@ -93,10 +93,21 @@
   .show-elements {
     color: #007bc0;
     font-size: 12px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    display: inline;
 
     &:hover {
       text-decoration: underline;
-      cursor: pointer;
+    }
+
+    &:focus {
+      outline: 2px solid #007bc0;
+      outline-offset: 2px;
     }
   }
 

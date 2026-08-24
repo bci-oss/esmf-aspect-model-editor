@@ -12,7 +12,7 @@
  */
 
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
-import {Component, DestroyRef, inject, OnInit} from '@angular/core';
+import {Component, DestroyRef, inject, OnInit, signal} from '@angular/core';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatOptionModule} from '@angular/material/core';
@@ -44,7 +44,6 @@ export interface AsyncApi {
 }
 
 @Component({
-  standalone: true,
   selector: 'ame-generate-async-api',
   templateUrl: './generate-async-api.component.html',
   styleUrls: ['./generate-async-api.component.scss'],
@@ -71,8 +70,8 @@ export class GenerateAsyncApiComponent implements OnInit {
   private loadedFilesService = inject(LoadedFilesService);
 
   form: FormGroup;
-  languages: locale.ILocale[];
-  isGenerating = false;
+  languages = signal<locale.ILocale[]>([]);
+  isGenerating = signal(false);
 
   public get output(): FormControl {
     return this.form.get('output') as FormControl;
@@ -87,9 +86,9 @@ export class GenerateAsyncApiComponent implements OnInit {
   }
 
   private initializeForm(): void {
-    this.languages = this.languageService.getSammLanguageCodes().map(tag => locale.getByTag(tag));
+    this.languages.set(this.languageService.getSammLanguageCodes().map(tag => locale.getByTag(tag)));
     this.form = new FormGroup({
-      language: new FormControl(this.languages[0].tag),
+      language: new FormControl(this.languages()[0].tag),
       output: new FormControl('yaml'),
       applicationId: new FormControl(''),
       channelAddress: new FormControl('', Validators.pattern(/^(?:[a-zA-Z]+:\/\/|\/)?[^\s]*$/)),
@@ -99,7 +98,7 @@ export class GenerateAsyncApiComponent implements OnInit {
   }
 
   generateAsyncApiSpec(): void {
-    this.isGenerating = true;
+    this.isGenerating.set(true);
     const asyncApiSpec = this.form.value as AsyncApi;
     this.editorService
       .generateAsyncApiSpec(this.loadedFilesService.currentLoadedFile?.rdfModel, asyncApiSpec)
@@ -108,7 +107,7 @@ export class GenerateAsyncApiComponent implements OnInit {
         first(),
         map(data => this.handleGeneratedSpec(data, asyncApiSpec)),
         finalize(() => {
-          this.isGenerating = false;
+          this.isGenerating.set(false);
           this.dialogRef.close();
         }),
       )

@@ -14,7 +14,7 @@
 import {LoadedFilesService} from '@ame/cache';
 import {config} from '@ame/shared';
 import {NgClass} from '@angular/common';
-import {Component, inject} from '@angular/core';
+import {Component, inject, signal} from '@angular/core';
 import {FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle} from '@angular/material/dialog';
@@ -62,15 +62,15 @@ export class EntityInstanceModalComponent {
 
   public data: NewEntityInstanceDialogOptions = inject(MAT_DIALOG_DATA);
 
-  public title: string;
-
   public form: FormGroup;
   public entityValueName: FormControl;
 
-  public entity: DefaultEntity;
-  public entityValue: DefaultEntityInstance;
-  public enumeration: DefaultEnumeration;
-  public complexValues: DefaultEntity[] = []; // already existing complex values
+  public title = signal<string>(undefined);
+
+  public entity = signal<DefaultEntity>(undefined);
+  public entityValue = signal<DefaultEntityInstance>(undefined);
+  public enumeration = signal<DefaultEnumeration>(undefined);
+  public complexValues = signal<DefaultEntity[]>([]);
 
   readonly addTitle = 'Add new entity instance';
 
@@ -79,16 +79,16 @@ export class EntityInstanceModalComponent {
   }
 
   constructor() {
-    this.complexValues = this.data.complexValues;
-    this.enumeration = this.data.metaModel as DefaultEnumeration;
-    this.entity = this.data.dataType;
-    this.title = this.addTitle;
+    this.complexValues.set(this.data.complexValues);
+    this.enumeration.set(this.data.metaModel as DefaultEnumeration);
+    this.entity.set(this.data.dataType);
+    this.title.set(this.addTitle);
     this.entityValueName = new FormControl('', [
       Validators.required,
       EditorDialogValidators.noWhiteSpace,
       EditorDialogValidators.duplicateNameString(
         this.loadedFilesService.currentLoadedFile.cachedFile,
-        this.entity.aspectModelUrn.split('#')[0],
+        this.entity().aspectModelUrn.split('#')[0],
       ),
     ]);
     this.buildForm();
@@ -101,7 +101,7 @@ export class EntityInstanceModalComponent {
       newEntityValues: new FormControl([]),
     });
 
-    this.entity.properties.forEach((element: DefaultProperty) => this.propertiesForm.setControl(element.name, new FormArray([])));
+    this.entity().properties.forEach((element: DefaultProperty) => this.propertiesForm.setControl(element.name, new FormArray([])));
   }
 
   onSave(): void {
@@ -136,14 +136,14 @@ export class EntityInstanceModalComponent {
       name: this.entityValueName.value,
       aspectModelUrn: this.getAspectModelUrnFromName(this.entityValueName.value),
       metaModelVersion: config.currentSammVersion,
-      type: this.entity,
+      type: this.entity(),
     });
 
-    entityValue.addParent(this.enumeration);
+    entityValue.addParent(this.enumeration());
 
     const propertiesForm = this.form.get('properties');
 
-    this.entity.properties.forEach(propertyElement => {
+    this.entity().properties.forEach(propertyElement => {
       const propertyArray = propertiesForm.get(propertyElement.name) as FormArray;
 
       if (EntityInstanceUtil.isDefaultPropertyWithLangString(propertyElement)) {
@@ -171,6 +171,6 @@ export class EntityInstanceModalComponent {
   }
 
   isEntityValueNameAlreadyUsed(entityValueName: string): boolean {
-    return this.complexValues.some(value => value.name === entityValueName);
+    return this.complexValues().some(value => value.name === entityValueName);
   }
 }

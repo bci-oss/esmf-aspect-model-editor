@@ -14,7 +14,7 @@
 import {LoadedFilesService} from '@ame/cache';
 import {DataType, EditorDialogValidators, FormFieldHelper} from '@ame/editor';
 import {AsyncPipe, NgClass} from '@angular/common';
-import {ChangeDetectorRef, Component, DestroyRef, inject, input, OnChanges, SimpleChanges, viewChildren} from '@angular/core';
+import {ChangeDetectorRef, Component, DestroyRef, inject, input, OnChanges, signal, SimpleChanges, viewChildren} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, UntypedFormGroup} from '@angular/forms';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOptgroup, MatOption} from '@angular/material/autocomplete';
@@ -80,7 +80,7 @@ export class EntityInstanceModalTableComponent implements OnChanges {
   protected readonly formFieldHelper = FormFieldHelper;
   protected readonly dataType = DataType;
 
-  sources: EntityInstanceProperty<DefaultProperty>[] = [];
+  sources = signal<EntityInstanceProperty<DefaultProperty>[]>([]);
 
   filteredEntityValues$: {[key: string]: Observable<any[]>} = {};
   filteredLanguageValues$: {[key: string]: Observable<any[]>} = {};
@@ -96,7 +96,7 @@ export class EntityInstanceModalTableComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     const entity = this.entity();
     if ('entity' in changes && entity) {
-      this.sources = this.buildEntityValueArray();
+      this.sources.set(this.buildEntityValueArray());
 
       entity.properties.forEach((property: DefaultProperty) => {
         const propertyName = property.name;

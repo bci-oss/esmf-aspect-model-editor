@@ -131,7 +131,10 @@ export class FiltersService {
             for (const elementTree of filteredElements) {
               maxgraphRenderer.render(elementTree, null);
             }
-            this.injector.get(MaxGraphAttributeService).inCollapsedMode && maxgraphService.foldCells();
+
+            if (this.injector.get(MaxGraphAttributeService).inCollapsedMode) {
+              maxgraphService.foldCells();
+            }
           });
         }),
         switchMap(() => {

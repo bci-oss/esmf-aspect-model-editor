@@ -51,7 +51,7 @@ import {
 } from '@ame/connection';
 import {MaxGraphAttributeService, MaxGraphService, MaxGraphShapeOverlayService} from '@ame/max-graph';
 import {NotificationsService} from '@ame/shared';
-import {provideHttpClient} from '@angular/common/http';
+import {provideHttpClient, withXhr} from '@angular/common/http';
 import {provideHttpClientTesting} from '@angular/common/http/testing';
 import {TestBed} from '@angular/core/testing';
 import {
@@ -99,7 +99,7 @@ describe('Test Shape connector service', () => {
     TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot(), TranslatePipe],
       providers: [
-        provideHttpClient(),
+        provideHttpClient(withXhr()),
         provideHttpClientTesting(),
         ShapeConnectorService,
         {

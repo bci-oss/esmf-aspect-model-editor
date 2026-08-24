@@ -13,7 +13,7 @@
 import {MaxGraphHelper} from '@ame/max-graph';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {DataTypeService} from '@ame/shared';
-import {Component, inject, OnDestroy, OnInit} from '@angular/core';
+import {Component, inject, OnDestroy, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -29,7 +29,7 @@ import {InputFieldComponent} from '../../input-field.component';
 export class MaxValueInputFieldComponent extends InputFieldComponent<DefaultRangeConstraint> implements OnInit, OnDestroy {
   private dataTypeService = inject(DataTypeService);
 
-  public rangeConstraintDataType: Type;
+  public rangeConstraintDataType = signal<Type>(null);
 
   constructor() {
     super();
@@ -48,7 +48,7 @@ export class MaxValueInputFieldComponent extends InputFieldComponent<DefaultRang
         if (modelElement instanceof DefaultRangeConstraint) {
           this.metaModelElement = modelElement;
         }
-        this.rangeConstraintDataType = this.getCharacteristicTypeForConstraint(modelElement.name);
+        this.rangeConstraintDataType.set(this.getCharacteristicTypeForConstraint(modelElement.name));
         this.initForm();
       });
   }

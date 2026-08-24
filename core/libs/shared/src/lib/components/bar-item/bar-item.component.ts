@@ -15,7 +15,6 @@ import {Component, inject, input} from '@angular/core';
 import {MatRipple} from '@angular/material/core';
 
 @Component({
-  standalone: true,
   host: {
     '[class.disabled]': 'disabled()',
     '(mousedown)': 'onmousedown($event)',

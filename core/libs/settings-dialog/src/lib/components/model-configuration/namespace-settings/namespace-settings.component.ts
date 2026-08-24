@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, inject, OnInit} from '@angular/core';
+import {Component, inject, OnInit, signal} from '@angular/core';
 import {FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle} from '@angular/material/expansion';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -67,9 +67,10 @@ export class NamespaceSettingsComponent implements OnInit {
   private formService = inject(SettingsFormService);
 
   public form: FormGroup;
-  public columns: string[] = ['name', 'value', 'version'];
-  public panelOpenState = false;
-  public predefinedNamespaces: Array<{name?: string; value?: string; version?: string}> = [];
+
+  public columns = signal(['name', 'value', 'version']);
+  public panelOpenState = signal(false);
+  public predefinedNamespaces = signal(undefined);
 
   ngOnInit(): void {
     this.form = this.formService.getForm().get('namespaceConfiguration') as FormGroup;
@@ -79,9 +80,11 @@ export class NamespaceSettingsComponent implements OnInit {
   private initializePredefinedNamespaces(): void {
     const loadedRdfModel = this.formService.getLoadedRdfModel();
     const namespaces = loadedRdfModel ? loadedRdfModel.getNamespaces() : '';
-    this.predefinedNamespaces = Object.keys(namespaces)
-      .filter(key => this.isValidNamespaceKey(key, namespaces[key]))
-      .map(key => this.createNamespaceEntry(namespaces[key]));
+    this.predefinedNamespaces.set(
+      Object.keys(namespaces)
+        .filter(key => this.isValidNamespaceKey(key, namespaces[key]))
+        .map(key => this.createNamespaceEntry(namespaces[key])),
+    );
   }
 
   private isValidNamespaceKey(key: string, uri: string): boolean {

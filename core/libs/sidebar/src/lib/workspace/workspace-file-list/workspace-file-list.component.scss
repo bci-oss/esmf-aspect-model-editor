@@ -65,13 +65,25 @@
     padding-left: 16px;
     padding-right: 16px;
     gap: 5px;
-
-    &:hover {
-      cursor: pointer;
-    }
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    color: inherit;
 
     span {
       word-break: break-all;
+    }
+
+    &:focus {
+      outline: 2px solid #007bc0;
+      outline-offset: 2px;
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: none;
     }
   }
 
@@ -85,12 +97,19 @@
     padding-left: 35px;
     align-items: center;
     justify-content: space-between;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    position: relative;
 
     &:hover {
       background-color: #e1e1e1;
-      cursor: pointer;
 
-      button {
+      > button {
         display: inline-flex;
       }
     }
@@ -100,8 +119,10 @@
       cursor: default;
     }
 
-    &.outdated {
+    &.outdated,
+    &.errored {
       opacity: 0.75;
+
       &:hover {
         background-color: transparent;
         cursor: default;
@@ -111,18 +132,34 @@
     &.errored {
       color: var(--ame-error);
 
-      &:hover {
-        background-color: transparent;
-        cursor: default;
-      }
-
       .content mat-icon {
         color: var(--ame-error);
       }
     }
 
-    button {
+    // Innerer Button
+    > button {
       display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      pointer-events: auto;
+      z-index: 10;
+      position: relative;
+
+      &:focus {
+        outline: 2px solid #007bc0;
+        outline-offset: 2px;
+      }
+    }
+
+    &:focus {
+      outline: 2px solid #007bc0;
+      outline-offset: 2px;
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: none;
     }
 
     .content {
@@ -130,6 +167,7 @@
       align-items: center;
       gap: 5px;
       width: 80%;
+      pointer-events: none;
 
       span {
         font-size: 14px;

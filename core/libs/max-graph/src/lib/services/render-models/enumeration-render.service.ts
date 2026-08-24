@@ -120,7 +120,10 @@ export class EnumerationRenderService extends BaseRenderService {
     const toRemove = [];
     for (const edge of outGoingEdges) {
       const metaModel = MaxGraphHelper.getModelElement(edge.target);
-      metaModel instanceof DefaultProperty && toRemove.push(edge);
+
+      if (metaModel instanceof DefaultProperty) {
+        toRemove.push(edge);
+      }
     }
 
     this.maxgraphService.removeCells(toRemove);

@@ -87,7 +87,7 @@ export class DefaultValueInputFieldComponent extends InputFieldComponent<Default
     const defaultValue = this.metaModelElement.defaultValue;
 
     this.displayControl.setValue(defaultValue?.['name'] || defaultValue?.['value'] || '');
-    this.displayControl.value && this.displayControl.disable();
+    if (this.displayControl.value) this.displayControl.disable();
 
     this.parentForm().setControl(
       this.fieldName,

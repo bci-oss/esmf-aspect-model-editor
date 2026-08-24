@@ -14,7 +14,7 @@
 import {ShapeConnectorService} from '@ame/connection';
 import {FiltersService} from '@ame/loader-filters';
 import {useUpdater} from '@ame/utils';
-import {Injectable, inject} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {
   DefaultCharacteristic,
   DefaultCollection,
@@ -85,7 +85,10 @@ export class CharacteristicRenderService extends BaseRenderService {
     const toRemove = [];
     for (const edge of outGoingEdges) {
       const modelElement = MaxGraphHelper.getModelElement(edge.target);
-      modelElement instanceof DefaultValue && toRemove.push(edge);
+
+      if (modelElement instanceof DefaultValue) {
+        toRemove.push(edge);
+      }
     }
 
     this.maxgraphService.removeCells(toRemove);
@@ -96,7 +99,10 @@ export class CharacteristicRenderService extends BaseRenderService {
     const toRemove = [];
     for (const edge of outGoingEdges) {
       const metaModel = MaxGraphHelper.getModelElement(edge.target);
-      metaModel instanceof DefaultProperty && toRemove.push(edge);
+
+      if (metaModel instanceof DefaultProperty) {
+        toRemove.push(edge);
+      }
     }
 
     this.maxgraphService.removeCells(toRemove);

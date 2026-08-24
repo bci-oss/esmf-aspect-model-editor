@@ -17,7 +17,7 @@ import {ModelLoaderService} from '@ame/editor';
 import {MaxGraphService} from '@ame/max-graph';
 import {ElementIconComponent, ElementType, sammElements} from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
-import {ChangeDetectorRef, Component, effect, inject, signal} from '@angular/core';
+import {Component, effect, inject, signal} from '@angular/core';
 import {MatMiniFabButton} from '@angular/material/button';
 import {MatCheckbox} from '@angular/material/checkbox';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -52,16 +52,15 @@ import {DraggableElementComponent} from '../../draggable-element/draggable-eleme
 })
 export class WorkspaceFileElementsComponent {
   private maxgraphService = inject(MaxGraphService);
-  private changeDetector = inject(ChangeDetectorRef);
   private modelApiService = inject(ModelApiService);
   private modelLoaderService = inject(ModelLoaderService);
   private loadedFilesService = inject(LoadedFilesService);
 
   public sidebarService = inject(SidebarStateService);
 
-  public elements: Record<string, any> = {};
-  public searched: Record<string, any[]> = {};
-  public loadingElements = signal(false);
+  public readonly elements = signal<Record<string, any>>({});
+  public readonly searched = signal<Record<string, any[]>>({});
+  public readonly loadingElements = signal(false);
 
   public elementsOrder: ElementType[] = [
     'property',
@@ -76,35 +75,35 @@ export class WorkspaceFileElementsComponent {
     'event',
     'value',
   ];
-  public get selection() {
-    return this.sidebarService.selection.selection();
-  }
 
   private searchThrottle: NodeJS.Timeout;
 
   constructor() {
     effect(() => {
-      this.sidebarService.selection.selection();
-      if (this.selection) {
-        this.elements = {};
-        this.searched = {};
+      const selection = this.sidebarService.selection.selection();
+      if (selection) {
+        const newElements: Record<string, any> = {};
+        const newSearched: Record<string, any[]> = {};
 
         for (const element of this.elementsOrder) {
-          this.elements[element] = {
+          newElements[element] = {
             ...sammElements[element],
             elements: [],
             hidden: true,
             displayed: true,
           };
-          this.searched[element] = this.elements[element].elements;
+          newSearched[element] = newElements[element].elements;
         }
 
-        const namespaceFile = this.loadedFilesService.getFile(`${this.selection.namespace}:${this.selection.file}`);
+        this.elements.set(newElements);
+        this.searched.set(newSearched);
+
+        const namespaceFile = this.loadedFilesService.getFile(`${selection.namespace}:${selection.file}`);
 
         if (namespaceFile?.cachedFile.getAllElements().length) {
-          this.updateElements(this.loadedFilesService.getFile(`${this.selection.namespace}:${this.selection.file}`));
+          this.updateElements(this.loadedFilesService.getFile(`${selection.namespace}:${selection.file}`));
         } else {
-          this.requestFile(`${this.selection.namespace}:${this.selection.file}`, this.selection.aspectModelUrn);
+          this.requestFile(`${selection.namespace}:${selection.file}`, selection.aspectModelUrn);
         }
       }
     });
@@ -119,7 +118,14 @@ export class WorkspaceFileElementsComponent {
 
   public toggleFilter(event: MouseEvent, key: string) {
     event.stopPropagation();
-    this.elements[key].displayed = !this.elements[key].displayed;
+    const currentElements = this.elements();
+    this.elements.set({
+      ...currentElements,
+      [key]: {
+        ...currentElements[key],
+        displayed: !currentElements[key].displayed,
+      },
+    });
   }
 
   public search(event: KeyboardEvent) {
@@ -130,27 +136,32 @@ export class WorkspaceFileElementsComponent {
 
     this.searchThrottle = setTimeout(() => {
       const searchString = target.value.toLowerCase();
-      for (const key in this.elements) {
-        this.searched[key] = searchString
-          ? this.elements[key].elements.filter((element: NamedElement) => {
+      const currentElements = this.elements();
+      const newSearched: Record<string, any[]> = {};
+
+      for (const key in currentElements) {
+        newSearched[key] = searchString
+          ? currentElements[key].elements.filter((element: NamedElement) => {
               // @TODO Search for the language the application is set on
               return (
                 element.name.toLowerCase().includes(searchString) || element.getDescription('en')?.toLowerCase()?.includes(searchString)
               );
             })
-          : this.elements[key].elements;
+          : currentElements[key].elements;
       }
-      this.changeDetector.detectChanges();
+
+      this.searched.set(newSearched);
     }, 100);
   }
 
   private updateElements(file: NamespaceFile) {
     const cachedFile = file.cachedFile;
-    const sections = Object.values(this.elements);
+    const currentElements = this.elements();
+    const sections = Object.values(currentElements);
+
     for (const element of cachedFile.getAllElements()) {
       sections.find(e => element instanceof e.class && !element.isAnonymous())?.elements?.push?.(element);
     }
-    this.changeDetector.detectChanges();
   }
 
   private requestFile(absoluteName: string, aspectModelUrn: string) {
@@ -174,7 +185,7 @@ export class WorkspaceFileElementsComponent {
           this.updateElements(file);
           this.loadingElements.set(false);
         },
-        error: e => {
+        error: () => {
           this.loadingElements.set(false);
         },
       });

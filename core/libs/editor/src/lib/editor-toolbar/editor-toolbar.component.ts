@@ -17,7 +17,7 @@ import {MaxGraphService, MaxGraphShapeSelectorService} from '@ame/max-graph';
 import {ConfigurationService, Settings} from '@ame/settings-dialog';
 import {BindingsService, NotificationsService} from '@ame/shared';
 import {AsyncPipe, CommonModule} from '@angular/common';
-import {AfterViewInit, Component, DestroyRef, OnDestroy, OnInit, inject} from '@angular/core';
+import {AfterViewInit, Component, DestroyRef, inject, OnDestroy, OnInit} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatDialog} from '@angular/material/dialog';
 import {MatIconModule} from '@angular/material/icon';
@@ -32,7 +32,6 @@ import {EditorService} from '../editor.service';
 import {FileHandlingService} from './services';
 
 @Component({
-  standalone: true,
   selector: 'ame-editor-toolbar',
   templateUrl: './editor-toolbar.component.html',
   styleUrls: ['./editor-toolbar.component.scss'],
@@ -56,13 +55,8 @@ export class EditorToolbarComponent implements AfterViewInit, OnInit, OnDestroy 
   public isAllShapesExpanded$: Observable<boolean>;
   public settings$: Observable<Settings>;
 
-  public get isModelEmpty() {
-    return !this.maxgraphService.getAllCells()?.length;
-  }
-
-  public get selectedCells() {
-    return this.maxgraphShapeSelectorService.getSelectedCells();
-  }
+  protected isModelEmpty = this.maxgraphService.isModelEmpty;
+  protected selectedCells = this.maxgraphShapeSelectorService.selectedCells;
 
   private checkChangesInterval: NodeJS.Timeout;
 
@@ -109,7 +103,7 @@ export class EditorToolbarComponent implements AfterViewInit, OnInit, OnDestroy 
   }
 
   openConnectWithDialog() {
-    const [selectedCell] = this.selectedCells;
+    const [selectedCell] = this.selectedCells();
     if (!selectedCell) {
       this.notificationsService.error({
         title: 'No element selected',

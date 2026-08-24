@@ -20,7 +20,6 @@ import {Observable, forkJoin, of, switchMap, take} from 'rxjs';
 import {map} from 'rxjs/operators';
 
 @Component({
-  standalone: true,
   templateUrl: 'loading.component.html',
   styleUrls: ['loading.component.scss'],
   imports: [NgOptimizedImage],

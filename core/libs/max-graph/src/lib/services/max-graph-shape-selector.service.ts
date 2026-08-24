@@ -12,9 +12,9 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {inject, Injectable} from '@angular/core';
+import {inject, Injectable, NgZone, signal} from '@angular/core';
 import {DefaultConstraint, DefaultTrait} from '@esmf/aspect-model-loader';
-import {Cell} from '@maxgraph/core';
+import {Cell, InternalEvent} from '@maxgraph/core';
 import {MaxGraphAttributeService} from '.';
 import {MaxGraphHelper} from '../helpers';
 
@@ -22,6 +22,17 @@ import {MaxGraphHelper} from '../helpers';
 export class MaxGraphShapeSelectorService {
   private maxgraphAttributeService = inject(MaxGraphAttributeService);
   private loadedFiles = inject(LoadedFilesService);
+  private ngZone = inject(NgZone);
+
+  private selectedCellsSignal = signal<Cell[]>([]);
+
+  readonly selectedCells = this.selectedCellsSignal.asReadonly();
+
+  public initSelectionListener(): void {
+    this.maxgraphAttributeService.graph.getSelectionModel().addListener(InternalEvent.CHANGE, () => {
+      this.ngZone.run(() => this.selectedCellsSignal.set(this.getSelectedCells()));
+    });
+  }
 
   /**
    * @returns array of selected cells

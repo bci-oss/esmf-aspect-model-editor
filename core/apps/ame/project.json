@@ -8,6 +8,7 @@
     "build": {
       "executor": "@angular-devkit/build-angular:browser-esbuild",
       "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/apps/ame",
         "index": "apps/ame/src/index.html",
@@ -61,11 +62,12 @@
           "sourceMap": true,
           "namedChunks": true
         }
-      },
-      "defaultConfiguration": "production"
+      }
     },
     "serve": {
       "executor": "@nx/angular:dev-server",
+      "defaultConfiguration": "development",
+      "continuous": true,
       "configurations": {
         "production": {
           "buildTarget": "ame:build:production"
@@ -73,12 +75,11 @@
         "development": {
           "buildTarget": "ame:build:development"
         }
-      },
-      "defaultConfiguration": "development",
-      "continuous": true
+      }
     },
     "serve-coverage": {
       "executor": "ngx-build-plus:dev-server",
+      "defaultConfiguration": "development",
       "configurations": {
         "production": {
           "buildTarget": "ame:build:production"
@@ -86,8 +87,7 @@
         "development": {
           "buildTarget": "ame:build:development"
         }
-      },
-      "defaultConfiguration": "development"
+      }
     },
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",

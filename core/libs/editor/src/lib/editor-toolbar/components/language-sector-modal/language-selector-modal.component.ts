@@ -12,7 +12,7 @@
  */
 
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
-import {Component, inject} from '@angular/core';
+import {Component, inject, signal} from '@angular/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatOptionModule} from '@angular/material/core';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
@@ -23,7 +23,6 @@ import * as locale from 'locale-codes';
 import {MatButtonModule} from '@angular/material/button';
 
 @Component({
-  standalone: true,
   templateUrl: './language-selector-modal.component.html',
   imports: [MatButtonModule, MatDialogModule, TranslatePipe, MatSelectModule, MatOptionModule, ReactiveFormsModule],
 })
@@ -31,15 +30,15 @@ export class LanguageSelectorModalComponent {
   private dialogRef = inject(MatDialogRef<LanguageSelectorModalComponent>);
   private languageService = inject(SammLanguageSettingsService);
 
-  public languages: locale.ILocale[] = [];
+  public languages = signal<locale.ILocale[]>([]);
   public languageControl: FormControl;
 
   constructor() {
-    this.languages = this.languageService.getSammLanguageCodes().map(tag => locale.getByTag(tag));
-    this.languageControl = new FormControl(this.languages[0].tag);
+    this.languages.set(this.languageService.getSammLanguageCodes().map(tag => locale.getByTag(tag)));
+    this.languageControl = new FormControl(this.languages()[0].tag);
 
-    if (this.languages.length === 1) {
-      this.dialogRef.close(this.languages[0].tag);
+    if (this.languages().length === 1) {
+      this.dialogRef.close(this.languages()[0].tag);
     }
   }
 

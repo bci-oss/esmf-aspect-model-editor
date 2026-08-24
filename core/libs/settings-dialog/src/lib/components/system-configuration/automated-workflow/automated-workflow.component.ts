@@ -70,7 +70,11 @@ export class AutomatedWorkflowComponent implements OnInit {
     const valueChange$ = control.valueChanges.pipe(finalize(() => valueChange$.unsubscribe())).subscribe(enabled => {
       const relatedControl = this.form.get(relatedControlName);
       if (relatedControl) {
-        enabled ? relatedControl.enable() : relatedControl.disable();
+        if (enabled) {
+          relatedControl.enable();
+        } else {
+          relatedControl.disable();
+        }
       }
     });
   }

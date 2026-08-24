@@ -28,7 +28,7 @@
   }
 
   <mat-autocomplete class="characteristic-datatype-autocomplete" #auto="matAutocomplete">
-    @if (!entitiesDisabled && filteredEntityTypes$ | async; as filteredEntityTypes) {
+    @if (!entitiesDisabled() && filteredEntityTypes$ | async; as filteredEntityTypes) {
       <mat-optgroup label="Entities">
         @if (filteredEntityTypes.length === 0 && !getControl('dataType')?.errors) {
           <mat-option
@@ -44,7 +44,7 @@
           </mat-option>
         }
 
-        @for (dataType of filteredEntityTypes; track dataType) {
+        @for (dataType of filteredEntityTypes; track dataType.name) {
           <mat-option [value]="dataType.name" (onSelectionChange)="onSelectionChange('dataType', dataType.entity, $event)">
             <div class="ellipsis">
               <span>{{ dataType.name }}</span>
@@ -70,7 +70,7 @@
     @if (filteredDataTypes$ | async; as filteredDataTypes) {
       @if (filteredDataTypes?.length) {
         <mat-optgroup label="Types">
-          @for (dataType of filteredDataTypes; track dataType) {
+          @for (dataType of filteredDataTypes; track dataType.name) {
             <mat-option
               [value]="dataType.name"
               (onSelectionChange)="onSelectionChange('dataType', dataType, $event)"

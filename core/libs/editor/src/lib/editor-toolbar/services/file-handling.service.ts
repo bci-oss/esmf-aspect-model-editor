@@ -42,12 +42,12 @@ import {
 import {SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
 import {decodeText, readFile} from '@ame/utils';
-import {DestroyRef, Injectable, inject} from '@angular/core';
+import {DestroyRef, inject, Injectable} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {saveAs} from 'file-saver';
 import {BlankNode, NamedNode, Store} from 'n3';
-import {Observable, forkJoin, of, throwError} from 'rxjs';
+import {forkJoin, Observable, of, throwError} from 'rxjs';
 import {catchError, finalize, first, map, switchMap, tap} from 'rxjs/operators';
 import {environment} from '../../../../../../environments/environment';
 import {ConfirmDialogEnum} from '../../models/confirm-dialog.enum';
@@ -510,6 +510,7 @@ export class FileHandlingService {
     this.validateFile().pipe(takeUntilDestroyed(this.destroyRef), first()).subscribe();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   validateFile(callback?: Function) {
     const loadingScreenOptions: LoadingScreenOptions = {
       title: this.translate.language.NOTIFICATION_DIALOG?.VALIDATING,
@@ -644,7 +645,13 @@ export class FileHandlingService {
   private updateAffectedModels(models: RdfModel[], originalNamespace: string, newNamespace: string): Observable<RdfModel[]> {
     const requests = models.map(model => {
       const alias = model.getAliasByNamespace(`${originalNamespace}#`);
-      alias ? model.updatePrefix(alias, originalNamespace, newNamespace) : model.addPrefix('ext-namespace', `${newNamespace}#`);
+
+      if (alias) {
+        model.updatePrefix(alias, originalNamespace, newNamespace);
+      } else {
+        model.addPrefix('ext-namespace', `${newNamespace}#`);
+      }
+
       return this.modelSaverService.saveModel(model);
     });
     return requests.length ? forkJoin(requests) : of([]);
@@ -720,7 +727,7 @@ export class FileHandlingService {
   private loadNamespaceModels(namespace: string, modelsData: ModelData[]) {
     const workspaceModelsRequests = modelsData.map(modelData =>
       forkJoin([
-        of(`${namespace}:${modelData.model}`),
+        of(`${namespace}:${modelData.name}`),
         this.modelApiService.fetchAspectMetaModel(modelData.aspectModelUrn).pipe(map(model => model.content)),
       ]),
     );
@@ -750,8 +757,8 @@ export class FileHandlingService {
    * @returns - a list of files info
    */
   private buildFilesInfo(models: Record<string, RdfModel>, modelsData: ModelData[]) {
-    return modelsData.map(({aspectModelUrn, model}) => {
-      const absoluteName = `${aspectModelUrn.substring('urn:samm:'.length, aspectModelUrn.indexOf('#'))}:${model}`;
+    return modelsData.map(({aspectModelUrn, name}) => {
+      const absoluteName = `${aspectModelUrn.substring('urn:samm:'.length, aspectModelUrn.indexOf('#'))}:${name}`;
       const rdfModel = models[absoluteName];
       if (!rdfModel) console.error(`Unable to find a model by key "${absoluteName}"`);
 
@@ -770,7 +777,7 @@ export class FileHandlingService {
 
   isFileExistOnWorkspace(namespaceName: string, namespaceVersion: string, fileName: string): Observable<boolean> {
     return this.getAllWorkspaceModelsByNamespace(namespaceName, namespaceVersion).pipe(
-      map((models: ModelData[]) => models.some((model: ModelData) => model.model === fileName)),
+      map((models: ModelData[]) => models.some((model: ModelData) => model.name === fileName)),
     );
   }
 }

@@ -123,7 +123,9 @@ export class LanguageSettingsComponent implements OnInit {
   }
 
   removeLanguage(index: number): void {
-    this.formService.addLanguageToBeRemove(this.aspectModelFormArray.at(index).value.language.tag);
+    const tag = this.aspectModelFormArray.at(index).value.language.tag;
+    if (tag) this.formService.addLanguageToBeRemove(tag);
+
     this.aspectModelFormArray.removeAt(index);
     this.filteredOptions.splice(index, 1);
   }

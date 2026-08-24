@@ -58,13 +58,13 @@
 </form>
 
 <mat-accordion>
-  <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
+  <mat-expansion-panel (opened)="panelOpenState()" (closed)="!panelOpenState()">
     <mat-expansion-panel-header>
       <mat-panel-title>
         {{ 'SETTINGS_DIALOG.NAMESPACES.PREDEFINED_NAMESPACES' | translate }}
       </mat-panel-title>
     </mat-expansion-panel-header>
-    <table [dataSource]="predefinedNamespaces" mat-table>
+    <table [dataSource]="predefinedNamespaces()" mat-table>
       <caption></caption>
       <ng-container matColumnDef="name">
         <th id="name" *matHeaderCellDef mat-header-cell>{{ 'SETTINGS_DIALOG.NAMESPACES.NAME' | translate }}</th>
@@ -80,8 +80,8 @@
         <th id="version" *matHeaderCellDef mat-header-cell>{{ 'SETTINGS_DIALOG.NAMESPACES.VERSION' | translate }}</th>
         <td *matCellDef="let element" mat-cell>{{ element.version }}</td>
       </ng-container>
-      <tr *matHeaderRowDef="columns" mat-header-row></tr>
-      <tr *matRowDef="let row; columns: columns" mat-row></tr>
+      <tr *matHeaderRowDef="columns()" mat-header-row></tr>
+      <tr *matRowDef="let row; columns: columns()" mat-row></tr>
     </table>
   </mat-expansion-panel>
 </mat-accordion>

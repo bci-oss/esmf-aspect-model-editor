@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 import {RdfModelUtil} from '@ame/rdf/utils';
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -26,7 +26,7 @@ import {InputFieldComponent} from '../../input-field.component';
   imports: [MatFormFieldModule, MatLabel, MatSelect, MatOption, ReactiveFormsModule],
 })
 export class EncodingInputFieldComponent extends InputFieldComponent<DefaultEncodingConstraint> implements OnInit, OnDestroy {
-  public encodingList = [];
+  public encodingList = signal([]);
 
   constructor() {
     super();
@@ -42,7 +42,7 @@ export class EncodingInputFieldComponent extends InputFieldComponent<DefaultEnco
     this.getMetaModelData()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((modelElement: NamedElement) => {
-        this.encodingList = modelElement ? new Samm(modelElement.metaModelVersion).getEncodingList() : null;
+        this.encodingList.set(modelElement ? new Samm(modelElement.metaModelVersion).getEncodingList() : null);
         if (modelElement instanceof DefaultEncodingConstraint) {
           this.metaModelElement = modelElement;
         }

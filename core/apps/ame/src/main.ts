@@ -14,7 +14,7 @@
 import {AppComponent} from '@ame/app/app.component';
 import {APP_ROUTES} from '@ame/app/app.routes';
 import {APP_CONFIG, config} from '@ame/shared';
-import {provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
+import {provideHttpClient, withInterceptorsFromDi, withXhr} from '@angular/common/http';
 import {enableProdMode, importProvidersFrom} from '@angular/core';
 import {bootstrapApplication} from '@angular/platform-browser';
 import {provideAnimations} from '@angular/platform-browser/animations';
@@ -35,7 +35,7 @@ const bootstrap = () =>
   bootstrapApplication(AppComponent, {
     providers: [
       provideRouter(APP_ROUTES, withPreloading(PreloadAllModules)),
-      provideHttpClient(withInterceptorsFromDi()),
+      provideHttpClient(withXhr(), withInterceptorsFromDi()),
       provideAnimations(),
       importProvidersFrom(
         ToastrModule.forRoot(),

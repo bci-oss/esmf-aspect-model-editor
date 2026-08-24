@@ -116,7 +116,7 @@ export class EditorDialogValidators {
       : null;
   }
 
-  duplicateNameWithDifferentType(metaModelElement: NamedElement, modelType: Function): AsyncValidatorFn {
+  duplicateNameWithDifferentType(metaModelElement: NamedElement, modelType: any): AsyncValidatorFn {
     return (control: AbstractControl): Observable<ValidationErrors | null> => {
       const result = this.duplicateName(metaModelElement, false)(control);
 
@@ -191,6 +191,7 @@ export class EditorDialogValidators {
     let validUrl;
 
     try {
+      // eslint-disable-next-line no-constant-binary-expression
       validUrl = new URL(control.value) && control.value.includes('.');
     } catch {
       validUrl = false;

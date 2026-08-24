@@ -13,10 +13,10 @@
 <mat-form-field [floatLabel]="inputControl?.disabled ? 'always' : 'auto'" appearance="fill">
   <mat-label for="input">quantityKinds</mat-label>
   <mat-chip-grid #chipList [formControl]="chipListControl">
-    @for (input of quantityKindValues; track input) {
-      <mat-chip-row [disabled]="!editable" [removable]="editable" (removed)="remove(input)">
+    @for (input of quantityKindValues(); track input) {
+      <mat-chip-row [disabled]="!editable()" [removable]="editable()" (removed)="remove(input)">
         {{ input }}
-        @if (editable) {
+        @if (editable()) {
           <button matChipRemove data-cy="input">
             <mat-icon>cancel</mat-icon>
           </button>
@@ -28,8 +28,8 @@
       [formControl]="inputControl"
       [matAutocomplete]="auto"
       [matChipInputFor]="chipList"
-      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-      [placeholder]="editable ? 'Search quantity kinds...' : ''"
+      [matChipInputSeparatorKeyCodes]="separatorKeysCodes()"
+      [placeholder]="editable() ? 'Search quantity kinds...' : ''"
       matInput
       name="quantityKindValues"
       data-cy="quantityKindValues"

@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, inject, OnDestroy, OnInit} from '@angular/core';
+import {Component, inject, OnDestroy, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatButton} from '@angular/material/button';
@@ -41,12 +41,13 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
   private matDialog = inject(MatDialog);
 
   public deconstructionRule = '';
-  public selectedRule = customRule;
-  public customRuleActive = true;
   public groups: StructuredValueVanillaGroups[] = [];
   public splitters: StructuredValueVanillaGroups[] = [];
   public elements: (DefaultProperty | string)[] = [];
-  public predefinedRules: Array<{regex: string; name: string}>;
+
+  public selectedRule = signal(customRule);
+  public customRuleActive = signal(true);
+  public predefinedRules = signal<{regex: string; name: string}[]>([]);
 
   get hasGroupsError() {
     if (this.groups.length <= 0) {
@@ -55,7 +56,7 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
     const hasErrors = this.groups.some(group => !group.property);
     const controller = this.parentForm().get('elements');
 
-    hasErrors &&
+    if (hasErrors)
       this.parentForm()
         .get('elements')
         ?.setErrors({
@@ -67,10 +68,12 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
 
   constructor() {
     super();
-    this.predefinedRules = Object.entries(this.predefinedRulesService.rules).map(([key, value]) => ({
-      regex: key,
-      name: (value as any).name,
-    }));
+    this.predefinedRules.set(
+      Object.entries(this.predefinedRulesService.rules).map(([key, value]) => ({
+        regex: key,
+        name: (value as any).name,
+      })),
+    );
   }
 
   ngOnInit(): void {
@@ -90,10 +93,10 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
 
   initForm() {
     this.deconstructionRule = this.metaModelElement.deconstructionRule || '';
-    this.customRuleActive = !this.predefinedRulesService.rules[this.deconstructionRule];
+    this.customRuleActive.set(!this.predefinedRulesService.rules[this.deconstructionRule]);
     this.elements = [...(this.metaModelElement.elements || [])];
 
-    this.selectedRule = this.customRuleActive ? customRule : this.deconstructionRule;
+    this.selectedRule.set(this.customRuleActive ? customRule : this.deconstructionRule);
 
     this.parentForm().setControl(
       'deconstructionRule',
@@ -122,7 +125,7 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
     }
 
     this.handlePredefinedRegex();
-    this.selectedRule = selectedRule.regex;
+    this.selectedRule.set(selectedRule.regex);
     const deconstructionRuleControl = this.parentForm().get('deconstructionRule');
     deconstructionRuleControl?.setValue(selectedRule.regex);
     deconstructionRuleControl?.disable();
@@ -164,7 +167,7 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
       ?.valueChanges.pipe(debounceTime(500))
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((value: string) => {
-        this.selectedRule = this.predefinedRulesService.rules[value] ? value : customRule;
+        this.selectedRule.set(this.predefinedRulesService.rules[value] ? value : customRule);
         this.elements = this.parentForm().get('elements')?.value || this.elements;
         this.rebuildElements();
       });
@@ -251,7 +254,7 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
       // when '(' found outside a group, create a new group
       if (char === '(' && deconstructionRule[index - 1] !== '\\') {
         this.groups.push({start: index, end: null, text: char});
-        currentSplitter && (currentSplitter.end = index - 1);
+        if (currentSplitter) currentSplitter.end = index - 1;
         continue;
       }
 

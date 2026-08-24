@@ -13,8 +13,8 @@
 
 import {CacheUtils, LoadedFilesService} from '@ame/cache';
 import {MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
-import {SearchService, mxCellSearchOption, unitSearchOption} from '@ame/shared';
-import {DestroyRef, Directive, OnChanges, OnDestroy, SimpleChanges, inject, input} from '@angular/core';
+import {mxCellSearchOption, SearchService, unitSearchOption} from '@ame/shared';
+import {DestroyRef, Directive, inject, input, OnChanges, OnDestroy, SimpleChanges} from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
 import {
   DefaultCharacteristic,
@@ -27,7 +27,7 @@ import {
   Unit,
 } from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
-import {Observable, Subscription, of, startWith} from 'rxjs';
+import {Observable, of, startWith, Subscription} from 'rxjs';
 import {filter, map, tap} from 'rxjs/operators';
 import {EditorModelService} from '../../editor-model.service';
 import {PreviousFormDataSnapshot} from '../../interfaces';
@@ -100,7 +100,7 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
 
   ngOnDestroy() {
     this.cleanSubscriptions();
-    this.resetFormOnDestroy && this.resetForm();
+    if (this.resetFormOnDestroy) this.resetForm();
   }
 
   getControl(path: string | string[]): FormControl {
@@ -357,7 +357,11 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
 
       const charElementSubscription = charElementControl.valueChanges.subscribe(value => {
         this.frozen = !!value;
-        this.frozen ? currentControl().disable() : currentControl().enable();
+        if (this.frozen) {
+          currentControl().disable();
+        } else {
+          currentControl().enable();
+        }
       });
 
       subscription.unsubscribe();

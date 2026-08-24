@@ -19,7 +19,6 @@ import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {TranslatePipe} from '@ngx-translate/core';
 
 @Component({
-  standalone: true,
   selector: 'ame-loading-screen',
   templateUrl: './loading-screen.component.html',
   styleUrls: ['./loading-screen.component.scss'],

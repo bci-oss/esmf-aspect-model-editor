@@ -22,7 +22,7 @@
     data-cy="characteristicName"
     panelClass="characteristic-items-panel"
   >
-    @for (group of listCharacteristicGroup | keyvalue; track group) {
+    @for (group of listCharacteristicGroup() | keyvalue; track group.key) {
       <mat-optgroup [label]="group.key" [disabled]="group['disabled']">
         @for (characteristicName of group.value; track characteristicName) {
           <mat-option [value]="characteristicName" [attr.cy-value]="characteristicName">

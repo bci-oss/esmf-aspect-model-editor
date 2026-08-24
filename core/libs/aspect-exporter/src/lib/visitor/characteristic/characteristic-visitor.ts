@@ -300,13 +300,13 @@ export class CharacteristicVisitor extends BaseVisitor<DefaultCharacteristic> {
         this.rdfNodeService.update(parent, {exampleValue: null});
       }
 
-      parent instanceof DefaultProperty &&
-        !parent.isPredefined &&
+      if (parent instanceof DefaultProperty && !parent.isPredefined) {
         this.removeOldAndAddNewReference(
           DataFactory.namedNode(parent.aspectModelUrn),
           parent instanceof DefaultCollection ? this.sammC.ElementCharacteristicProperty() : this.samm.CharacteristicProperty(),
           DataFactory.namedNode(characteristic.aspectModelUrn),
         );
+      }
     }
 
     return characteristic.aspectModelUrn;

@@ -19,7 +19,7 @@ export type LoadingScreenOptions = Omit<MatDialogConfig, 'data'> & {
   title?: string;
   content?: string;
   hasCloseButton?: boolean;
-  closeButtonAction?: Function;
+  closeButtonAction?: () => void;
 };
 
 @Injectable({providedIn: 'root'})

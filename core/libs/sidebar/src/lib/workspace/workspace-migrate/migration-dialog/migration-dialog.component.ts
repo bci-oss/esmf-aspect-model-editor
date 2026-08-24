@@ -28,7 +28,6 @@ import {finalize, switchMap, tap} from 'rxjs';
   selector: 'ame-migration-dialog',
   templateUrl: './migration-dialog.component.html',
   styleUrls: ['./migration-dialog.component.scss'],
-  standalone: true,
   imports: [
     MatDialogTitle,
     MatDialogContent,
@@ -56,10 +55,10 @@ export class MigrationDialogComponent {
   public loading = signal(false);
 
   public migrationStatus = signal<MigrationStatus>(undefined);
-  public increaseNamespaceVersion = true;
+  public increaseNamespaceVersion = signal(true);
 
   changeVersionCheck(event: MatCheckboxChange) {
-    this.increaseNamespaceVersion = event.checked;
+    this.increaseNamespaceVersion.set(event.checked);
   }
 
   migrate(): void {
@@ -67,7 +66,7 @@ export class MigrationDialogComponent {
     this.migratorApiService
       .createBackup()
       .pipe(
-        switchMap(() => this.migratorApiService.migrateWorkspace(this.increaseNamespaceVersion)),
+        switchMap(() => this.migratorApiService.migrateWorkspace(this.increaseNamespaceVersion())),
         tap((migrationStatus: MigrationStatus) => this.migrationStatus.set(migrationStatus)),
         finalize(() => this.loading.set(false)),
       )

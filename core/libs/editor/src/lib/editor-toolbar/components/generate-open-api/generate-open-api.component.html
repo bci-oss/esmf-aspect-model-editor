@@ -18,12 +18,12 @@
   </button>
 
   <mat-dialog-content>
-    @if (!isGenerating) {
+    @if (!isGenerating()) {
       <p>{{ 'GENERATE_OPENAPI_SPEC_DIALOG.CONFIGURATION' | translate }}</p>
       <mat-form-field appearance="fill">
         <mat-label>{{ 'GENERATE_OPENAPI_SPEC_DIALOG.LANGUAGE' | translate }}</mat-label>
         <mat-select [formControl]="getControl('language')" data-cy="tbLanguageButton">
-          @for (language of languages; track language) {
+          @for (language of languages(); track language) {
             <mat-option [value]="language.tag">{{ language.name }}</mat-option>
           }
         </mat-select>
@@ -108,22 +108,22 @@
           </h1>
           <p class="dialog__description">
             {{ 'GENERATE_OPENAPI_SPEC_DIALOG.UPLOAD_FILE_DESCRIPTION' | translate: {output: output.value.toUpperCase()} }}
-            <a [href]="linkToSpecification" target="_blank" rel="noopener">{{ output.value.toUpperCase() }} file properties</a>
+            <a [href]="linkToSpecification()" target="_blank" rel="noopener">{{ output.value.toUpperCase() }} file properties</a>
           </p>
 
-          @if (uploadedFile) {
+          @if (uploadedFile()) {
             <div class="dialog__file-info">
               <h2 data-cy="uploadFileTitle">
                 {{ 'GENERATE_OPENAPI_SPEC_DIALOG.UPLOADED_FILE_TITLE' | translate: {output: output.value.toUpperCase()} }}:
               </h2>
-              <span class="dialog__file-name">{{ uploadedFile.name }}</span>
+              <span class="dialog__file-name">{{ uploadedFile().name }}</span>
               <button (click)="removeUploadedFile()" mat-icon-button>
                 <mat-icon data-cy="removeUploadFile">remove_circle</mat-icon>
               </button>
             </div>
           }
 
-          @if (!uploadedFile) {
+          @if (!uploadedFile()) {
             <div
               class="dialog__upload-content"
               #dropArea
@@ -152,7 +152,7 @@
             }
           }
 
-          @if (uploadedFile) {
+          @if (uploadedFile()) {
             <div class="margin-bottom-10">
               <mat-accordion>
                 <mat-expansion-panel>

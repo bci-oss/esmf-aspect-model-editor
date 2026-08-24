@@ -22,7 +22,7 @@
         <br />
         {{ 'SAMM_MIGRATION.WORKSPACE_MIGRATION_DIALOG.MIGRATE_INSTRUCTION' | translate }}
       </p>
-      <mat-checkbox [checked]="increaseNamespaceVersion" (change)="changeVersionCheck($event)">
+      <mat-checkbox [checked]="increaseNamespaceVersion()" (change)="changeVersionCheck($event)">
         {{ 'SAMM_MIGRATION.WORKSPACE_MIGRATION_DIALOG.VERSION_AUTO_UPGRADE' | translate }}
       </mat-checkbox>
       <p class="version-description">
@@ -41,7 +41,7 @@
             <mat-icon>warning</mat-icon>
             {{ 'SAMM_MIGRATION.MIGRATION_DIALOG.WARNING_CONTENT' | translate }}
           </div>
-          <label>Migration Message:</label>
+          <span>Migration Message:</span>
           <ul>
             @for (error of migrationStatus().errors; track error) {
               <li>{{ error }}</li>

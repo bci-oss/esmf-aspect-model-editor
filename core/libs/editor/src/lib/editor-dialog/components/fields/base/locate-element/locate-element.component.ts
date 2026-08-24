@@ -12,7 +12,7 @@
  */
 
 import {MaxGraphService} from '@ame/max-graph';
-import {Component, DestroyRef, inject} from '@angular/core';
+import {Component, DestroyRef, inject, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatIconButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
@@ -23,7 +23,7 @@ import {EditorModelService} from '../../../../editor-model.service';
 
 @Component({
   selector: 'ame-locate-element',
-  template: `@if (element) {
+  template: `@if (element()) {
     <button
       [matTooltip]="'EDITOR_CANVAS.SHAPE_SETTING.LOCATE_ELEMENT' | translate"
       (click)="locate()"
@@ -47,16 +47,16 @@ export class LocateElementComponent {
   public metaModelDialogService = inject(EditorModelService);
   private maxgraphService = inject(MaxGraphService);
 
-  public element: NamedElement;
+  public element = signal<NamedElement>(undefined);
 
   constructor() {
     this.metaModelDialogService
       .getMetaModelElement()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(element => (this.element = element));
+      .subscribe(element => this.element.set(element));
   }
 
   locate() {
-    if (this.element) this.maxgraphService.navigateToCellByUrn(this.element.aspectModelUrn);
+    if (this.element()) this.maxgraphService.navigateToCellByUrn(this.element().aspectModelUrn);
   }
 }

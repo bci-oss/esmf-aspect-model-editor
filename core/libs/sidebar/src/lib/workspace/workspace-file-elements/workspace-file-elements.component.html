@@ -10,7 +10,7 @@
   ~
   ~ SPDX-License-Identifier: MPL-2.0
   -->
-@if (selection; as currentSelection) {
+@if (sidebarService.selection.selection(); as currentSelection) {
   <div class="header">
     <h2 [matTooltip]="currentSelection?.file" [matTooltipDisabled]="currentSelection?.file?.length < 28" matTooltipPosition="right">
       {{ currentSelection?.file }}
@@ -40,19 +40,27 @@
   } @else {
     <div class="elements">
       @for (key of elementsOrder; track key) {
-        @if (searched[key].length && elements[key].displayed) {
-          <div class="elements__section" [class.expanded]="!elements[key].hidden">
+        @if (searched()[key].length && elements()[key].displayed) {
+          <div class="elements__section" [class.expanded]="!elements()[key].hidden">
             <div class="elements__header">
-              <h3 class="elements__title">{{ elements[key].plural }} ({{ searched[key].length }})</h3>
-              @if (searched[key].length > 4) {
-                <span class="show-elements" (click)="elements[key].hidden = !elements[key].hidden">{{
-                  elements[key].hidden ? ('SIDEBAR.ACTIONS.SHOW_ALL' | translate) : ('SIDEBAR.ACTIONS.SHOW_LESS' | translate)
-                }}</span>
+              <h3 class="elements__title">{{ elements()[key].plural }} ({{ searched()[key].length }})</h3>
+              @if (searched()[key].length > 4) {
+                <button
+                  class="show-elements"
+                  [attr.aria-expanded]="!elements()[key].hidden"
+                  (click)="elements()[key].hidden = !elements()[key].hidden"
+                  (keyup.enter)="elements()[key].hidden = !elements()[key].hidden"
+                  (keyup.space)="elements()[key].hidden = !elements()[key].hidden"
+                  type="button"
+                  aria-label="Toggle show elements"
+                >
+                  {{ elements()[key].hidden ? ('SIDEBAR.ACTIONS.SHOW_ALL' | translate) : ('SIDEBAR.ACTIONS.SHOW_LESS' | translate) }}
+                </button>
               }
             </div>
 
             <ng-container>
-              @for (element of elements[key].hidden ? searched[key].slice(0, 5) : searched[key]; track element.aspectModelUrn) {
+              @for (element of elements()[key].hidden ? searched()[key].slice(0, 5) : searched()[key]; track element.aspectModelUrn) {
                 <ame-draggable-element
                   class="element"
                   [class.disabled]="elementImported(element)"
@@ -77,9 +85,9 @@
 
   <mat-menu class="filter-menu" #filter>
     @for (key of elementsOrder; track key) {
-      @if (searched[key].length) {
-        <mat-checkbox class="mat-menu-item" [checked]="elements[key].displayed" (click)="toggleFilter($event, key)" labelPosition="before"
-          >{{ elements[key].plural }}
+      @if (searched()[key].length) {
+        <mat-checkbox class="mat-menu-item" [checked]="elements()[key].displayed" (click)="toggleFilter($event, key)" labelPosition="before"
+          >{{ elements()[key].plural }}
         </mat-checkbox>
       }
     }

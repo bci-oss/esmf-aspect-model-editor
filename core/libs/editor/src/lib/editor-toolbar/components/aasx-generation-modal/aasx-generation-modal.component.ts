@@ -14,7 +14,7 @@
 import {ModelApiService} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
 import {RdfService} from '@ame/rdf/services';
-import {Component, DestroyRef, inject} from '@angular/core';
+import {Component, DestroyRef, inject, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
@@ -29,7 +29,6 @@ import {saveAs} from 'file-saver';
 import {finalize, first, tap} from 'rxjs';
 
 @Component({
-  standalone: true,
   templateUrl: 'aasx-generation-modal.component.html',
   styleUrls: ['aasx-generation-modal.component.scss'],
   imports: [
@@ -52,10 +51,10 @@ export class AASXGenerationModalComponent {
   private loadedFilesService = inject(LoadedFilesService);
 
   control = new FormControl('aasx');
-  isGenerating = false;
+  isGenerating = signal(false);
 
   generate() {
-    this.isGenerating = true;
+    this.isGenerating.set(true);
     const currentFile = this.loadedFilesService.currentLoadedFile;
     const rdfModel = this.rdfService.serializeModel(currentFile.rdfModel);
     const sourceLocation = currentFile.rdfModel.getSourceLocation();
@@ -75,7 +74,7 @@ export class AASXGenerationModalComponent {
           saveAs(file, fileName);
         }),
         finalize(() => {
-          this.isGenerating = false;
+          this.isGenerating.set(false);
           this.dialogRef.close();
         }),
       )

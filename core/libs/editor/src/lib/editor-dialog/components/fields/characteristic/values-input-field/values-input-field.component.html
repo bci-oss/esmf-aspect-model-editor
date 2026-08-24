@@ -18,13 +18,13 @@
       @for (value of enumValues(); track value) {
         <mat-chip-row
           [class.is-value]="!!value?.['name']"
-          [editable]="!initialValues[value?.['aspectModelUrn'] || '']"
-          [removable]="removable"
+          [editable]="!initialValues()[value?.['aspectModelUrn'] || '']"
+          [removable]="removable()"
           (edited)="editValue(value, $event)"
           (removed)="remove(value); onEnumChange()"
         >
           <span>{{ value?.['name'] || value?.['value'] }}</span>
-          @if (!initialValues[value?.['aspectModelUrn'] || '']) {
+          @if (!initialValues()[value?.['aspectModelUrn'] || '']) {
             <button matChipEdit>
               <mat-icon>edit</mat-icon>
             </button>

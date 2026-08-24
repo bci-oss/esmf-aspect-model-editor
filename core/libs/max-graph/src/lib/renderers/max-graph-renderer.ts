@@ -57,7 +57,10 @@ export class MaxGraphRenderer implements ModelRenderer<Cell, Cell> {
   render(elementTree: ModelTree<NamedElement>, parent: Cell, geometry?: ShapeConfiguration['geometry']): Cell {
     const wasVisited = this.visitedElements.includes(elementTree.element);
     const item: Cell = this.renderElement(elementTree, parent, geometry);
-    !wasVisited && this.visitedElements.push(elementTree.element);
+
+    if (!wasVisited) {
+      this.visitedElements.push(elementTree.element);
+    }
 
     if (wasVisited) {
       // In case the element was visited -> don't visit its lower attributes since they were already visited previously
@@ -94,7 +97,11 @@ export class MaxGraphRenderer implements ModelRenderer<Cell, Cell> {
     const entity = node.element;
     if (this.shapes.get(entity.aspectModelUrn)) {
       const cellTmp = this.shapes.get(entity.aspectModelUrn);
-      parent && this.maxgraphService.assignToParent(cellTmp, parent, node.fromParentArrow);
+
+      if (parent) {
+        this.maxgraphService.assignToParent(cellTmp, parent, node.fromParentArrow);
+      }
+
       return undefined;
     }
 

@@ -27,7 +27,6 @@ import {RdfModel} from '@esmf/aspect-model-loader';
 import {finalize} from 'rxjs/operators';
 
 @Component({
-  standalone: true,
   templateUrl: './rename-model.component.html',
   styleUrls: ['./rename-model.component.scss'],
   imports: [

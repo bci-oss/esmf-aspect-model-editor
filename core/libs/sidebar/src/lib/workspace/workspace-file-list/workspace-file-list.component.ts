@@ -18,7 +18,7 @@ import {ElectronSignals, ElectronSignalsService, NotificationsService} from '@am
 import {FileStatus, SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
 import {KeyValuePipe} from '@angular/common';
-import {ChangeDetectorRef, Component, NgZone, effect, inject} from '@angular/core';
+import {ChangeDetectorRef, Component, effect, inject, NgZone, signal} from '@angular/core';
 import {MatMiniFabButton} from '@angular/material/button';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
@@ -61,11 +61,12 @@ export class WorkspaceFileListComponent {
   private ngZone = inject(NgZone);
 
   public sidebarService = inject(SidebarStateService);
-  public menuSelection: {namespace: string; file: FileStatus} = null;
-  public foldedStatus = false;
-  public searched: Record<string, FileStatus[]> = {};
-  public folded: Record<string, boolean> = {};
-  public searchString = '';
+
+  public readonly menuSelection = signal<{namespace: string; file: FileStatus} | null>(null);
+  public readonly foldedStatus = signal(false);
+  public readonly searched = signal<Record<string, FileStatus[]>>({});
+  public readonly folded = signal<Record<string, boolean>>({});
+  public readonly searchString = signal('');
 
   public get namespaces() {
     return this.sidebarService.namespacesState.namespaces();
@@ -80,40 +81,60 @@ export class WorkspaceFileListComponent {
   constructor() {
     effect(() => {
       const namespaces = this.sidebarService.namespacesState.namespaces();
+      const currentFolded = this.foldedStatus();
+
+      const newSearched: Record<string, FileStatus[]> = {};
+      const newFolded: Record<string, boolean> = {};
 
       for (const namespace in namespaces) {
-        this.searched[namespace] = namespaces[namespace];
-        this.folded[namespace] = this.foldedStatus;
+        newSearched[namespace] = namespaces[namespace];
+        newFolded[namespace] = currentFolded;
       }
+
+      this.searched.set(newSearched);
+      this.folded.set(newFolded);
     });
   }
 
   public toggleFold() {
-    this.foldedStatus = !this.foldedStatus;
-    for (const namespace in this.folded) {
-      this.folded[namespace] = this.foldedStatus;
+    const newFoldedStatus = !this.foldedStatus();
+    this.foldedStatus.set(newFoldedStatus);
+
+    const currentFolded = this.folded();
+    const newFolded: Record<string, boolean> = {};
+
+    for (const namespace in currentFolded) {
+      newFolded[namespace] = newFoldedStatus;
     }
+
+    this.folded.set(newFolded);
   }
 
   public search($event: KeyboardEvent) {
     const target = $event.target as HTMLInputElement;
-    this.searchString = target.value.toLowerCase();
+    const newSearchString = target.value.toLowerCase();
+    this.searchString.set(newSearchString);
 
     if (this.searchThrottle) {
       clearInterval(this.searchThrottle);
     }
 
     this.searchThrottle = setTimeout(() => {
-      for (const namespace in this.namespaces) {
-        if (namespace.toLowerCase().includes(this.searchString)) {
-          this.searched[namespace] = this.namespaces[namespace];
+      const namespaces = this.namespaces;
+      const newSearched: Record<string, FileStatus[]> = {};
+
+      for (const namespace in namespaces) {
+        if (namespace.toLowerCase().includes(newSearchString)) {
+          newSearched[namespace] = namespaces[namespace];
           continue;
         }
 
-        this.searched[namespace] = this.searchString
-          ? this.namespaces[namespace].filter(file => file.name.toLowerCase().includes(this.searchString))
-          : this.namespaces[namespace];
+        newSearched[namespace] = newSearchString
+          ? namespaces[namespace].filter(file => file.name.toLowerCase().includes(newSearchString))
+          : namespaces[namespace];
       }
+
+      this.searched.set(newSearched);
     }, 100);
   }
 
@@ -139,12 +160,19 @@ export class WorkspaceFileListComponent {
   }
 
   public isOpenable() {
-    const {namespace, file} = this.menuSelection;
+    const selection = this.menuSelection();
+    if (!selection) return false;
+
+    const {namespace, file} = selection;
     return !(this.sidebarService.isCurrentFile(namespace, file.name) || file.outdated || file.errored);
   }
 
   public loadInNewWindow() {
-    const {namespace, file} = this.menuSelection;
+    const selection = this.menuSelection();
+    if (!selection) return;
+
+    const {namespace, file} = selection;
+
     if (file.outdated || file.errored) {
       return;
     }
@@ -156,7 +184,7 @@ export class WorkspaceFileListComponent {
       aspectModelUrn: file.aspectModelUrn,
     });
 
-    this.menuSelection = null;
+    this.menuSelection.set(null);
   }
 
   public isLoadDisabled() {
@@ -164,12 +192,18 @@ export class WorkspaceFileListComponent {
   }
 
   public isDeleteDisabled() {
-    const {namespace, file} = this.menuSelection;
+    const selection = this.menuSelection();
+    if (!selection) return true;
+
+    const {namespace, file} = selection;
     return this.sidebarService.isCurrentFile(namespace, file.name);
   }
 
   public openFile() {
-    const {namespace, file} = this.menuSelection;
+    const selection = this.menuSelection();
+    if (!selection) return;
+
+    const {namespace, file} = selection;
     const absoluteFileName = `${namespace}:${file.name}`;
 
     if (file.outdated || file.errored) {
@@ -195,8 +229,12 @@ export class WorkspaceFileListComponent {
   }
 
   public deleteFile() {
-    const {namespace, file} = this.menuSelection;
+    const selection = this.menuSelection();
+    if (!selection) return;
+
+    const {namespace, file} = selection;
     const aspectModelFileName = `${namespace}:${file.name}`;
+
     this.confirmDialogService
       .open({
         phrases: [
@@ -207,7 +245,7 @@ export class WorkspaceFileListComponent {
       })
       .subscribe(confirm => {
         if (confirm !== ConfirmDialogEnum.cancel) {
-          this.modelApiService.deleteAspectModel(this.menuSelection.file.aspectModelUrn).subscribe(() => {
+          this.modelApiService.deleteAspectModel(selection.file.aspectModelUrn).subscribe(() => {
             this.sidebarService.workspace.refresh();
             this.electronSignalsService.call('requestRefreshWorkspaces');
           });
@@ -218,36 +256,25 @@ export class WorkspaceFileListComponent {
   }
 
   public copyNamespace() {
-    navigator.clipboard.writeText(`${this.menuSelection.namespace}/${this.menuSelection.file.name}`);
+    const selection = this.menuSelection();
+    if (!selection) return;
+
+    navigator.clipboard.writeText(`${selection.namespace}/${selection.file.name}`);
   }
 
   public prepare(namespace: string, file: FileStatus) {
-    this.menuSelection = {namespace, file};
+    this.menuSelection.set({namespace, file});
   }
 
   public sortNamespaces(namespaces: {key: string; value: any}[]) {
     return namespaces.sort((n1, n2) => (n1.key >= n2.key ? 1 : -1));
   }
 
-  public isCurrentFile(key: string, file: FileStatus): string {
-    return this.ngZone.run(() => {
-      if (file.outdated) {
-        return this.translate.translateService.instant('TOOLTIPS.OUTDATED_FILE', {sammVersion: file.sammVersion});
-      }
-
-      if (file.errored) {
-        return file.sammVersion === 'unknown'
-          ? 'Detected unknown SAMM version'
-          : file.missingDependencies.length
-            ? 'Missing dependencies ' + file.missingDependencies.join('\n')
-            : this.translate.language.TOOLTIPS.ERRORED_FILE;
-      }
-
-      if (file.loaded) {
-        return this.translate.language.TOOLTIPS.CURRENT_FILE;
-      }
-
-      return '';
+  public toggleNamespaceFold(namespaceKey: string) {
+    const currentFolded = this.folded();
+    this.folded.set({
+      ...currentFolded,
+      [namespaceKey]: !currentFolded[namespaceKey],
     });
   }
 }

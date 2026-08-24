@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Robert Bosch Manufacturing Solutions GmbH
+ * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
  *
  * See the AUTHORS file(s) distributed with this work for
  * additional information regarding authorship.
@@ -78,8 +78,12 @@ export function propertyFactory(initProps: BaseInitProps) {
 
     if (samm.property().equals(quad.predicate)) {
       const [, name] = quad.object.value.split('#');
-      name && (baseProperties.name = name);
-      name && (baseProperties.aspectModelUrn = quad.object.value);
+
+      if (name) {
+        baseProperties.name = name;
+        baseProperties.aspectModelUrn = quad.object.value;
+      }
+
       propertyQuads = [
         ...rdfModel.store.getQuads(quad.object, null, null, null),
         ...rdfModel.store.getQuads(quad.subject, null, null, null),

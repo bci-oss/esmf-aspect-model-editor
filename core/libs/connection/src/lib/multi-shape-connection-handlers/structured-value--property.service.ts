@@ -14,7 +14,7 @@
 import {MaxGraphAttributeService, MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {NotificationsService} from '@ame/shared';
-import {Injectable, inject} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {DefaultProperty, DefaultStructuredValue} from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
 import {MultiShapeConnector} from '../models';
@@ -64,10 +64,12 @@ export class StructuredValueCharacteristicPropertyConnectionHandler implements M
     const isStartsWithDelimiter = typeof parentMetaModel.elements[0] === 'string';
     const isEndsWithDelimiter = typeof parentMetaModel.elements[parentMetaModel.elements.length - 1] === 'string';
 
-    isStartsWithDelimiter
-      ? parentMetaModel.elements.unshift(childMetaModel)
-      : isEndsWithDelimiter
-        ? parentMetaModel.elements.push(childMetaModel)
-        : undefined;
+    if (isStartsWithDelimiter) {
+      parentMetaModel.elements.unshift(childMetaModel);
+    } else {
+      if (isEndsWithDelimiter) {
+        parentMetaModel.elements.push(childMetaModel);
+      }
+    }
   }
 }

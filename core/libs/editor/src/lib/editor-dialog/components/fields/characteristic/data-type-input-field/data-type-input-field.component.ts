@@ -16,7 +16,7 @@ import {RdfService} from '@ame/rdf/services';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {config, DataTypeService, ElementIconComponent} from '@ame/shared';
 import {AsyncPipe} from '@angular/common';
-import {Component, inject, OnDestroy, OnInit} from '@angular/core';
+import {Component, inject, OnDestroy, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatAutocomplete, MatAutocompleteTrigger} from '@angular/material/autocomplete';
@@ -74,9 +74,9 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
   public elementCharacteristicControl: FormControl;
   public elementCharacteristicDisplayControl: FormControl;
 
-  public entitiesDisabled = false;
-
   public isDisabled = false;
+
+  public entitiesDisabled = signal(false);
 
   constructor() {
     super();
@@ -88,7 +88,7 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.setDataTypeControl();
-        this.entitiesDisabled = this.metaModelElement instanceof DefaultStructuredValue || this.hasStructuredValueAsGrandParent();
+        this.entitiesDisabled.set(this.metaModelElement instanceof DefaultStructuredValue || this.hasStructuredValueAsGrandParent());
       });
 
     this.enableWhenEmpty(() => this.dataTypeControl, 'elementCharacteristic');
@@ -138,7 +138,7 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
     this.dataTypeEntityControl = this.parentForm().get('dataTypeEntity') as FormControl;
 
     this.initFilteredDataTypes();
-    this.filteredEntityTypes$ = this.initFilteredEntities(this.dataTypeControl, this.entitiesDisabled);
+    this.filteredEntityTypes$ = this.initFilteredEntities(this.dataTypeControl, this.entitiesDisabled());
   }
 
   onSelectionChange(fieldPath: string, newValue: Type, event: MatOptionSelectionChange) {

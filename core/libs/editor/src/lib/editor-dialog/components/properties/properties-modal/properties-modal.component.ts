@@ -13,7 +13,7 @@
 
 import {CacheUtils, LoadedFilesService} from '@ame/cache';
 import {NgClass} from '@angular/common';
-import {AfterViewInit, Component, inject, OnInit, viewChild} from '@angular/core';
+import {AfterViewInit, Component, inject, OnInit, signal, viewChild} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatCheckbox} from '@angular/material/checkbox';
@@ -99,9 +99,10 @@ export class PropertiesModalComponent implements OnInit, AfterViewInit {
   public form: FormGroup;
   public keys: string[] = [];
 
-  public headers = [];
   public standardHeaders = ['name', 'optional', 'payloadName'];
   public enumerationEntityHeaders = ['name', 'optional', 'notInPayload', 'payloadName'];
+
+  public headers = signal(['name', 'optional', 'payloadName']);
   public dataSource: MatTableDataSource<PropertyStatus>;
 
   readonly paginator = viewChild(MatPaginator);
@@ -162,12 +163,12 @@ export class PropertiesModalComponent implements OnInit, AfterViewInit {
       this.form.disable();
     }
 
-    this.headers = this.standardHeaders;
+    this.headers.set(this.standardHeaders);
     if (this.data.metaModelElement instanceof DefaultEntity) {
       const entityValues = CacheUtils.getCachedElements(this.loadedFilesService.currentLoadedFile.cachedFile, DefaultEntityInstance);
       entityValues.forEach((entityValue: DefaultEntityInstance) => {
         if (entityValue.type.aspectModelUrn === this.data.metaModelElement.aspectModelUrn) {
-          this.headers = this.enumerationEntityHeaders;
+          this.headers.set(this.enumerationEntityHeaders);
         }
       });
     }

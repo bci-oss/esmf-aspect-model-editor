@@ -166,7 +166,7 @@ export class ModelApiService {
             map(model => model.content),
             map(
               aspectMetaModel =>
-                new FileContentModel(modelData.model, modelData.aspectModelUrn, modelData.version, modelData.existing, aspectMetaModel),
+                new FileContentModel(modelData.name, modelData.aspectModelUrn, modelData.version, modelData.existing, aspectMetaModel),
             ),
           ),
         );

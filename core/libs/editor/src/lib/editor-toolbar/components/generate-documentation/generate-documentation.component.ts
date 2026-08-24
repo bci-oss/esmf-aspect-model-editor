@@ -14,13 +14,13 @@
 import {ModelApiService} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
-import {Component, DestroyRef, inject} from '@angular/core';
+import {Component, DestroyRef, inject, signal} from '@angular/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {TranslatePipe} from '@ngx-translate/core';
 import {saveAs} from 'file-saver';
 import * as locale from 'locale-codes';
-import {Observable, from, map, throwError} from 'rxjs';
+import {from, map, Observable, throwError} from 'rxjs';
 import {catchError, finalize, first} from 'rxjs/operators';
 import {EditorService} from '../../../editor.service';
 
@@ -35,7 +35,6 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSelectModule} from '@angular/material/select';
 
 @Component({
-  standalone: true,
   selector: 'ame-generate-documentation',
   templateUrl: './generate-documentation.component.html',
   styleUrls: ['./generate-documentation.component.scss'],
@@ -62,28 +61,28 @@ export class GenerateDocumentationComponent {
 
   private browserService = inject(BrowserService);
 
-  public languages: locale.ILocale[] = [];
   public languageControl: FormControl;
-  public isGenerating = false;
+  public languages = signal<locale.ILocale[]>([]);
+  public isGenerating = signal(false);
 
   private get currentFile() {
     return this.loadedFiles.currentLoadedFile;
   }
 
   constructor() {
-    this.languages = this.languageService.getSammLanguageCodes().map(tag => locale.getByTag(tag));
-    this.languageControl = new FormControl(this.languages[0].tag);
+    this.languages.set(this.languageService.getSammLanguageCodes().map(tag => locale.getByTag(tag)));
+    this.languageControl = new FormControl(this.languages()[0].tag);
   }
 
   openDocumentation(): void {
-    this.isGenerating = true;
+    this.isGenerating.set(true);
 
     this.generateDocumentation(this.editorService.getSerializedModel(), this.languageControl.value)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         first(),
         finalize(() => {
-          this.isGenerating = false;
+          this.isGenerating.set(false);
           this.dialogRef.close();
         }),
       )
@@ -91,7 +90,7 @@ export class GenerateDocumentationComponent {
   }
 
   downloadDocumentation(): void {
-    this.isGenerating = true;
+    this.isGenerating.set(true);
 
     this.modelApiService
       .generateDocumentation(
@@ -113,7 +112,7 @@ export class GenerateDocumentationComponent {
           ),
         ),
         finalize(() => {
-          this.isGenerating = false;
+          this.isGenerating.set(false);
           this.dialogRef.close();
         }),
       )

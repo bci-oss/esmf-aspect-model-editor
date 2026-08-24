@@ -13,7 +13,7 @@
 
 @if (form()) {
   <div class="source" [formGroup]="propertiesForm">
-    @for (source of sources; track source) {
+    @for (source of sources(); track source) {
       <ng-container [formArrayName]="source[0].name">
         <mat-divider class="source__divider"></mat-divider>
         <div class="source__title">

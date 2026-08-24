@@ -3,7 +3,7 @@ import {MaxGraphAttributeService, MaxGraphService, MaxGraphShapeOverlayService} 
 import {ModelSavingTrackerService, NotificationsService, SearchService} from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
-import {provideHttpClient} from '@angular/common/http';
+import {provideHttpClient, withXhr} from '@angular/common/http';
 import {provideHttpClientTesting} from '@angular/common/http/testing';
 import {signal} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
@@ -36,7 +36,7 @@ describe('Files search', () => {
     await TestBed.configureTestingModule({
       imports: [FilesSearchComponent, FormsModule, MatFormFieldModule, MatInputModule, MatDialogModule, BrowserAnimationsModule],
       providers: [
-        provideHttpClient(),
+        provideHttpClient(withXhr()),
         provideHttpClientTesting(),
         MockProvider(MatDialogRef),
         MockProvider(MaxGraphService),
@@ -98,7 +98,7 @@ describe('Files search', () => {
   it('should parse files correctly', () => {
     component.parseFiles(namespaces as any);
 
-    expect(component.searchableFiles).toEqual([
+    expect(component.searchableFiles()).toEqual([
       {file: 'AspectDefault.ttl', namespace: 'org.eclipse.examples:1.0.0'},
       {file: 'SharedModel.ttl', namespace: 'org.eclipse.examples:1.0.0'},
     ]);
@@ -107,7 +107,7 @@ describe('Files search', () => {
   it('should have mat option if there are namespaces with files', () => {
     jest.spyOn(component, 'openFile');
 
-    component.searchableFiles = files;
+    component.searchableFiles.set(files);
     fixture.detectChanges();
     const autocomplete = fixture.debugElement.query(By.css('mat-autocomplete'));
     expect(autocomplete).toBeTruthy();

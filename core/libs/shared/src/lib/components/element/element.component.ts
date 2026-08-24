@@ -12,7 +12,7 @@
  */
 
 import {CommonModule} from '@angular/common';
-import {Component, inject, input, OnChanges} from '@angular/core';
+import {Component, effect, inject, input, signal} from '@angular/core';
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltip, MatTooltipModule} from '@angular/material/tooltip';
 import {ElementSymbols, ElementType} from '../../model';
@@ -23,7 +23,6 @@ interface ElementInfo {
 }
 
 @Component({
-  standalone: true,
   selector: 'ame-element',
   templateUrl: './element.component.html',
   styleUrls: ['./element.component.scss'],
@@ -33,7 +32,7 @@ interface ElementInfo {
   hostDirectives: [MatTooltip],
   imports: [CommonModule, MatTooltipModule, MatIconModule],
 })
-export class ElementIconComponent implements OnChanges {
+export class ElementIconComponent {
   readonly type = input.required<ElementInfo>();
   readonly size = input<'small' | 'medium' | 'large'>('large');
   readonly name = input('');
@@ -44,15 +43,18 @@ export class ElementIconComponent implements OnChanges {
   private matTooltip = inject(MatTooltip);
 
   public isNewValue = input(false);
-  public className = '';
+  public className = signal('');
 
-  ngOnChanges(): void {
-    const type = this.type();
-    if (type) {
-      this.className = `${type.type.toLowerCase()} ame-${this.size()}`;
-    }
+  constructor() {
+    effect(() => {
+      const type = this.type();
 
-    this.matTooltip.message = `${this.isNewValue() ? 'New ' : ''}${type.type === 'text' ? 'Simple value' : 'Element'}`;
-    this.matTooltip.position = 'before';
+      if (type) {
+        this.className.set(`${type.type.toLowerCase()} ame-${this.size()}`);
+      }
+
+      this.matTooltip.message = `${this.isNewValue() ? 'New ' : ''}${type.type === 'text' ? 'Simple value' : 'Element'}`;
+      this.matTooltip.position = 'before';
+    });
   }
 }

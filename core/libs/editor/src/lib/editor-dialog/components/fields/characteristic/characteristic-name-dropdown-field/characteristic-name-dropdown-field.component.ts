@@ -18,7 +18,7 @@ import {ModelService} from '@ame/rdf/services';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {ElementCreatorService} from '@ame/shared';
 import {KeyValuePipe} from '@angular/common';
-import {Component, DestroyRef, inject, OnInit, output} from '@angular/core';
+import {Component, DestroyRef, inject, OnInit, output, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormsModule} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -64,9 +64,10 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
   public languageSettings = inject(SammLanguageSettingsService);
   public loadedFilesService = inject(LoadedFilesService);
 
-  public listCharacteristics: Map<string, Function> = new Map();
-  public listCharacteristicGroup: Map<string, Array<string>> = new Map();
+  public listCharacteristics: Map<string, () => DefaultCharacteristic> = new Map();
   public units: Array<Unit> = [];
+
+  public listCharacteristicGroup = signal<Map<string, Array<string>>>(new Map());
 
   readonly selectedCharacteristic = output<CharacteristicClassType>();
 
@@ -118,8 +119,12 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
 
   private initListCharacteristics(): void {
     if (this.listCharacteristics.size <= 0) {
-      this.listCharacteristicGroup.set('Classes', this.createCharacteristicClassesList());
-      this.listCharacteristicGroup.set('Instances', this.createCharacteristicInstancesList());
+      this.listCharacteristicGroup.set(
+        new Map([
+          ['Classes', this.createCharacteristicClassesList()],
+          ['Instances', this.createCharacteristicInstancesList()],
+        ]),
+      );
     }
   }
 
@@ -212,7 +217,7 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
     }
   }
 
-  private getMetaModelElementTypeWhenChange(createInstanceFunction: Function) {
+  private getMetaModelElementTypeWhenChange(createInstanceFunction: () => DefaultCharacteristic) {
     const modelElementType = createInstanceFunction();
     if (modelElementType.aspectModelUrn === this.selectedMetaModelElement.aspectModelUrn) {
       this.metaModelElement = this.selectedMetaModelElement;

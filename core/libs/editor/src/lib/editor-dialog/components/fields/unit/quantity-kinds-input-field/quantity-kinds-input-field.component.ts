@@ -13,7 +13,7 @@
 
 import {ENTER} from '@angular/cdk/keycodes';
 import {AsyncPipe} from '@angular/common';
-import {Component, OnInit, viewChild} from '@angular/core';
+import {Component, OnInit, signal, viewChild} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOptgroup, MatOption} from '@angular/material/autocomplete';
@@ -22,7 +22,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInput, MatLabel} from '@angular/material/input';
 import {DefaultQuantityKind, DefaultUnit} from '@esmf/aspect-model-loader';
-import {Observable, map} from 'rxjs';
+import {map, Observable} from 'rxjs';
 import {InputFieldComponent} from '../../input-field.component';
 
 declare const sammUDefinition: any;
@@ -50,14 +50,15 @@ declare const sammUDefinition: any;
 })
 export class QuantityKindsInputFieldComponent extends InputFieldComponent<DefaultUnit> implements OnInit {
   readonly inputValue = viewChild<any>('input');
-  readonly separatorKeysCodes: number[] = [ENTER];
+
+  private supportedQuantityKinds = [];
 
   public filteredQuantityKinds$: Observable<any[]>;
-  public supportedQuantityKinds = [];
   public inputControl: FormControl;
-  public selectable = true;
-  public editable = true;
-  public quantityKindValues: Array<string>;
+
+  readonly separatorKeysCodes = signal([ENTER]);
+  public editable = signal(true);
+  public quantityKindValues = signal<Array<string>>([]);
 
   get chipListControl(): FormControl {
     return this.parentForm().get('quantityKindsChipList') as FormControl;
@@ -68,16 +69,16 @@ export class QuantityKindsInputFieldComponent extends InputFieldComponent<Defaul
     this.getMetaModelData()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
-        this.quantityKindValues = [];
+        this.quantityKindValues.set([]);
         this.setInputControl();
       });
   }
 
   setInputControl() {
-    this.editable = !this.metaModelDialogService.isReadOnly();
-    this.quantityKindValues = [
+    this.editable.set(!this.metaModelDialogService.isReadOnly());
+    this.quantityKindValues.set([
       ...((this.metaModelElement?.quantityKinds?.map(value => (value instanceof DefaultQuantityKind ? value.name : value)) as any) || []),
-    ];
+    ]);
 
     this.inputControl = new FormControl({
       value: '',
@@ -108,16 +109,16 @@ export class QuantityKindsInputFieldComponent extends InputFieldComponent<Defaul
     this.inputControl.reset();
     this.inputControl.markAllAsTouched();
 
-    this.quantityKindValues.push(newValue);
-    this.parentForm().get('quantityKindsChipList').setValue(this.quantityKindValues);
+    this.quantityKindValues.update(values => [...values, newValue]);
+    this.parentForm().get('quantityKindsChipList').setValue(this.quantityKindValues());
   }
 
   remove(value: string) {
-    const index = this.quantityKindValues.indexOf(value);
+    const index = this.quantityKindValues().indexOf(value);
 
     if (index >= 0) {
-      this.quantityKindValues.splice(index, 1);
-      this.parentForm().get('quantityKindsChipList').setValue(this.quantityKindValues);
+      this.quantityKindValues().splice(index, 1);
+      this.parentForm().get('quantityKindsChipList').setValue(this.quantityKindValues());
     }
   }
 }

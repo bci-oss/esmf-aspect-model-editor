@@ -11,7 +11,7 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-<h3 mat-dialog-title>{{ title }}</h3>
+<h3 mat-dialog-title>{{ title() }}</h3>
 
 <button class="close-button" (click)="onClose()" mat-icon-button tabindex="-1">
   <mat-icon>close</mat-icon>
@@ -44,7 +44,7 @@
       }
     </mat-form-field>
 
-    <ame-entity-instance-modal-table [form]="form" [entity]="entity" [entityValue]="entityValue" [enumeration]="enumeration" />
+    <ame-entity-instance-modal-table [form]="form" [entity]="entity()" [entityValue]="entityValue()" [enumeration]="enumeration()" />
   </mat-dialog-content>
 
   <mat-dialog-actions class="sticky-dialog-actions" align="end">

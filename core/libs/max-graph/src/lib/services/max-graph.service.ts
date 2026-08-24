@@ -15,9 +15,9 @@ import {CacheUtils, LoadedFilesService} from '@ame/cache';
 import {FILTER_ATTRIBUTES, ModelTree} from '@ame/loader-filters';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {NotificationsService, overlayGeometry} from '@ame/shared';
-import {inject, Injectable} from '@angular/core';
+import {computed, inject, Injectable, NgZone, signal} from '@angular/core';
 import {DefaultCharacteristic, DefaultEntityInstance, DefaultEnumeration, NamedElement} from '@esmf/aspect-model-loader';
-import {Cell, CellStyle, Graph} from '@maxgraph/core';
+import {Cell, CellStyle, Graph, InternalEvent} from '@maxgraph/core';
 import {environment} from 'environments/environment';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {MaxGraphGeometryProviderService, MaxGraphSetupService} from '.';
@@ -44,9 +44,9 @@ export class MaxGraphService {
   private maxgraphAttributeService = inject(MaxGraphAttributeService);
   private notificationsService = inject(NotificationsService);
   private themeService = inject(ThemeService);
+  private ngZone = inject(NgZone);
   public maxgraphShapeSelectorService = inject(MaxGraphShapeSelectorService);
 
-  // private document: Document;
   private nextCellCoordinates: {x: number; y: number} = null;
 
   public firstTimeFold = true;
@@ -57,6 +57,10 @@ export class MaxGraphService {
   };
 
   public graphInitialized$ = new BehaviorSubject(false);
+
+  private cellsCountSignal = signal(0);
+
+  readonly isModelEmpty = computed(() => this.cellsCountSignal() === 0);
 
   get currentCachedFile() {
     return this.loadedFiles.currentLoadedFile.cachedFile;
@@ -75,9 +79,19 @@ export class MaxGraphService {
     this.themeService.setGraph(this.graph);
     this.graphInitialized$.next(true);
 
+    this.initCellsCountListener();
+    this.maxgraphShapeSelectorService.initSelectionListener();
+
     Cell.prototype.clone = function () {
       return this;
     };
+  }
+
+  private initCellsCountListener(): void {
+    const updateCount = () => this.cellsCountSignal.set(this.getAllCells()?.length ?? 0);
+    updateCount();
+    this.graph.addListener(InternalEvent.CELLS_ADDED, () => this.ngZone.run(updateCount));
+    this.graph.addListener(InternalEvent.CELLS_REMOVED, () => this.ngZone.run(updateCount));
   }
 
   setCoordinatesForNextCellRender(x: number, y: number) {
@@ -104,7 +118,7 @@ export class MaxGraphService {
    * (without transaction isolation).  Therefore, if you want to combine any number of changes into a single un-doable change,
    * you should group any two or more API calls that modify the graph model between beginUpdate and endUpdate
    */
-  updateGraph(updateFunction: Function): Observable<boolean> {
+  updateGraph(updateFunction: () => void): Observable<boolean> {
     const subject = new Subject<boolean>();
     this.graph.model.beginUpdate();
     try {
@@ -181,7 +195,11 @@ export class MaxGraphService {
       this.maxgraphShapeOverlayService.addTopShapeOverlay(modelShape);
     }
     this.graph.labelChanged(modelShape, MaxGraphHelper.createPropertiesLabel(modelShape), null);
-    this.maxgraphAttributeService.inCollapsedMode && this.foldCell(modelShape);
+
+    if (this.maxgraphAttributeService.inCollapsedMode) {
+      this.foldCell(modelShape);
+    }
+
     return modelShape;
   }
 
@@ -395,9 +413,11 @@ export class MaxGraphService {
     const visibleCell = restoreScrollPosition ? this.getVisibleCells()[0] : undefined;
     const visibleCellCoordinates = restoreScrollPosition ? this.getCellCoordinates(visibleCell, this.graph) : undefined;
 
-    this.configurationService.getSettings().enableHierarchicalLayout
-      ? MaxGraphHelper.setHierarchicalLayout(this.graph, this.maxgraphAttributeService.inCollapsedMode)
-      : MaxGraphHelper.setCompactTreeLayout(this.graph, this.maxgraphAttributeService.inCollapsedMode);
+    if (this.configurationService.getSettings().enableHierarchicalLayout) {
+      MaxGraphHelper.setHierarchicalLayout(this.graph, this.maxgraphAttributeService.inCollapsedMode);
+    } else {
+      MaxGraphHelper.setCompactTreeLayout(this.graph, this.maxgraphAttributeService.inCollapsedMode);
+    }
 
     if (!restoreScrollPosition) return;
 
@@ -420,9 +440,11 @@ export class MaxGraphService {
     const initialY = cell.geometry.y;
     const formattedCells = [];
     if (this.graph.getDefaultParent().children !== undefined) {
-      this.configurationService.getSettings().enableHierarchicalLayout
-        ? MaxGraphHelper.setHierarchicalLayout(this.graph, this.maxgraphAttributeService.inCollapsedMode, cell)
-        : MaxGraphHelper.setCompactTreeLayout(this.graph, this.maxgraphAttributeService.inCollapsedMode, cell);
+      if (this.configurationService.getSettings().enableHierarchicalLayout) {
+        MaxGraphHelper.setHierarchicalLayout(this.graph, this.maxgraphAttributeService.inCollapsedMode, cell);
+      } else {
+        MaxGraphHelper.setCompactTreeLayout(this.graph, this.maxgraphAttributeService.inCollapsedMode, cell);
+      }
     }
     this.updateGraph(() => {
       const deltaX = initialX - cell.geometry.x;

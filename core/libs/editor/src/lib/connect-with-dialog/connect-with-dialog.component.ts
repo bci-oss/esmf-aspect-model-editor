@@ -14,7 +14,7 @@
 import {ModelElementParserPipe} from '@ame/editor';
 import {MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {CommonModule} from '@angular/common';
-import {Component, inject} from '@angular/core';
+import {Component, inject, signal} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -29,7 +29,6 @@ interface Element {
 }
 
 @Component({
-  standalone: true,
   selector: 'ame-connect-with-dialog',
   templateUrl: './connect-with-dialog.component.html',
   styleUrls: ['./connect-with-dialog.component.scss'],
@@ -43,15 +42,17 @@ export class ConnectWithDialogComponent {
 
   public connectWithCell = inject(MAT_DIALOG_DATA);
 
-  public elements: Element[];
-  public selectedElement: Element;
-  public connectWithModel: NamedElement;
+  public elements = signal<Element[]>([]);
+  public selectedElement = signal<Element>(undefined);
+  public connectWithModel = signal<NamedElement>(undefined);
 
   constructor() {
-    this.connectWithModel = MaxGraphHelper.getModelElement(this.connectWithCell);
-    this.elements = this.maxgraphService.getAllCells().map(e => {
-      return {model: MaxGraphHelper.getModelElement(e), cell: e};
-    });
+    this.connectWithModel.set(MaxGraphHelper.getModelElement(this.connectWithCell));
+    this.elements.set(
+      this.maxgraphService.getAllCells().map(e => {
+        return {model: MaxGraphHelper.getModelElement(e), cell: e};
+      }),
+    );
   }
 
   getClass(element: NamedElement) {
@@ -65,12 +66,12 @@ export class ConnectWithDialogComponent {
   isFiltered(element: Element, searched: string) {
     return (
       element.model.name.toLowerCase().includes(searched.toLowerCase()) &&
-      element.model.aspectModelUrn !== this.connectWithModel?.aspectModelUrn
+      element.model.aspectModelUrn !== this.connectWithModel()?.aspectModelUrn
     );
   }
 
   isSelected({model}: Element) {
-    return this.selectedElement?.model.aspectModelUrn === model?.aspectModelUrn;
+    return this.selectedElement()?.model.aspectModelUrn === model?.aspectModelUrn;
   }
 
   close() {
@@ -78,10 +79,11 @@ export class ConnectWithDialogComponent {
   }
 
   connect() {
-    if (!this.selectedElement) {
+    const selectedElement = this.selectedElement();
+    if (!selectedElement) {
       return;
     }
 
-    this.dialogRef.close({...this.selectedElement});
+    this.dialogRef.close({...selectedElement});
   }
 }

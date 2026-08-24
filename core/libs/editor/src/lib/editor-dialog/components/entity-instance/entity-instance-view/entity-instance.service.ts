@@ -29,7 +29,7 @@ export class EntityInstanceService {
     return this.loadedFilesService.currentLoadedFile.cachedFile;
   }
 
-  onPropertyRemove(property: DefaultProperty, acceptCallback: Function) {
+  onPropertyRemove(property: DefaultProperty, acceptCallback: () => void) {
     const entityValues = CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntityInstance).filter(eInstance => {
       eInstance.getTuples().some(([propertyUrn]) => property.aspectModelUrn === propertyUrn);
     });
@@ -88,7 +88,7 @@ export class EntityInstanceService {
     });
   }
 
-  onEntityRemove(entity: DefaultEntity, acceptCallback: Function) {
+  onEntityRemove(entity: DefaultEntity, acceptCallback: () => void) {
     const entityValues = CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntityInstance).filter(
       entityValue => entityValue.type.name === entity.name,
     );
@@ -114,7 +114,7 @@ export class EntityInstanceService {
     });
   }
 
-  onEntityDisconnect(characteristic: DefaultEnumeration, entity: DefaultEntity, acceptCallback: Function) {
+  onEntityDisconnect(characteristic: DefaultEnumeration, entity: DefaultEntity, acceptCallback: () => void) {
     const entityValues = CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntityInstance)
       .filter(entityValue => entityValue.type.name === entity.name)
       .filter(entityValue => entityValue.parents.some(parent => parent.aspectModelUrn === characteristic.aspectModelUrn));
@@ -141,7 +141,7 @@ export class EntityInstanceService {
     });
   }
 
-  onCharacteristicRemove(characteristic: DefaultEnumeration, acceptCallback: Function) {
+  onCharacteristicRemove(characteristic: DefaultEnumeration, acceptCallback: () => void) {
     this.removeEntityValuesFromCharacteristic(characteristic);
     acceptCallback?.();
   }

@@ -15,7 +15,6 @@ import {Pipe, PipeTransform} from '@angular/core';
 import {DefaultEntity, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
 
 @Pipe({
-  standalone: true,
   name: 'modelElementParser',
 })
 export class ModelElementParserPipe implements PipeTransform {

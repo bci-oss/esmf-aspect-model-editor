@@ -15,7 +15,7 @@ import {CacheUtils, LoadedFilesService} from '@ame/cache';
 import {EditorDialogValidators} from '@ame/editor';
 import {ElementCreatorService} from '@ame/shared';
 import {AsyncPipe} from '@angular/common';
-import {Component, OnInit, inject, input} from '@angular/core';
+import {Component, inject, input, OnInit} from '@angular/core';
 import {FormControl, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOptgroup, MatOption} from '@angular/material/autocomplete';
 import {MatIconButton} from '@angular/material/button';
@@ -23,7 +23,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatError, MatInput, MatLabel} from '@angular/material/input';
 import {DefaultCharacteristic, DefaultProperty, RdfModel} from '@esmf/aspect-model-loader';
-import {Observable, debounceTime, map, startWith} from 'rxjs';
+import {debounceTime, map, Observable, startWith} from 'rxjs';
 
 @Component({
   selector: 'ame-structured-value-property-field',

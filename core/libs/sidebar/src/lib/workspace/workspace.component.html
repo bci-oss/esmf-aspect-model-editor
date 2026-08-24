@@ -17,10 +17,10 @@
 
     <button
       class="refresh"
-      [class.loading]="loading"
-      [class.disabled]="loading"
-      [matTooltip]="loading ? ('SIDEBAR.WORKSPACE.REFRESHING' | translate) : ('SIDEBAR.WORKSPACE.REFRESH' | translate)"
-      [disabled]="loading"
+      [class.loading]="loading()"
+      [class.disabled]="loading()"
+      [matTooltip]="loading() ? ('SIDEBAR.WORKSPACE.REFRESHING' | translate) : ('SIDEBAR.WORKSPACE.REFRESH' | translate)"
+      [disabled]="loading()"
       (click)="refreshWorkspace()"
       mat-mini-fab
     >
@@ -32,10 +32,10 @@
     <mat-icon>close</mat-icon>
   </button>
 </div>
-@if (error) {
-  <ame-workspace-error [error]="error"></ame-workspace-error>
+@if (error()) {
+  <ame-workspace-error [error]="error()"></ame-workspace-error>
 } @else if (namespacesKeys.length === 0) {
-  <ame-workspace-empty [loading]="loading"></ame-workspace-empty>
+  <ame-workspace-empty [loading]="loading()"></ame-workspace-empty>
 } @else {
   <ame-workspace-file-list class="list"></ame-workspace-file-list>
   @if (sidebarService.fileElements.opened()) {

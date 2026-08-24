@@ -167,6 +167,7 @@ export class GenerateHandlingService {
       );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   validateFile(callback?: Function): void {
     this.modelService
       .synchronizeModelToRdf()

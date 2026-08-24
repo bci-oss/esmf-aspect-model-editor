@@ -13,7 +13,7 @@
 
 import {LoadedFilesService} from '@ame/cache';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
-import {ChangeDetectorRef, Component, DestroyRef, inject, input, OnChanges, OnInit, output} from '@angular/core';
+import {ChangeDetectorRef, Component, DestroyRef, inject, input, OnChanges, OnInit, output, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {MatButton, MatIconButton} from '@angular/material/button';
@@ -74,14 +74,14 @@ export class ShapeSettingsComponent implements OnInit, OnChanges {
   public metaModelDialogService = inject(EditorModelService);
   public loadedFilesService = inject(LoadedFilesService);
 
-  public metaModelClassName: string;
-  public metaModelElement: NamedElement;
   public selectedMetaModelElement: NamedElement;
   public tmpCharacteristic: DefaultCharacteristic | DefaultConstraint;
   public units: Unit[] = [];
   public formGroup: FormGroup = new FormGroup({
     changedMetaModel: new FormControl(null),
   });
+
+  public metaModelElement = signal<NamedElement>(undefined);
 
   readonly isOpened = input(false);
   readonly modelElement = input<NamedElement>(null);
@@ -109,7 +109,7 @@ export class ShapeSettingsComponent implements OnInit, OnChanges {
       .getMetaModelElement()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(metaModelElement => {
-        this.metaModelElement = metaModelElement;
+        this.metaModelElement.set(metaModelElement);
         this.changeDetector.detectChanges();
       });
   }
@@ -128,17 +128,17 @@ export class ShapeSettingsComponent implements OnInit, OnChanges {
   }
 
   isOfType(types: string[]): boolean {
-    return types.includes(this.metaModelElement.className);
+    return types.includes(this.metaModelElement().className);
   }
 
   onEdit(selectedModelElement: NamedElement) {
     if (selectedModelElement) {
-      this.metaModelElement = selectedModelElement;
+      this.metaModelElement.set(selectedModelElement);
       this.selectedMetaModelElement = selectedModelElement;
       this.addLanguageSettings(selectedModelElement);
-      this.metaModelDialogService.updateMetaModelElement(this.metaModelElement);
-      if (this.metaModelElement instanceof DefaultCharacteristic || this.metaModelElement instanceof DefaultConstraint) {
-        this.tmpCharacteristic = this.metaModelElement;
+      this.metaModelDialogService.updateMetaModelElement(this.metaModelElement());
+      if (this.metaModelElement() instanceof DefaultCharacteristic || this.metaModelElement() instanceof DefaultConstraint) {
+        this.tmpCharacteristic = this.metaModelElement();
       }
     } else {
       console.warn('Selected element is null. The dialog will not shown.');
@@ -157,10 +157,10 @@ export class ShapeSettingsComponent implements OnInit, OnChanges {
   }
 
   isCharacteristic(): boolean {
-    return this.isOpened() && this.metaModelElement instanceof DefaultCharacteristic;
+    return this.isOpened() && this.metaModelElement() instanceof DefaultCharacteristic;
   }
 
   isConstraint(): boolean {
-    return this.metaModelElement instanceof DefaultConstraint;
+    return this.metaModelElement() instanceof DefaultConstraint;
   }
 }

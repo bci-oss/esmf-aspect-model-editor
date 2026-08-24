@@ -12,13 +12,13 @@
   -->
 
 <ame-entity-instance-search-bar
-  [count]="(complexValues() | entityInstance: searchFilter)?.length"
+  [count]="(complexValues() | entityInstance: searchFilter())?.length"
   [disableAddNewEntityValue]="loadedFiles.isElementExtern(enumeration())"
   (add)="onNew()"
-  (newSearch)="searchFilter = $event"
+  (newSearch)="searchFilter.set($event)"
 ></ame-entity-instance-search-bar>
 
-@for (complexValue of complexValues() | entityInstance: searchFilter; track complexValue.aspectModelUrn) {
+@for (complexValue of complexValues() | entityInstance: searchFilter(); track complexValue.aspectModelUrn) {
   <mat-expansion-panel class="complex-value-items" [attr.data-cy]="complexValue.name" expanded="true">
     <mat-expansion-panel-header class="complex-value-header">
       <mat-panel-title class="complex-value-bar">
@@ -36,8 +36,8 @@
       </mat-panel-title>
     </mat-expansion-panel-header>
     <mat-action-row class="complex-value-table">
-      @if (tuples[complexValue.aspectModelUrn]?.length) {
-        <mat-table class="table-values" [dataSource]="tuples[complexValue.aspectModelUrn]" [trackBy]="trackProperty">
+      @if (tuples()[complexValue.aspectModelUrn]?.length) {
+        <mat-table class="table-values" [dataSource]="tuples()[complexValue.aspectModelUrn]" [trackBy]="trackProperty">
           <!-- Property Name Column -->
           <ng-container matColumnDef="key">
             <mat-header-cell *matHeaderCellDef>{{ 'ENTITY_VALUE.PROPERTY' | translate }}</mat-header-cell>
@@ -72,8 +72,8 @@
           <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
           <mat-row
             *matRowDef="let row; columns: displayedColumns"
-            [class.selected]="selection.isSelected(row)"
-            (click)="selection.toggle(row)"
+            [class.selected]="selection().isSelected(row)"
+            (click)="selection().toggle(row)"
           ></mat-row>
         </mat-table>
       } @else {
@@ -88,6 +88,6 @@
 @if (complexValues()?.length === 0) {
   <div class="text--center">No entity values</div>
 }
-@if ((complexValues() | entityInstance: searchFilter)?.length === 0) {
+@if ((complexValues() | entityInstance: searchFilter())?.length === 0) {
   <div class="text--center">Entity values are filtered out.</div>
 }

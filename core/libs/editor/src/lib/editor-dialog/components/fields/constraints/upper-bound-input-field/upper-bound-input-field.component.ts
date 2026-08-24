@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -25,7 +25,7 @@ import {InputFieldComponent} from '../../input-field.component';
   imports: [MatFormFieldModule, MatLabel, MatSelect, ReactiveFormsModule, MatOption],
 })
 export class UpperBoundInputFieldComponent extends InputFieldComponent<DefaultConstraint> implements OnInit, OnDestroy {
-  public upperBoundDefinitionList = [];
+  public upperBoundDefinitionList = signal([]);
 
   constructor() {
     super();
@@ -37,9 +37,9 @@ export class UpperBoundInputFieldComponent extends InputFieldComponent<DefaultCo
     this.getMetaModelData()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((modelElement: NamedElement) => {
-        this.upperBoundDefinitionList = modelElement
-          ? new SammC(new Samm(modelElement.metaModelVersion)).getUpperBoundDefinitionList()
-          : null;
+        this.upperBoundDefinitionList.set(
+          modelElement ? new SammC(new Samm(modelElement.metaModelVersion)).getUpperBoundDefinitionList() : [],
+        );
         if (modelElement instanceof DefaultConstraint) {
           this.metaModelElement = modelElement;
         }

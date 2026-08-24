@@ -16,5 +16,5 @@ import {Cell} from '@maxgraph/core';
 export interface RendererUpdatePayload {
   cell: Cell;
   form?: {[key: string]: any};
-  callback?: Function;
+  callback?: () => void;
 }

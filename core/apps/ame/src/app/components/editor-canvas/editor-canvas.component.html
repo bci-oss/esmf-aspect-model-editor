@@ -57,7 +57,15 @@
 }
 
 <div class="map-graph" id="outline" [class.hidden]="(isMapVisible$ | async) === false">
-  <div class="map" (click)="toggleMap()">
+  <div
+    class="map"
+    (click)="toggleMap()"
+    (keyup.enter)="toggleMap()"
+    (keyup.space)="toggleMap()"
+    tabindex="0"
+    role="button"
+    aria-label="Toggle map visibility"
+  >
     <mat-icon>map</mat-icon>
   </div>
 </div>

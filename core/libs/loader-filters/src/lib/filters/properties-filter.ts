@@ -14,7 +14,7 @@
 import {LoadedFilesService} from '@ame/cache';
 import {ShapeSettingsStateService} from '@ame/editor';
 import {MaxGraphHelper} from '@ame/max-graph';
-import {ShapeGeometry, basicShapeGeometry, smallCircleShapeGeometry} from '@ame/shared';
+import {basicShapeGeometry, ShapeGeometry, smallCircleShapeGeometry} from '@ame/shared';
 import {Injector} from '@angular/core';
 import {
   DefaultAspect,
@@ -88,7 +88,11 @@ export class PropertiesFilterLoader implements FilterLoader {
 
       if (element instanceof DefaultEither) {
         const tree = this.generateTree(child, {notAllowed: [DefaultEntity], parent: child, parentNode: elementTree});
-        tree && this.isValid(tree) && elementTree.children.push(tree);
+
+        if (tree && this.isValid(tree)) {
+          elementTree.children.push(tree);
+        }
+
         continue;
       }
 
@@ -118,7 +122,10 @@ export class PropertiesFilterLoader implements FilterLoader {
         notAllowed: element instanceof DefaultEither ? [DefaultEntity] : [],
         parentNode: elementTree,
       });
-      subtree && elementTree.children.push(subtree);
+
+      if (subtree) {
+        elementTree.children.push(subtree);
+      }
     }
 
     return this.isValid(elementTree) && elementTree;

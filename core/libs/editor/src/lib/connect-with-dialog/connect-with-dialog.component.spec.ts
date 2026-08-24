@@ -152,10 +152,10 @@ describe('RdfNodeService', () => {
 
   describe('isSelected', () => {
     it('should return false', () => {
-      component.selectedElement = {
+      component.selectedElement.set({
         model: new DefaultProperty({name: 'property', aspectModelUrn: 'property', metaModelVersion: 'property', characteristic: null}),
         cell: {} as any,
-      };
+      });
       const result = component.isSelected({
         model: new DefaultProperty({
           name: 'non-property',
@@ -169,11 +169,11 @@ describe('RdfNodeService', () => {
     });
 
     it('should return true', () => {
-      component.selectedElement = {
+      component.selectedElement.set({
         model: new DefaultProperty({name: 'property', aspectModelUrn: 'property', metaModelVersion: 'property', characteristic: null}),
         cell: {} as any,
-      };
-      const result = component.isSelected(component.selectedElement);
+      });
+      const result = component.isSelected(component.selectedElement());
       expect(result).toBe(true);
     });
   });
@@ -185,10 +185,10 @@ describe('RdfNodeService', () => {
     });
 
     it('should call close', () => {
-      component.selectedElement = {
+      component.selectedElement.set({
         model: new DefaultProperty({name: 'property', aspectModelUrn: 'property', metaModelVersion: 'property', characteristic: null}),
         cell: {} as any,
-      };
+      });
       component.connect();
       expect(dialogRef.close).toHaveBeenCalledWith({
         model: new DefaultProperty({name: 'property', aspectModelUrn: 'property', metaModelVersion: 'property', characteristic: null}),

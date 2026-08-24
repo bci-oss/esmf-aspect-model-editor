@@ -67,7 +67,7 @@
     <ng-container matColumnDef="options">
       <th *matHeaderCellDef mat-header-cell>{{ 'NOTIFICATIONS_TABLE_DIALOG.OPTIONS' | translate }}</th>
       <td *matCellDef="let element" mat-cell>
-        <button [matMenuTriggerFor]="menu" (click)="currentItem = element" mat-icon-button>
+        <button [matMenuTriggerFor]="menu" (click)="currentItem.set(element)" mat-icon-button>
           <mat-icon>more_vertical</mat-icon>
         </button>
       </td>
@@ -77,16 +77,16 @@
       <td class="mat-cell no-notif-msg" colspan="9999">{{ 'NOTIFICATIONS_TABLE_DIALOG.NO_NOTIFICATIONS' | translate }}</td>
     </tr>
 
-    <tr *matHeaderRowDef="displayedColumns; sticky: true" mat-header-row></tr>
-    <tr *matRowDef="let row; columns: displayedColumns" mat-row></tr>
+    <tr *matHeaderRowDef="displayedColumns(); sticky: true" mat-header-row></tr>
+    <tr *matRowDef="let row; columns: displayedColumns()" mat-row></tr>
   </table>
 </mat-dialog-content>
 
 <mat-menu #menu="matMenu">
-  <button [disabled]="!currentItem?.link" (click)="goTo(currentItem?.link)" mat-menu-item>
+  <button [disabled]="!currentItem()?.link" (click)="goTo(currentItem()?.link)" mat-menu-item>
     <mat-icon>arrow_circle_right</mat-icon>{{ 'NOTIFICATIONS_TABLE_DIALOG.GO' | translate }}
   </button>
-  <button (click)="clearNotification(currentItem)" mat-menu-item>
+  <button (click)="clearNotification(currentItem())" mat-menu-item>
     <mat-icon>delete</mat-icon>{{ 'NOTIFICATIONS_TABLE_DIALOG.CLEAR' | translate }}
   </button>
 </mat-menu>

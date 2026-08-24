@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from '@angular/material/autocomplete';
@@ -26,7 +26,7 @@ import {InputFieldComponent} from '../../input-field.component';
   imports: [MatFormFieldModule, MatLabel, ReactiveFormsModule, MatAutocomplete, MatOption, MatAutocompleteTrigger, MatInput],
 })
 export class DefaultValueEntityInputFieldComponent extends InputFieldComponent<DefaultState> implements OnInit, OnDestroy {
-  entityValues: EntityInstance[];
+  entityValues = signal<EntityInstance[]>([]);
 
   constructor() {
     super();
@@ -60,7 +60,7 @@ export class DefaultValueEntityInputFieldComponent extends InputFieldComponent<D
     this.formSubscription.add(
       defaultValueControl.valueChanges.subscribe(value => {
         const entityValues = this.parentForm()?.get('chipList')?.value;
-        this.entityValues = entityValues?.filter(({name}: DefaultEntityInstance) => name.includes(value));
+        this.entityValues.set(entityValues?.filter(({name}: DefaultEntityInstance) => name.includes(value)));
       }),
     );
   }

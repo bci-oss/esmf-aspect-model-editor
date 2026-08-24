@@ -11,9 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelService} from '@ame/rdf/services';
 import {AsyncPipe} from '@angular/common';
-import {Component, inject, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatAutocomplete, MatAutocompleteTrigger} from '@angular/material/autocomplete';
@@ -51,14 +50,6 @@ export class ReferenceUnitInputFieldComponent extends InputFieldComponent<Defaul
   public units: Array<Unit> = [];
   public unitDisplayControl: FormControl;
   public referenceUnitControl: FormControl;
-
-  private modelService = inject(ModelService);
-
-  // constructor() {
-  // this.unitInstantiator = new UnitInstantiator(
-  //   new MetaModelElementInstantiator(this.modelService.currentRdfModel, this.currentCachedFile),
-  // );
-  //}
 
   ngOnInit(): void {
     this.getMetaModelData()

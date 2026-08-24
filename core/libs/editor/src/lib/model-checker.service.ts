@@ -1,4 +1,17 @@
-import {ModelApiService, WorkspaceStructure} from '@ame/api';
+/*
+ * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+ *
+ * See the AUTHORS file(s) distributed with this work for
+ * additional information regarding authorship.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
+import {ModelApiService, ModelData, WorkspaceStructure} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {config} from '@ame/shared';
@@ -54,9 +67,9 @@ export class ModelCheckerService {
         namespacesStructure = structure;
         const fileEntries: Array<FileEntry> = Object.entries(structure).flatMap(([namespace, versions]) =>
           versions.flatMap(({version, models}) =>
-            models.map(model => ({
-              absoluteName: `${namespace}:${version}:${model.model}`,
-              fileName: model.model,
+            models.map((model: ModelData) => ({
+              absoluteName: `${namespace}:${version}:${model.name}`,
+              fileName: model.name,
               aspectModelUrn: model.aspectModelUrn,
               modelVersion: model.version,
             })),
@@ -139,7 +152,7 @@ export class ModelCheckerService {
         for (const namespace in structure) {
           for (const element of structure[namespace]) {
             for (const value of element.models) {
-              const fileInformation = {namespace: namespace, model: value.model, version: element.version};
+              const fileInformation = {namespace: namespace, model: value.name, version: element.version};
               requests[value.aspectModelUrn] = fileInformation;
             }
           }

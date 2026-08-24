@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-interface */
 /*
  * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
  *

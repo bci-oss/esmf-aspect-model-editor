@@ -106,9 +106,11 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
         } else if (sourceElementModel instanceof DefaultCollection) {
           sourceElementModel.elementCharacteristic = defaultTrait;
         } else if (sourceElementModel instanceof DefaultEither) {
-          sourceElementModel.left.aspectModelUrn === MaxGraphHelper.getModelElement(edge.target).aspectModelUrn
-            ? (sourceElementModel.left = defaultTrait)
-            : (sourceElementModel.right = defaultTrait);
+          if (sourceElementModel.left.aspectModelUrn === MaxGraphHelper.getModelElement(edge.target).aspectModelUrn) {
+            sourceElementModel.left = defaultTrait;
+          } else {
+            sourceElementModel.right = defaultTrait;
+          }
         } else {
           return;
         }

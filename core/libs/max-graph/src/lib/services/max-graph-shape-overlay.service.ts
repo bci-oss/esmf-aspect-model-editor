@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Robert Bosch Manufacturing Solutions GmbH
+ * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
  *
  * See the AUTHORS file(s) distributed with this work for
  * additional information regarding authorship.
@@ -52,11 +52,13 @@ export class MaxGraphShapeOverlayService {
 
   removeOverlay(cell: Cell, overlay?: CellOverlay): void {
     const modelElement = MaxGraphHelper.getModelElement(cell);
-    overlay
-      ? this.maxgraphAttributeService.graph.removeCellOverlay(cell, overlay)
-      : !(modelElement instanceof DefaultCharacteristic)
-        ? this.maxgraphAttributeService.graph.removeCellOverlay(cell, null)
-        : null;
+    if (overlay) {
+      this.maxgraphAttributeService.graph.removeCellOverlay(cell, overlay);
+    } else {
+      if (!(modelElement instanceof DefaultCharacteristic)) {
+        this.maxgraphAttributeService.graph.removeCellOverlay(cell, null);
+      }
+    }
   }
 
   /**
@@ -88,11 +90,13 @@ export class MaxGraphShapeOverlayService {
     if (element instanceof DefaultAspect) return;
     if (element instanceof DefaultEnumeration) return;
 
-    element instanceof DefaultProperty && element.characteristic
-      ? this.removeOverlay(cell, MaxGraphHelper.getNewShapeOverlayButton(cell))
-      : element instanceof DefaultCharacteristic && !(element instanceof DefaultEither)
-        ? this.removeCharacteristicOverlays(cell)
-        : undefined;
+    if (element instanceof DefaultProperty && element.characteristic) {
+      this.removeOverlay(cell, MaxGraphHelper.getNewShapeOverlayButton(cell));
+    } else {
+      if (element instanceof DefaultCharacteristic && !(element instanceof DefaultEither)) {
+        this.removeCharacteristicOverlays(cell);
+      }
+    }
   }
 
   createIconShapeOverlay(svgFileName: string, tooltip: string): CellOverlay {

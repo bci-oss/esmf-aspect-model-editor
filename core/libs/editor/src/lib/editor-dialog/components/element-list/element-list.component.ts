@@ -15,7 +15,7 @@ import {MaxGraphService} from '@ame/max-graph';
 import {ElementIconComponent, sammElements} from '@ame/shared';
 import {CounterPipe} from '@ame/shared/pipes';
 import {NgClass} from '@angular/common';
-import {Component, inject, input, OnInit} from '@angular/core';
+import {Component, inject, input, OnInit, signal} from '@angular/core';
 import {MatIconButton} from '@angular/material/button';
 import {MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle} from '@angular/material/expansion';
 import {MatIconModule} from '@angular/material/icon';
@@ -51,7 +51,7 @@ export class ElementListComponent implements OnInit {
   public readonly isAspect = input<boolean>(false);
   public readonly elements = input<NamedElement[]>([]);
 
-  public filteredElements: NamedElement[] = [];
+  public filteredElements = signal<NamedElement[]>([]);
 
   private maxgraphService = inject(MaxGraphService);
   private shapeSettingsService = inject(ShapeSettingsService);
@@ -60,9 +60,10 @@ export class ElementListComponent implements OnInit {
   public loadedFilesService = inject(LoadedFilesService);
 
   ngOnInit() {
-    this.filteredElements = Array.from(this.elements()).filter(e => e instanceof NamedElement);
-    if (this.filteredElements.length > 1) {
-      this.filteredElements = this.filteredElements.sort(this.compareByName);
+    this.filteredElements.set(Array.from(this.elements()).filter(e => e instanceof NamedElement));
+    if (this.filteredElements().length > 1) {
+      const sortedElements = this.filteredElements().sort(this.compareByName);
+      this.filteredElements.set(sortedElements);
     }
   }
 

@@ -59,7 +59,7 @@ export class ExampleValueInputFieldComponent extends InputFieldComponent<Default
     type: new DefaultScalar({urn: simpleDataTypes.boolean.isDefinedBy, metaModelVersion: this.samm.version}),
   });
 
-  public hasComplexDataType = false;
+  public hasComplexDataType = signal(false);
   public displayControl = new FormControl<string>('');
   public displaySignalValue = toSignal(this.displayControl.valueChanges, {initialValue: ''});
 
@@ -80,7 +80,7 @@ export class ExampleValueInputFieldComponent extends InputFieldComponent<Default
   }
 
   initForm() {
-    this.hasComplexDataType = this.dataType?.isComplexType();
+    this.hasComplexDataType.set(this.dataType?.isComplexType());
     const value = this.metaModelElement?.exampleValue;
     this.parentForm().setControl(
       'exampleValue',
@@ -88,14 +88,14 @@ export class ExampleValueInputFieldComponent extends InputFieldComponent<Default
         value: value || new ScalarValue({value: '', type: this.dataType || null}),
         disabled:
           this.loadedFiles.isElementExtern(this.metaModelElement) ||
-          this.hasComplexDataType ||
+          this.hasComplexDataType() ||
           this.metaModelElement.isPredefined ||
           this.isExtending(),
       }),
     );
 
     this.displayControl.setValue(this.stringifyValue(value));
-    this.displayControl.value && this.displayControl.disable();
+    if (this.displayControl.value) this.displayControl.disable();
   }
 
   selectExampleValue(value: DefaultValue | ScalarValue | string, isLiteral = true) {

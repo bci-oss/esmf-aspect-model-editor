@@ -27,6 +27,7 @@ interface ElectronReturnDataOnly {
 }
 
 export type ElectronEventKeys = keyof ElectronReturnDataOnly | keyof ElectronPayloadOnly;
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export type RegisteredELECTRON_EVENTS = Partial<Record<ElectronEventKeys, Function>>;
 
 export interface ElectronSignals {
@@ -36,5 +37,6 @@ export interface ElectronSignals {
   addListener<K extends keyof ElectronPayloadOnly>(listener: K, callback: (payload: ElectronPayloadOnly[K]) => void): void;
   addListener<K extends ElectronEventKeys>(listener: K, callback: () => void): void;
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   removeListener<K extends ElectronEventKeys>(listener: K, callback: Function): void;
 }

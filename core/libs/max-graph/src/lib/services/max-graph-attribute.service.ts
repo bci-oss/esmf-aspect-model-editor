@@ -18,7 +18,7 @@ import {environment} from 'environments/environment';
 @Injectable({providedIn: 'root'})
 export class MaxGraphAttributeService {
   private _inCollapsedMode = false;
-  private _graph;
+  private _graph: Graph;
 
   constructor() {
     if (!environment.production) {
@@ -38,7 +38,6 @@ export class MaxGraphAttributeService {
     return this._graph;
   }
 
-  // eslint-disable-next-line @typescript-eslint/adjacent-overload-signatures
   public set graph(value: Graph) {
     this._graph = value;
   }

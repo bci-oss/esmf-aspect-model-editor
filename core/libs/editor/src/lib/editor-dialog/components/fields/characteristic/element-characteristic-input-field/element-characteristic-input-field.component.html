@@ -62,7 +62,7 @@
             }
           </mat-option>
         }
-        @for (elementCharacteristic of filteredCharacteristicTypes; track elementCharacteristic.aspectModelUrn) {
+        @for (elementCharacteristic of filteredCharacteristicTypes; track elementCharacteristic.name) {
           <mat-option
             [value]="elementCharacteristic.name"
             (onSelectionChange)="onSelectionChange('elementCharacteristicDisplay', elementCharacteristic)"

@@ -15,7 +15,7 @@ import {CacheUtils} from '@ame/cache';
 import {RdfService} from '@ame/rdf/services';
 import {ElementCreatorService, NotificationsService} from '@ame/shared';
 import {AsyncPipe} from '@angular/common';
-import {Component, OnDestroy, OnInit, inject} from '@angular/core';
+import {Component, inject, OnDestroy, OnInit} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from '@angular/material/autocomplete';

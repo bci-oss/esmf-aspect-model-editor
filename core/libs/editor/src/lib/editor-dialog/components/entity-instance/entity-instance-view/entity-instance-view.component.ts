@@ -79,9 +79,9 @@ export class EntityInstanceViewComponent implements OnInit, OnDestroy {
 
   public readonly displayedColumns = ['key', 'value'];
 
-  public searchFilter: string;
-  public selection: SelectionModel<EntityInstanceProperty> = new SelectionModel<EntityInstanceProperty>();
-  public tuples: Record<string, MappedAssertion[]> = {};
+  public searchFilter = signal<string>(undefined);
+  public selection = signal<SelectionModel<EntityInstanceProperty>>(new SelectionModel<EntityInstanceProperty>());
+  public tuples = signal<Record<string, MappedAssertion[]>>({});
 
   public complexValueChange = output<DefaultEntityInstance[]>();
   public parentForm = input<FormGroup>();

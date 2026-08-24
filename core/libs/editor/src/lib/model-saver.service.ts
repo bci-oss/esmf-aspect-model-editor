@@ -6,10 +6,10 @@ import {ConfigurationService} from '@ame/settings-dialog';
 import {ModelSavingTrackerService, NotificationsService, SaveValidateErrorsCodes} from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
-import {DestroyRef, Injectable, Injector, inject, runInInjectionContext} from '@angular/core';
+import {DestroyRef, inject, Injectable, Injector, runInInjectionContext} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {RdfModel} from '@esmf/aspect-model-loader';
-import {Observable, Subscription, catchError, delayWhen, first, map, of, retry, switchMap, tap, throwError, timer} from 'rxjs';
+import {catchError, delayWhen, first, map, Observable, of, retry, Subscription, switchMap, tap, throwError, timer} from 'rxjs';
 
 @Injectable({providedIn: 'root'})
 export class ModelSaverService {
@@ -76,7 +76,11 @@ export class ModelSaverService {
   }
 
   enableAutoSave(): void {
-    this.settings.autoSaveEnabled ? this.startSaveModel() : this.stopSaveModel();
+    if (this.settings.autoSaveEnabled) {
+      this.startSaveModel();
+    } else {
+      this.stopSaveModel();
+    }
   }
 
   private startSaveModel(): void {

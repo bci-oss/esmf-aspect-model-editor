@@ -516,7 +516,7 @@ export class MaxGraphVisitorHelper {
         isAbstract: modelElement['isAbstract'] || modelElement['isAbstractEntity_'],
       };
     } catch (error) {
-      return null;
+      return (console.error(`Error while getting model info for element ${modelElement.name}: ${error}`), null);
     }
   }
 }

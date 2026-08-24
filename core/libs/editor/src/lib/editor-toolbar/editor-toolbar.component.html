@@ -12,12 +12,20 @@
   -->
 
 <!-- Toolbar -->
-<div class="menu-items" (click)="blurActiveButton()">
+<div
+  class="menu-items"
+  (click)="blurActiveButton()"
+  (keyup.enter)="blurActiveButton()"
+  (keyup.space)="blurActiveButton()"
+  tabindex="0"
+  role="button"
+  aria-label="Menu"
+>
   <div class="menu-items__group separator">
     <ame-bar-item
       [matTooltipShowDelay]="0"
       [matTooltipHideDelay]="0"
-      [disabled]="isModelEmpty || selectedCells?.length !== 1"
+      [disabled]="isModelEmpty() || selectedCells()?.length !== 1"
       [matTooltip]="'TOOLBAR.EDIT_HIGHLIGHTED_CELL' | translate"
       (click)="editSelectedCell()"
     >
@@ -27,7 +35,7 @@
     <ame-bar-item
       [matTooltipShowDelay]="0"
       [matTooltipHideDelay]="0"
-      [disabled]="isModelEmpty || selectedCells?.length === 0"
+      [disabled]="isModelEmpty() || selectedCells()?.length === 0"
       [matTooltip]="'TOOLBAR.DELETE' | translate"
       (click)="onDelete()"
       data-cy="tbDeleteButton"
@@ -38,7 +46,7 @@
     <ame-bar-item
       [matTooltipShowDelay]="0"
       [matTooltipHideDelay]="0"
-      [disabled]="isModelEmpty || selectedCells?.length !== 2"
+      [disabled]="isModelEmpty() || selectedCells()?.length !== 2"
       [matTooltip]="'TOOLBAR.CONNECT' | translate"
       (click)="onConnect()"
       data-cy="tbConnectButton"
@@ -50,7 +58,7 @@
       <ame-bar-item
         [matTooltipShowDelay]="0"
         [matTooltipHideDelay]="0"
-        [disabled]="isModelEmpty"
+        [disabled]="isModelEmpty()"
         [matTooltip]="'TOOLBAR.COLLAPSE_ALL' | translate"
         (click)="onToggleExpand()"
         data-cy="collapseExpandToggle"
@@ -61,7 +69,7 @@
       <ame-bar-item
         [matTooltipShowDelay]="0"
         [matTooltipHideDelay]="0"
-        [disabled]="isModelEmpty"
+        [disabled]="isModelEmpty()"
         [matTooltip]="'TOOLBAR.EXPAND_ALL' | translate"
         (click)="onToggleExpand()"
         data-cy="collapseExpandToggle"
@@ -73,7 +81,7 @@
     <ame-bar-item
       [matTooltipShowDelay]="0"
       [matTooltipHideDelay]="0"
-      [disabled]="isModelEmpty"
+      [disabled]="isModelEmpty()"
       [matTooltip]="'TOOLBAR.FORMAT' | translate"
       (click)="onFormat()"
       data-cy="formatButton"
@@ -84,7 +92,7 @@
     <ame-bar-item
       [matTooltipShowDelay]="0"
       [matTooltipHideDelay]="0"
-      [disabled]="isModelEmpty"
+      [disabled]="isModelEmpty()"
       [matTooltip]="'TOOLBAR.VALIDATE' | translate"
       (click)="validateFile()"
       data-cy="tbValidateButton"
@@ -94,10 +102,10 @@
   </div>
 
   <div class="menu-items__group">
-    <ame-bar-item [disabled]="isModelEmpty" [matTooltip]="'EDITOR_CANVAS.ZOOM_IN_PROGRESS' | translate" (click)="zoomIn()">
+    <ame-bar-item [disabled]="isModelEmpty()" [matTooltip]="'EDITOR_CANVAS.ZOOM_IN_PROGRESS' | translate" (click)="zoomIn()">
       <mat-icon>zoom_in</mat-icon>
     </ame-bar-item>
-    <ame-bar-item [disabled]="isModelEmpty" [matTooltip]="'EDITOR_CANVAS.ZOOM_OUT_PROGRESS' | translate" (click)="zoomOut()">
+    <ame-bar-item [disabled]="isModelEmpty()" [matTooltip]="'EDITOR_CANVAS.ZOOM_OUT_PROGRESS' | translate" (click)="zoomOut()">
       <mat-icon>zoom_out</mat-icon>
     </ame-bar-item>
   </div>

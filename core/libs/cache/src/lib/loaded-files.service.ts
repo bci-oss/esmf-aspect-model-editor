@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable} from '@angular/core';
+import {Injectable, computed, signal} from '@angular/core';
 import {Aspect, CacheStrategy, DefaultAspect, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
 import {environment} from '../../../../environments/environment';
 
@@ -103,14 +103,23 @@ export class NamespaceFile {
 
 @Injectable({providedIn: 'root'})
 export class LoadedFilesService {
-  public files: Record<string, NamespaceFile> = {};
+  private filesSignal = signal<Record<string, NamespaceFile>>({});
+
+  readonly currentLoadedFileSignal = computed<NamespaceFile | null>(() => {
+    for (const file of Object.values(this.filesSignal())) {
+      if (file.rendered) return file;
+    }
+    return null;
+  });
+
+  readonly hasAspect = computed<boolean>(() => !!this.currentLoadedFileSignal()?.aspect);
+
+  public get files(): Record<string, NamespaceFile> {
+    return this.filesSignal();
+  }
 
   get currentLoadedFile(): NamespaceFile {
-    for (const file in this.files) {
-      if (this.files[file].rendered) return this.files[file];
-    }
-
-    return null;
+    return this.currentLoadedFileSignal();
   }
 
   get filesAsList(): NamespaceFile[] {
@@ -125,6 +134,10 @@ export class LoadedFilesService {
     if (!environment.production) {
       window['angular.LoadedFilesService'] = this;
     }
+  }
+
+  private updateFiles(fn: (files: Record<string, NamespaceFile>) => Record<string, NamespaceFile>) {
+    this.filesSignal.update(fn);
   }
 
   isElementInCurrentFile(element: NamedElement): boolean {
@@ -170,10 +183,16 @@ export class LoadedFilesService {
     newFile.originalNamespace = newFile.namespace;
     newFile.originalAspectModelUrn = fileInfo.aspectModelUrn;
     newFile.sharedRdfModel = fileInfo.sharedRdfModel;
-    if (this.files[newFile.absoluteName] && this.files[newFile.absoluteName].fromWorkspace) {
-      this.files[newFile.absoluteName + '_workspace_duplicate'] = this.files[newFile.absoluteName];
-    }
-    this.files[newFile.absoluteName] = newFile;
+
+    this.updateFiles(files => {
+      const updated = {...files};
+      if (updated[newFile.absoluteName] && updated[newFile.absoluteName].fromWorkspace) {
+        updated[newFile.absoluteName + '_workspace_duplicate'] = updated[newFile.absoluteName];
+      }
+      updated[newFile.absoluteName] = newFile;
+      return updated;
+    });
+
     return newFile;
   }
 
@@ -193,12 +212,18 @@ export class LoadedFilesService {
     if (namespace) file.namespace = namespace;
     if (aspect) file.aspect = aspect;
     this.updateAbsoluteName(oldAbsoluteName, file.absoluteName);
+
+    this.updateFiles(files => ({...files}));
   }
 
   removeFile(absoluteName: string) {
-    if (this.files[absoluteName]) {
-      delete this.files[absoluteName];
-    }
+    if (!this.files[absoluteName]) return;
+
+    this.updateFiles(files => {
+      const rest = {...files};
+      delete rest[absoluteName];
+      return rest;
+    });
   }
 
   updateAbsoluteName(oldAbsoluteName: string, newAbsoluteName: string, rewriteOriginal = false) {
@@ -214,10 +239,7 @@ export class LoadedFilesService {
       return;
     }
 
-    this.files[newAbsoluteName] = this.files[oldAbsoluteName];
-    delete this.files[oldAbsoluteName];
-
-    const file = this.files[newAbsoluteName];
+    const file = this.files[oldAbsoluteName];
     const [namespace, version, name] = newAbsoluteName.split(':');
     file.name = name;
     file.namespace = `${namespace}:${version}`;
@@ -226,6 +248,11 @@ export class LoadedFilesService {
       file.originalName = name;
       file.originalNamespace = `${namespace}:${version}`;
     }
+
+    this.updateFiles(files => {
+      const {[oldAbsoluteName]: moved, ...rest} = files;
+      return {...rest, [newAbsoluteName]: moved};
+    });
   }
 
   getFile(absoluteName: string): NamespaceFile {
@@ -262,10 +289,6 @@ export class LoadedFilesService {
   }
 
   removeAll() {
-    for (const file in this.files) {
-      delete this.files[file];
-    }
-
-    this.files = {};
+    this.updateFiles(() => ({}));
   }
 }

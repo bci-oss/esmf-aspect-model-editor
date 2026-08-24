@@ -28,8 +28,9 @@ export class WorkspaceEmptyComponent {
   private namespacesManagerService = inject(NamespacesManagerService);
   private electronSignalsService = inject(ElectronSignalsService);
 
-  loading = input(false);
-  file: File | null = null;
+  private file: File | null = null;
+
+  public loading = input(false);
 
   onFileInput(files: FileList | null): void {
     if (files) {

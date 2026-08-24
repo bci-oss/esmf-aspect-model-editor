@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 import {AsyncPipe} from '@angular/common';
-import {AfterViewInit, ChangeDetectorRef, Component, OnDestroy, inject, input} from '@angular/core';
+import {AfterViewInit, ChangeDetectorRef, Component, inject, input, OnDestroy, signal} from '@angular/core';
 import {FormGroup} from '@angular/forms';
 import {TranslatePipe} from '@ngx-translate/core';
 import {EditorModelService} from '../../editor-model.service';
@@ -62,9 +62,10 @@ export class ConstraintComponent implements OnDestroy, AfterViewInit {
 
   private changeDetector = inject(ChangeDetectorRef);
 
-  public selectedConstraint: string;
-  public previousData: PreviousFormDataSnapshot = {};
   public metaModelDialogService = inject(EditorModelService);
+
+  public selectedConstraint = signal<string>(undefined);
+  public previousData = signal<PreviousFormDataSnapshot>({});
   public element$ = this.metaModelDialogService.getMetaModelElement();
 
   ngAfterViewInit(): void {
@@ -72,16 +73,16 @@ export class ConstraintComponent implements OnDestroy, AfterViewInit {
   }
 
   ngOnDestroy() {
-    this.previousData = {};
+    this.previousData.set({});
   }
 
   onPreviousDataChange(previousData: PreviousFormDataSnapshot) {
-    this.previousData = previousData;
+    this.previousData.set(previousData);
     this.changeDetector.detectChanges();
   }
 
   onClassChange(constraint: string) {
-    this.selectedConstraint = constraint;
+    this.selectedConstraint.set(constraint);
     this.changeDetector.detectChanges();
   }
 }

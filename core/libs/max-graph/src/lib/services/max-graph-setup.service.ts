@@ -13,7 +13,7 @@
 
 import {LoadedFilesService} from '@ame/cache';
 import {ConfigurationService} from '@ame/settings-dialog';
-import {APP_CONFIG, AssetsPath, BindingsService, BrowserService} from '@ame/shared';
+import {AssetsPath, BindingsService, BrowserService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {inject, Injectable, NgZone} from '@angular/core';
 import {DefaultEntityInstance, DefaultTrait} from '@esmf/aspect-model-loader';
@@ -45,7 +45,6 @@ import {MaxGraphShapeSelectorService} from './max-graph-shape-selector.service';
 
 @Injectable({providedIn: 'root'})
 export class MaxGraphSetupService {
-  private appConfig = inject(APP_CONFIG);
   private configurationService = inject(ConfigurationService);
   private bindingsService = inject(BindingsService);
   private browserService = inject(BrowserService);
@@ -57,8 +56,8 @@ export class MaxGraphSetupService {
 
   private scrollTileSize: Rectangle;
   private graph: Graph;
-  private graphSizeDidChange: Function;
-  private graphCellRedraw: Function;
+  private graphSizeDidChange: () => void;
+  private graphCellRedraw: (state: CellState, force?: boolean, rendering?: boolean) => void;
   private autoTranslate = false;
   private viewCoordinates = {
     x0: 0,
@@ -97,15 +96,20 @@ export class MaxGraphSetupService {
       this.graph.cellRenderer.redraw = (state: CellState, force: boolean, rendering: boolean) => this.redraw(state, force, rendering);
       this.graph.getTooltipForCell = (cell: Cell) => this.getTooltipForCell(cell);
 
-      const popupMenuHandler = this.graph.getPlugin<PopupMenuHandler>('PopupMenuHandler')!;
+      const popupMenuHandler = this.graph.getPlugin<PopupMenuHandler>('PopupMenuHandler');
+      const selectionHandler = this.graph.getPlugin<SelectionHandler>('SelectionHandler');
+
       if (popupMenuHandler) {
-        popupMenuHandler.factoryMethod = (menu: MaxPopupMenu, cell: Cell | null): void => {
-          return this.getPopupFactoryMethod(menu, cell);
-        };
+        popupMenuHandler.factoryMethod = (menu: MaxPopupMenu, cell: Cell | null): void => this.getPopupFactoryMethod(menu, cell);
+      } else {
+        console.warn('No popup menu handler found.');
       }
 
-      const selectionHandler = this.graph.getPlugin<SelectionHandler>('SelectionHandler')!;
-      selectionHandler.setRemoveCellsFromParent(false);
+      if (selectionHandler) {
+        selectionHandler.setRemoveCellsFromParent(false);
+      } else {
+        console.warn('No selection handler found.');
+      }
 
       this.initializeGraphConstants();
       this.initLayout();
@@ -337,12 +341,13 @@ export class MaxGraphSetupService {
     }
   }
 
-  private redraw(state: CellState, force: boolean, rendering: boolean): boolean {
+  private redraw(state: CellState, force: boolean, rendering: boolean): void {
     const cellHeight = MaxGraphHelper.getCellHeight(state.cell);
     if (cellHeight) {
       state.height = +cellHeight * state.view.scale;
     }
-    return this.graphCellRedraw.apply(this.graph.cellRenderer, [state, force, rendering]);
+
+    this.graphCellRedraw.apply(this.graph.cellRenderer, [state, force, rendering]);
   }
 
   private getPopupFactoryMethod(menu: MaxPopupMenu, cell: Cell) {

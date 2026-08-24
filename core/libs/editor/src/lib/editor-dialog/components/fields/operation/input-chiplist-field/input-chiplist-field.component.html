@@ -14,12 +14,12 @@
   <mat-label for="input">input</mat-label>
   <mat-chip-grid #chipList [formControl]="chipControl" [errorStateMatcher]="hasErrors()">
     @for (input of inputValues; track input) {
-      <mat-chip-row [removable]="removable" (removed)="remove(input)">
+      <mat-chip-row [removable]="removable()" (removed)="remove(input)">
         @if (!input.aspectModelUrn.includes(currentRdfModel.getAspectModelUrn())) {
           <span>ext: </span>
         }
         {{ input['name'] }}
-        @if (removable) {
+        @if (removable()) {
           <mat-icon matChipRemove data-cy="input">close</mat-icon>
         }
       </mat-chip-row>
@@ -30,7 +30,7 @@
       [formControl]="searchControl"
       [matAutocomplete]="auto"
       [matChipInputFor]="chipList"
-      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+      [matChipInputSeparatorKeyCodes]="separatorKeysCodes()"
       matInput
       name="inputValues"
       spellcheck="false"

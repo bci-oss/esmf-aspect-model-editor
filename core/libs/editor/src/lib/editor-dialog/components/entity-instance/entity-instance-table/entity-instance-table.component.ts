@@ -14,7 +14,7 @@
 import {DataType, EditorDialogValidators, EntityInstanceUtil, FormFieldHelper} from '@ame/editor';
 import {isDataTypeLangString} from '@ame/shared';
 import {AsyncPipe, NgClass} from '@angular/common';
-import {ChangeDetectorRef, Component, inject, OnChanges, OnInit, SimpleChanges, viewChildren} from '@angular/core';
+import {ChangeDetectorRef, Component, inject, OnChanges, OnInit, signal, SimpleChanges, viewChildren} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
@@ -82,7 +82,7 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
   protected readonly dataType = DataType;
 
   propertiesForm: FormGroup;
-  sources: EntityInstanceProperty<DefaultProperty>[] = [];
+  sources = signal<EntityInstanceProperty<DefaultProperty>[]>([]);
 
   filteredEntityValues$: {[key: string]: Observable<any[]>} = {};
   filteredLanguageValues$: {[key: string]: Observable<any[]>} = {};
@@ -103,7 +103,7 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
 
         if (!properties.size && entity.properties.length) {
           for (const property of entity.properties) {
-            !this.metaModelElement.getAssertion(property.aspectModelUrn).length &&
+            if (!this.metaModelElement.getAssertion(property.aspectModelUrn).length)
               this.metaModelElement.setAssertion(property.aspectModelUrn, new Value('', property.characteristic?.dataType));
           }
         }
@@ -115,7 +115,7 @@ export class EntityInstanceTableComponent extends InputFieldComponent<DefaultEnt
           this.initializeFormControl(property, validators, value instanceof DefaultEntityInstance ? value : value.value, value.language);
         });
 
-        this.sources = this.metaModelElement?.type?.properties.map(prop => this.createEntityValueProp(prop));
+        this.sources.set(this.metaModelElement?.type?.properties.map(prop => this.createEntityValueProp(prop)));
       });
   }
 

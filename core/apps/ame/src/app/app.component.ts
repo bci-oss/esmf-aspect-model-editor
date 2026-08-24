@@ -30,7 +30,6 @@ import {take} from 'rxjs';
     '(window:keydown.escape)': 'closeSearchModals()',
   },
   templateUrl: './app.component.html',
-  standalone: true,
   imports: [RouterOutlet],
 })
 export class AppComponent implements OnInit {

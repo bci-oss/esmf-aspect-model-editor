@@ -262,7 +262,8 @@ export class RdfNodeService {
     }
 
     const rdfModel = this.loadedFilesService.currentLoadedFile?.rdfModel;
-    rdfModel &&
+
+    if (rdfModel) {
       this.rdfModel.store.addQuad(
         DataFactory.triple(
           DataFactory.namedNode(metaModelElement.aspectModelUrn),
@@ -270,5 +271,6 @@ export class RdfNodeService {
           DataFactory.literal(`${value}`, RdfModelUtil.resolveAccurateType(metaModelElement, aspectModelUrn, rdfModel, characteristicType)),
         ),
       );
+    }
   }
 }

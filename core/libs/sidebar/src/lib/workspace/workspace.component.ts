@@ -13,7 +13,7 @@
 
 import {ModelCheckerService} from '@ame/editor';
 import {SidebarStateService} from '@ame/sidebar';
-import {ChangeDetectorRef, Component, DestroyRef, effect, inject} from '@angular/core';
+import {ChangeDetectorRef, Component, DestroyRef, effect, inject, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatMiniFabButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
@@ -48,8 +48,8 @@ export class WorkspaceComponent {
   public sidebarService = inject(SidebarStateService);
 
   public namespaces = this.sidebarService.namespacesState;
-  public loading = false;
-  public error: {code: number; message: string; path: string} = null;
+  public loading = signal(false);
+  public error = signal<{code: number; message: string; path: string}>(null);
 
   public get namespacesKeys(): string[] {
     return this.namespaces.namespacesKeys();
@@ -70,8 +70,8 @@ export class WorkspaceComponent {
       .pipe(
         debounceTime(50),
         tap(() => {
-          this.error = null;
-          this.loading = true;
+          this.error.set(null);
+          this.loading.set(true);
           this.changeDetector.detectChanges();
         }),
         switchMap(() =>
@@ -79,12 +79,12 @@ export class WorkspaceComponent {
             map(files => this.sidebarService.updateWorkspace(files)),
             catchError(err => {
               if (err?.error?.error) {
-                this.error = err.error.error;
+                this.error.set(err.error.error);
               }
               return EMPTY;
             }),
             finalize(() => {
-              this.loading = false;
+              this.loading.set(false);
               this.changeDetector.detectChanges();
             }),
           ),

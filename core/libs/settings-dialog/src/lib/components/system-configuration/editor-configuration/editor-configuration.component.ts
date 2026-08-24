@@ -17,7 +17,6 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatSlideToggle} from '@angular/material/slide-toggle';
 import {MatTooltip} from '@angular/material/tooltip';
 import {TranslatePipe} from '@ngx-translate/core';
-import {Settings} from '../../../model';
 import {SettingsFormService} from '../../../services';
 
 export const editorConfigurationControlName = 'editorConfiguration';
@@ -32,7 +31,6 @@ export class EditorConfigurationComponent implements OnInit {
   private formService = inject(SettingsFormService);
 
   public form: FormGroup;
-  public settings: Settings;
 
   ngOnInit(): void {
     this.form = this.formService.getForm().get('editorConfiguration') as FormGroup;

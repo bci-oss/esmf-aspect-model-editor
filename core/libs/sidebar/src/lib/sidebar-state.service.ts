@@ -13,7 +13,7 @@
 
 import {LoadedFilesService} from '@ame/cache';
 import {RdfModelUtil} from '@ame/rdf/utils';
-import {Injectable, computed, effect, inject, signal} from '@angular/core';
+import {computed, effect, inject, Injectable, signal} from '@angular/core';
 
 class SidebarState {
   readonly opened = signal(false);
@@ -53,11 +53,13 @@ class Selection {
       this.selection.set({namespace, file: file.name, aspectModelUrn: file.aspectModelUrn});
     }
   }
+
   reset() {
     this.namespace = null;
     this.file = null;
     this.selection.set(null);
   }
+
   isSelected(namespace: string, file: string) {
     return this.namespace === namespace && this.file === file;
   }

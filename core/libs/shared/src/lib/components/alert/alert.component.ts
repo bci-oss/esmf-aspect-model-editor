@@ -18,7 +18,6 @@ import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/
 import {MatButtonModule} from '@angular/material/button';
 
 @Component({
-  standalone: true,
   selector: 'ame-alert',
   templateUrl: './alert.component.html',
   styleUrls: ['./alert.component.scss'],

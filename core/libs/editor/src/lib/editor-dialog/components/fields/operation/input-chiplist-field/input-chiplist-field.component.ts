@@ -14,7 +14,7 @@
 import {CacheUtils} from '@ame/cache';
 import {ENTER} from '@angular/cdk/keycodes';
 import {AsyncPipe} from '@angular/common';
-import {Component, ElementRef, inject, OnDestroy, OnInit, viewChild} from '@angular/core';
+import {Component, ElementRef, inject, OnDestroy, OnInit, signal, viewChild} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatAutocomplete, MatAutocompleteTrigger} from '@angular/material/autocomplete';
@@ -22,7 +22,7 @@ import {MatChipGrid, MatChipInput, MatChipRow, MatChipsModule} from '@angular/ma
 import {ErrorStateMatcher, MatOptgroup, MatOption} from '@angular/material/core';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
-import {MatError, MatLabel} from '@angular/material/input';
+import {MatError, MatInput, MatLabel} from '@angular/material/input';
 import {DefaultOperation, DefaultProperty, Property, RdfModel} from '@esmf/aspect-model-loader';
 import {Observable} from 'rxjs';
 import {EditorDialogValidators} from '../../../../validators';
@@ -48,6 +48,7 @@ import {InputFieldComponent} from '../../input-field.component';
     MatError,
     MatChipsModule,
     MatIconModule,
+    MatInput,
   ],
 })
 export class InputChiplistFieldComponent extends InputFieldComponent<DefaultOperation> implements OnInit, OnDestroy {
@@ -55,13 +56,13 @@ export class InputChiplistFieldComponent extends InputFieldComponent<DefaultOper
 
   private editorDialogValidators = inject(EditorDialogValidators);
 
-  readonly separatorKeysCodes: number[] = [ENTER];
-
   public filteredPropertyTypes$: Observable<any[]>;
-  public removable = true;
   public inputValues: Array<Property>;
   public chipControl = new FormControl();
   public searchControl: FormControl<string>;
+
+  readonly separatorKeysCodes = signal([ENTER]);
+  public removable = signal(true);
 
   get currentRdfModel(): RdfModel {
     return this.loadedFiles.currentLoadedFile.rdfModel;

@@ -19,6 +19,7 @@ import {ElectronEventKeys, ElectronSignals, RegisteredELECTRON_EVENTS} from '../
 export class ElectronSignalsService implements ElectronSignals {
   private listeners: RegisteredELECTRON_EVENTS = {};
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   addListener(listener: ElectronEventKeys, callback: Function) {
     if (typeof callback === 'function') {
       this.listeners[listener] = callback;

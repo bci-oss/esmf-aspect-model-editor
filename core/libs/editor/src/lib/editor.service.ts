@@ -31,18 +31,18 @@ import {
   ElementCreatorService,
   LoadingScreenService,
   NotificationsService,
+  sammElements,
   SaveValidateErrorsCodes,
   TitleService,
   ValidateStatus,
-  sammElements,
 } from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {useUpdater} from '@ame/utils';
-import {Injectable, Injector, NgZone, inject} from '@angular/core';
+import {inject, Injectable, Injector, NgZone} from '@angular/core';
 import {DefaultAspect, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
-import {Cell, EventObject, FitPlugin, Graph, GraphDataModel, InternalEvent, gestureUtils} from '@maxgraph/core';
+import {Cell, EventObject, FitPlugin, gestureUtils, Graph, GraphDataModel, InternalEvent} from '@maxgraph/core';
 import {environment} from 'environments/environment';
-import {BehaviorSubject, Observable, Subscription, catchError, delayWhen, first, of, retry, switchMap, tap, throwError, timer} from 'rxjs';
+import {BehaviorSubject, catchError, delayWhen, first, Observable, of, retry, Subscription, switchMap, tap, throwError, timer} from 'rxjs';
 import {ConfirmDialogService} from './confirm-dialog/confirm-dialog.service';
 import {ShapeSettingsService, ShapeSettingsStateService} from './editor-dialog';
 import {AsyncApi, OpenApi, ViolationError} from './editor-toolbar';
@@ -110,7 +110,11 @@ export class EditorService {
       if (!evt.defaultPrevented && evt.altKey) {
         evt.preventDefault();
         this.ngZone.run(() => {
-          evt.deltaY < 0 ? this.maxgraphAttributeService.graph.zoomIn() : this.maxgraphAttributeService.graph.zoomOut();
+          if (evt.deltaY < 0) {
+            this.maxgraphAttributeService.graph.zoomIn();
+          } else {
+            this.maxgraphAttributeService.graph.zoomOut();
+          }
         });
       }
     };
@@ -261,12 +265,14 @@ export class EditorService {
 
         this.loadedFilesService.updateFileNaming(this.currentLoadedFile, {aspect: aspectInstance, name: `${aspectInstance.name}.ttl`});
 
-        aspectInstance
-          ? this.maxgraphService.renderModelElement(this.filtersService.createNode(aspectInstance), {
-              shapeAttributes: [],
-              geometry,
-            })
-          : this.openAlertBox();
+        if (aspectInstance) {
+          this.maxgraphService.renderModelElement(this.filtersService.createNode(aspectInstance), {
+            shapeAttributes: [],
+            geometry,
+          });
+        } else {
+          this.openAlertBox();
+        }
         this.titleService.updateTitle(this.currentLoadedFile.absoluteName);
       });
   }
@@ -428,7 +434,11 @@ export class EditorService {
   }
 
   enableAutoValidation() {
-    this.settings.autoValidationEnabled ? this.startValidateModel() : this.stopValidateModel();
+    if (this.settings.autoValidationEnabled) {
+      this.startValidateModel();
+    } else {
+      this.stopValidateModel();
+    }
   }
 
   startValidateModel() {

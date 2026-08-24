@@ -16,7 +16,7 @@ import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {NotificationsService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {CommonModule} from '@angular/common';
-import {Component, DestroyRef, ElementRef, OnInit, inject, viewChild} from '@angular/core';
+import {Component, DestroyRef, ElementRef, inject, OnInit, signal, viewChild} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
@@ -54,7 +54,6 @@ export interface OpenApi {
 }
 
 @Component({
-  standalone: true,
   host: {
     '(window:dragover)': '$event.preventDefault()',
     '(window:drop)': 'handleFileDrop($event)',
@@ -92,10 +91,11 @@ export class GenerateOpenApiComponent implements OnInit {
   private loadedFilesService = inject(LoadedFilesService);
 
   form: FormGroup;
-  languages: locale.ILocale[];
-  isGenerating = false;
-  linkToSpecification = 'https://eclipse-esmf.github.io/ame-guide/generate/generate-openapi-doc.html';
-  uploadedFile: File = undefined;
+
+  languages = signal<locale.ILocale[]>([]);
+  isGenerating = signal(false);
+  linkToSpecification = signal('https://eclipse-esmf.github.io/ame-guide/generate/generate-openapi-doc.html');
+  uploadedFile = signal<File | null>(null);
 
   private resourcePathValidators = [
     Validators.required,
@@ -134,10 +134,10 @@ export class GenerateOpenApiComponent implements OnInit {
   }
 
   private initializeForm(): void {
-    this.languages = this.languageService.getSammLanguageCodes().map(tag => locale.getByTag(tag));
+    this.languages.set(this.languageService.getSammLanguageCodes().map(tag => locale.getByTag(tag)));
     this.form = new FormGroup({
       baseUrl: new FormControl('https://example.com', Validators.compose([Validators.required, EditorDialogValidators.baseUrl])),
-      language: new FormControl(this.languages[0].tag),
+      language: new FormControl(this.languages()[0].tag),
       includeQueryApi: new FormControl(false),
       useSemanticVersion: new FormControl(false),
       activateResourcePath: new FormControl(false),
@@ -173,7 +173,13 @@ export class GenerateOpenApiComponent implements OnInit {
     this.resourcePath?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(resourcePath => {
       const fileControl = this.form.get('file');
       const hasBrackets = /{.*}/.test(resourcePath);
-      hasBrackets ? fileControl?.setValidators(Validators.required) : fileControl?.setValidators(null);
+
+      if (hasBrackets) {
+        fileControl?.setValidators(Validators.required);
+      } else {
+        fileControl?.setValidators(null);
+      }
+
       fileControl?.updateValueAndValidity();
     });
   }
@@ -199,7 +205,7 @@ export class GenerateOpenApiComponent implements OnInit {
   }
 
   private processFile(file: File): void {
-    this.uploadedFile = file;
+    this.uploadedFile.set(file);
     this.form.patchValue({file: file});
     this.readFileContent(file);
   }
@@ -236,7 +242,7 @@ export class GenerateOpenApiComponent implements OnInit {
   }
 
   generateOpenApiSpec(): void {
-    this.isGenerating = true;
+    this.isGenerating.set(true);
     const openApiSpec = this.form.value as OpenApi;
     this.editorService
       .generateOpenApiSpec(this.loadedFilesService.currentLoadedFile?.rdfModel, openApiSpec)
@@ -245,7 +251,7 @@ export class GenerateOpenApiComponent implements OnInit {
         first(),
         map(data => this.handleGeneratedSpec(data, openApiSpec)),
         finalize(() => {
-          this.isGenerating = false;
+          this.isGenerating.set(false);
           this.dialogRef.close();
         }),
       )
@@ -266,7 +272,7 @@ export class GenerateOpenApiComponent implements OnInit {
 
     if (files.length) {
       const file = files[0];
-      this.uploadedFile = file;
+      this.uploadedFile.set(file);
       this.readFileContent(file);
       this.file.patchValue(file);
     }

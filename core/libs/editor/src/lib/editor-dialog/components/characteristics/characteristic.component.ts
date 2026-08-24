@@ -23,7 +23,7 @@ import {
   ValuesInputFieldComponent,
 } from '@ame/editor';
 import {AsyncPipe} from '@angular/common';
-import {ChangeDetectorRef, Component, DestroyRef, OnInit, inject, input} from '@angular/core';
+import {ChangeDetectorRef, Component, DestroyRef, inject, input, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormGroup} from '@angular/forms';
 import {TranslatePipe} from '@ngx-translate/core';
@@ -57,54 +57,53 @@ export class CharacteristicComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private changeDetector = inject(ChangeDetectorRef);
 
-  public property = false;
-  public selectedCharacteristic: CharacteristicClassType;
-  public previousData: PreviousFormDataSnapshot = {};
   public metaModelDialogService = inject(EditorModelService);
+
+  public property = signal(false);
+  public selectedCharacteristic = signal<CharacteristicClassType>(undefined);
+  public previousData = signal<PreviousFormDataSnapshot>({});
   public element$ = this.metaModelDialogService.getMetaModelElement();
 
-  public characteristicClassType = CharacteristicClassType;
-  allowedClassesForElementCharacteristic: CharacteristicClassType[] = [
-    this.characteristicClassType.Collection,
-    this.characteristicClassType.Set,
-    this.characteristicClassType.SortedSet,
-    this.characteristicClassType.List,
-    this.characteristicClassType.TimeSeries,
-  ];
-  allowedClassesForUnit: CharacteristicClassType[] = [
-    this.characteristicClassType.Measurement,
-    this.characteristicClassType.Quantifiable,
-    this.characteristicClassType.Duration,
-  ];
+  public characteristicClassType = signal(CharacteristicClassType);
+  allowedClassesForElementCharacteristic = signal<CharacteristicClassType[]>([
+    this.characteristicClassType().Collection,
+    this.characteristicClassType().Set,
+    this.characteristicClassType().SortedSet,
+    this.characteristicClassType().List,
+    this.characteristicClassType().TimeSeries,
+  ]);
+  allowedClassesForUnit = signal<CharacteristicClassType[]>([
+    this.characteristicClassType().Measurement,
+    this.characteristicClassType().Quantifiable,
+    this.characteristicClassType().Duration,
+  ]);
 
   ngOnInit(): void {
     this.metaModelDialogService
       .getMetaModelElement()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
-        // TODO Should be solved better. Form does not seem to update correctly.
-        this.property = false;
-        requestAnimationFrame(() => (this.property = true));
+        requestAnimationFrame(() => this.property.set(true));
         this.changeDetector.detectChanges();
       });
   }
 
   onPreviousDataChange(previousData: PreviousFormDataSnapshot) {
     requestAnimationFrame(() => {
-      this.previousData = previousData;
+      this.previousData.set(previousData);
       this.changeDetector.detectChanges();
     });
   }
 
   onClassChange(characteristic: CharacteristicClassType) {
-    this.selectedCharacteristic = characteristic;
+    this.selectedCharacteristic.set(characteristic);
   }
 
   isElementCharacteristicAllowed(): boolean {
-    return this.allowedClassesForElementCharacteristic.includes(this.selectedCharacteristic);
+    return this.allowedClassesForElementCharacteristic().includes(this.selectedCharacteristic());
   }
 
   isUnitAllowed(): boolean {
-    return this.allowedClassesForUnit.includes(this.selectedCharacteristic);
+    return this.allowedClassesForUnit().includes(this.selectedCharacteristic());
   }
 }

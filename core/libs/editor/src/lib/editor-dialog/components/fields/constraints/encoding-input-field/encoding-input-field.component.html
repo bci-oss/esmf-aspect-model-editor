@@ -14,7 +14,7 @@
 <mat-form-field [floatLabel]="getControl('value')?.disabled ? 'always' : 'auto'" appearance="fill">
   <mat-label for="value">value</mat-label>
   <mat-select [formControl]="getControl('value')" name="value">
-    @for (encoding of encodingList; track encoding) {
+    @for (encoding of encodingList(); track encoding) {
       <mat-option [value]="encoding.value">
         {{ encoding.value }}
       </mat-option>

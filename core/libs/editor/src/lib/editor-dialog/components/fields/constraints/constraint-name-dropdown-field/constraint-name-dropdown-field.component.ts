@@ -40,7 +40,7 @@ export class ConstraintNameDropdownFieldComponent extends DropdownFieldComponent
   private destroyRef = inject(DestroyRef);
 
   public listConstraintNames: Array<string>;
-  public listConstraints: Map<string, Function> = new Map();
+  public listConstraints: Map<string, () => NamedElement> = new Map();
 
   readonly selectedConstraint = output<string>();
 
@@ -75,12 +75,12 @@ export class ConstraintNameDropdownFieldComponent extends DropdownFieldComponent
     this.selectedConstraint.emit(constraint);
   }
 
-  private getMetaModelElementTypeWhenChange(createInstanceFunction: Function) {
+  private getMetaModelElementTypeWhenChange(createInstanceFunction: () => NamedElement) {
     const modelElementType = createInstanceFunction();
     if (modelElementType.aspectModelUrn === this.selectedMetaModelElement.aspectModelUrn) {
       this.metaModelElement = this.selectedMetaModelElement;
-      return;
     }
+
     return modelElementType;
   }
 

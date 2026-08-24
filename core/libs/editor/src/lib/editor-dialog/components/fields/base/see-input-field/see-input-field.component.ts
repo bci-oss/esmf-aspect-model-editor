@@ -13,7 +13,7 @@
 
 import {MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {AsyncPipe} from '@angular/common';
-import {Component, ElementRef, inject, OnInit, viewChild} from '@angular/core';
+import {Component, ElementRef, inject, OnInit, signal, viewChild} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from '@angular/material/autocomplete';
@@ -66,7 +66,8 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
     updateOn: 'change',
   });
   public chipControl = new FormControl();
-  public elements: SeeElement[] = [];
+
+  public elements = signal<SeeElement[]>([]);
 
   get isInherited(): boolean {
     const control = this.parentForm().get(this.fieldName);
@@ -104,21 +105,29 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
   }
 
   removeElement(element: SeeElement) {
-    this.elements = this.elements.filter(e => e !== element);
+    this.elements.set(this.elements().filter(e => e !== element));
     this.parentForm()
       .get(this.fieldName)
-      .setValue(this.elements.map(({urn}) => urn).join(','));
+      .setValue(
+        this.elements()
+          .map(({urn}) => urn)
+          .join(','),
+      );
   }
 
   addElementToList(elementName?: string) {
     if (this.searchControl.valid) {
-      this.elements.push({urn: this.searchControl.value, name: elementName || ''});
+      this.elements().push({urn: this.searchControl.value, name: elementName || ''});
       this.seeInput().nativeElement.value = '';
       this.searchControl.setValue('');
 
       this.parentForm()
         .get(this.fieldName)
-        .setValue(this.elements.map(({urn}) => urn).join(','));
+        .setValue(
+          this.elements()
+            .map(({urn}) => urn)
+            .join(','),
+        );
       this.chipList().errorState = false;
     } else {
       this.chipList().errorState = true;
@@ -149,10 +158,12 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
       this.searchControl.disable();
       this.chipControl.disable();
     }
-    this.elements = [...(this.decodeUriComponent(this.getCurrentValue())?.split(',') || [])].map(urn => ({
-      name: urn.includes('#') && urn.startsWith('urn:samm') ? urn.split('#')[1] : '',
-      urn,
-    }));
+    this.elements.set(
+      [...(this.decodeUriComponent(this.getCurrentValue())?.split(',') || [])].map(urn => ({
+        name: urn.includes('#') && urn.startsWith('urn:samm') ? urn.split('#')[1] : '',
+        urn,
+      })),
+    );
 
     this.shapes$ = this.searchControl.valueChanges.pipe(
       map((fieldValue: string) =>
@@ -160,7 +171,7 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
           ? []
           : this.modelElements.filter(
               ({name, aspectModelUrn}) =>
-                name?.toLowerCase().includes(fieldValue?.toLowerCase()) && !this.elements.find(el => el.urn === aspectModelUrn),
+                name?.toLowerCase().includes(fieldValue?.toLowerCase()) && !this.elements().find(el => el.urn === aspectModelUrn),
             ),
       ),
     );

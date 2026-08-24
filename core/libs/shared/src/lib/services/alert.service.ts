@@ -22,8 +22,8 @@ export interface AlertOptions {
   rightButtonText: string;
   hasLeftButton: boolean;
   hasRightButton: boolean;
-  leftButtonAction: Function;
-  rightButtonAction: Function;
+  leftButtonAction: (arg0: MouseEvent) => void;
+  rightButtonAction: (arg0: MouseEvent) => void;
 }
 
 @Injectable({providedIn: 'root'})

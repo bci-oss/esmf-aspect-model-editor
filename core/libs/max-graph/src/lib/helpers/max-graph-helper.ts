@@ -384,7 +384,9 @@ export class MaxGraphHelper {
 
     if (modelElement instanceof DefaultTrait) {
       title.classList.add('simple');
-      cell.collapsed && div.removeChild(title);
+      if (cell.collapsed) {
+        div.removeChild(title);
+      }
       return div;
     }
 
@@ -399,7 +401,9 @@ export class MaxGraphHelper {
       title.title = '';
       title.classList.add('simple');
     } else {
-      iconsBar && !(modelElement instanceof DefaultEntityInstance) && div.appendChild(iconsBar);
+      if (iconsBar && !(modelElement instanceof DefaultEntityInstance)) {
+        div.appendChild(iconsBar);
+      }
       const fields = cell['configuration']?.fields || [];
       const extendedFields = fields.filter(({extended}) => extended);
       const normalFields = fields.filter(({extended}) => !extended);
@@ -474,7 +478,9 @@ export class MaxGraphHelper {
 
   private static createSpanElement(content: ShapeAttribute) {
     const span = document.createElement('span');
-    content.extended && (span.style.opacity = '0.75');
+    if (content.extended) {
+      span.style.opacity = '0.75';
+    }
     span.classList.add('element-info');
     const sanitizedLabel = `${content.label}`.replace(/\n/g, ' ');
     span.title = (content.extended ? 'Inherited\n' : '') + content.label;

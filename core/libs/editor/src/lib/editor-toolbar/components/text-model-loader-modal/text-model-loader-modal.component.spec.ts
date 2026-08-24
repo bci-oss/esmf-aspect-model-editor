@@ -1,3 +1,5 @@
+import {beforeEach, describe, expect, it, vi} from 'vitest';
+
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {FormsModule} from '@angular/forms';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
@@ -10,7 +12,7 @@ import {of} from 'rxjs';
 import {FileHandlingService} from '../../services';
 import {TextModelLoaderModalComponent} from './text-model-loader-modal.component';
 
-jest.mock('@ame/editor', () => ({
+vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},
 }));
 
@@ -41,7 +43,7 @@ describe('TextModelLoaderModalComponent', () => {
   });
 
   it('should not call loadModel when textarea text is empty', () => {
-    jest.spyOn(component, 'loadModel');
+    vi.spyOn(component, 'loadModel');
 
     const button = fixture.debugElement.nativeElement.querySelectorAll('button')[1];
     button.click();
@@ -52,7 +54,7 @@ describe('TextModelLoaderModalComponent', () => {
   });
 
   it('should call loadModel when textarea text is not empty', () => {
-    jest.spyOn(component, 'loadModel');
+    vi.spyOn(component, 'loadModel');
 
     const textarea = fixture.debugElement.nativeElement.querySelector('textarea[matInput]');
     const text = 'ttl value';

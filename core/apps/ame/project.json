@@ -6,13 +6,17 @@
   "prefix": "ame",
   "targets": {
     "build": {
-      "executor": "@angular-devkit/build-angular:browser-esbuild",
-      "outputs": ["{options.outputPath}"],
+      "executor": "@angular/build:application",
+      "outputs": ["{options.outputPath.base}"],
       "defaultConfiguration": "production",
+      "dependsOn": [],
       "options": {
-        "outputPath": "dist/apps/ame",
+        "outputPath": {
+          "base": "dist/apps/ame",
+          "browser": ""
+        },
         "index": "apps/ame/src/index.html",
-        "main": "apps/ame/src/main.ts",
+        "browser": "apps/ame/src/main.ts",
         "polyfills": ["apps/ame/src/polyfills.ts"],
         "tsConfig": "apps/ame/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
@@ -97,13 +101,6 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint"
-    },
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/apps/ame"],
-      "options": {
-        "jestConfig": "apps/ame/jest.config.ts"
-      }
     }
   }
 }

@@ -30,13 +30,13 @@ import {
   RdfModel,
   Samm,
 } from '@esmf/aspect-model-loader';
-import {describe, expect, it} from '@jest/globals';
 import {Store} from 'n3';
 import {MockProvider, MockProviders} from 'ng-mocks';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {RdfListService} from '../../rdf-list';
 import {ConstraintVisitor} from './constraint-visitor';
 
-jest.mock('@ame/editor', () => ({
+vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},
 }));
 
@@ -46,8 +46,8 @@ describe('Constraint Visitor', () => {
   const rdfModel: RdfModel = {
     store: new Store(),
     samm: new Samm(''),
-    hasDependency: jest.fn(() => false),
-    addPrefix: jest.fn(() => {}),
+    hasDependency: vi.fn(() => false),
+    addPrefix: vi.fn(() => {}),
   } as any;
 
   const constraint = new DefaultConstraint({metaModelVersion: '1', aspectModelUrn: 'samm#constraint1', name: 'constraint1'});
@@ -107,11 +107,11 @@ describe('Constraint Visitor', () => {
         MockProviders(MaxGraphService),
         MockProvider(MaxGraphService),
         MockProvider(RdfListService, {
-          push: jest.fn(),
-          createEmpty: jest.fn(),
+          push: vi.fn(),
+          createEmpty: vi.fn(),
         }),
         MockProvider(RdfNodeService, {
-          update: jest.fn(),
+          update: vi.fn(),
         }),
         MockProvider(LoadedFilesService, {
           currentLoadedFile: new NamespaceFile(rdfModel, new ModelElementCache(), null),

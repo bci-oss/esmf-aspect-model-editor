@@ -1,3 +1,5 @@
+import {beforeEach, describe, expect, it, vi} from 'vitest';
+
 import {FileHandlingService, ModelCheckerService, SaveModelDialogService} from '@ame/editor';
 import {MaxGraphAttributeService, MaxGraphService, MaxGraphShapeOverlayService} from '@ame/max-graph';
 import {ModelSavingTrackerService, NotificationsService, SearchService} from '@ame/shared';
@@ -19,12 +21,12 @@ import {of, Subject} from 'rxjs';
 import {SearchesStateService} from '../../search-state.service';
 import {FilesSearchComponent} from './files-search.component';
 
-jest.mock('@ame/editor', () => ({
+vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},
   SaveModelDialogService: class {},
   FileHandlingService: class {},
   ModelCheckerService: class {
-    detectWorkspaceErrors = jest.fn();
+    detectWorkspaceErrors = vi.fn();
   },
 }));
 
@@ -48,12 +50,12 @@ describe('Files search', () => {
           onLangChange: new Subject(),
           onDefaultLangChange: new Subject(),
           onFallbackLangChange: new Subject(),
-          get: jest.fn(() => of('')),
+          get: vi.fn(() => of('')),
         }),
         MockProvider(SearchesStateService),
         MockProvider(SidebarStateService, {
           namespacesState: {namespaces: signal({})} as any,
-          updateWorkspace: jest.fn(() => of({})) as any,
+          updateWorkspace: vi.fn(() => of({})) as any,
         }),
         MockProvider(MatDialog),
         MockProvider(ModelSavingTrackerService),
@@ -62,7 +64,7 @@ describe('Files search', () => {
         MockProvider(FileHandlingService),
         MockProvider(SaveModelDialogService),
         MockProvider(ModelCheckerService, {
-          detectWorkspaceErrors: jest.fn(() => of([])),
+          detectWorkspaceErrors: vi.fn(() => of([])),
         }),
       ],
     }).compileComponents();
@@ -105,7 +107,7 @@ describe('Files search', () => {
   });
 
   it('should have mat option if there are namespaces with files', () => {
-    jest.spyOn(component, 'openFile');
+    vi.spyOn(component, 'openFile');
 
     component.searchableFiles.set(files);
     fixture.detectChanges();

@@ -1,7 +1,7 @@
 {
   "extends": "../tsconfig.electron.json",
   "compilerOptions": {
-    "types": ["@jest/globals", "node"],
+    "types": ["node"],
     "typeRoots": ["../node_modules/@types", "../node_modules"],
     "ignoreDeprecations": "6.0"
   },

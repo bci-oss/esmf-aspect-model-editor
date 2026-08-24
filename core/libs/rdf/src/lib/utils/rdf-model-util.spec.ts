@@ -26,18 +26,18 @@ import {
   RdfModel,
   Type,
 } from '@esmf/aspect-model-loader';
-import {describe, expect} from '@jest/globals';
 import {Store} from 'n3';
+import {describe, expect, test, vi} from 'vitest';
 import {RdfModelUtil} from './rdf-model-util';
 
-jest.mock('@ame/editor', () => ({
+vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},
 }));
 
 describe('Test RDF Model Util', () => {
   describe('getDataType', () => {
     test('should return Urn', () => {
-      jest.fn().mockRestore();
+      vi.fn().mockRestore();
       const expectedUrnResult = 'expectedUrnResult';
       const dataType = {
         getUrn: () => expectedUrnResult,
@@ -71,7 +71,7 @@ describe('Test RDF Model Util', () => {
       expectedElementUrn = sammC.MinValueProperty().value;
       const metaModelElement = new DefaultLengthConstraint({name: '', aspectModelUrn: '', metaModelVersion: ''});
 
-      RdfModelUtil.getDataType = jest.fn().mockReturnValueOnce(expectedElementUrn);
+      RdfModelUtil.getDataType = vi.fn().mockReturnValueOnce(expectedElementUrn);
 
       expect(RdfModelUtil.resolveAccurateType(metaModelElement, expectedElementUrn, rdfModel, null)).toBe(expectedElementUrn);
       expect(RdfModelUtil.getDataType).toHaveBeenCalled();
@@ -81,7 +81,7 @@ describe('Test RDF Model Util', () => {
       expectedElementUrn = sammC.ScaleProperty().value;
       const metaModelElement = new DefaultFixedPointConstraint({name: '', aspectModelUrn: '', metaModelVersion: '', scale: 0, integer: 0});
 
-      RdfModelUtil.getDataType = jest.fn().mockReturnValueOnce(expectedElementUrn);
+      RdfModelUtil.getDataType = vi.fn().mockReturnValueOnce(expectedElementUrn);
 
       expect(RdfModelUtil.resolveAccurateType(metaModelElement, expectedElementUrn, rdfModel, null)).toBe(expectedElementUrn);
       expect(RdfModelUtil.getDataType).toHaveBeenCalled();
@@ -91,7 +91,7 @@ describe('Test RDF Model Util', () => {
       expectedElementUrn = samm.ExampleValueProperty().value;
       const metaModelElement = new DefaultProperty({name: '', aspectModelUrn: '', metaModelVersion: ''});
 
-      RdfModelUtil.getDataType = jest.fn().mockReturnValueOnce(expectedElementUrn);
+      RdfModelUtil.getDataType = vi.fn().mockReturnValueOnce(expectedElementUrn);
 
       expect(RdfModelUtil.resolveAccurateType(metaModelElement, expectedElementUrn, rdfModel, null)).toBe(expectedElementUrn);
       expect(RdfModelUtil.getDataType).toHaveBeenCalled();
@@ -101,7 +101,7 @@ describe('Test RDF Model Util', () => {
       expectedElementUrn = sammC.MinValueProperty().value;
       const metaModelElement = new DefaultRangeConstraint({name: '', aspectModelUrn: '', metaModelVersion: ''});
 
-      RdfModelUtil.getDataType = jest.fn().mockReturnValueOnce(expectedElementUrn);
+      RdfModelUtil.getDataType = vi.fn().mockReturnValueOnce(expectedElementUrn);
 
       expect(RdfModelUtil.resolveAccurateType(metaModelElement, expectedElementUrn, rdfModel, null)).toBe(expectedElementUrn);
       expect(RdfModelUtil.getDataType).toHaveBeenCalled();
@@ -111,7 +111,7 @@ describe('Test RDF Model Util', () => {
       expectedElementUrn = sammC.ValuesProperty().value;
       const metaModelElement = new DefaultEnumeration({name: '', aspectModelUrn: '', metaModelVersion: '', values: []});
 
-      RdfModelUtil.getDataType = jest.fn().mockReturnValueOnce(expectedElementUrn);
+      RdfModelUtil.getDataType = vi.fn().mockReturnValueOnce(expectedElementUrn);
 
       expect(RdfModelUtil.resolveAccurateType(metaModelElement, expectedElementUrn, rdfModel, null)).toBe(expectedElementUrn);
       expect(RdfModelUtil.getDataType).toHaveBeenCalled();
@@ -121,7 +121,7 @@ describe('Test RDF Model Util', () => {
       expectedElementUrn = sammC.DefaultValueProperty().value;
       const metaModelElement = new DefaultState({name: '', aspectModelUrn: '', metaModelVersion: '', values: [], defaultValue: null});
 
-      RdfModelUtil.getDataType = jest.fn().mockReturnValueOnce(expectedElementUrn);
+      RdfModelUtil.getDataType = vi.fn().mockReturnValueOnce(expectedElementUrn);
 
       expect(RdfModelUtil.resolveAccurateType(metaModelElement, expectedElementUrn, rdfModel, null)).toBe(expectedElementUrn);
       expect(RdfModelUtil.getDataType).toHaveBeenCalled();
@@ -131,7 +131,7 @@ describe('Test RDF Model Util', () => {
       expectedElementUrn = null;
       const metaModelElement = new DefaultState({name: '', aspectModelUrn: '', metaModelVersion: '', values: [], defaultValue: null});
 
-      RdfModelUtil.getDataType = jest.fn().mockReturnValueOnce(null);
+      RdfModelUtil.getDataType = vi.fn().mockReturnValueOnce(null);
 
       expect(RdfModelUtil.resolveAccurateType(metaModelElement, expectedElementUrn, rdfModel, null)).toBe(null);
       expect(RdfModelUtil.getDataType).toHaveBeenCalledTimes(0);

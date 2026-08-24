@@ -12,16 +12,16 @@
  */
 
 import {TestBed} from '@angular/core/testing';
-import {describe, expect, it} from '@jest/globals';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {DomainModelToRdfService} from '@ame/aspect-exporter';
 import {provideMockObject} from '../../../../jest-helpers';
 
-jest.mock('@ame/editor', () => ({
+vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},
 }));
 
-jest.mock('@esmf/aspect-model-loader', () => {
+vi.mock('@esmf/aspect-model-loader', () => {
   class NamedElement {}
   class DefaultValue extends NamedElement {
     metaModelVersion!: string;

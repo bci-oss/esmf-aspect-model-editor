@@ -5,16 +5,16 @@
   "sourceRoot": "libs/max-graph/src",
   "prefix": "ame",
   "targets": {
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/libs/max-graph"],
-      "options": {
-        "jestConfig": "libs/max-graph/jest.config.ts",
-        "tsConfig": "libs/max-graph/tsconfig.spec.json"
-      }
-    },
     "lint": {
       "executor": "@nx/eslint:lint"
+    },
+    "build": {
+      "executor": "@angular/build:ng-packagr",
+      "outputs": ["{workspaceRoot}/dist/libs/max-graph"],
+      "options": {
+        "project": "libs/max-graph/ng-package.json"
+      },
+      "dependsOn": []
     }
   }
 }

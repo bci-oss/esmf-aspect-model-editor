@@ -11,6 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {beforeEach, describe, expect, it, vi} from 'vitest';
+
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {TestBed} from '@angular/core/testing';
@@ -31,25 +33,25 @@ import {RdfListService} from './rdf-list.service';
 import {ListProperties} from './rdf-list.types';
 
 class MockSamm {
-  isRdfNill = jest.fn((namedNode: string) => namedNode === 'nill');
-  isRdfFirst = jest.fn((namedNode: string) => namedNode === 'first');
-  isRdfRest = jest.fn((namedNode: string) => namedNode === 'rest');
-  RdfNil = jest.fn(() => DataFactory.namedNode('nill'));
-  RdfFirst = jest.fn(() => DataFactory.namedNode('first'));
-  RdfRest = jest.fn(() => DataFactory.namedNode('rest'));
-  NameProperty = jest.fn(() => DataFactory.namedNode('sammName'));
-  PropertiesProperty = jest.fn(() => DataFactory.namedNode('properties'));
-  OperationsProperty = jest.fn(() => DataFactory.namedNode('operations'));
-  EventsProperty = jest.fn(() => DataFactory.namedNode('events'));
-  InputProperty = jest.fn(() => DataFactory.namedNode('input'));
-  ElementsProperty = jest.fn(() => DataFactory.namedNode('elements'));
-  QuantityKindsProperty = jest.fn(() => DataFactory.namedNode('quantityKinds'));
-  ParametersProperty = jest.fn(() => DataFactory.namedNode('parameters'));
+  isRdfNill = vi.fn((namedNode: string) => namedNode === 'nill');
+  isRdfFirst = vi.fn((namedNode: string) => namedNode === 'first');
+  isRdfRest = vi.fn((namedNode: string) => namedNode === 'rest');
+  RdfNil = vi.fn(() => DataFactory.namedNode('nill'));
+  RdfFirst = vi.fn(() => DataFactory.namedNode('first'));
+  RdfRest = vi.fn(() => DataFactory.namedNode('rest'));
+  NameProperty = vi.fn(() => DataFactory.namedNode('sammName'));
+  PropertiesProperty = vi.fn(() => DataFactory.namedNode('properties'));
+  OperationsProperty = vi.fn(() => DataFactory.namedNode('operations'));
+  EventsProperty = vi.fn(() => DataFactory.namedNode('events'));
+  InputProperty = vi.fn(() => DataFactory.namedNode('input'));
+  ElementsProperty = vi.fn(() => DataFactory.namedNode('elements'));
+  QuantityKindsProperty = vi.fn(() => DataFactory.namedNode('quantityKinds'));
+  ParametersProperty = vi.fn(() => DataFactory.namedNode('parameters'));
 }
 
 class MockSammC {
-  ValuesProperty = jest.fn(() => DataFactory.namedNode('values'));
-  ElementsProperty = jest.fn(() => DataFactory.namedNode('elements'));
+  ValuesProperty = vi.fn(() => DataFactory.namedNode('values'));
+  ElementsProperty = vi.fn(() => DataFactory.namedNode('elements'));
 }
 
 class MockRDFModel {
@@ -58,9 +60,11 @@ class MockRDFModel {
   sammC = new MockSammC();
 }
 
-jest.mock('../../../../rdf/src/lib/utils/rdf-model-util');
+// NOTE(vitest-migration): relative-path vi.mock() calls are not supported by the Angular
+// unit-test builder. This entire suite is already skipped below (describe.skip), so the
+// mock (which only mattered for the disabled tests) has been removed rather than ported.
 
-jest.mock('@ame/editor', () => ({
+vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},
 }));
 
@@ -167,8 +171,8 @@ describe.skip('RDF Helper', () => {
     describe('Aspect -> Properties', () => {
       beforeEach(() => {
         setPredicate(rdfModel.samm.PropertiesProperty());
-        RdfModelUtil.resolvePredicate = jest.fn(() => rdfModel.samm.PropertiesProperty());
-        // RdfListConstants.getRelations = jest.fn(() => null);
+        RdfModelUtil.resolvePredicate = vi.fn(() => rdfModel.samm.PropertiesProperty());
+        // RdfListConstants.getRelations = vi.fn(() => null);
       });
 
       let aspect: DefaultAspect;
@@ -264,7 +268,7 @@ describe.skip('RDF Helper', () => {
     describe('Aspect -> Operations', () => {
       beforeEach(() => {
         setPredicate(rdfModel.samm.OperationsProperty());
-        RdfModelUtil.resolvePredicate = jest.fn(() => predicate);
+        RdfModelUtil.resolvePredicate = vi.fn(() => predicate);
       });
 
       let aspect: DefaultAspect;
@@ -362,7 +366,7 @@ describe.skip('RDF Helper', () => {
     describe('Entity -> Properties', () => {
       beforeEach(() => {
         setPredicate(rdfModel.samm.PropertiesProperty());
-        RdfModelUtil.resolvePredicate = jest.fn(() => predicate);
+        RdfModelUtil.resolvePredicate = vi.fn(() => predicate);
       });
 
       let entity: DefaultEntity;
@@ -454,7 +458,7 @@ describe.skip('RDF Helper', () => {
     describe('DefaultEnumeration -> number, string, boolean', () => {
       beforeEach(() => {
         setPredicate(rdfModel.sammC.ValuesProperty());
-        RdfModelUtil.resolvePredicate = jest.fn(() => predicate);
+        RdfModelUtil.resolvePredicate = vi.fn(() => predicate);
       });
 
       let enumeration: DefaultEnumeration;
@@ -517,7 +521,7 @@ describe.skip('RDF Helper', () => {
     describe('DefaultStructuredValue -> number, string, boolean', () => {
       beforeEach(() => {
         setPredicate(rdfModel.sammC.ElementsProperty());
-        RdfModelUtil.resolvePredicate = jest.fn(() => predicate);
+        RdfModelUtil.resolvePredicate = vi.fn(() => predicate);
       });
 
       let structuredValue: DefaultStructuredValue;
@@ -658,7 +662,7 @@ describe.skip('RDF Helper', () => {
   describe('emptyList', () => {
     beforeEach(() => {
       setPredicate(rdfModel.samm.PropertiesProperty());
-      RdfModelUtil.resolvePredicate = jest.fn(() => rdfModel.samm.PropertiesProperty());
+      RdfModelUtil.resolvePredicate = vi.fn(() => rdfModel.samm.PropertiesProperty());
     });
 
     it('should empty the properties list', () => {
@@ -676,7 +680,7 @@ describe.skip('RDF Helper', () => {
   describe('createEmpty()', () => {
     beforeEach(() => {
       setPredicate(rdfModel.samm.PropertiesProperty());
-      RdfModelUtil.resolvePredicate = jest.fn(() => rdfModel.samm.PropertiesProperty());
+      RdfModelUtil.resolvePredicate = vi.fn(() => rdfModel.samm.PropertiesProperty());
     });
 
     it('should create empty list', () => {

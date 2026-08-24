@@ -20,7 +20,7 @@ import {
   DefaultProperty,
   DefaultTrait,
 } from '@esmf/aspect-model-loader';
-import {describe} from '@jest/globals';
+import {describe, expect, test, vi} from 'vitest';
 import {
   AspectProps,
   CharacteristicProps,
@@ -32,7 +32,7 @@ import {
 } from '../../../aspect-model-loader/src/lib/shared/props';
 import {ShapeConnectorUtil} from './shape-connector-util';
 
-jest.mock('@ame/editor', () => ({
+vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},
 }));
 

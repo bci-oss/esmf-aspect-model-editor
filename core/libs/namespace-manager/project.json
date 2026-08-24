@@ -5,16 +5,16 @@
   "sourceRoot": "libs/namespace-manager/src",
   "prefix": "ame",
   "targets": {
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/libs/namespace-manager"],
-      "options": {
-        "jestConfig": "libs/namespace-manager/jest.config.ts",
-        "tsConfig": "libs/namespace-manager/tsconfig.spec.json"
-      }
-    },
     "lint": {
       "executor": "@nx/eslint:lint"
+    },
+    "build": {
+      "executor": "@angular/build:ng-packagr",
+      "outputs": ["{workspaceRoot}/dist/libs/namespace-manager"],
+      "options": {
+        "project": "libs/namespace-manager/ng-package.json"
+      },
+      "dependsOn": []
     }
   }
 }

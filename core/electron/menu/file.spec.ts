@@ -11,39 +11,39 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {describe, it, expect, beforeEach, jest} from '@jest/globals';
 import {BrowserWindow} from 'electron';
+import {beforeEach, describe, expect, it, MockedFunction, vi} from 'vitest';
 import {EVENTS} from '../events/events';
 import {file} from './file';
 
-jest.mock('electron', () => ({
-  BrowserWindow: Object.assign(jest.fn(), {getFocusedWindow: jest.fn()}),
+vi.mock('electron', () => ({
+  BrowserWindow: Object.assign(vi.fn(), {getFocusedWindow: vi.fn()}),
 }));
 
-jest.mock('../utils/icon-utils', () => ({
-  getIcon: jest.fn(() => 'mock-icon'),
+vi.mock('../utils/icon-utils', () => ({
+  getIcon: vi.fn(() => 'mock-icon'),
 }));
 
-jest.mock('../const/icons', () => ({
+vi.mock('../const/icons', () => ({
   icons: new Proxy({}, {get: () => ({enabled: 'icon-path', disabled: 'icon-path-disabled'})}),
 }));
 
-jest.mock('../const/paths', () => ({
+vi.mock('../const/paths', () => ({
   paths: {models: '/mock/models'},
 }));
 
-jest.mock('../utils/file-utils', () => ({
-  openFile: jest.fn(),
-  getFileInfo: jest.fn(),
+vi.mock('../utils/file-utils', () => ({
+  openFile: vi.fn(),
+  getFileInfo: vi.fn(),
 }));
 
-import {openFile, getFileInfo} from '../utils/file-utils';
+import {getFileInfo, openFile} from '../utils/file-utils';
 
-const mockedOpenFile = openFile as unknown as jest.MockedFunction<(...args: any[]) => any>;
-const mockedGetFileInfo = getFileInfo as unknown as jest.MockedFunction<(...args: any[]) => any>;
-const mockedGetFocusedWindow = BrowserWindow.getFocusedWindow as unknown as jest.MockedFunction<(...args: any[]) => any>;
+const mockedOpenFile = openFile as unknown as MockedFunction<(...args: any[]) => any>;
+const mockedGetFileInfo = getFileInfo as unknown as MockedFunction<(...args: any[]) => any>;
+const mockedGetFocusedWindow = BrowserWindow.getFocusedWindow as unknown as MockedFunction<(...args: any[]) => any>;
 
-const mockSend = jest.fn();
+const mockSend = vi.fn();
 const mockWin = {webContents: {send: mockSend}};
 
 const translation = {
@@ -67,7 +67,7 @@ const translation = {
 
 describe('file menu', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockedGetFocusedWindow.mockReturnValue(mockWin);
   });
 

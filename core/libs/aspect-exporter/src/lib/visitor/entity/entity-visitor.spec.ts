@@ -16,13 +16,13 @@ import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {MaxGraphService} from '@ame/max-graph';
 import {TestBed} from '@angular/core/testing';
 import {DefaultEntity, DefaultProperty, ModelElementCache, RdfModel, Samm} from '@esmf/aspect-model-loader';
-import {describe, expect, it} from '@jest/globals';
 import {Store} from 'n3';
 import {MockProvider, MockProviders} from 'ng-mocks';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {RdfListService} from '../../rdf-list';
 import {EntityVisitor} from './entity-visitor';
 
-jest.mock('@ame/editor', () => ({
+vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},
 }));
 
@@ -33,8 +33,8 @@ describe('Entity Visitor', () => {
     store: new Store(),
     samm: new Samm(''),
     sammC: {ConstraintProperty: () => 'constraintProperty'} as any,
-    hasDependency: jest.fn(() => false),
-    addPrefix: jest.fn(() => {}),
+    hasDependency: vi.fn(() => false),
+    addPrefix: vi.fn(() => {}),
   } as any;
 
   const property = new DefaultProperty({metaModelVersion: '1', aspectModelUrn: 'samm#property1', name: 'property1', characteristic: null});
@@ -47,11 +47,11 @@ describe('Entity Visitor', () => {
         MockProviders(MaxGraphService),
         MockProvider(MaxGraphService),
         MockProvider(RdfListService, {
-          push: jest.fn(),
-          createEmpty: jest.fn(),
+          push: vi.fn(),
+          createEmpty: vi.fn(),
         }),
         MockProvider(RdfNodeService, {
-          update: jest.fn(),
+          update: vi.fn(),
         }),
         MockProvider(LoadedFilesService, {
           currentLoadedFile: new NamespaceFile(rdfModel, new ModelElementCache(), null),

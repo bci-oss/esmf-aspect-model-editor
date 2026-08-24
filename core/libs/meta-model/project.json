@@ -5,16 +5,16 @@
   "sourceRoot": "libs/meta-model/src",
   "prefix": "ame",
   "targets": {
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/libs/meta-model"],
-      "options": {
-        "jestConfig": "libs/meta-model/jest.config.ts",
-        "tsConfig": "libs/meta-model/tsconfig.spec.json"
-      }
-    },
     "lint": {
       "executor": "@nx/eslint:lint"
+    },
+    "build": {
+      "executor": "@angular/build:ng-packagr",
+      "outputs": ["{workspaceRoot}/dist/libs/meta-model"],
+      "options": {
+        "project": "libs/meta-model/ng-package.json"
+      },
+      "dependsOn": []
     }
   }
 }

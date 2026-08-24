@@ -11,6 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {vi} from 'vitest';
+
 export const provideMockObject = <T>(service: T) => {
   if (typeof service !== 'function') {
     throw new Error('"service" needs to be a class or function');
@@ -24,7 +26,7 @@ export const provideMockObject = <T>(service: T) => {
       }
 
       if (typeof service.prototype[key] === 'function') {
-        object[key] = jest.fn();
+        object[key] = vi.fn();
         continue;
       }
 

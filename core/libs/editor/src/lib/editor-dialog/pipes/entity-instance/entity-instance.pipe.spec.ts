@@ -11,10 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {beforeEach, describe, expect, test, vi} from 'vitest';
+
 import {EntityInstancePipe} from '@ame/editor';
 import {DefaultEntityInstance} from '@esmf/aspect-model-loader';
 
-jest.mock('@ame/editor', () => ({
+vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},
   EntityInstancePipe: class {
     transform(value: any, search: string) {

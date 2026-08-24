@@ -11,19 +11,17 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {beforeEach, describe, expect, it, vi} from 'vitest';
+
 import {MaxGraphService} from '@ame/max-graph';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {DefaultAspect, DefaultCharacteristic, DefaultEntity, DefaultProperty} from '@esmf/aspect-model-loader';
-import {provideMockObject} from 'jest-helpers';
+import {provideMockObject} from '../../../../../jest-helpers';
 import {ModelElementParserPipe} from '../editor-dialog';
 import {ConnectWithDialogComponent} from './connect-with-dialog.component';
-
-jest.mock('../editor-dialog/components/entity-instance/entity-instance-table/entity-instance-table.component', () => ({
-  EntityInstanceTableComponent: class {},
-}));
 
 const cell: any = {
   getMetaModelElement: () =>
@@ -90,7 +88,7 @@ describe('RdfNodeService', () => {
     });
 
     maxgraphService = TestBed.inject(MaxGraphService);
-    maxgraphService.getAllCells = jest.fn(() => cells as any[]);
+    maxgraphService.getAllCells = vi.fn(() => cells as any[]);
 
     dialogRef = TestBed.inject(MatDialogRef);
 

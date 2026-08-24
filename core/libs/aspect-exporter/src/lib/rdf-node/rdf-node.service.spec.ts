@@ -15,9 +15,9 @@ import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {TestBed} from '@angular/core/testing';
 import {ModelElementCache, RdfModel, Samm, SammC, SammU} from '@esmf/aspect-model-loader';
-import {describe, expect, it} from '@jest/globals';
 import {DataFactory, Quad, Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {RdfNodeService} from './rdf-node.service';
 
 class MockRDFModel {
@@ -27,7 +27,7 @@ class MockRDFModel {
   sammU = new SammU(this.samm);
 }
 
-jest.mock('@ame/editor', () => ({
+vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},
 }));
 
@@ -37,7 +37,7 @@ describe('RdfNodeService', () => {
   const mockModelElement1: any = {aspectModelUrn: 'aspectModelUrn1', metaModelVersion: '1.2.3'};
   const mockModelElement2: any = {aspectModelUrn: 'aspectModelUrn2', metaModelVersion: '1.2.3'};
 
-  RdfModelUtil.getFullQualifiedModelName = jest.fn().mockReturnValue('elementType');
+  RdfModelUtil.getFullQualifiedModelName = vi.fn().mockReturnValue('elementType');
 
   beforeEach(() => {
     rdfModel = new MockRDFModel();

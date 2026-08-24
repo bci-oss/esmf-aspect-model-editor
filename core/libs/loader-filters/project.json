@@ -5,16 +5,16 @@
   "sourceRoot": "libs/loader-filters/src",
   "prefix": "ame",
   "targets": {
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/libs/loader-filters"],
-      "options": {
-        "jestConfig": "libs/loader-filters/jest.config.ts",
-        "tsConfig": "libs/loader-filters/tsconfig.spec.json"
-      }
-    },
     "lint": {
       "executor": "@nx/eslint:lint"
+    },
+    "build": {
+      "executor": "@angular/build:ng-packagr",
+      "outputs": ["{workspaceRoot}/dist/libs/loader-filters"],
+      "options": {
+        "project": "libs/loader-filters/ng-package.json"
+      },
+      "dependsOn": []
     }
   }
 }

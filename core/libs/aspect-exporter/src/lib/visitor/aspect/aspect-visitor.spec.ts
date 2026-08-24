@@ -15,14 +15,14 @@ import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {MaxGraphService} from '@ame/max-graph';
 import {TestBed} from '@angular/core/testing';
 import {DefaultAspect, DefaultProperty, ModelElementCache, RdfModel, Samm} from '@esmf/aspect-model-loader';
-import {describe, expect, it} from '@jest/globals';
 import {Store} from 'n3';
 import {MockProvider, MockProviders} from 'ng-mocks';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {ListProperties, RdfListService} from '../../rdf-list';
 import {RdfNodeService} from '../../rdf-node/rdf-node.service';
 import {AspectVisitor} from './aspect-visitor';
 
-jest.mock('@ame/editor', () => ({
+vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},
 }));
 
@@ -32,8 +32,8 @@ describe('Aspect Visitor', () => {
   const rdfModel: RdfModel = {
     store: new Store(),
     samm: new Samm(''),
-    hasDependency: jest.fn(() => false),
-    addPrefix: jest.fn(() => {}),
+    hasDependency: vi.fn(() => false),
+    addPrefix: vi.fn(() => {}),
   } as any;
 
   const aspect = new DefaultAspect({metaModelVersion: '1', aspectModelUrn: 'samm#aspect', name: 'aspect1'});
@@ -45,11 +45,11 @@ describe('Aspect Visitor', () => {
         MockProviders(MaxGraphService),
         MockProvider(MaxGraphService),
         MockProvider(RdfListService, {
-          push: jest.fn(),
-          createEmpty: jest.fn(),
+          push: vi.fn(),
+          createEmpty: vi.fn(),
         }),
         MockProvider(RdfNodeService, {
-          update: jest.fn(),
+          update: vi.fn(),
         }),
         MockProvider(LoadedFilesService, {
           currentLoadedFile: new NamespaceFile(rdfModel, new ModelElementCache(), null),

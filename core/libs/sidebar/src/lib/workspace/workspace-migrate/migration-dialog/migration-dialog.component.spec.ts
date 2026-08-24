@@ -10,6 +10,8 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
+import {beforeEach, describe, expect, it, vi} from 'vitest';
+
 import {MigratorApiService} from '@ame/api';
 import {APP_CONFIG, NotificationsService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
@@ -19,15 +21,15 @@ import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {RouterTestingModule} from '@angular/router/testing';
-import {provideMockObject} from 'jest-helpers';
 import {of} from 'rxjs';
+import {provideMockObject} from '../../../../../../../jest-helpers';
 
 import {LanguageTranslationService} from '@ame/translation';
 import {TranslateModule, TranslatePipe} from '@ngx-translate/core';
 import {MockProvider} from 'ng-mocks';
 import {MigrationDialogComponent} from './migration-dialog.component';
 
-jest.mock('@ame/editor', () => ({
+vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},
 }));
 
@@ -69,7 +71,7 @@ describe('MigrationDialogComponent', () => {
     });
 
     migratorApiService = TestBed.inject(MigratorApiService);
-    migratorApiService.createBackup = jest.fn(() => of());
+    migratorApiService.createBackup = vi.fn(() => of());
 
     fixture = TestBed.createComponent(MigrationDialogComponent);
     component = fixture.componentInstance;

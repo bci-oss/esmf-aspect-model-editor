@@ -11,10 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {describe, expect, it, vi} from 'vitest';
+
 import {readFile} from '@ame/utils';
 import {lastValueFrom} from 'rxjs';
 
-jest.mock('@ame/editor', () => ({
+vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},
 }));
 
@@ -26,39 +28,43 @@ describe('utils', () => {
     expect(result).toEqual(fileContent);
   });
 
-  it('should complete the stream after first emit', done => {
+  it('should complete the stream after first emit', () => {
     const fileContent = 'foo';
     const file = new File([fileContent], 'test.txt');
-    const nextMock = jest.fn();
-    const errorMock = jest.fn();
+    const nextMock = vi.fn();
+    const errorMock = vi.fn();
 
-    readFile(file).subscribe({
-      next: nextMock,
-      error: errorMock,
-      complete: () => {
-        expect(nextMock).toHaveBeenCalledTimes(1);
-        expect(nextMock).toHaveBeenCalledWith(fileContent);
-        expect(errorMock).not.toHaveBeenCalled();
-        done();
-      },
+    return new Promise<void>(resolve => {
+      readFile(file).subscribe({
+        next: nextMock,
+        error: errorMock,
+        complete: () => {
+          expect(nextMock).toHaveBeenCalledTimes(1);
+          expect(nextMock).toHaveBeenCalledWith(fileContent);
+          expect(errorMock).not.toHaveBeenCalled();
+          resolve();
+        },
+      });
     });
   });
 
-  it('should emit error', done => {
+  it('should emit error', () => {
     const invalidFile = null;
-    const nextMock = jest.fn();
-    const completeMock = jest.fn();
+    const nextMock = vi.fn();
+    const completeMock = vi.fn();
 
-    readFile(invalidFile).subscribe({
-      next: nextMock,
-      error: err => {
-        expect(nextMock).not.toHaveBeenCalled();
-        expect(completeMock).not.toHaveBeenCalled();
-        expect(err).toBeInstanceOf(Error);
-        expect(err.message).toBeTruthy();
-        done();
-      },
-      complete: () => completeMock,
+    return new Promise<void>(resolve => {
+      readFile(invalidFile).subscribe({
+        next: nextMock,
+        error: err => {
+          expect(nextMock).not.toHaveBeenCalled();
+          expect(completeMock).not.toHaveBeenCalled();
+          expect(err).toBeInstanceOf(Error);
+          expect(err.message).toBeTruthy();
+          resolve();
+        },
+        complete: () => completeMock,
+      });
     });
   });
 });

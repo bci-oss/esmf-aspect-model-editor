@@ -20,11 +20,11 @@ import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
-import {beforeEach, describe, expect, it} from '@jest/globals';
 import {TranslateModule, TranslatePipe} from '@ngx-translate/core';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {provideMockObject} from '../../../../../../jest-helpers';
 
-jest.mock('@ame/editor', () => ({
+vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},
 }));
 

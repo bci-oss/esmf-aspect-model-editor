@@ -5,16 +5,16 @@
   "sourceRoot": "libs/translation/src",
   "prefix": "ame",
   "targets": {
-    "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/libs/translation"],
-      "options": {
-        "jestConfig": "libs/translation/jest.config.ts",
-        "tsConfig": "libs/translation/tsconfig.spec.json"
-      }
-    },
     "lint": {
       "executor": "@nx/eslint:lint"
+    },
+    "build": {
+      "executor": "@angular/build:ng-packagr",
+      "outputs": ["{workspaceRoot}/dist/libs/translation"],
+      "options": {
+        "project": "libs/translation/ng-package.json"
+      },
+      "dependsOn": []
     }
   }
 }

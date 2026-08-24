@@ -2,8 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",
-    "types": ["node"],
-    "target": "es2016"
+    "types": ["node"]
   },
   "include": ["**/*.spec.ts", "**/*.d.ts"],
   "angularCompilerOptions": {

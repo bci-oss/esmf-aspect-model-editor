@@ -65,7 +65,7 @@ import {
 } from '@esmf/aspect-model-loader';
 import {TranslateModule, TranslatePipe} from '@ngx-translate/core';
 import {beforeEach, describe, expect, Mocked, test, vi} from 'vitest';
-import {provideMockObject} from '../../../../jest-helpers/utils';
+import {provideMockObject} from '../../../../test-helpers/utils';
 import {EnumerationValueConnectionHandler} from './multi-shape-connection-handlers/enumeration--value.service';
 import {PropertyValueConnectionHandler} from './multi-shape-connection-handlers/property--value.service';
 

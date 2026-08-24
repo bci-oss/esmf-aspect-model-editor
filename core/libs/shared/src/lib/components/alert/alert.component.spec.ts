@@ -20,7 +20,7 @@ import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {TranslateModule, TranslatePipe} from '@ngx-translate/core';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {provideMockObject} from '../../../../../../jest-helpers';
+import {provideMockObject} from '../../../../../../test-helpers';
 import {AlertComponent} from './alert.component';
 
 vi.mock('@ame/editor', () => ({

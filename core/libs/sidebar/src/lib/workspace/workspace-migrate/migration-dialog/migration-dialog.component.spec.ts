@@ -22,7 +22,7 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {RouterTestingModule} from '@angular/router/testing';
 import {of} from 'rxjs';
-import {provideMockObject} from '../../../../../../../jest-helpers';
+import {provideMockObject} from '../../../../../../../test-helpers';
 
 import {LanguageTranslationService} from '@ame/translation';
 import {TranslateModule, TranslatePipe} from '@ngx-translate/core';

@@ -15,7 +15,7 @@ import {TestBed} from '@angular/core/testing';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {DomainModelToRdfService} from '@ame/aspect-exporter';
-import {provideMockObject} from '../../../../jest-helpers';
+import {provideMockObject} from '../../../../test-helpers';
 
 vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},

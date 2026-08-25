@@ -24,10 +24,12 @@ export class TraitWithCharacteristicOrConstraintConnectionHandler implements Mul
 > {
   private maxgraphService = inject(MaxGraphService);
 
-  public connect(parentMetaModel: DefaultTrait, childMetaModel: DefaultCharacteristic, parent: Cell, child: Cell) {
+  public connect(parentMetaModel: DefaultTrait, childMetaModel: DefaultCharacteristic | DefaultConstraint, parent: Cell, child: Cell) {
     if (childMetaModel instanceof DefaultConstraint) {
       parentMetaModel.constraints.push(childMetaModel);
-    } else parentMetaModel.baseCharacteristic = childMetaModel;
+    } else {
+      parentMetaModel.baseCharacteristic = childMetaModel;
+    }
     this.maxgraphService.assignToParent(child, parent);
   }
 }

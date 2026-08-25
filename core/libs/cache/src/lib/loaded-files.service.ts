@@ -257,9 +257,8 @@ export class LoadedFilesService {
         throw new Error('parts array is empty');
       }
 
+      file.name = lastPart;
       file.namespace = parts.join(':');
-    } else {
-      file.name = parts[0];
     }
 
     if (rewriteOriginal) {

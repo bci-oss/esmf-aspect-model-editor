@@ -49,6 +49,7 @@ import {
   EntityEntityConnectionHandler,
   EntityPropertyConnectionHandler,
   EnumerationEntityValueConnectionHandler,
+  EnumerationValueConnectionHandler,
   EventPropertyConnectionHandler,
   OperationPropertyInputConnectionHandler,
   OperationPropertyOutputConnectionHandler,
@@ -56,11 +57,10 @@ import {
   PropertyCharacteristicConnectionHandler,
   PropertyPropertyConnectionHandler,
   PropertyStructuredValueConnectionHandler,
+  PropertyValueConnectionHandler,
   StructuredValueCharacteristicPropertyConnectionHandler,
   TraitWithCharacteristicOrConstraintConnectionHandler,
 } from './multi-shape-connection-handlers';
-import {EnumerationValueConnectionHandler} from './multi-shape-connection-handlers/enumeration--value.service';
-import {PropertyValueConnectionHandler} from './multi-shape-connection-handlers/property--value.service';
 import {
   AbstractEntityConnectionHandler,
   AspectConnectionHandler,

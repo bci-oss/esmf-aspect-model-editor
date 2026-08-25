@@ -16,7 +16,8 @@ import {NotificationsService} from '@ame/shared';
 import {Injectable, inject} from '@angular/core';
 import {DefaultProperty} from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
-import {MultiShapeConnector, PropertyInheritanceConnector} from '../models';
+import {PropertyInheritanceConnector} from '../models/property-inheritance-connector';
+import {MultiShapeConnector} from '../models/shape-connectors.interface';
 
 @Injectable({providedIn: 'root'})
 export class AbstractPropertyAbstractPropertyConnectionHandler

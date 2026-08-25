@@ -11,6 +11,20 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {vi} from 'vitest';
+
+vi.mock('@ame/loader-filters', () => ({
+  ModelFilter: {
+    DEFAULT: 'mock-default',
+  },
+}));
+
+vi.mock('@ame/editor', () => ({
+  ModelElementEditorComponent: class {},
+}));
+
+import {beforeEach, describe, expect, Mocked, test} from 'vitest';
+
 import {
   AbstractEntityAbstractEntityConnectionHandler,
   AbstractEntityAbstractPropertyConnectionHandler,
@@ -34,6 +48,7 @@ import {
   EntityPropertyConnectionHandler,
   EntityValueConnectionHandler,
   EnumerationEntityValueConnectionHandler,
+  EnumerationValueConnectionHandler,
   EventConnectionHandler,
   EventPropertyConnectionHandler,
   OperationConnectionHandler,
@@ -43,6 +58,7 @@ import {
   PropertyCharacteristicConnectionHandler,
   PropertyConnectionHandler,
   PropertyPropertyConnectionHandler,
+  PropertyValueConnectionHandler,
   ShapeConnectorService,
   StructuredValueCharacteristicPropertyConnectionHandler,
   StructuredValueConnectionHandler,
@@ -64,20 +80,7 @@ import {
   DefaultTrait,
 } from '@esmf/aspect-model-loader';
 import {TranslocoTestingModule} from '@jsverse/transloco';
-import {beforeEach, describe, expect, Mocked, test, vi} from 'vitest';
 import {provideMockObject} from '../../../../test-helpers/utils';
-import {EnumerationValueConnectionHandler} from './multi-shape-connection-handlers/enumeration--value.service';
-import {PropertyValueConnectionHandler} from './multi-shape-connection-handlers/property--value.service';
-
-vi.mock('@ame/loader-filters', () => ({
-  ModelFilter: {
-    DEFAULT: 'mock-default',
-  },
-}));
-
-vi.mock('@ame/editor', () => ({
-  ModelElementEditorComponent: class {},
-}));
 
 describe('Test Shape connector service', () => {
   let service: ShapeConnectorService;

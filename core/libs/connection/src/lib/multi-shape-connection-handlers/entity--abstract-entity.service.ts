@@ -16,7 +16,8 @@ import {NotificationsService} from '@ame/shared';
 import {Injectable, inject} from '@angular/core';
 import {DefaultEntity} from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
-import {EntityInheritanceConnector, MultiShapeConnector} from '../models';
+import {EntityInheritanceConnector} from '../models/entity-inheritance-connector';
+import {MultiShapeConnector} from '../models/shape-connectors.interface';
 
 @Injectable({providedIn: 'root'})
 export class EntityAbstractEntityConnectionHandler

@@ -12,19 +12,9 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {FiltersService} from '@ame/loader-filters';
-import {
-  MaxGraphAttributeService,
-  MaxGraphHelper,
-  MaxGraphRenderer,
-  MaxGraphService,
-  MaxGraphShapeOverlayService,
-  MaxGraphVisitorHelper,
-  ModelInfo,
-} from '@ame/max-graph';
+import {MaxGraphHelper, MaxGraphRenderer, MaxGraphShapeOverlayService, ModelInfo} from '@ame/max-graph';
 import {ModelElementNamingService} from '@ame/meta-model';
-import {SammLanguageSettingsService} from '@ame/settings-dialog';
-import {config, ElementCreatorService} from '@ame/shared';
+import {config} from '@ame/shared';
 import {useUpdater} from '@ame/utils';
 import {inject, Injectable} from '@angular/core';
 import {
@@ -37,21 +27,17 @@ import {
   DefaultEnumeration,
   DefaultProperty,
   DefaultTrait,
+  ScalarValue,
 } from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
-import {ScalarValue} from 'libs/aspect-model-loader/src/lib/aspect-meta-model/scalar-value';
+import {BaseConnectionHandler} from '../base-connection-handler.service';
 import {SingleShapeConnector} from '../models';
 
 @Injectable({providedIn: 'root'})
-export class CharacteristicConnectionHandler implements SingleShapeConnector<Characteristic> {
-  private maxgraphService = inject(MaxGraphService);
+export class CharacteristicConnectionHandler extends BaseConnectionHandler implements SingleShapeConnector<Characteristic> {
   private modelElementNamingService = inject(ModelElementNamingService);
-  private maxgraphAttributeService = inject(MaxGraphAttributeService);
   private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
-  private sammLangService = inject(SammLanguageSettingsService);
-  private filtersService = inject(FiltersService);
   private loadedFilesService = inject(LoadedFilesService);
-  private elementCreator = inject(ElementCreatorService);
 
   get currentCachedFile() {
     return this.loadedFilesService.currentLoadedFile.cachedFile;
@@ -151,8 +137,7 @@ export class CharacteristicConnectionHandler implements SingleShapeConnector<Cha
       if (edgeSourceMetaModelElement instanceof DefaultProperty) {
         // remove example value for complex datatypes
         edgeSourceMetaModelElement.exampleValue = null;
-        edgeSource['configuration'].fields = MaxGraphVisitorHelper.getElementProperties(edgeSourceMetaModelElement, this.sammLangService);
-        this.maxgraphAttributeService.graph.labelChanged(edgeSource, MaxGraphHelper.createPropertiesLabel(edgeSource), null);
+        this.refreshPropertiesLabel(edgeSource, edgeSourceMetaModelElement);
       }
     });
 

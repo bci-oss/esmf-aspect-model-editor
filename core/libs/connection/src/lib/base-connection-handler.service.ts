@@ -33,10 +33,12 @@ export class BaseConnectionHandler {
   protected readonly elementCreator = inject(ElementCreatorService);
   protected readonly maxgraphService = inject(MaxGraphService);
   protected readonly filtersService = inject(FiltersService);
-  protected maxgraphShapeOverlay = inject(MaxGraphShapeOverlayService);
+  protected readonly maxgraphShapeOverlay = inject(MaxGraphShapeOverlayService);
 
   refreshPropertiesLabel(cell: Cell, modelElement: NamedElement) {
-    cell['configuration'].fields = MaxGraphVisitorHelper.getElementProperties(modelElement, this.sammLangService);
+    if (cell && (cell as any).configuration) {
+      (cell as any).configuration.fields = MaxGraphVisitorHelper.getElementProperties(modelElement, this.sammLangService);
+    }
     this.maxgraphAttributeService.graph.labelChanged(cell, MaxGraphHelper.createPropertiesLabel(cell), null);
   }
 

@@ -51,7 +51,7 @@ export class CharacteristicEntityConnectionHandler implements MultiShapeConnecto
     }
 
     parentMetaModel.dataType = childMetaModel;
-    this.maxgraphAttributeService.graph.getOutgoingEdges(parent, null).forEach(outEdge => this.removeCells(outEdge, null));
+    this.maxgraphAttributeService.graph.getOutgoingEdges(parent, null).forEach(outEdge => this.removeCells(outEdge, parent));
     this.maxgraphShapeOverlayService.removeOverlay(parent, MaxGraphHelper.getNewShapeOverlayButton(parent));
 
     // Add icon when you simply connect an enumeration with an entity.
@@ -106,7 +106,7 @@ export class CharacteristicEntityConnectionHandler implements MultiShapeConnecto
         MaxGraphHelper.removeRelation(metaModel, child);
       }
 
-      this.maxgraphAttributeService.graph.getOutgoingEdges(edge.target, null).forEach(outEdge => this.removeCells(outEdge, null));
+      this.maxgraphAttributeService.graph.getOutgoingEdges(edge.target, null).forEach(outEdge => this.removeCells(outEdge, edge.target));
       this.maxgraphService.removeCells([edge.target]);
       this.currentCachedFile.removeElement(metaModel.aspectModelUrn);
     }

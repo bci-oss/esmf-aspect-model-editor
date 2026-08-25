@@ -23,9 +23,9 @@ export class CollectionCharacteristicConnectionHandler implements MultiShapeConn
   private maxgraphAttributeService = inject(MaxGraphAttributeService);
   public connect(parentMetaModel: DefaultCollection, childMetaModel: DefaultCharacteristic, parent: Cell, child: Cell) {
     this.maxgraphAttributeService.graph.getOutgoingEdges(parent, null).forEach(outEdge => {
-      if (outEdge.target && !((outEdge.target as any).getMetaModelElement() instanceof DefaultEntity)) {
-        const entity = (outEdge.target as any).getMetaModelElement();
-        MaxGraphHelper.removeRelation(parentMetaModel, entity);
+      const targetModel = MaxGraphHelper.getModelElement(outEdge?.target);
+      if (outEdge.target && !(targetModel instanceof DefaultEntity)) {
+        MaxGraphHelper.removeRelation(parentMetaModel, targetModel);
         this.maxgraphService.removeCells([parent.removeEdge(outEdge, true)]);
       }
     });

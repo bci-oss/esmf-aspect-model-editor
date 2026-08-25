@@ -11,8 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MaxGraphAttributeService, MaxGraphHelper, MaxGraphService, MaxGraphVisitorHelper} from '@ame/max-graph';
-import {SammLanguageSettingsService} from '@ame/settings-dialog';
+import {MaxGraphHelper} from '@ame/max-graph';
 import {NotificationsService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {inject} from '@angular/core';
@@ -21,11 +20,8 @@ import {Cell} from '@maxgraph/core';
 import {BaseConnectionHandler} from '../base-connection-handler.service';
 
 export abstract class InheritanceConnector extends BaseConnectionHandler {
-  protected maxgraphService = inject(MaxGraphService);
-  protected maxgraphAttributeService = inject(MaxGraphAttributeService);
-  protected sammLangService = inject(SammLanguageSettingsService);
-  protected notificationsService = inject(NotificationsService);
-  protected translate = inject(LanguageTranslationService);
+  protected readonly notificationsService = inject(NotificationsService);
+  protected readonly translate = inject(LanguageTranslationService);
 
   public connect(parentMetaModel: NamedElement, childMetaModel: NamedElement, parentCell: Cell, childCell: Cell) {
     if (parentMetaModel?.isPredefined) {
@@ -34,13 +30,12 @@ export abstract class InheritanceConnector extends BaseConnectionHandler {
     }
 
     if (parentMetaModel instanceof DefaultProperty || parentMetaModel instanceof DefaultEntity) {
-      (parentMetaModel.extends_ as any) = childMetaModel;
+      (parentMetaModel as DefaultProperty | DefaultEntity).extends_ = childMetaModel as any;
     }
 
     this.checkAndRemoveExtendElement(parentCell);
     this.maxgraphService.assignToParent(childCell, parentCell);
-    parentCell['configuration'].fields = MaxGraphVisitorHelper.getElementProperties(parentMetaModel, this.sammLangService);
-    this.maxgraphAttributeService.graph.labelChanged(parentCell, MaxGraphHelper.createPropertiesLabel(parentCell), null);
+    this.refreshPropertiesLabel(parentCell, parentMetaModel);
   }
 
   public checkAndRemoveExtendElement(parentCell: Cell) {

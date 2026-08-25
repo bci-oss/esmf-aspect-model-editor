@@ -28,14 +28,29 @@ export abstract class NamedElement extends ModelElement {
   descriptions: Map<LangString, string> = new Map();
   see: string[] = [];
   parents: ElementSet = new ElementSet();
+  previousAspectModelUrn?: string;
 
   set name(value: string) {
     this._name = value;
     const [namespace] = this.aspectModelUrn.split('#');
-    this.aspectModelUrn = `${namespace}#${value}`;
+    const newAspectModelUrn = `${namespace}#${value}`;
+    if (this.aspectModelUrn && newAspectModelUrn !== this.aspectModelUrn) {
+      this.previousAspectModelUrn = this.aspectModelUrn;
+    }
+    this.aspectModelUrn = newAspectModelUrn;
   }
   get name() {
     return this._name;
+  }
+
+  /**
+   * Returns the aspectModelUrn the element had before its last rename (if any) and
+   * clears the tracked value so it is only reported once.
+   */
+  consumePreviousAspectModelUrn(): string | undefined {
+    const previous = this.previousAspectModelUrn;
+    this.previousAspectModelUrn = undefined;
+    return previous;
   }
 
   constructor(props: NamedElementProps) {

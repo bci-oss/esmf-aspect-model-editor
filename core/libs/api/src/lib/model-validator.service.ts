@@ -18,8 +18,8 @@ import {inject, Injectable} from '@angular/core';
 
 @Injectable({providedIn: 'root'})
 export class ModelValidatorService {
-  private maxgraphService = inject(MaxGraphService);
-  private notificationsService = inject(NotificationsService);
+  private readonly maxgraphService = inject(MaxGraphService);
+  private readonly notificationsService = inject(NotificationsService);
 
   constructor() {
     this.notificationsService.clearNotifications();

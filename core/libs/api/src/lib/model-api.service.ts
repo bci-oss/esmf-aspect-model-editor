@@ -24,17 +24,17 @@ import {ModelData, WorkspaceStructure} from './models';
 
 @Injectable({providedIn: 'root'})
 export class ModelApiService {
-  private ipcRenderer = inject(IPC_RENDERER);
-  private config: AppConfig = inject(APP_CONFIG);
-  private http = inject(HttpClient);
-  private browserService = inject(BrowserService);
-  private modelValidatorService = inject(ModelValidatorService);
-  private translate = inject(LanguageTranslationService);
+  private readonly ipcRenderer = inject(IPC_RENDERER);
+  private readonly config: AppConfig = inject(APP_CONFIG);
+  private readonly http = inject(HttpClient);
+  private readonly browserService = inject(BrowserService);
+  private readonly modelValidatorService = inject(ModelValidatorService);
+  private readonly translate = inject(LanguageTranslationService);
 
-  private defaultPort = this.config.defaultPort;
+  private readonly defaultPort = this.config.defaultPort;
+  private readonly api = this.config.api;
+  private readonly requestTimeout = 60000;
   private serviceUrl = this.config.serviceUrl;
-  private api = this.config.api;
-  private requestTimeout = 60000;
 
   constructor() {
     if (this.browserService.isStartedAsElectronApp() && !window.location.search.includes('?e2e=true')) {
@@ -73,7 +73,7 @@ export class ModelApiService {
   }
 
   saveAspectModel(rdfContent: string, aspectModelUrn: string, absoluteModelName?: string): Observable<string> {
-    if (RdfModelUtil.splitRdfIntoChunks(absoluteModelName)[2] === 'new-model.ttl') {
+    if (absoluteModelName && RdfModelUtil.splitRdfIntoChunks(absoluteModelName)[2] === 'new-model.ttl') {
       return throwError(() => ({
         error: {
           message: this.translate.language.notificationService.aspectSavedDefaultModel,

@@ -5,6 +5,14 @@
   "sourceRoot": "libs/api/src",
   "prefix": "ame",
   "targets": {
+    "test": {
+      "executor": "@angular/build:unit-test",
+      "outputs": ["{workspaceRoot}/coverage/libs/api"],
+      "options": {
+        "tsConfig": "libs/api/tsconfig.spec.json",
+        "buildTarget": "api:build"
+      }
+    },
     "lint": {
       "executor": "@nx/eslint:lint"
     },

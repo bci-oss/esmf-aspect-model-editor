@@ -15,23 +15,26 @@ import {ModelLoaderService} from '@ame/editor';
 import {APP_CONFIG, AppConfig, BrowserService, IPC_RENDERER} from '@ame/shared';
 import {ExporterHelper} from '@ame/sidebar';
 import {HttpClient} from '@angular/common/http';
-import {Injectable, inject} from '@angular/core';
+import {Injectable, inject, signal} from '@angular/core';
+import {RdfModel} from '@esmf/aspect-model-loader';
 import {Observable, map} from 'rxjs';
 import {MigrationStatus} from './models';
 
 @Injectable({providedIn: 'root'})
 export class MigratorApiService {
-  private ipcRenderer = inject(IPC_RENDERER);
-  private config: AppConfig = inject(APP_CONFIG);
-  private http = inject(HttpClient);
-  private browserService = inject(BrowserService);
-  private modelLoader = inject(ModelLoaderService);
+  private readonly ipcRenderer = inject(IPC_RENDERER);
+  private readonly config: AppConfig = inject(APP_CONFIG);
+  private readonly http = inject(HttpClient);
+  private readonly browserService = inject(BrowserService);
+  private readonly modelLoader = inject(ModelLoaderService);
 
-  private defaultPort = this.config.defaultPort;
+  private readonly defaultPort = this.config.defaultPort;
+  private readonly api = this.config.api;
   private serviceUrl = this.config.serviceUrl;
-  private api = this.config.api;
 
-  public rdfModelsToMigrate = [];
+  private readonly _rdfModelsToMigrate = signal<RdfModel[]>([]);
+  /** Rdf models that are outdated and need to be migrated to the current SAMM version. */
+  readonly rdfModelsToMigrate = this._rdfModelsToMigrate.asReadonly();
 
   constructor() {
     if (this.browserService.isStartedAsElectronApp() && !window.location.search.includes('?e2e=true')) {
@@ -39,24 +42,25 @@ export class MigratorApiService {
     }
   }
 
-  public hasFilesToMigrate(): Observable<boolean> {
-    this.rdfModelsToMigrate = [];
+  hasFilesToMigrate(): Observable<boolean> {
+    this._rdfModelsToMigrate.set([]);
     return this.modelLoader.getRdfModelsFromWorkspace().pipe(
-      map(namedRdfModel => {
-        this.rdfModelsToMigrate = namedRdfModel
+      map(namedRdfModels => {
+        const outdatedRdfModels = namedRdfModels
           .filter(model => ExporterHelper.isVersionOutdated(model.version, this.config.currentSammVersion))
           .map(model => model.rdfModel);
 
-        return this.rdfModelsToMigrate.length > 0;
+        this._rdfModelsToMigrate.set(outdatedRdfModels);
+        return outdatedRdfModels.length > 0;
       }),
     );
   }
 
-  public createBackup(): Observable<string> {
+  createBackup(): Observable<string> {
     return this.http.get<string>(`${this.serviceUrl}${this.api.package}/backup-workspace`);
   }
 
-  public migrateWorkspace(setNewVersion: boolean): Observable<MigrationStatus> {
+  migrateWorkspace(setNewVersion: boolean): Observable<MigrationStatus> {
     const params = {setNewVersion: setNewVersion.toString()};
     return this.http.get<MigrationStatus>(`${this.serviceUrl}${this.api.models}/migrate-workspace`, {params});
   }

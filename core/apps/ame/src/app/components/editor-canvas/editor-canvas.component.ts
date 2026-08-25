@@ -18,15 +18,15 @@ import {ElementModelService} from '@ame/meta-model';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {ElementsSearchComponent, FilesSearchComponent, SearchesStateService} from '@ame/utils';
 import {CdkDrag, CdkDragEnd, CdkDragHandle} from '@angular/cdk/drag-drop';
-import {AsyncPipe, CommonModule} from '@angular/common';
-import {AfterViewInit, ChangeDetectorRef, Component, DestroyRef, ElementRef, inject, OnInit, viewChild} from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {CommonModule} from '@angular/common';
+import {AfterViewInit, Component, DestroyRef, ElementRef, inject, OnInit, signal, viewChild} from '@angular/core';
+import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
 import {FormGroup} from '@angular/forms';
 import {MatIconModule} from '@angular/material/icon';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NamedElement} from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
-import {fromEvent, Observable} from 'rxjs';
+import {fromEvent} from 'rxjs';
 import {debounceTime, filter, map, switchMap, tap} from 'rxjs/operators';
 import {SidebarComponent} from '../../../../../../libs/sidebar/src/lib/sidebar/sidebar.component';
 
@@ -38,7 +38,6 @@ const SIDEBAR_DEFAULT_DRAG_POSITION = {x: -SIDEBAR_MIN_WIDTH, y: 0};
   templateUrl: './editor-canvas.component.html',
   styleUrls: ['./editor-canvas.component.scss'],
   imports: [
-    AsyncPipe,
     CommonModule,
     CdkDrag,
     CdkDragHandle,
@@ -61,22 +60,27 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
   private activatedRoute = inject(ActivatedRoute);
   private loadedFiles = inject(LoadedFilesService);
   private elementModelService = inject(ElementModelService);
-  private changeDetector = inject(ChangeDetectorRef);
   private editorService = inject(EditorService);
   private configurationService = inject(ConfigurationService);
   public searchesStateService = inject(SearchesStateService);
 
-  public sidebarWidth = SIDEBAR_MIN_WIDTH;
-  public sidebarDragPosition = {...SIDEBAR_DEFAULT_DRAG_POSITION};
-  public isShapeSettingsOpened$: Observable<boolean>;
+  public readonly sidebarWidth = signal(SIDEBAR_MIN_WIDTH);
+  public readonly sidebarDragPosition = signal({...SIDEBAR_DEFAULT_DRAG_POSITION});
 
-  get isMapVisible$() {
-    return this.configurationService.settings$.pipe(map(settings => settings.showEditorMap));
-  }
+  public readonly isMapVisible = toSignal(this.configurationService.settings$.pipe(map(settings => settings.showEditorMap)), {
+    initialValue: this.configurationService.getSettings()?.showEditorMap ?? true,
+  });
 
-  get isToolbarVisible$() {
-    return this.configurationService.settings$.pipe(map(settings => settings.toolbarVisibility));
-  }
+  public readonly isToolbarVisible = toSignal(this.configurationService.settings$.pipe(map(settings => settings.toolbarVisibility)), {
+    initialValue: this.configurationService.getSettings()?.toolbarVisibility ?? true,
+  });
+
+  public readonly isShapeSettingsOpened = toSignal(this.shapeSettingsStateService.onSettingsOpened$, {
+    initialValue: this.shapeSettingsStateService.isShapeSettingOpened,
+  });
+
+  public readonly isElementsSearchOpened = toSignal(this.searchesStateService.elementsSearch.opened$, {initialValue: false});
+  public readonly isFilesSearchOpened = toSignal(this.searchesStateService.filesSearch.opened$, {initialValue: false});
 
   get selectedShapeForUpdate(): Cell | null {
     return this.shapeSettingsStateService.selectedShapeForUpdate;
@@ -88,15 +92,6 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
 
   get isModelEmpty(): boolean {
     return !this.maxgraphService.getAllCells()?.length;
-  }
-
-  constructor() {
-    this.isShapeSettingsOpened$ = this.shapeSettingsStateService.onSettingsOpened$.asObservable();
-    this.isShapeSettingsOpened$.subscribe(() =>
-      requestAnimationFrame(() => {
-        this.changeDetector.detectChanges();
-      }),
-    );
   }
 
   ngOnInit() {
@@ -137,16 +132,17 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
   }
 
   onDragEnded(event: CdkDragEnd): void {
-    const newWidth = this.sidebarWidth - event.distance.x;
-    this.sidebarWidth = newWidth >= SIDEBAR_MIN_WIDTH ? newWidth : SIDEBAR_MIN_WIDTH;
+    const newWidth = this.sidebarWidth() - event.distance.x;
 
     if (newWidth < SIDEBAR_MIN_WIDTH) {
-      this.sidebarDragPosition = {...SIDEBAR_DEFAULT_DRAG_POSITION};
+      this.sidebarWidth.set(SIDEBAR_MIN_WIDTH);
+      this.sidebarDragPosition.set({...SIDEBAR_DEFAULT_DRAG_POSITION});
     } else {
-      this.sidebarDragPosition = {
-        x: this.sidebarDragPosition.x + event.distance.x,
-        y: this.sidebarDragPosition.y,
-      };
+      this.sidebarWidth.set(newWidth);
+      this.sidebarDragPosition.update(position => ({
+        x: position.x + event.distance.x,
+        y: position.y,
+      }));
     }
   }
 
@@ -156,7 +152,6 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
     }
 
     this.shapeSettingsStateService.closeShapeSettings();
-    this.changeDetector.detectChanges();
   }
 
   onSave(formData: FormGroup) {

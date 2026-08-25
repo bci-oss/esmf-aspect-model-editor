@@ -11,17 +11,17 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-@if (isToolbarVisible$ | async) {
+@if (isToolbarVisible()) {
   <ame-editor-toolbar class="toolbar"></ame-editor-toolbar>
 }
 
 <ame-sidebar class="sidebar"></ame-sidebar>
 
-@if (isShapeSettingsOpened$ | async; as isOpened) {
-  <section class="info-section" [style.width.px]="sidebarWidth" cdkDragLockAxis="x" cdkDrag>
+@if (isShapeSettingsOpened(); as isOpened) {
+  <section class="info-section" [style.width.px]="sidebarWidth()" cdkDragLockAxis="x" cdkDrag>
     <div
       class="info-section__gutter"
-      [cdkDragFreeDragPosition]="sidebarDragPosition"
+      [cdkDragFreeDragPosition]="sidebarDragPosition()"
       (cdkDragEnded)="onDragEnded($event)"
       data-cy="info-section-drag"
       cdkDrag
@@ -39,9 +39,9 @@
     >
     </ame-shape-settings>
   </section>
-} @else if (searchesStateService.elementsSearch.opened$ | async) {
+} @else if (isElementsSearchOpened()) {
   <ame-elements-search></ame-elements-search>
-} @else if (searchesStateService.filesSearch.opened$ | async) {
+} @else if (isFilesSearchOpened()) {
   <ame-files-search></ame-files-search>
 }
 
@@ -56,7 +56,7 @@
   </div>
 }
 
-<div class="map-graph" id="outline" [class.hidden]="(isMapVisible$ | async) === false">
+<div class="map-graph" id="outline" [class.hidden]="isMapVisible() === false">
   <div
     class="map"
     (click)="toggleMap()"

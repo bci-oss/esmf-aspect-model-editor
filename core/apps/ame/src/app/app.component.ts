@@ -18,7 +18,8 @@ import {ConfigurationService} from '@ame/settings-dialog';
 import {BrowserService, ElectronTunnelService, IPC_RENDERER, TitleService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {SearchesStateService} from '@ame/utils';
-import {Component, inject, Injector, OnInit} from '@angular/core';
+import {Component, inject, Injector, OnInit, signal} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {RouterOutlet} from '@angular/router';
 import {take} from 'rxjs';
 
@@ -46,12 +47,11 @@ export class AppComponent implements OnInit {
   private startupService = inject(StartupService);
   private injector = inject(Injector);
 
-  private language = 'en';
-  public title = 'Aspect Model Editor';
-
-  get currentLanguage(): string {
-    return this.translate.translateService.getActiveLang();
-  }
+  private readonly language = signal('en');
+  public readonly title = 'Aspect Model Editor';
+  public readonly currentLanguage = toSignal(this.translate.translateService.langChanges$, {
+    initialValue: this.translate.translateService.getActiveLang(),
+  });
 
   constructor() {
     this.domainModelToRdf.listenForStoreUpdates();
@@ -59,14 +59,14 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.language = this.getApplicationLanguage();
-    this.translate.initTranslationService(this.language);
+    this.language.set(this.getApplicationLanguage());
+    this.translate.initTranslationService(this.language());
 
     this.electronTunnelService.subscribeMessages();
     this.titleService.setTitle(this.title);
 
     if (this.browserService.isStartedAsElectronApp()) {
-      this.electronTunnelService.sendTranslationsToElectron(this.currentLanguage);
+      this.electronTunnelService.sendTranslationsToElectron(this.currentLanguage());
       this.setContextMenu();
     }
 

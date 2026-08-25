@@ -28,7 +28,7 @@ export class LanguageConfigurationUpdateStrategy implements SettingsUpdateStrate
     if (!languageConfiguration) return;
 
     const userInterfaceLang = languageConfiguration.get('userInterface')?.value;
-    this.translate.translateService.use(userInterfaceLang);
+    this.translate.translateService.setActiveLang(userInterfaceLang);
     this.electronTunnelService.sendTranslationsToElectron(userInterfaceLang);
     localStorage.setItem('applicationLanguage', userInterfaceLang);
 

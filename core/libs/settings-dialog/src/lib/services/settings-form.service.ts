@@ -118,7 +118,7 @@ export class SettingsFormService {
         showConnectionLabels: [settings.showConnectionLabels],
       }),
       languageConfiguration: this.formBuilder.group({
-        userInterface: [this.translate.translateService.currentLang],
+        userInterface: [this.translate.translateService.getActiveLang()],
         aspectModel: this.formBuilder.array([]),
       }),
       namespaceConfiguration: this.formBuilder.group({

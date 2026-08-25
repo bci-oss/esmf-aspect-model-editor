@@ -76,7 +76,7 @@ export class ModelApiService {
     if (RdfModelUtil.splitRdfIntoChunks(absoluteModelName)[2] === 'new-model.ttl') {
       return throwError(() => ({
         error: {
-          message: this.translate.language.NOTIFICATION_SERVICE.ASPECT_SAVED_DEFAULT_MODEL,
+          message: this.translate.language.notificationService.aspectSavedDefaultModel,
         },
       }));
     }

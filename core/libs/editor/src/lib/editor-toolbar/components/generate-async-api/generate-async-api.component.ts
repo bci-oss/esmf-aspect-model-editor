@@ -20,7 +20,7 @@ import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSelectModule} from '@angular/material/select';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {saveAs} from 'file-saver';
 import * as locale from 'locale-codes';
 import {finalize, map} from 'rxjs';
@@ -49,7 +49,7 @@ export interface AsyncApi {
   styleUrls: ['./generate-async-api.component.scss'],
   imports: [
     MatDialogModule,
-    TranslatePipe,
+    TranslocoDirective,
     MatFormFieldModule,
     MatProgressSpinnerModule,
     MatButtonModule,

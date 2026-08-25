@@ -21,7 +21,7 @@ import {MatDivider} from '@angular/material/divider';
 import {MatIcon} from '@angular/material/icon';
 import {MatProgressSpinner} from '@angular/material/progress-spinner';
 import {MatStep, MatStepper} from '@angular/material/stepper';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {finalize, switchMap, tap} from 'rxjs';
 
 @Component({
@@ -35,7 +35,7 @@ import {finalize, switchMap, tap} from 'rxjs';
     MatDialogActions,
     MatButton,
     MatProgressSpinner,
-    TranslateModule,
+    TranslocoDirective,
     MatStepper,
     MatStep,
     MatDivider,
@@ -74,7 +74,7 @@ export class MigrationDialogComponent {
         next: () => this.stepper()?.next(),
         error: err =>
           this.notificationsService.error({
-            title: this.translate.language.SAMM_MIGRATION?.MIGRATION_DIALOG?.MIGRATION_FAILED_TITLE,
+            title: this.translate.language.sammMigration?.MIGRATION_DIALOG?.MIGRATION_FAILED_TITLE,
             message: err,
           }),
       });

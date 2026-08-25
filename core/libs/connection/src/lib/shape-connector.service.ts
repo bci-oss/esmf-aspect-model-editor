@@ -130,7 +130,7 @@ export class ShapeConnectorService {
     const selectedCells = cells || [...this.maxgraphAttributeService.graph.selectionModel.cells];
 
     if (selectedCells.length !== 2) {
-      return this.notificationsService.error({title: this.translate.language.NOTIFICATION_SERVICE.ONLY_TWO_ELEMENTS_CONNECTION});
+      return this.notificationsService.error({title: this.translate.language.notificationService.onlyTwoElementsConnection});
     }
 
     const firstElement = selectedCells[0].style.baseStyleNames[0];
@@ -147,7 +147,7 @@ export class ShapeConnectorService {
     }
 
     if (this.loadedFilesService.isElementExtern(modelElements[0])) {
-      return this.notificationsService.error({title: this.translate.language.NOTIFICATION_SERVICE.REFERNECE_CONNECTION_ERROR});
+      return this.notificationsService.error({title: this.translate.language.notificationService.referneceConnectionError});
     }
 
     const newConnection = this.connectShapes(modelElements[0], modelElements[1], selectedCells[0], selectedCells[1]);

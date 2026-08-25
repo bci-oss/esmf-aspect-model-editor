@@ -47,22 +47,22 @@ const mockSend = vi.fn();
 const mockWin = {webContents: {send: mockSend}};
 
 const translation = {
-  NEW: {
-    LABEL: 'New',
-    SUBMENU: {
-      EMPTY_MODEL: 'Empty Model',
-      LOAD_FILE: 'Load File',
-      COPY_PASTE: 'Copy/Paste',
-      EXAMPLES: 'Examples',
+  new: {
+    label: 'New',
+    submenu: {
+      emptyModel: 'Empty Model',
+      loadFile: 'Load File',
+      copyPaste: 'Copy/Paste',
+      examples: 'Examples',
     },
   },
-  NEW_WINDOW: 'New Window',
-  IMPORT_MODEL: 'Import Model',
-  IMPORT_PACKAGE: 'Import Package',
-  COPY_TO_CLIPBOARD: 'Copy to Clipboard',
-  SAVE_TO_WORKSPACE: 'Save to Workspace',
-  EXPORT_MODEL: 'Export Model',
-  EXPORT_PACKAGE: 'Export Package',
+  newWindow: 'New Window',
+  importModel: 'Import Model',
+  importPackage: 'Import Package',
+  copyToClipboard: 'Copy to Clipboard',
+  saveToWorkspace: 'Save to Workspace',
+  exportModel: 'Export Model',
+  exportPackage: 'Export Package',
 };
 
 describe('file menu', () => {

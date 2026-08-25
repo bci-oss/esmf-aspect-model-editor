@@ -144,7 +144,7 @@ export class ElectronTunnelService {
 
   private sendMenuUpdate(ids: string[], enabled: boolean): void {
     this.translate
-      .getTranslation(this.translate.translateService.getCurrentLang())
+      .getTranslation(this.translate.translateService.getActiveLang())
       .pipe(takeUntilDestroyed(this.destroyRef), take(1))
       .subscribe(translation => {
         this.ipcRenderer?.send(ELECTRON_EVENTS.SIGNAL.UPDATE_MENU_ITEM, {

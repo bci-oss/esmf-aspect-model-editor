@@ -18,7 +18,6 @@ import {LanguageTranslationService} from '@ame/translation';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, Input, OnInit} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {NamedElement} from '@esmf/aspect-model-loader';
-import {LangChangeEvent} from '@ngx-translate/core';
 
 @Component({
   selector: 'ame-shared-settings-title',
@@ -46,8 +45,8 @@ export class SharedSettingsTitleComponent implements OnInit {
   ngOnInit(): void {
     this.elementName = this.getTitle();
 
-    this.translate.translateService.onLangChange.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event: LangChangeEvent) => {
-      this.translate.translateService.get(event.lang).subscribe(() => {
+    this.translate.translateService.langChanges$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((lang: string) => {
+      this.translate.translateService.load(lang).subscribe(() => {
         this.elementName = this.getTitle();
         this.cd.detectChanges();
       });
@@ -56,13 +55,13 @@ export class SharedSettingsTitleComponent implements OnInit {
 
   getTitle(): string {
     if (this.metaModelElement === undefined || this.metaModelElement === null) {
-      return this.translate.language.EDITOR_CANVAS.SHAPE_SETTING.EDIT;
+      return this.translate.language.editorCanvas.shapeSetting.edit;
     } else {
       let name = `${this.metaModelElement.getPreferredName('en') || this.metaModelElement.name}`;
       name = name.length > 150 ? `${name.substring(0, 100)}...` : name;
       return this.loadedFilesService.isElementExtern(this.metaModelElement)
         ? name
-        : this.translate.translateService.instant('EDITOR_CANVAS.SHAPE_SETTING.EDIT', {value: 'element'});
+        : this.translate.translateService.translate('editorCanvas.shapeSetting.edit', {value: 'element'});
     }
   }
 

@@ -43,7 +43,7 @@ import {
   PropertyPayload,
   Value,
 } from '@esmf/aspect-model-loader';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import * as locale from 'locale-codes';
 import {map, Observable, of, startWith} from 'rxjs';
 import {InputFieldComponent} from '../../fields';
@@ -55,7 +55,7 @@ import {InputFieldComponent} from '../../fields';
   imports: [
     MatFormFieldModule,
     MatLabel,
-    TranslatePipe,
+    TranslocoDirective,
     MatAutocompleteTrigger,
     MatInput,
     ReactiveFormsModule,

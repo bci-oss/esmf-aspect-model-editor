@@ -42,14 +42,14 @@ export class ModelSaverService {
       switchMap(() => this.writeModelToWorkspace(rdfModel)),
       tap(() => {
         this.modelSavingTracker.updateSavedModel();
-        this.notificationsService.info({title: this.translate.language.NOTIFICATION_SERVICE.ASPECT_SAVED_SUCCESS});
+        this.notificationsService.info({title: this.translate.language.notificationService.aspectSavedSuccess});
         console.info('Aspect model was saved to the local folder');
         this.sidebarService.workspace.refresh();
       }),
       catchError(error => {
         console.error('Error on saving aspect model', error);
         this.notificationsService.error({
-          title: this.translate.language.NOTIFICATION_SERVICE.ASPECT_SAVED_ERROR,
+          title: this.translate.language.notificationService.aspectSavedError,
           message: error?.error?.message,
         });
         return of(null);
@@ -102,7 +102,7 @@ export class ModelSaverService {
       console.info('Model is empty. Skipping saving.');
       return throwError(() => ({
         error: {
-          message: this.translate.language.NOTIFICATION_SERVICE.ASPECT_SAVED_EMPTY_MODEL,
+          message: this.translate.language.notificationService.aspectSavedEmptyModel,
         },
       }));
     }
@@ -113,7 +113,7 @@ export class ModelSaverService {
         if (!content) {
           return throwError(() => ({
             error: {
-              message: this.translate.language.NOTIFICATION_SERVICE.ASPECT_SAVED_EMPTY_MODEL,
+              message: this.translate.language.notificationService.aspectSavedEmptyModel,
             },
           }));
         }

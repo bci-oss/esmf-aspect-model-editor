@@ -89,7 +89,7 @@ export class RdfSerializerService {
   }
 
   private createLangStringQuad(quad: Quad): Quad {
-    const currentLang = this.translation.translateService.currentLang;
+    const currentLang = this.translation.translateService.getActiveLang();
     return DataFactory.quad(quad.subject, quad.predicate, DataFactory.literal(quad.object.value, currentLang));
   }
 

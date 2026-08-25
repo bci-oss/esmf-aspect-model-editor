@@ -14,7 +14,7 @@
 import {AsyncPipe} from '@angular/common';
 import {Component, inject, input} from '@angular/core';
 import {FormGroup} from '@angular/forms';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../../editor-model.service';
 import {ElementListComponent} from '../../element-list';
 import {BaseInputComponent} from '../../fields';
@@ -22,7 +22,7 @@ import {BaseInputComponent} from '../../fields';
 @Component({
   selector: 'ame-trait-characteristic',
   templateUrl: './trait-characteristic.component.html',
-  imports: [BaseInputComponent, ElementListComponent, AsyncPipe, TranslatePipe],
+  imports: [BaseInputComponent, ElementListComponent, AsyncPipe, TranslocoDirective],
 })
 export class TraitCharacteristicComponent {
   readonly parentForm = input<FormGroup>();

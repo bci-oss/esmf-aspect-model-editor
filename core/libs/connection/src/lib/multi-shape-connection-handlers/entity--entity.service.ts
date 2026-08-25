@@ -25,8 +25,8 @@ export class EntityEntityConnectionHandler extends EntityInheritanceConnector im
   public connect(parentMetaModel: DefaultEntity, childMetaModel: DefaultEntity, parentCell: Cell, childCell: Cell) {
     if (MaxGraphHelper.isEntityCycleInheritance(childCell, parentMetaModel, this.maxgraphService.graph)) {
       this.notificationService.warning({
-        title: this.translate.language.NOTIFICATION_SERVICE.RECURSIVE_ELEMENTS,
-        message: this.translate.language.NOTIFICATION_SERVICE.CIRCULAR_CONNECTION_MESSAGE,
+        title: this.translate.language.notificationService.recursiveElements,
+        message: this.translate.language.notificationService.circularConnectionMessage,
         timeout: 5000,
       });
       return;

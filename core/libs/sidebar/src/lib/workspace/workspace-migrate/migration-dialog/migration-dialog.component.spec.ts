@@ -25,7 +25,7 @@ import {of} from 'rxjs';
 import {provideMockObject} from '../../../../../../../test-helpers';
 
 import {LanguageTranslationService} from '@ame/translation';
-import {TranslateModule, TranslatePipe} from '@ngx-translate/core';
+import {TranslocoTestingModule} from '@jsverse/transloco';
 import {MockProvider} from 'ng-mocks';
 import {MigrationDialogComponent} from './migration-dialog.component';
 
@@ -46,8 +46,7 @@ describe('MigrationDialogComponent', () => {
         MatCheckboxModule,
         MatButtonModule,
         MatProgressSpinnerModule,
-        TranslateModule.forRoot(),
-        TranslatePipe,
+        TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
         NoopAnimationsModule,
       ],
       providers: [

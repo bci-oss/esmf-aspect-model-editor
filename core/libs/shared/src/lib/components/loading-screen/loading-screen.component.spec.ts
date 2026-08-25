@@ -20,7 +20,7 @@ import {NO_ERRORS_SCHEMA} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
-import {TranslateModule, TranslatePipe} from '@ngx-translate/core';
+import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {provideMockObject} from '../../../../../../test-helpers';
 
@@ -34,7 +34,13 @@ describe('LoadingScreenComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CommonModule, MatDialogModule, MatProgressBarModule, MatButtonModule, TranslateModule.forRoot(), TranslatePipe],
+      imports: [
+        CommonModule,
+        MatDialogModule,
+        MatProgressBarModule,
+        MatButtonModule,
+        TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
+      ],
       schemas: [NO_ERRORS_SCHEMA],
       providers: [
         {provide: MAT_DIALOG_DATA, useValue: {}},

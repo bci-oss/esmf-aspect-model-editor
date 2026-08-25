@@ -1,4 +1,5 @@
-<!--
+<ng-container *transloco="let t">
+  <!--
   ~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
   ~
   ~ See the AUTHORS file(s) distributed with this work for
@@ -10,5 +11,6 @@
   ~
   ~ SPDX-License-Identifier: MPL-2.0
   -->
-<p>{{ 'SAMM_MIGRATION.SIDEBAR.MESSAGE' | translate }}</p>
-<button (click)="migrate()" mat-flat-button color="primary">{{ 'SAMM_MIGRATION.SIDEBAR.BUTTON' | translate }}</button>
+  <p>{{ t('sammMigration.sidebar.message') }}</p>
+  <button (click)="migrate()" mat-flat-button color="primary">{{ t('sammMigration.sidebar.button') }}</button>
+</ng-container>

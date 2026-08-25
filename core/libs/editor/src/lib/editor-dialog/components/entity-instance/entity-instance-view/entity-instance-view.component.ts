@@ -32,7 +32,7 @@ import {
 } from '@angular/material/table';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {DefaultEntityInstance, DefaultEnumeration, EntityInstanceProperty, Value} from '@esmf/aspect-model-loader';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {filter} from 'rxjs/operators';
 import {DataType, FormFieldHelper} from '../../../../helpers/form-field.helper';
 import {EntityInstancePipe} from '../../../pipes';
@@ -66,7 +66,7 @@ interface MappedAssertion {
     MatRow,
     MatHeaderRow,
     MatRowDef,
-    TranslatePipe,
+    TranslocoDirective,
     MatHeaderRowDef,
   ],
 })

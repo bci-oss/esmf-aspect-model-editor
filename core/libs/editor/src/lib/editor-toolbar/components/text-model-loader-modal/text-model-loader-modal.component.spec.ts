@@ -6,7 +6,7 @@ import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {TranslocoService, TranslocoTestingModule} from '@jsverse/transloco';
 import {MockProviders} from 'ng-mocks';
 import {of} from 'rxjs';
 import {FileHandlingService} from '../../services';
@@ -22,7 +22,14 @@ describe('TextModelLoaderModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FormsModule, MatFormFieldModule, MatInputModule, MatDialogModule, BrowserAnimationsModule, TranslateModule.forRoot()],
+      imports: [
+        FormsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatDialogModule,
+        BrowserAnimationsModule,
+        TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
+      ],
       providers: [
         MockProviders(MatDialogRef),
         {
@@ -31,7 +38,7 @@ describe('TextModelLoaderModalComponent', () => {
             loadModel: () => of(null),
           },
         },
-        TranslateService,
+        TranslocoService,
       ],
     }).compileComponents();
   });

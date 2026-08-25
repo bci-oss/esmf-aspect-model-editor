@@ -31,7 +31,7 @@ import {
 } from '@angular/material/table';
 import {MatTooltip} from '@angular/material/tooltip';
 import {Samm} from '@esmf/aspect-model-loader';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {SettingsFormService} from '../../../services';
 
 @Component({
@@ -60,7 +60,7 @@ import {SettingsFormService} from '../../../services';
     MatRowDef,
     MatHeaderRow,
     MatRow,
-    TranslatePipe,
+    TranslocoDirective,
   ],
 })
 export class NamespaceSettingsComponent implements OnInit {

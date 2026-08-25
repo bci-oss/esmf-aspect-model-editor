@@ -34,19 +34,19 @@ const mockSend = vi.fn();
 const mockWin = {webContents: {send: mockSend}};
 
 const translation = {
-  TOGGLE_TOOLBAR: 'Toggle Toolbar',
-  TOGGLE_MINIMAP: 'Toggle Minimap',
-  FILTER: {
-    LABEL: 'Filter',
-    SUBMENU: {
-      NONE: 'None',
-      PROPERTIES: 'Properties',
+  toggleToolbar: 'Toggle Toolbar',
+  toggleMinimap: 'Toggle Minimap',
+  filter: {
+    label: 'Filter',
+    submenu: {
+      none: 'None',
+      properties: 'Properties',
     },
   },
-  ZOOM_IN: 'Zoom In',
-  ZOOM_OUT: 'Zoom Out',
-  ZOOM_TO_FIT: 'Zoom to Fit',
-  ZOOM_TO_100: 'Zoom to 100%',
+  zoomIn: 'Zoom In',
+  zoomOut: 'Zoom Out',
+  zoomToFit: 'Zoom to Fit',
+  zoomTo100: 'Zoom to 100%',
 };
 
 describe('view menu', () => {

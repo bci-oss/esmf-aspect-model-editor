@@ -18,14 +18,14 @@ import {SidebarStateService} from '@ame/sidebar';
 import {Component, computed, inject} from '@angular/core';
 import {MatMiniFabButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {DraggableElementComponent} from '../draggable-element/draggable-element.component';
 
 @Component({
   selector: 'ame-sidebar-samm-elements',
   templateUrl: './sidebar-samm-elements.component.html',
   styleUrls: ['./sidebar-samm-elements.component.scss'],
-  imports: [MatIconModule, DraggableElementComponent, MatMiniFabButton, ElementIconComponent, TranslatePipe],
+  imports: [MatIconModule, DraggableElementComponent, MatMiniFabButton, ElementIconComponent, TranslocoDirective],
 })
 export class SidebarSAMMElementsComponent {
   private maxgraphService = inject(MaxGraphService);

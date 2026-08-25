@@ -19,7 +19,7 @@ import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {DefaultCharacteristic, DefaultConstraint, NamedElement, Unit} from '@esmf/aspect-model-loader';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../editor-model.service';
 import {AbstractEntityComponent} from '../abstract-entities';
 import {AbstractPropertyComponent} from '../abstract-property';
@@ -60,7 +60,7 @@ import {SharedSettingsTitleComponent} from './shared-settings-title/shared-setti
     UnitComponent,
     TraitCharacteristicComponent,
     EntityInstanceComponent,
-    TranslatePipe,
+    TranslocoDirective,
     MatButton,
     ValueComponent,
     EventComponent,

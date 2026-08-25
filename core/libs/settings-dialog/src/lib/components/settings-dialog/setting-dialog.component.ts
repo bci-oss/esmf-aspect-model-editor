@@ -23,7 +23,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatTooltip} from '@angular/material/tooltip';
 import {MatTree, MatTreeFlatDataSource, MatTreeFlattener, MatTreeNode, MatTreeNodeDef, MatTreeNodeToggle} from '@angular/material/tree';
 import {RdfModel} from '@esmf/aspect-model-loader';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import * as locale from 'locale-codes';
 import {NamespaceConfiguration} from '../../model';
 import {SammLanguageSettingsService, SettingsFormService} from '../../services';
@@ -60,39 +60,39 @@ interface ConfigurationFlatNode {
 
 const TREE_DATA: ConfigurationNode[] = [
   {
-    name: 'SETTINGS_DIALOG.NODE.SYSTEM_CONFIGURATION',
+    name: 'settingsDialog.node.systemConfiguration',
     type: NodeNames.CONFIGURATION,
     id: 'systemConfiguration',
     children: [
       {
-        name: 'SETTINGS_DIALOG.SUB_NODE.AUTOMATED_WORKFLOW',
+        name: 'settingsDialog.subNode.automatedWorkflow',
         type: NodeNames.AUTOMATED_WORKFLOW,
         id: 'automatedWorkflow',
       },
       {
-        name: 'SETTINGS_DIALOG.SUB_NODE.EDITOR',
+        name: 'settingsDialog.subNode.editor',
         type: NodeNames.EDITOR,
         id: 'editorConfiguration',
       },
     ],
   },
   {
-    name: 'SETTINGS_DIALOG.NODE.MODEL_CONFIGURATION',
+    name: 'settingsDialog.node.modelConfiguration',
     type: NodeNames.MODEL_CONFIGURATION,
     id: 'modelConfiguration',
     children: [
       {
-        name: 'SETTINGS_DIALOG.SUB_NODE.LANGUAGES',
+        name: 'settingsDialog.subNode.languages',
         type: NodeNames.LANGUAGES,
         id: 'languageConfiguration',
       },
       {
-        name: 'SETTINGS_DIALOG.SUB_NODE.NAMESPACES',
+        name: 'settingsDialog.subNode.namespaces',
         type: NodeNames.NAMESPACES,
         id: 'namespaceConfiguration',
       },
       {
-        name: 'SETTINGS_DIALOG.SUB_NODE.COPYRIGHT',
+        name: 'settingsDialog.subNode.copyright',
         type: NodeNames.COPYRIGHT,
         id: 'copyrightHeaderConfiguration',
       },
@@ -123,7 +123,7 @@ const TREE_DATA: ConfigurationNode[] = [
     MatButton,
     MatTooltip,
     MatTreeNodeToggle,
-    TranslatePipe,
+    TranslocoDirective,
   ],
 })
 export class SettingDialogComponent {

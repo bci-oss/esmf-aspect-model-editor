@@ -22,13 +22,13 @@ vi.mock('./validate', () => ({validate: vi.fn(() => [])}));
 vi.mock('./view', () => ({view: vi.fn(() => [])}));
 
 const translation = {
-  MENU: {
-    FILE: {LABEL: 'File'},
-    VIEW: {LABEL: 'View'},
-    EDIT: {LABEL: 'Edit'},
-    VALIDATE: {LABEL: 'Validate'},
-    GENERATE: {LABEL: 'Generate'},
-    SEARCH: {LABEL: 'Search'},
+  menu: {
+    file: {label: 'File'},
+    view: {label: 'View'},
+    edit: {label: 'Edit'},
+    validate: {label: 'Validate'},
+    generate: {label: 'Generate'},
+    search: {label: 'Search'},
   },
 };
 

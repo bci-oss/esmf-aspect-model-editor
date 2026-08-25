@@ -248,7 +248,6 @@
     "format:uncommitted": "node ./utils/format-uncommitted.js",
     "doc:app": "compodoc -p apps/ame-e2e/tsconfig.json -t --hideGenerator -d dist/docs/app",
     "license-report": "license-report --only=prod --output=html --department.value=ESMF --relatedTo.value=esmf-aspect-model-editor",
-    "generate:translate-interfaces": "node ./utils/create_interface.js ..\\apps\\ame\\src\\assets\\i18n\\en.json ..\\libs\\translation\\src\\lib\\models\\language.interface.ts",
     "prepare": "cd .. && husky install core/.husky"
   },
   "nyc": {
@@ -281,9 +280,8 @@
     "@angular/platform-browser-dynamic": "22.1.3",
     "@angular/router": "22.1.3",
     "@juggle/resize-observer": "^4.0.0-4",
+    "@jsverse/transloco": "^8.4.0",
     "@maxgraph/core": "^0.22.0",
-    "@ngx-translate/core": "^17.0.0",
-    "@ngx-translate/http-loader": "^17.0.0",
     "file-saver": "^2.0.5",
     "fuse.js": "~6.5.3",
     "locale-codes": "^1.3.1",
@@ -325,6 +323,7 @@
     "@nx/eslint": "23.1.1",
     "@nx/eslint-plugin": "23.1.1",
     "@nx/js": "23.1.1",
+    "@jsverse/transloco-utils": "^8.4.0",
     "@nx/workspace": "23.1.1",
     "@schematics/angular": "22.1.5",
     "@swc-node/register": "1.12.1",

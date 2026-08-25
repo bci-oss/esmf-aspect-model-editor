@@ -26,7 +26,7 @@ import {AsyncPipe} from '@angular/common';
 import {ChangeDetectorRef, Component, DestroyRef, inject, input, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {FormGroup} from '@angular/forms';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {StateCharacteristicComponent} from '../../components/characteristics/state-characteristic/state-characteristic.component';
 import {StructuredValueComponent} from '../../components/characteristics/structured-value/structured-value.component';
 import {EditorModelService} from '../../editor-model.service';
@@ -48,7 +48,7 @@ import {PreviousFormDataSnapshot} from '../../interfaces';
     RightInputFieldComponent,
     ElementListComponent,
     AsyncPipe,
-    TranslatePipe,
+    TranslocoDirective,
   ],
 })
 export class CharacteristicComponent implements OnInit {

@@ -18,7 +18,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatError, MatInput, MatLabel} from '@angular/material/input';
 import {MatSlideToggle} from '@angular/material/slide-toggle';
 import {MatTooltip} from '@angular/material/tooltip';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {finalize} from 'rxjs';
 import {SettingsFormService} from '../../../services';
 
@@ -37,7 +37,7 @@ export const automatedWorkflowControlName = 'automatedWorkflow';
     MatLabel,
     MatError,
     MatInput,
-    TranslatePipe,
+    TranslocoDirective,
   ],
 })
 export class AutomatedWorkflowComponent implements OnInit {

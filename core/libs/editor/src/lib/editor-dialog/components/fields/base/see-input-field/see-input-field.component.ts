@@ -23,7 +23,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatError, MatInput, MatLabel} from '@angular/material/input';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {DefaultProperty, HasExtends, NamedElement} from '@esmf/aspect-model-loader';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {map, Observable} from 'rxjs';
 import {EditorDialogValidators} from '../../../../validators';
 import {InputFieldComponent} from '../../input-field.component';
@@ -52,7 +52,7 @@ interface SeeElement {
     AsyncPipe,
     MatOption,
     MatError,
-    TranslatePipe,
+    TranslocoDirective,
     MatChipsModule,
   ],
 })

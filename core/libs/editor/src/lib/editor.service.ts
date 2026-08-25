@@ -170,7 +170,7 @@ export class EditorService {
     return this.modelApiService.generateOpenApiSpec(serializedModel, openApi, rdfModel.getSourceLocation()).pipe(
       catchError(err => {
         this.notificationsService.error({
-          title: this.translate.language.GENERATE_OPENAPI_SPEC_DIALOG.RESOURCE_PATH_ERROR,
+          title: this.translate.language.generateOpenapiSpecDialog.resourcePathError,
           message: err.error.message,
           timeout: 5000,
         });
@@ -251,12 +251,12 @@ export class EditorService {
     this.confirmDialogService
       .open({
         phrases: [
-          this.translate.language.CONFIRM_DIALOG.CREATE_ASPECT.ASPECT_CREATION_WARNING,
-          this.translate.language.CONFIRM_DIALOG.CREATE_ASPECT.NAME_REPLACEMENT_NOTICE,
+          this.translate.language.confirmDialog.createAspect.aspectCreationWarning,
+          this.translate.language.confirmDialog.createAspect.nameReplacementNotice,
         ],
-        title: this.translate.language.CONFIRM_DIALOG.CREATE_ASPECT.TITLE,
-        closeButtonText: this.translate.language.CONFIRM_DIALOG.CREATE_ASPECT.CLOSE_BUTTON,
-        okButtonText: this.translate.language.CONFIRM_DIALOG.CREATE_ASPECT.OK_BUTTON,
+        title: this.translate.language.confirmDialog.createAspect.title,
+        closeButtonText: this.translate.language.confirmDialog.createAspect.closeButton,
+        okButtonText: this.translate.language.confirmDialog.createAspect.okButton,
       })
       .subscribe(confirm => {
         if (confirm === ConfirmDialogEnum.cancel) {
@@ -355,8 +355,8 @@ export class EditorService {
   zoomIn() {
     this.loadingScreenService
       .open({
-        title: this.translate.language.LOADING_SCREEN_DIALOG.ZOOM_IN_PROGRESS,
-        content: this.translate.language.LOADING_SCREEN_DIALOG.ZOOM_IN_WAIT,
+        title: this.translate.language.loadingScreenDialog.zoomInProgress,
+        content: this.translate.language.loadingScreenDialog.zoomInWait,
       })
       .afterOpened()
       .subscribe(() => {
@@ -368,8 +368,8 @@ export class EditorService {
   zoomOut() {
     this.loadingScreenService
       .open({
-        title: this.translate.language.LOADING_SCREEN_DIALOG.ZOOM_OUT_PROGRESS,
-        content: this.translate.language.LOADING_SCREEN_DIALOG.ZOOM_IN_WAIT,
+        title: this.translate.language.loadingScreenDialog.zoomOutProgress,
+        content: this.translate.language.loadingScreenDialog.zoomInWait,
       })
       .afterOpened()
       .subscribe(() => {
@@ -381,8 +381,8 @@ export class EditorService {
   fit() {
     this.loadingScreenService
       .open({
-        title: this.translate.language.LOADING_SCREEN_DIALOG.FITTING_PROGRESS,
-        content: this.translate.language.LOADING_SCREEN_DIALOG.FITTING_WAIT,
+        title: this.translate.language.loadingScreenDialog.fittingProgress,
+        content: this.translate.language.loadingScreenDialog.fittingWait,
       })
       .afterOpened()
       .subscribe(() => {
@@ -394,8 +394,8 @@ export class EditorService {
   actualSize() {
     this.loadingScreenService
       .open({
-        title: this.translate.language.LOADING_SCREEN_DIALOG.FIT_TO_VIEW_PROGRESS,
-        content: this.translate.language.LOADING_SCREEN_DIALOG.FITTING_WAIT,
+        title: this.translate.language.loadingScreenDialog.fitToViewProgress,
+        content: this.translate.language.loadingScreenDialog.fittingWait,
       })
       .afterOpened()
       .subscribe(() => {
@@ -408,8 +408,8 @@ export class EditorService {
     const isExpanded = this.isAllShapesExpandedSubject.getValue();
     this.loadingScreenService
       .open({
-        title: isExpanded ? this.translate.language.LOADING_SCREEN_DIALOG.FOLDING : this.translate.language.LOADING_SCREEN_DIALOG.EXPANDING,
-        content: this.translate.language.LOADING_SCREEN_DIALOG.ACTION_WAIT,
+        title: isExpanded ? this.translate.language.loadingScreenDialog.folding : this.translate.language.loadingScreenDialog.expanding,
+        content: this.translate.language.loadingScreenDialog.actionWait,
       })
       .afterOpened()
       .pipe(switchMap(() => (isExpanded ? this.maxgraphService.foldCells() : this.maxgraphService.expandCells())))
@@ -423,8 +423,8 @@ export class EditorService {
   formatModel() {
     this.loadingScreenService
       .open({
-        title: this.translate.language.LOADING_SCREEN_DIALOG.FORMATTING,
-        content: this.translate.language.LOADING_SCREEN_DIALOG.WAIT_FORMAT,
+        title: this.translate.language.loadingScreenDialog.formatting,
+        content: this.translate.language.loadingScreenDialog.waitFormat,
       })
       .afterOpened()
       .subscribe(() => {
@@ -465,8 +465,8 @@ export class EditorService {
           if (!Object.values(SaveValidateErrorsCodes).includes(error?.type)) {
             console.error(`Error occurred while validating the current model (${error})`);
             this.notificationsService.error({
-              title: this.translate.language.NOTIFICATION_SERVICE.VALIDATION_ERROR_TITLE,
-              message: this.translate.language.NOTIFICATION_SERVICE.VALIDATION_ERROR_MESSAGE,
+              title: this.translate.language.notificationService.validationErrorTitle,
+              message: this.translate.language.notificationService.validationErrorMessage,
               timeout: 5000,
             });
           }
@@ -504,8 +504,8 @@ export class EditorService {
   openAlertBox() {
     this.alertService.open({
       data: {
-        title: this.translate.language.NOTIFICATION_SERVICE.ASPECT_MISSING_TITLE,
-        content: this.translate.language.NOTIFICATION_SERVICE.ASPECT_MISSING_CONTENT,
+        title: this.translate.language.notificationService.aspectMissingTitle,
+        content: this.translate.language.notificationService.aspectMissingContent,
       },
     });
   }

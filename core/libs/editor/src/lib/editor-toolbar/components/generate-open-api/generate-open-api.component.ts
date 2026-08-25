@@ -30,7 +30,7 @@ import {MatInputModule} from '@angular/material/input';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSelectModule} from '@angular/material/select';
 import {MatTooltipModule} from '@angular/material/tooltip';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {saveAs} from 'file-saver';
 import * as locale from 'locale-codes';
 import {map} from 'rxjs';
@@ -75,7 +75,7 @@ export interface OpenApi {
     MatButtonModule,
     MatExpansionModule,
     MatProgressSpinnerModule,
-    TranslatePipe,
+    TranslocoDirective,
   ],
 })
 export class GenerateOpenApiComponent implements OnInit {
@@ -234,8 +234,8 @@ export class GenerateOpenApiComponent implements OnInit {
 
   private showError(): void {
     this.notificationsService.error({
-      title: this.translate.translateService.instant('GENERATE_OPENAPI_SPEC_DIALOG.UPLOAD_ERROR_TITLE'),
-      message: this.translate.translateService.instant('GENERATE_OPENAPI_SPEC_DIALOG.UPLOAD_ERROR_MESSAGE', {
+      title: this.translate.translateService.translate('generateOpenapiSpecDialog.uploadErrorTitle'),
+      message: this.translate.translateService.translate('generateOpenapiSpecDialog.uploadErrorMessage', {
         output: this.form.value.output.toUpperCase(),
       }),
     });

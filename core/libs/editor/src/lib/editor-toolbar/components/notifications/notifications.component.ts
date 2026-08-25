@@ -20,13 +20,13 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatTableModule} from '@angular/material/table';
 import {ActivatedRoute, Router} from '@angular/router';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 
 @Component({
   selector: 'ame-notifications',
   templateUrl: './notifications.component.html',
   styleUrls: ['./notifications.component.scss'],
-  imports: [CommonModule, MatIconModule, TranslatePipe, MatDialogModule, MatButtonModule, MatTableModule, MatMenuModule],
+  imports: [CommonModule, MatIconModule, TranslocoDirective, MatDialogModule, MatButtonModule, MatTableModule, MatMenuModule],
 })
 export class NotificationsComponent implements OnInit {
   private dialogRef = inject(MatDialogRef<NotificationsComponent>);

@@ -16,13 +16,13 @@ import {Component, inject, signal} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatIconModule} from '@angular/material/icon';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 
 @Component({
   selector: 'ame-document',
   templateUrl: './document.component.html',
   styleUrls: ['./document.component.scss'],
-  imports: [MatButtonModule, MatIconModule, MatDialogModule, TranslatePipe],
+  imports: [MatButtonModule, MatIconModule, MatDialogModule, TranslocoDirective],
 })
 export class DocumentComponent {
   private ipcRenderer = inject(IPC_RENDERER);

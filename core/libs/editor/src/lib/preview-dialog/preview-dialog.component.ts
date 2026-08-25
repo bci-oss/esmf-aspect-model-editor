@@ -18,7 +18,7 @@ import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {saveAs} from 'file-saver';
 
 interface PreviewDialogOptions {
@@ -31,7 +31,7 @@ interface PreviewDialogOptions {
   selector: 'ame-preview-dialog',
   templateUrl: './preview-dialog.component.html',
   styleUrls: ['./preview-dialog.component.scss'],
-  imports: [MatDialogModule, MatIconModule, MatFormFieldModule, FormsModule, MatInputModule, MatButtonModule, TranslatePipe],
+  imports: [MatDialogModule, MatIconModule, MatFormFieldModule, FormsModule, MatInputModule, MatButtonModule, TranslocoDirective],
 })
 export class PreviewDialogComponent {
   readonly autosize = viewChild<CdkTextareaAutosize>('autosize');

@@ -38,6 +38,36 @@
             }
           },
           "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "defaultConfiguration": "development",
+          "configurations": {
+            "production": {
+              "buildTarget": "ame:build:production"
+            },
+            "development": {
+              "buildTarget": "ame:build:development"
+            }
+          }
+        },
+        "serve-coverage": {
+          "builder": "@angular/build:dev-server",
+          "defaultConfiguration": "development",
+          "configurations": {
+            "production": {
+              "buildTarget": "ame:build:production"
+            },
+            "development": {
+              "buildTarget": "ame:build:development"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "buildTarget": "ame:build"
+          }
         }
       }
     },
@@ -170,6 +200,25 @@
           "options": {
             "tsConfig": "libs/utils/tsconfig.spec.json",
             "buildTarget": "utils:build"
+          }
+        }
+      }
+    },
+    "translation": {
+      "projectType": "library",
+      "root": "libs/translation",
+      "sourceRoot": "libs/translation/src",
+      "prefix": "ame",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "options": {"project": "libs/translation/ng-package.json"}
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "libs/translation/tsconfig.spec.json",
+            "buildTarget": "translation:build"
           }
         }
       }

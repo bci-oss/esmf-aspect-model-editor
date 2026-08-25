@@ -30,16 +30,16 @@ export class AbstractPropertyAbstractPropertyConnectionHandler
 
     if (this.hasEntityParent(parentCell)) {
       this.notificationsService.warning({
-        title: this.translate.language.NOTIFICATION_SERVICE.MISSING_PARENT_ENTITY,
-        message: this.translate.language.NOTIFICATION_SERVICE.ABSTRACT_PROPERTY_PARENT_REQUIREMENT,
+        title: this.translate.language.notificationService.missingParentEntity,
+        message: this.translate.language.notificationService.abstractPropertyParentRequirement,
       });
       return;
     }
 
     if (MaxGraphHelper.isEntityCycleInheritance(childCell, parentMetaModel, this.maxgraphService.graph)) {
       this.notificationService.warning({
-        title: this.translate.language.NOTIFICATION_SERVICE.RECURSIVE_ELEMENTS,
-        message: this.translate.language.NOTIFICATION_SERVICE.CIRCULAR_CONNECTION_MESSAGE,
+        title: this.translate.language.notificationService.recursiveElements,
+        message: this.translate.language.notificationService.circularConnectionMessage,
         timeout: 5000,
       });
     } else {

@@ -15,7 +15,7 @@ import {AsyncPipe} from '@angular/common';
 import {Component, input} from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
 import {DefaultAspect} from '@esmf/aspect-model-loader';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {ElementListComponent} from '../element-list';
 import {BaseInputComponent} from '../fields';
 import {ModelElementEditorComponent} from '../model-element-editor-component';
@@ -24,7 +24,7 @@ import {PropertiesButtonComponent, UpdatedProperties} from '../properties';
 @Component({
   selector: 'ame-aspect',
   templateUrl: './aspect.component.html',
-  imports: [BaseInputComponent, PropertiesButtonComponent, ElementListComponent, AsyncPipe, TranslatePipe],
+  imports: [BaseInputComponent, PropertiesButtonComponent, ElementListComponent, AsyncPipe, TranslocoDirective],
 })
 export class AspectComponent extends ModelElementEditorComponent<DefaultAspect> {
   readonly parentForm = input<FormGroup>();

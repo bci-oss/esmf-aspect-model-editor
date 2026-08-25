@@ -17,7 +17,7 @@ import {AbstractControl, FormControl, ReactiveFormsModule, Validators} from '@an
 import {MatButtonModule} from '@angular/material/button';
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {MatIconModule} from '@angular/material/icon';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 
 import {LoadedFilesService} from '@ame/cache';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -32,7 +32,7 @@ import {finalize} from 'rxjs/operators';
   imports: [
     MatIconModule,
     MatDialogModule,
-    TranslatePipe,
+    TranslocoDirective,
     ReactiveFormsModule,
     MatInputModule,
     MatDialogActions,

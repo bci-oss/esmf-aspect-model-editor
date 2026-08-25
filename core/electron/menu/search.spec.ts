@@ -34,8 +34,8 @@ const mockSend = vi.fn();
 const mockWin = {webContents: {send: mockSend}};
 
 const translation = {
-  ELEMENTS: 'Elements',
-  FILES: 'Files',
+  elements: 'Elements',
+  files: 'Files',
 };
 
 describe('search menu', () => {

@@ -13,7 +13,7 @@
 import {AsyncPipe} from '@angular/common';
 import {AfterViewInit, ChangeDetectorRef, Component, inject, input, OnDestroy, signal} from '@angular/core';
 import {FormGroup} from '@angular/forms';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../editor-model.service';
 import {PreviousFormDataSnapshot} from '../../interfaces';
 import {ElementListComponent} from '../element-list';
@@ -40,7 +40,7 @@ import {
   imports: [
     ElementListComponent,
     AsyncPipe,
-    TranslatePipe,
+    TranslocoDirective,
     ConstraintNameDropdownFieldComponent,
     BaseInputComponent,
     EncodingInputFieldComponent,

@@ -16,7 +16,7 @@ import {FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {MatIconModule} from '@angular/material/icon';
 import {MatSlideToggle} from '@angular/material/slide-toggle';
 import {MatTooltip} from '@angular/material/tooltip';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {SettingsFormService} from '../../../services';
 
 export const editorConfigurationControlName = 'editorConfiguration';
@@ -25,7 +25,7 @@ export const editorConfigurationControlName = 'editorConfiguration';
   selector: 'ame-editor-configuration',
   templateUrl: './editor-configuration.component.html',
   styleUrls: ['./editor-configuration.component.scss'],
-  imports: [ReactiveFormsModule, MatSlideToggle, MatTooltip, MatIconModule, TranslatePipe],
+  imports: [ReactiveFormsModule, MatSlideToggle, MatTooltip, MatIconModule, TranslocoDirective],
 })
 export class EditorConfigurationComponent implements OnInit {
   private formService = inject(SettingsFormService);

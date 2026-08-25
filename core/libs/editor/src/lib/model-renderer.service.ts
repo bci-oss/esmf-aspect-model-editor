@@ -108,7 +108,7 @@ export class ModelRendererService {
   private toggleLoadingScreen(): void {
     this.loadingScreenService.close();
     requestAnimationFrame(() => {
-      this.loadingScreenService.open({title: this.translate.language.LOADING_SCREEN_DIALOG.MODEL_GENERATION});
+      this.loadingScreenService.open({title: this.translate.language.loadingScreenDialog.modelGeneration});
     });
   }
 
@@ -132,8 +132,8 @@ export class ModelRendererService {
     const element = this.cachedFile?.get<NamedElement>(elementUrn);
     if (!element) {
       this.notificationsService.error({
-        title: this.translate.language.EDITOR_CANVAS.SHAPE_SETTING.NOTIFICATION.EDIT_VIEW_UNAVAILABLE,
-        message: this.translate.language.EDITOR_CANVAS.SHAPE_SETTING.NOTIFICATION.EDIT_VIEW_UNAVAILABLE_MESSAGE,
+        title: this.translate.language.editorCanvas.shapeSetting.notification.editViewUnavailable,
+        message: this.translate.language.editorCanvas.shapeSetting.notification.editViewUnavailableMessage,
       });
 
       return;

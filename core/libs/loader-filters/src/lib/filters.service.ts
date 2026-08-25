@@ -99,8 +99,8 @@ export class FiltersService {
 
     this.loadingScreen
       .open({
-        title: this.translate.language.LOADING_SCREEN_DIALOG.FILTER_CHANGE,
-        content: this.translate.language.LOADING_SCREEN_DIALOG.FILTER_WAIT,
+        title: this.translate.language.loadingScreenDialog.filterChange,
+        content: this.translate.language.loadingScreenDialog.filterWait,
       })
       .afterOpened()
       .pipe(

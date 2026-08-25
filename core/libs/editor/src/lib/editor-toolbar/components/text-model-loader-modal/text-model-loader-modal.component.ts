@@ -17,7 +17,7 @@ import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIcon} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {first} from 'rxjs';
 import {FileHandlingService} from '../../services';
 
@@ -37,7 +37,7 @@ import {FileHandlingService} from '../../services';
       }
     `,
   ],
-  imports: [TranslatePipe, MatDialogModule, MatFormFieldModule, MatButtonModule, MatInputModule, MatIcon],
+  imports: [TranslocoDirective, MatDialogModule, MatFormFieldModule, MatButtonModule, MatInputModule, MatIcon],
 })
 export class TextModelLoaderModalComponent {
   private fileHandlingService = inject(FileHandlingService);

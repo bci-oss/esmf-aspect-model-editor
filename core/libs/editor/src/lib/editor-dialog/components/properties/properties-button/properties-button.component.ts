@@ -18,7 +18,7 @@ import {MatButton} from '@angular/material/button';
 import {MatDialog} from '@angular/material/dialog';
 import {MatIconModule} from '@angular/material/icon';
 import {DefaultAspect, DefaultEntity, NamedElement, PropertyPayload} from '@esmf/aspect-model-loader';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {first} from 'rxjs/operators';
 import {EditorModelService} from '../../../editor-model.service';
 import {PropertiesDialogData, PropertiesModalComponent} from '../properties-modal/properties-modal.component';
@@ -31,7 +31,7 @@ export interface UpdatedProperties {
   selector: 'ame-properties-button',
   templateUrl: './properties-button.component.html',
   styleUrls: ['./properties-button.component.scss'],
-  imports: [MatIconModule, TranslatePipe, MatButton],
+  imports: [MatIconModule, TranslocoDirective, MatButton],
 })
 export class PropertiesButtonComponent implements OnInit {
   private destroyRef = inject(DestroyRef);

@@ -35,7 +35,7 @@ import {
   PropertyPayload,
   Value,
 } from '@esmf/aspect-model-loader';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import * as locale from 'locale-codes';
 import {map, Observable, of, startWith} from 'rxjs';
 import {EntityInstanceUtil} from '../utils/EntityInstanceUtil';
@@ -56,7 +56,7 @@ import {EntityInstanceUtil} from '../utils/EntityInstanceUtil';
     MatOption,
     MatError,
     MatMiniFabButton,
-    TranslatePipe,
+    TranslocoDirective,
     MatAutocomplete,
     AsyncPipe,
     MatOptgroup,

@@ -93,8 +93,8 @@ export class GenerateHandlingService {
 
   generateJsonSample(): Observable<any> {
     const loadingScreenOptions: LoadingScreenOptions = {
-      title: this.translate.language.NOTIFICATION_DIALOG?.GENERATE_JSON_PAYLOAD,
-      content: this.translate.language.NOTIFICATION_DIALOG?.CONTENT,
+      title: this.translate.language.notificationDialog?.GENERATE_JSON_PAYLOAD,
+      content: this.translate.language.notificationDialog?.CONTENT,
       hasCloseButton: true,
     };
 
@@ -103,15 +103,15 @@ export class GenerateHandlingService {
       first(),
       catchError(() => {
         this.notificationsService.error({
-          title: this.translate.language.GENERATE_HANDLING.FAIL_GENERATE_JSON_SAMPLE,
-          message: this.translate.language.GENERATE_HANDLING.INVALID_MODEL,
+          title: this.translate.language.generateHandling.failGenerateJsonSample,
+          message: this.translate.language.generateHandling.invalidModel,
           timeout: 5000,
         });
-        return throwError(() => this.translate.language.GENERATE_HANDLING.FAIL_GENERATE_JSON_SAMPLE);
+        return throwError(() => this.translate.language.generateHandling.failGenerateJsonSample);
       }),
       map(data => {
         this.openPreview(
-          this.translate.language.GENERATE_HANDLING.JSON_PAYLOAD_PREVIEW,
+          this.translate.language.generateHandling.jsonPayloadPreview,
           this.formatStringToJson(data),
           !this.loadedFilesService?.currentLoadedFile?.aspect
             ? this.currentFile.name
@@ -129,8 +129,8 @@ export class GenerateHandlingService {
 
   generateJsonSchema(): Observable<void> {
     const loadingScreenOptions: LoadingScreenOptions = {
-      title: this.translate.language.NOTIFICATION_DIALOG?.GENERATE_JSON_SCHEMA,
-      content: this.translate.language.NOTIFICATION_DIALOG?.CONTENT,
+      title: this.translate.language.notificationDialog?.GENERATE_JSON_SCHEMA,
+      content: this.translate.language.notificationDialog?.CONTENT,
       hasCloseButton: true,
     };
 
@@ -146,16 +146,16 @@ export class GenerateHandlingService {
             first(),
             catchError(() => {
               this.notificationsService.error({
-                title: this.translate.language.GENERATE_HANDLING.FAIL_GENERATE_JSON_SCHEMA,
-                message: this.translate.language.GENERATE_HANDLING.INVALID_MODEL,
+                title: this.translate.language.generateHandling.failGenerateJsonSchema,
+                message: this.translate.language.generateHandling.invalidModel,
                 timeout: 5000,
               });
-              return throwError(() => this.translate.language.GENERATE_HANDLING.FAIL_GENERATE_JSON_SCHEMA);
+              return throwError(() => this.translate.language.generateHandling.failGenerateJsonSchema);
             }),
             map(data => {
               this.loadingScreenService.close();
               this.openPreview(
-                this.translate.language.GENERATE_HANDLING.JSON_SCHEMA_PREVIEW,
+                this.translate.language.generateHandling.jsonSchemaPreview,
                 this.formatStringToJson(data),
                 !this.loadedFilesService?.currentLoadedFile?.aspect
                   ? this.currentFile.name
@@ -175,7 +175,7 @@ export class GenerateHandlingService {
       .subscribe((): void => {
         if (!this.loadedFilesService?.currentLoadedFile?.aspect) {
           this.notificationsService.info({
-            title: this.translate.language.GENERATE_HANDLING.NO_ASPECT_TITLE,
+            title: this.translate.language.generateHandling.noAspectTitle,
             timeout: 5000,
           });
           return;

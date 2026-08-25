@@ -27,7 +27,7 @@ import {
   DefaultValue,
   NamedElement,
 } from '@esmf/aspect-model-loader';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorDialogValidators} from '../../../../validators';
 import {InputFieldComponent} from '../../input-field.component';
 
@@ -35,7 +35,7 @@ import {InputFieldComponent} from '../../input-field.component';
   selector: 'ame-name-input-field',
   templateUrl: './name-input-field.component.html',
   styleUrls: ['../../field.scss'],
-  imports: [MatFormFieldModule, MatLabel, ReactiveFormsModule, MatInput, MatError, TranslatePipe],
+  imports: [MatFormFieldModule, MatLabel, ReactiveFormsModule, MatInput, MatError, TranslocoDirective],
 })
 export class NameInputFieldComponent extends InputFieldComponent<NamedElement> implements OnInit, OnDestroy {
   private editorDialogValidators = inject(EditorDialogValidators);

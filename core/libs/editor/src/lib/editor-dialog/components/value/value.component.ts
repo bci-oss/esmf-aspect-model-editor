@@ -15,7 +15,7 @@ import {AsyncPipe} from '@angular/common';
 import {Component, inject, input} from '@angular/core';
 import {FormGroup} from '@angular/forms';
 import {DefaultValue} from '@esmf/aspect-model-loader';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../editor-model.service';
 import {ElementListComponent} from '../element-list';
 import {BaseInputComponent, ValueInputFieldComponent} from '../fields';
@@ -24,7 +24,7 @@ import {ModelElementEditorComponent} from '../model-element-editor-component';
 @Component({
   selector: 'ame-value',
   templateUrl: './value.component.html',
-  imports: [BaseInputComponent, ElementListComponent, AsyncPipe, TranslatePipe, ValueInputFieldComponent],
+  imports: [BaseInputComponent, ElementListComponent, AsyncPipe, TranslocoDirective, ValueInputFieldComponent],
 })
 export class ValueComponent extends ModelElementEditorComponent<DefaultValue> {
   readonly parentForm = input<FormGroup>();

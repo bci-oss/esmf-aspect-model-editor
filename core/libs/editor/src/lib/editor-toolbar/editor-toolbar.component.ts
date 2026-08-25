@@ -22,7 +22,7 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatDialog} from '@angular/material/dialog';
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {Observable} from 'rxjs';
 import {first} from 'rxjs/operators';
 import {BarItemComponent} from '../../../../shared/src/lib/components/bar-item/bar-item.component';
@@ -35,7 +35,7 @@ import {FileHandlingService} from './services';
   selector: 'ame-editor-toolbar',
   templateUrl: './editor-toolbar.component.html',
   styleUrls: ['./editor-toolbar.component.scss'],
-  imports: [BarItemComponent, CommonModule, MatTooltipModule, TranslatePipe, MatIconModule, AsyncPipe],
+  imports: [BarItemComponent, CommonModule, MatTooltipModule, TranslocoDirective, MatIconModule, AsyncPipe],
 })
 export class EditorToolbarComponent implements AfterViewInit, OnInit, OnDestroy {
   private destroyRef = inject(DestroyRef);

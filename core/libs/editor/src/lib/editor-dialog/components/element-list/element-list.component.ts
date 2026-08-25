@@ -21,7 +21,7 @@ import {MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPa
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {NamedElement} from '@esmf/aspect-model-loader';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {OpenReferencedElementService} from '../../../open-element-window/open-element-window.service';
 import {ShapeSettingsService, ShapeSettingsStateService} from '../../services';
 import {ModelElementParserPipe} from './element-list.pipe';
@@ -42,7 +42,7 @@ import {ModelElementParserPipe} from './element-list.pipe';
     ElementIconComponent,
     MatTooltipModule,
     MatIconButton,
-    TranslatePipe,
+    TranslocoDirective,
   ],
 })
 export class ElementListComponent implements OnInit {

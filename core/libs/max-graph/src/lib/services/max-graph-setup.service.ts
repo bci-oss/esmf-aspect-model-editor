@@ -356,7 +356,7 @@ export class MaxGraphSetupService {
       const modelElement = MaxGraphHelper.getModelElement(cell);
 
       menu.addItem(
-        `${this.translate.language.EDITOR_CANVAS.GRAPH_SETUP.OPEN_IN} ${this.loadedFiles.isElementExtern(modelElement) ? 'new Window' : 'detail view'}`,
+        `${this.translate.language.editorCanvas.graphSetup.openIn} ${this.loadedFiles.isElementExtern(modelElement) ? 'new Window' : 'detail view'}`,
         this.resolveAssetsIcon(AssetsPath.OpenIcon),
         () => {
           this.bindingsService.fireAction('editElement');
@@ -364,12 +364,12 @@ export class MaxGraphSetupService {
       );
 
       if (selectedCells.length === 2) {
-        menu.addItem(this.translate.language.EDITOR_CANVAS.GRAPH_SETUP.CONNECT, this.resolveAssetsIcon(AssetsPath.ConnectionOnIcon), () => {
+        menu.addItem(this.translate.language.editorCanvas.graphSetup.connect, this.resolveAssetsIcon(AssetsPath.ConnectionOnIcon), () => {
           this.bindingsService.fireAction('connectElements');
         });
       } else if (selectedCells.length === 1) {
         menu.addItem(
-          this.translate.language.EDITOR_CANVAS.GRAPH_SETUP.CONNECT_WITH,
+          this.translate.language.editorCanvas.graphSetup.connectWith,
           this.resolveAssetsIcon(AssetsPath.ConnectionOnIcon),
           () => {
             this.bindingsService.fireAction('connect-with');
@@ -377,22 +377,22 @@ export class MaxGraphSetupService {
         );
       }
 
-      menu.addItem(this.translate.language.EDITOR_CANVAS.GRAPH_SETUP.SELECT_ALL_REFERENCES, this.resolveAssetsIcon(AssetsPath.Tree), () => {
+      menu.addItem(this.translate.language.editorCanvas.graphSetup.selectAllReferences, this.resolveAssetsIcon(AssetsPath.Tree), () => {
         this.bindingsService.fireAction('select-tree');
       });
     }
 
-    menu.addItem(this.translate.language.EDITOR_CANVAS.GRAPH_SETUP.FORMAT, this.resolveAssetsIcon(AssetsPath.FormatIcon), () => {
+    menu.addItem(this.translate.language.editorCanvas.graphSetup.format, this.resolveAssetsIcon(AssetsPath.FormatIcon), () => {
       this.bindingsService.fireAction('format');
     });
 
     if (cell) {
       menu.addSeparator();
-      menu.addItem(this.translate.language.EDITOR_CANVAS.GRAPH_SETUP.DELETE, this.resolveAssetsIcon(AssetsPath.DeleteIcon), () => {
+      menu.addItem(this.translate.language.editorCanvas.graphSetup.delete, this.resolveAssetsIcon(AssetsPath.DeleteIcon), () => {
         this.bindingsService.fireAction('deleteElement');
       });
     } else {
-      menu.addItem(this.translate.language.EDITOR_CANVAS.GRAPH_SETUP.COPY_TO_CLIPBOARD, this.resolveAssetsIcon(AssetsPath.Copy), () => {
+      menu.addItem(this.translate.language.editorCanvas.graphSetup.copyToClipboard, this.resolveAssetsIcon(AssetsPath.Copy), () => {
         this.bindingsService.fireAction('copy-to-clipboard');
       });
     }

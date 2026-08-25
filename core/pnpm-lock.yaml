@@ -38,18 +38,15 @@ importers:
       '@angular/router':
         specifier: 22.1.3
         version: 22.1.3(@angular/common@22.1.3(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1))(@angular/platform-browser@22.1.3(@angular/animations@22.1.3(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1)))(@angular/common@22.1.3(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1)))(rxjs@7.8.1)
+      '@jsverse/transloco':
+        specifier: ^8.4.0
+        version: 8.4.0(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1)(typescript@6.0.3)
       '@juggle/resize-observer':
         specifier: ^4.0.0-4
         version: 4.0.0-4
       '@maxgraph/core':
         specifier: ^0.22.0
         version: 0.22.0
-      '@ngx-translate/core':
-        specifier: ^17.0.0
-        version: 17.0.0(@angular/common@22.1.3(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1))
-      '@ngx-translate/http-loader':
-        specifier: ^17.0.0
-        version: 17.0.0(@angular/common@22.1.3(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1))
       file-saver:
         specifier: ^2.0.5
         version: 2.0.5
@@ -153,6 +150,9 @@ importers:
       '@eslint/js':
         specifier: ^9.8.0
         version: 9.39.5
+      '@jsverse/transloco-utils':
+        specifier: ^8.4.0
+        version: 8.4.0(typescript@6.0.3)
       '@nx/angular':
         specifier: 23.1.1
         version: 23.1.1(ee7020229dfc97002ffb1322514cc95e)
@@ -3015,6 +3015,19 @@ packages:
     peerDependencies:
       tslib: '2'
 
+  '@jsverse/transloco-utils@8.4.0':
+    resolution: {integrity: sha512-0gJIpjX15a1UmBmwxHI3fXDu0VElU4FaunbYv6O13DOkhdSY8eV6Whdljokv5dJqXSLKdMxI624upkN13enKJg==}
+    engines: {node: '>=18'}
+
+  '@jsverse/transloco@8.4.0':
+    resolution: {integrity: sha512-dGeD2gkYqnSgbG/j6ILXCafgnrGbwcfgpL48m42DoemXutkuN2k/TFskaU27yNM9BeeaNX7zqQtFGdKmz/2wXw==}
+    peerDependencies:
+      '@angular/core': '>=16.0.0'
+      rxjs: '>=6.0.0'
+
+  '@jsverse/utils@1.0.0-beta.5':
+    resolution: {integrity: sha512-z7IdlV6BdSeF3Veii8Yyk64KuyTjNIQnFaW5PAhmDx0wN29lB2BFp8WO6+tJPLPjtlz2yKeNrjkp1XqnMPaeHA==}
+
   '@juggle/resize-observer@4.0.0-4':
     resolution: {integrity: sha512-lHg2b+EtPDfPJfbsR7EJszH5k4emNm7VQFrrbF3uFTp+dZvHuYWBn6QEQAQY6mBTtS18h246oP2PfcU8bt9GYw==}
 
@@ -3456,18 +3469,6 @@ packages:
       '@angular/compiler-cli': ^22.0.0
       typescript: '>=6.0 <6.1'
       webpack: ^5.54.0
-
-  '@ngx-translate/core@17.0.0':
-    resolution: {integrity: sha512-Rft2D5ns2pq4orLZjEtx1uhNuEBerUdpFUG1IcqtGuipj6SavgB8SkxtNQALNDA+EVlvsNCCjC2ewZVtUeN6rg==}
-    peerDependencies:
-      '@angular/common': '>=16'
-      '@angular/core': '>=16'
-
-  '@ngx-translate/http-loader@17.0.0':
-    resolution: {integrity: sha512-hgS8sa0ARjH9ll3PhkLTufeVXNI2DNR2uFKDhBgq13siUXzzVr/a31M6zgecrtwbA34iaBV01hsTMbMS8V7iIw==}
-    peerDependencies:
-      '@angular/common': '>=16'
-      '@angular/core': '>=16'
 
   '@noble/hashes@1.4.0':
     resolution: {integrity: sha512-V1JJ1WTRUqHHrOSh597hURcMqVKVGL/ea3kv0gSnEdsEZ0/+VyPghM1lMNGc00z7CIQorSvbKpuJkxvuHbvdbg==}
@@ -16684,6 +16685,25 @@ snapshots:
       '@jsonjoy.com/codegen': 17.67.0(tslib@2.8.1)
       tslib: 2.8.1
 
+  '@jsverse/transloco-utils@8.4.0(typescript@6.0.3)':
+    dependencies:
+      cosmiconfig: 8.3.6(typescript@6.0.3)
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - typescript
+
+  '@jsverse/transloco@8.4.0(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1)(typescript@6.0.3)':
+    dependencies:
+      '@angular/core': 22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1)
+      '@jsverse/transloco-utils': 8.4.0(typescript@6.0.3)
+      '@jsverse/utils': 1.0.0-beta.5
+      rxjs: 7.8.1
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - typescript
+
+  '@jsverse/utils@1.0.0-beta.5': {}
+
   '@juggle/resize-observer@4.0.0-4': {}
 
   '@kessler/tableify@1.0.2': {}
@@ -17257,18 +17277,6 @@ snapshots:
       '@angular/compiler-cli': 22.1.3(@angular/compiler@22.1.3)(typescript@6.0.3)
       typescript: 6.0.3
       webpack: 5.109.2(@swc/core@1.16.1(@swc/helpers@0.5.23))(cssnano@7.1.9(postcss@8.5.8))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.25)(uglify-js@3.19.3)(webpack-cli@4.10.0)
-
-  '@ngx-translate/core@17.0.0(@angular/common@22.1.3(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1))':
-    dependencies:
-      '@angular/common': 22.1.3(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1)
-      '@angular/core': 22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1)
-      tslib: 2.8.1
-
-  '@ngx-translate/http-loader@17.0.0(@angular/common@22.1.3(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1))(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1))':
-    dependencies:
-      '@angular/common': 22.1.3(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1))(rxjs@7.8.1)
-      '@angular/core': 22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.15.1)
-      tslib: 2.8.1
 
   '@noble/hashes@1.4.0': {}
 

@@ -83,8 +83,8 @@ export class ElementModelService {
 
     if (this.maxgraphService.getAllCells().length === 1) {
       this.notificationService.warning({
-        title: this.translate.language.NOTIFICATION_SERVICE.MODEL_EMPTY_MESSAGE,
-        message: this.translate.language.NOTIFICATION_SERVICE.MODEL_MINIMUM_ELEMENT_REQUIREMENT,
+        title: this.translate.language.notificationService.modelEmptyMessage,
+        message: this.translate.language.notificationService.modelMinimumElementRequirement,
         timeout: 5000,
       });
       return;

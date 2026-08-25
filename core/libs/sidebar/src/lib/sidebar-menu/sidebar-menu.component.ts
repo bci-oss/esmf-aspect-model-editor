@@ -18,14 +18,14 @@ import {Component, inject} from '@angular/core';
 import {MatBadge} from '@angular/material/badge';
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltip} from '@angular/material/tooltip';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {SidebarStateService} from '../sidebar-state.service';
 
 @Component({
   selector: 'ame-sidebar-menu',
   templateUrl: './sidebar-menu.component.html',
   styleUrls: ['./sidebar-menu.component.scss'],
-  imports: [BarItemComponent, MatTooltip, AsyncPipe, MatIconModule, MatBadge, TranslatePipe],
+  imports: [BarItemComponent, MatTooltip, AsyncPipe, MatIconModule, MatBadge, TranslocoDirective],
 })
 export class SidebarMenuComponent {
   private informationService = inject(InformationHandlingService);

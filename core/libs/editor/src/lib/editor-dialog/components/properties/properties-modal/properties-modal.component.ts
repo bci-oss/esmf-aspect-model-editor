@@ -43,7 +43,7 @@ import {
   PropertyPayload,
   PropertyUrn,
 } from '@esmf/aspect-model-loader';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 
 export interface PropertiesDialogData {
   metaModelElement?: DefaultEntity | DefaultAspect;
@@ -84,7 +84,7 @@ export interface PropertyStatus {
     MatPaginator,
     MatDialogActions,
     MatButton,
-    TranslatePipe,
+    TranslocoDirective,
     MatHeaderRowDef,
     MatRowDef,
   ],

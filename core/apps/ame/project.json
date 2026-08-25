@@ -69,7 +69,7 @@
       }
     },
     "serve": {
-      "executor": "@nx/angular:dev-server",
+      "executor": "@angular/build:dev-server",
       "defaultConfiguration": "development",
       "continuous": true,
       "configurations": {
@@ -82,7 +82,7 @@
       }
     },
     "serve-coverage": {
-      "executor": "ngx-build-plus:dev-server",
+      "executor": "@angular/build:dev-server",
       "defaultConfiguration": "development",
       "configurations": {
         "production": {

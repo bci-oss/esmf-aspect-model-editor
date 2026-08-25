@@ -18,21 +18,18 @@ import {MatIconButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {NamedElement} from '@esmf/aspect-model-loader';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../../../editor-model.service';
 
 @Component({
   selector: 'ame-locate-element',
-  template: `@if (element()) {
-    <button
-      [matTooltip]="'EDITOR_CANVAS.SHAPE_SETTING.LOCATE_ELEMENT' | translate"
-      (click)="locate()"
-      mat-icon-button
-      matTooltipPosition="above"
-    >
-      <mat-icon>gps_fixed</mat-icon>
-    </button>
-  }`,
+  template: `<ng-container *transloco="let t">
+    @if (element()) {
+      <button [matTooltip]="t('editorCanvas.shapeSetting.locateElement')" (click)="locate()" mat-icon-button matTooltipPosition="above">
+        <mat-icon>gps_fixed</mat-icon>
+      </button>
+    }
+  </ng-container> `,
   styles: [
     `
       :host {
@@ -40,7 +37,7 @@ import {EditorModelService} from '../../../../editor-model.service';
       }
     `,
   ],
-  imports: [MatTooltipModule, MatIconModule, MatIconButton, TranslatePipe],
+  imports: [MatTooltipModule, MatIconModule, MatIconButton, TranslocoDirective],
 })
 export class LocateElementComponent {
   public destroyRef = inject(DestroyRef);

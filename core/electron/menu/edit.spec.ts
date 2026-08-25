@@ -34,11 +34,11 @@ const mockSend = vi.fn();
 const mockWin = {webContents: {send: mockSend}};
 
 const translation = {
-  OPEN_SELECTED_ELEMENT: 'Open',
-  REMOVE_SELECTED_ELEMENT: 'Remove',
-  COLLAPSE_EXPAND_MODEL: 'Collapse/Expand',
-  FORMAT_MODEL: 'Format',
-  CONNECT_SELECTED_ELEMENTS: 'Connect',
+  openSelectedElement: 'Open',
+  removeSelectedElement: 'Remove',
+  collapseExpandModel: 'Collapse/Expand',
+  formatModel: 'Format',
+  connectSelectedElements: 'Connect',
 };
 
 describe('edit menu', () => {

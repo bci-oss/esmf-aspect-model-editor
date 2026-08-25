@@ -24,7 +24,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIcon} from '@angular/material/icon';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSelectModule} from '@angular/material/select';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {saveAs} from 'file-saver';
 import {finalize, first, tap} from 'rxjs';
 
@@ -40,7 +40,7 @@ import {finalize, first, tap} from 'rxjs';
     MatSelectModule,
     MatOptionModule,
     MatIcon,
-    TranslatePipe,
+    TranslocoDirective,
   ],
 })
 export class AASXGenerationModalComponent {

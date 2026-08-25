@@ -17,14 +17,14 @@ import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatOptionModule} from '@angular/material/core';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {MatSelectModule} from '@angular/material/select';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import * as locale from 'locale-codes';
 
 import {MatButtonModule} from '@angular/material/button';
 
 @Component({
   templateUrl: './language-selector-modal.component.html',
-  imports: [MatButtonModule, MatDialogModule, TranslatePipe, MatSelectModule, MatOptionModule, ReactiveFormsModule],
+  imports: [MatButtonModule, MatDialogModule, TranslocoDirective, MatSelectModule, MatOptionModule, ReactiveFormsModule],
 })
 export class LanguageSelectorModalComponent {
   private dialogRef = inject(MatDialogRef<LanguageSelectorModalComponent>);

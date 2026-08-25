@@ -31,8 +31,8 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 import {NamedElement} from '@esmf/aspect-model-loader';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {Cell} from '@maxgraph/core';
-import {TranslatePipe} from '@ngx-translate/core';
 import {throttleTime} from 'rxjs';
 import {ConfirmDialogEnum} from '../../../../../editor/src/lib/models/confirm-dialog.enum';
 import {ElementIconComponent} from '../../../../../shared/src/lib/components/element/element.component';
@@ -42,7 +42,7 @@ import {SearchesStateService} from '../../search-state.service';
   selector: 'ame-elements-search',
   templateUrl: './elements-search.component.html',
   styleUrls: ['./elements-search.component.scss'],
-  imports: [MatInputModule, MatAutocompleteModule, MatFormFieldModule, MatIconModule, ElementIconComponent, TranslatePipe],
+  imports: [MatInputModule, MatAutocompleteModule, MatFormFieldModule, MatIconModule, ElementIconComponent, TranslocoDirective],
 })
 export class ElementsSearchComponent {
   private electronSignalsService: ElectronSignals = inject(ElectronSignalsService);
@@ -85,10 +85,10 @@ export class ElementsSearchComponent {
     if (this.loadedFiles.isElementExtern(element) && !element.isPredefined) {
       this.confirmDialogService
         .open({
-          phrases: [this.translate.translateService.instant('CONFIRM_DIALOG.NEW_WINDOW_ELEMENT.PHRASE1', {elementName: element.name})],
-          title: this.translate.language.CONFIRM_DIALOG.NEW_WINDOW_ELEMENT.TITLE,
-          closeButtonText: this.translate.language.CONFIRM_DIALOG.NEW_WINDOW_ELEMENT.CANCEL_BUTTON,
-          okButtonText: this.translate.language.CONFIRM_DIALOG.NEW_WINDOW_ELEMENT.OK_BUTTON,
+          phrases: [this.translate.translateService.translate('confirmDialog.newWindowElement.phrase1', {elementName: element.name})],
+          title: this.translate.language.confirmDialog.newWindowElement.title,
+          closeButtonText: this.translate.language.confirmDialog.newWindowElement.cancelButton,
+          okButtonText: this.translate.language.confirmDialog.newWindowElement.okButton,
         })
         .subscribe(confirm => {
           if (confirm !== ConfirmDialogEnum.cancel) {

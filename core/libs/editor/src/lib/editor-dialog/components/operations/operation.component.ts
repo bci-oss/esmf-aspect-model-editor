@@ -13,7 +13,7 @@
 import {AsyncPipe} from '@angular/common';
 import {Component, inject, input} from '@angular/core';
 import {FormGroup} from '@angular/forms';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../editor-model.service';
 import {ElementListComponent} from '../element-list';
 import {BaseInputComponent, InputChiplistFieldComponent, OutputInputFieldComponent} from '../fields';
@@ -22,7 +22,14 @@ import {BaseInputComponent, InputChiplistFieldComponent, OutputInputFieldCompone
   selector: 'ame-operation',
   templateUrl: './operation.component.html',
   styleUrls: [],
-  imports: [BaseInputComponent, InputChiplistFieldComponent, OutputInputFieldComponent, ElementListComponent, AsyncPipe, TranslatePipe],
+  imports: [
+    BaseInputComponent,
+    InputChiplistFieldComponent,
+    OutputInputFieldComponent,
+    ElementListComponent,
+    AsyncPipe,
+    TranslocoDirective,
+  ],
 })
 export class OperationComponent {
   readonly parentForm = input<FormGroup>();

@@ -15,9 +15,9 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {By} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {TranslateService} from '@ngx-translate/core';
+import {TranslocoService} from '@jsverse/transloco';
 import {MockProvider} from 'ng-mocks';
-import {of, Subject} from 'rxjs';
+import {BehaviorSubject, of, Subject} from 'rxjs';
 import {SearchesStateService} from '../../search-state.service';
 import {FilesSearchComponent} from './files-search.component';
 
@@ -45,13 +45,14 @@ describe('Files search', () => {
         MockProvider(NotificationsService),
         MockProvider(MaxGraphShapeOverlayService),
         MockProvider(MaxGraphAttributeService),
-        MockProvider(TranslateService, {
-          onTranslationChange: new Subject(),
-          onLangChange: new Subject(),
-          onDefaultLangChange: new Subject(),
-          onFallbackLangChange: new Subject(),
-          get: vi.fn(() => of('')),
-        }),
+        MockProvider(TranslocoService, {
+          langChanges$: new BehaviorSubject('en'),
+          events$: new Subject(),
+          translate: vi.fn(() => ''),
+          selectTranslate: vi.fn(() => of('')),
+          _loadDependencies: vi.fn(() => of(undefined)),
+          config: {reRenderOnLangChange: false} as any,
+        } as Partial<TranslocoService>),
         MockProvider(SearchesStateService),
         MockProvider(SidebarStateService, {
           namespacesState: {namespaces: signal({})} as any,

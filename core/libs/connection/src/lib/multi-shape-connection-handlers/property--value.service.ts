@@ -26,14 +26,14 @@ export class PropertyValueConnectionHandler extends BaseConnectionHandler {
 
   public connect(parentMetaModel: DefaultProperty, childMetaModel: DefaultValue, parentCell: Cell, childCell: Cell) {
     if (parentMetaModel.isPredefined) {
-      this.notificationService.warning({title: this.translate.language.NOTIFICATION_SERVICE.CHILD_FOR_PREDEFINED_ELEMENT_ERROR});
+      this.notificationService.warning({title: this.translate.language.notificationService.childForPredefinedElementError});
       return;
     }
 
     if (MaxGraphHelper.isEntityCycleInheritance(childCell, parentMetaModel, this.maxgraphService.graph)) {
       this.notificationService.warning({
-        title: this.translate.language.NOTIFICATION_SERVICE.RECURSIVE_ELEMENTS,
-        message: this.translate.language.NOTIFICATION_SERVICE.CIRCULAR_CONNECTION_MESSAGE,
+        title: this.translate.language.notificationService.recursiveElements,
+        message: this.translate.language.notificationService.circularConnectionMessage,
         timeout: 5000,
       });
       return;

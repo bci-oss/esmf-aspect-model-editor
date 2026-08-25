@@ -17,13 +17,13 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInput, MatLabel} from '@angular/material/input';
 import {MatTooltipModule} from '@angular/material/tooltip';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 
 @Component({
   selector: 'ame-entity-instance-search-bar',
   templateUrl: './entity-instance-search-bar.component.html',
   styleUrls: ['./entity-instance-search-bar.component.scss'],
-  imports: [MatFormFieldModule, MatLabel, MatInput, MatIconModule, MatTooltipModule, MatFabButton, TranslatePipe],
+  imports: [MatFormFieldModule, MatLabel, MatInput, MatIconModule, MatTooltipModule, MatFabButton, TranslocoDirective],
 })
 export class EntityInstanceSearchBarComponent {
   readonly count = input<number>();

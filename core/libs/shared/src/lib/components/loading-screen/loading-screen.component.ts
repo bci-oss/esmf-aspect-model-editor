@@ -16,13 +16,13 @@ import {Component, inject} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 
 @Component({
   selector: 'ame-loading-screen',
   templateUrl: './loading-screen.component.html',
   styleUrls: ['./loading-screen.component.scss'],
-  imports: [MatProgressBarModule, MatDialogModule, TranslatePipe, MatButtonModule],
+  imports: [MatProgressBarModule, MatDialogModule, TranslocoDirective, MatButtonModule],
 })
 export class LoadingScreenComponent {
   private dialog = inject(MatDialogRef<LoadingScreenComponent>);

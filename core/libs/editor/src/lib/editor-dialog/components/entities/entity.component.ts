@@ -13,7 +13,7 @@
 import {AsyncPipe} from '@angular/common';
 import {Component, inject, input} from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../editor-model.service';
 import {ElementListComponent} from '../element-list';
 import {BaseInputComponent, EntityExtendsFieldComponent} from '../fields';
@@ -22,7 +22,14 @@ import {PropertiesButtonComponent, UpdatedProperties} from '../properties';
 @Component({
   selector: 'ame-entity',
   templateUrl: './entity.component.html',
-  imports: [BaseInputComponent, EntityExtendsFieldComponent, PropertiesButtonComponent, ElementListComponent, AsyncPipe, TranslatePipe],
+  imports: [
+    BaseInputComponent,
+    EntityExtendsFieldComponent,
+    PropertiesButtonComponent,
+    ElementListComponent,
+    AsyncPipe,
+    TranslocoDirective,
+  ],
 })
 export class EntityComponent {
   readonly parentForm = input<FormGroup>();

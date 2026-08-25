@@ -50,7 +50,7 @@ export class AppComponent implements OnInit {
   public title = 'Aspect Model Editor';
 
   get currentLanguage(): string {
-    return this.translate.translateService.getCurrentLang();
+    return this.translate.translateService.getActiveLang();
   }
 
   constructor() {
@@ -96,7 +96,7 @@ export class AppComponent implements OnInit {
   }
 
   private getApplicationLanguage(): string {
-    return localStorage.getItem('applicationLanguage') || this.translate.translateService.defaultLang;
+    return localStorage.getItem('applicationLanguage') || this.translate.translateService.getDefaultLang();
   }
 
   private isGraphElement(target: HTMLElement): boolean {

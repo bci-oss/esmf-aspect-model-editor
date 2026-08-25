@@ -63,7 +63,7 @@ import {
   DefaultProperty,
   DefaultTrait,
 } from '@esmf/aspect-model-loader';
-import {TranslateModule, TranslatePipe} from '@ngx-translate/core';
+import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, Mocked, test, vi} from 'vitest';
 import {provideMockObject} from '../../../../test-helpers/utils';
 import {EnumerationValueConnectionHandler} from './multi-shape-connection-handlers/enumeration--value.service';
@@ -97,7 +97,7 @@ describe('Test Shape connector service', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [TranslateModule.forRoot(), TranslatePipe],
+      imports: [TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}})],
       providers: [
         provideHttpClient(withXhr()),
         provideHttpClientTesting(),

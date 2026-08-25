@@ -17,7 +17,7 @@ import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {Component, DestroyRef, inject, signal} from '@angular/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {saveAs} from 'file-saver';
 import * as locale from 'locale-codes';
 import {from, map, Observable, throwError} from 'rxjs';
@@ -40,7 +40,7 @@ import {MatSelectModule} from '@angular/material/select';
   styleUrls: ['./generate-documentation.component.scss'],
   imports: [
     MatDialogModule,
-    TranslatePipe,
+    TranslocoDirective,
     MatFormFieldModule,
     MatSelectModule,
     MatOptionModule,

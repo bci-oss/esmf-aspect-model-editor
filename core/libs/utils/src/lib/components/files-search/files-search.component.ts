@@ -29,7 +29,7 @@ import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {filter, first, map, Observable, of, switchMap, tap, throttleTime} from 'rxjs';
 import {SearchesStateService} from '../../search-state.service';
 import {OpenFileDialogComponent} from '../open-file-dialog/open-file-dialog.component';
@@ -38,7 +38,7 @@ import {OpenFileDialogComponent} from '../open-file-dialog/open-file-dialog.comp
   selector: 'ame-files-search',
   templateUrl: './files-search.component.html',
   styleUrls: ['./files-search.component.scss'],
-  imports: [MatInputModule, MatAutocompleteModule, MatFormFieldModule, MatIconModule, MatDialogModule, TranslatePipe],
+  imports: [MatInputModule, MatAutocompleteModule, MatFormFieldModule, MatIconModule, MatDialogModule, TranslocoDirective],
 })
 export class FilesSearchComponent {
   private electronSignalsService: ElectronSignals = inject(ElectronSignalsService);
@@ -149,10 +149,10 @@ export class FilesSearchComponent {
     const fileStatus = this.sidebarStateService.namespacesState.getFile(namespace, file);
     if (fileStatus && (fileStatus.errored || fileStatus.loaded)) {
       this.notificationService.warning({
-        title: this.translate.language.SEARCHES.FILES.NOTIFICATIONS.TITLE,
+        title: this.translate.language.searches.files.notifications.title,
         message: fileStatus.errored
-          ? this.translate.language.SEARCHES.FILES.NOTIFICATIONS.ERROR_MESSAGE
-          : this.translate.language.SEARCHES.FILES.NOTIFICATIONS.ALREADY_LOADED_FILE_MESSAGE,
+          ? this.translate.language.searches.files.notifications.errorMessage
+          : this.translate.language.searches.files.notifications.alreadyLoadedFileMessage,
       });
       return 'invalid-file';
     }

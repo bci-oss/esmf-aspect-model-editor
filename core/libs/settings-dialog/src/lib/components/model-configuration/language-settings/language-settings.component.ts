@@ -21,7 +21,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatError, MatInput, MatLabel} from '@angular/material/input';
 import {MatOption, MatSelect} from '@angular/material/select';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import * as locale from 'locale-codes';
 import {map, Observable, startWith} from 'rxjs';
 import {Langcode} from '../../../model';
@@ -46,7 +46,7 @@ import {SettingsFormService} from '../../../services';
     MatIconButton,
     MatError,
     MatButton,
-    TranslatePipe,
+    TranslocoDirective,
   ],
 })
 export class LanguageSettingsComponent implements OnInit {

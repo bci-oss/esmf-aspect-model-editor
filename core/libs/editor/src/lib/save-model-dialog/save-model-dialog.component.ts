@@ -15,12 +15,12 @@ import {ModelSaverService} from '@ame/editor';
 import {Component, inject, NgZone, signal} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 
 @Component({
   templateUrl: 'save-model-dialog.component.html',
   styleUrls: ['save-model-dialog.component.scss'],
-  imports: [MatDialogModule, TranslatePipe, MatButtonModule],
+  imports: [MatDialogModule, TranslocoDirective, MatButtonModule],
 })
 export class SaveModelDialogComponent {
   private modelSaverService = inject(ModelSaverService);

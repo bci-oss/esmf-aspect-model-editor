@@ -14,13 +14,13 @@
 import {AppComponent} from '@ame/app/app.component';
 import {APP_ROUTES} from '@ame/app/app.routes';
 import {APP_CONFIG, config} from '@ame/shared';
+import {TranslocoHttpLoader} from '@ame/translation';
 import {provideHttpClient, withInterceptorsFromDi, withXhr} from '@angular/common/http';
 import {enableProdMode, importProvidersFrom} from '@angular/core';
 import {bootstrapApplication} from '@angular/platform-browser';
 import {provideAnimations} from '@angular/platform-browser/animations';
 import {PreloadAllModules, provideRouter, withPreloading} from '@angular/router';
-import {TranslateModule} from '@ngx-translate/core';
-import {provideTranslateHttpLoader} from '@ngx-translate/http-loader';
+import {provideTransloco} from '@jsverse/transloco';
 import {environment} from 'environments/environment';
 import {ToastrModule} from 'ngx-toastr';
 
@@ -37,13 +37,17 @@ const bootstrap = () =>
       provideRouter(APP_ROUTES, withPreloading(PreloadAllModules)),
       provideHttpClient(withXhr(), withInterceptorsFromDi()),
       provideAnimations(),
-      importProvidersFrom(
-        ToastrModule.forRoot(),
-        TranslateModule.forRoot({
+      importProvidersFrom(ToastrModule.forRoot()),
+      provideTransloco({
+        config: {
+          availableLangs: ['en', 'zh'],
+          defaultLang: 'en',
           fallbackLang: 'en',
-          loader: provideTranslateHttpLoader({prefix: './assets/i18n/', suffix: '.json'}),
-        }),
-      ),
+          reRenderOnLangChange: true,
+          prodMode: environment.production,
+        },
+        loader: TranslocoHttpLoader,
+      }),
       {provide: APP_CONFIG, useValue: config},
     ],
   });

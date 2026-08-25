@@ -55,8 +55,8 @@ export class StartupService {
     let options: StartupPayload;
     this.ngZone.run(() =>
       this.loadingScreenService.open({
-        title: this.translate.language.LOADING_SCREEN_DIALOG.MODEL_LOADING,
-        content: this.translate.language.LOADING_SCREEN_DIALOG.MODEL_LOADING_WAIT,
+        title: this.translate.language.loadingScreenDialog.modelLoading,
+        content: this.translate.language.loadingScreenDialog.modelLoadingWait,
       }),
     );
 

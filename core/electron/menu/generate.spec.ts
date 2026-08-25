@@ -34,12 +34,12 @@ const mockSend = vi.fn();
 const mockWin = {webContents: {send: mockSend}};
 
 const translation = {
-  HTML_DOCUMENTATION: 'HTML Documentation',
-  OPEN_API_SPECIFICATION: 'Open API Specification',
-  ASYNC_API_SPECIFICATION: 'Async API Specification',
-  AASX_XML: 'AASX XML',
-  SAMPLE_JSON_PAYLOAD: 'Sample JSON Payload',
-  JSON_SCHEMA: 'JSON Schema',
+  htmlDocumentation: 'HTML Documentation',
+  openApiSpecification: 'Open API Specification',
+  asyncApiSpecification: 'Async API Specification',
+  aasxXml: 'AASX XML',
+  sampleJsonPayload: 'Sample JSON Payload',
+  jsonSchema: 'JSON Schema',
 };
 
 describe('generate menu', () => {

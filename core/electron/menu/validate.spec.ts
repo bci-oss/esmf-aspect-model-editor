@@ -34,7 +34,7 @@ const mockSend = vi.fn();
 const mockWin = {webContents: {send: mockSend}};
 
 const translation = {
-  CURRENT_MODEL: 'Current Model',
+  currentModel: 'Current Model',
 };
 
 describe('validate menu', () => {

@@ -29,7 +29,7 @@ export abstract class InheritanceConnector extends BaseConnectionHandler {
 
   public connect(parentMetaModel: NamedElement, childMetaModel: NamedElement, parentCell: Cell, childCell: Cell) {
     if (parentMetaModel?.isPredefined) {
-      this.notificationsService.warning({title: this.translate.language.NOTIFICATION_SERVICE.CHILD_FOR_PREDEFINED_ELEMENT_ERROR});
+      this.notificationsService.warning({title: this.translate.language.notificationService.childForPredefinedElementError});
       return;
     }
 

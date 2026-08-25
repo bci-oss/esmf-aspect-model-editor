@@ -25,7 +25,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatInput} from '@angular/material/input';
 import {MatMenu, MatMenuItem, MatMenuTrigger} from '@angular/material/menu';
 import {MatTooltip} from '@angular/material/tooltip';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {filter, finalize, switchMap} from 'rxjs';
 import {ConfirmDialogEnum} from '../../../../../editor/src/lib/models/confirm-dialog.enum';
 import {WorkspaceMigrateComponent} from '../workspace-migrate/workspace-migrate.component';
@@ -44,7 +44,7 @@ import {WorkspaceMigrateComponent} from '../workspace-migrate/workspace-migrate.
     MatMenu,
     MatMenuItem,
     WorkspaceMigrateComponent,
-    TranslatePipe,
+    TranslocoDirective,
     KeyValuePipe,
   ],
 })
@@ -145,8 +145,8 @@ export class WorkspaceFileListComponent {
 
     if (!this.sidebarService.isCurrentFileLoaded()) {
       this.notificationService.info({
-        title: this.translate.language.NOTIFICATION_SERVICE.LOAD_MODEL_INFO_TITLE,
-        message: this.translate.language.NOTIFICATION_SERVICE.LOAD_MODEL_INFO_MESSAGE,
+        title: this.translate.language.notificationService.loadModelInfoTitle,
+        message: this.translate.language.notificationService.loadModelInfoMessage,
       });
       return;
     }
@@ -213,12 +213,12 @@ export class WorkspaceFileListComponent {
     this.confirmDialogService
       .open({
         phrases: [
-          this.translate.translateService.instant('CONFIRM_DIALOG.SAVE_BEFORE_LOAD.PHRASE1', {fileName: file.name}),
-          this.translate.language.CONFIRM_DIALOG.SAVE_BEFORE_LOAD.PHRASE2,
+          this.translate.translateService.translate('confirmDialog.saveBeforeLoad.phrase1', {fileName: file.name}),
+          this.translate.language.confirmDialog.saveBeforeLoad.phrase2,
         ],
-        title: this.translate.language.CONFIRM_DIALOG.SAVE_BEFORE_LOAD.TITLE,
-        closeButtonText: this.translate.language.CONFIRM_DIALOG.SAVE_BEFORE_LOAD.CANCEL_BUTTON,
-        okButtonText: this.translate.language.CONFIRM_DIALOG.SAVE_BEFORE_LOAD.OK_BUTTON,
+        title: this.translate.language.confirmDialog.saveBeforeLoad.title,
+        closeButtonText: this.translate.language.confirmDialog.saveBeforeLoad.cancelButton,
+        okButtonText: this.translate.language.confirmDialog.saveBeforeLoad.okButton,
       })
       .pipe(
         filter((confirmed: ConfirmDialogEnum) => confirmed !== ConfirmDialogEnum.cancel),
@@ -238,10 +238,10 @@ export class WorkspaceFileListComponent {
     this.confirmDialogService
       .open({
         phrases: [
-          this.translate.translateService.instant('CONFIRM_DIALOG.DELETE_FILE.PHRASE1', {fileName: file.name}),
-          this.translate.language.CONFIRM_DIALOG.DELETE_FILE.PHRASE2,
+          this.translate.translateService.translate('confirmDialog.deleteFile.phrase1', {fileName: file.name}),
+          this.translate.language.confirmDialog.deleteFile.phrase2,
         ],
-        title: this.translate.language.CONFIRM_DIALOG.DELETE_FILE.TITLE,
+        title: this.translate.language.confirmDialog.deleteFile.title,
       })
       .subscribe(confirm => {
         if (confirm !== ConfirmDialogEnum.cancel) {

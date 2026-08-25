@@ -25,7 +25,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatProgressSpinner} from '@angular/material/progress-spinner';
 import {MatRadioButton, MatRadioGroup} from '@angular/material/radio';
 import {MatTooltipModule} from '@angular/material/tooltip';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {finalize} from 'rxjs';
 
 @Component({
@@ -42,7 +42,7 @@ import {finalize} from 'rxjs';
     MatRadioGroup,
     MatRadioButton,
     FormsModule,
-    TranslatePipe,
+    TranslocoDirective,
   ],
 })
 export class SelectNamespacesComponent implements OnInit {
@@ -92,8 +92,8 @@ export class SelectNamespacesComponent implements OnInit {
       },
       error: () => {
         this.notificationService.error({
-          title: this.translate.language.NOTIFICATION_SERVICE.NAMESPACE_EXPORT_FAILURE,
-          message: this.translate.language.NOTIFICATION_SERVICE.INTERNAL_EXPORT_ERROR,
+          title: this.translate.language.notificationService.namespaceExportFailure,
+          message: this.translate.language.notificationService.internalExportError,
         });
       },
     });

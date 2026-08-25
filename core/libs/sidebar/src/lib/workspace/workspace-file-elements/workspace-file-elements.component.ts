@@ -27,7 +27,7 @@ import {MatMenu, MatMenuTrigger} from '@angular/material/menu';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatTooltip} from '@angular/material/tooltip';
 import {NamedElement} from '@esmf/aspect-model-loader';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {first, switchMap} from 'rxjs';
 import {DraggableElementComponent} from '../../draggable-element/draggable-element.component';
 
@@ -46,7 +46,7 @@ import {DraggableElementComponent} from '../../draggable-element/draggable-eleme
     MatTooltip,
     MatIconModule,
     MatFormFieldModule,
-    TranslatePipe,
+    TranslocoDirective,
     MatProgressSpinnerModule,
   ],
 })

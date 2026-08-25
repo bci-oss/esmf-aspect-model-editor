@@ -22,7 +22,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatError, MatInput, MatLabel} from '@angular/material/input';
 import {DefaultEntity, DefaultEntityInstance, DefaultEnumeration, DefaultProperty, Value} from '@esmf/aspect-model-loader';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../../editor-model.service';
 import {EditorDialogValidators} from '../../../validators';
 import {EntityInstanceModalTableComponent} from '../entity-instance-modal-table/entity-instance-modal-table.component';
@@ -49,7 +49,7 @@ export interface NewEntityInstanceDialogOptions {
     MatInput,
     MatError,
     MatButton,
-    TranslatePipe,
+    TranslocoDirective,
     EntityInstanceModalTableComponent,
     MatDialogActions,
     FormsModule,

@@ -18,7 +18,7 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatMiniFabButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
-import {TranslatePipe} from '@ngx-translate/core';
+import {TranslocoDirective} from '@jsverse/transloco';
 import {EMPTY, Subject, catchError, debounceTime, finalize, map, switchMap, tap} from 'rxjs';
 import {WorkspaceEmptyComponent} from './workspace-empty/workspace-empty.component';
 import {WorkspaceErrorComponent} from './workspace-error/workspace-error.component';
@@ -37,7 +37,7 @@ import {WorkspaceFileListComponent} from './workspace-file-list/workspace-file-l
     WorkspaceEmptyComponent,
     WorkspaceFileListComponent,
     WorkspaceFileElementsComponent,
-    TranslatePipe,
+    TranslocoDirective,
   ],
 })
 export class WorkspaceComponent {

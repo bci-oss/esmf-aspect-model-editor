@@ -6,6 +6,14 @@
   "projectType": "library",
   "tags": [],
   "targets": {
+    "test": {
+      "executor": "@angular/build:unit-test",
+      "outputs": ["{workspaceRoot}/coverage/libs/aspect-model-loader"],
+      "options": {
+        "tsConfig": "libs/aspect-model-loader/tsconfig.spec.json",
+        "buildTarget": "aspect-model-loader:build"
+      }
+    },
     "lint": {
       "executor": "@nx/eslint:lint"
     },

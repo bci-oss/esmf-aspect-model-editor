@@ -23,8 +23,8 @@ export class RdfLoader {
   public loadModel(payloads: Array<{rdfAspectModel: string; sourceLocation: string}>): Observable<RdfModel> {
     const subject = new Subject<RdfModel>();
     const store: Store = new Store();
-    let rdfModel: RdfModel = null;
-    const parsedRdf = [];
+    let rdfModel: RdfModel | null = null;
+    const parsedRdf: string[] = [];
 
     payloads.forEach(payload => {
       new Parser().parse(payload.rdfAspectModel, (error, quad, prefixes: Prefixes<any>) => {

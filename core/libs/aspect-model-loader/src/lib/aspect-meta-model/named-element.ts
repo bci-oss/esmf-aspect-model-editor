@@ -63,6 +63,8 @@ export abstract class NamedElement extends ModelElement {
     this.preferredNames = props.preferredNames || new Map();
     this.anonymous = Boolean(props.isAnonymous);
     this.isPredefined = Boolean(props.isPredefined);
+
+    this.previousAspectModelUrn = undefined;
   }
 
   get namespace(): string {

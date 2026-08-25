@@ -10,7 +10,6 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {valueFactory} from '@esmf/aspect-model-loader';
 import {Literal, Quad, Quad_Object, Util} from 'n3';
 import {DefaultValue, NamedElement, Type} from '../../aspect-meta-model';
 import {DefaultEnumeration, Enumeration} from '../../aspect-meta-model/characteristic/default-enumeration';
@@ -20,6 +19,7 @@ import {Value} from '../../aspect-meta-model/value';
 import {BaseInitProps} from '../../shared/base-init-props';
 import {Samm} from '../../vocabulary';
 import {entityFactory} from '../entity-instantiator';
+import {valueFactory} from '../value-instantiator';
 import {characteristicFactory} from './characteristic-instantiator';
 import {CharacteristicInstantiatorUtil} from './characteristic-instantiator-util';
 

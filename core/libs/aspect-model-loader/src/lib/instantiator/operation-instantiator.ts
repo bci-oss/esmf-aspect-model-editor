@@ -38,7 +38,7 @@ export function operationFactory(initProps: BaseInitProps) {
     const operation = new DefaultOperation({
       ...baseProperties,
       input: [],
-      output: null,
+      output: undefined,
     });
 
     for (const quad of quads) {

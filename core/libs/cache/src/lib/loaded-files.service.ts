@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable, computed, signal} from '@angular/core';
+import {computed, Injectable, signal} from '@angular/core';
 import {Aspect, CacheStrategy, DefaultAspect, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
 import {environment} from '../../../../environments/environment';
 
@@ -33,23 +33,23 @@ export interface UpdateFilePayload {
 }
 
 export class NamespaceFile {
-  private _name: string;
-  private _namespace: string;
+  private _name?: string;
+  private _namespace?: string;
 
-  originalName: string;
-  originalNamespace: string;
-  originalAspectModelUrn: string;
+  originalName = '';
+  originalNamespace = '';
+  originalAspectModelUrn?: string;
   rendered = false;
-  sharedRdfModel: RdfModel;
-  fromWorkspace: boolean;
+  sharedRdfModel?: RdfModel;
+  fromWorkspace = false;
   /** Used in the rendering process. DO NOT USE TO GET THE WORKSPACE STRUCTURE */
   namespaceFiles: Record<string, string> = {};
 
-  get namespace() {
-    return (this._namespace || this.aspect?.namespace || this.rdfModel.getPrefixes()['']).replace('#', '').replace('urn:samm:', '') || '';
+  get namespace(): string {
+    return (this._namespace || this.aspect?.namespace || this.rdfModel.getPrefixes()[''] || '').replace('#', '').replace('urn:samm:', '');
   }
 
-  set namespace(value) {
+  set namespace(value: string) {
     this._namespace = value;
   }
 
@@ -58,18 +58,18 @@ export class NamespaceFile {
   }
 
   get name(): string {
-    return this._name || (this.aspect ? this.nameBasedOnAspect : 'shared-file.ttl');
+    return this._name || (this.aspect ? this.nameBasedOnAspect || 'aspect.ttl' : 'shared-file.ttl');
   }
 
-  get absoluteName() {
+  get absoluteName(): string {
     return this.namespace + ':' + this.name;
   }
 
-  get originalAbsoluteName() {
+  get originalAbsoluteName(): string {
     return `${this.originalNamespace}:${this.originalName}`;
   }
 
-  get nameBasedOnAspect() {
+  get nameBasedOnAspect(): string | null {
     return this.aspect ? this.aspect.name + '.ttl' : null;
   }
 
@@ -84,7 +84,7 @@ export class NamespaceFile {
   constructor(
     public rdfModel: RdfModel,
     public cachedFile: CacheStrategy,
-    public aspect: Aspect,
+    public aspect: Aspect | null,
   ) {}
 
   resetOriginalUrn() {
@@ -97,7 +97,7 @@ export class NamespaceFile {
   }
 
   getAnyAspectModelUrn(): string {
-    return this.rdfModel.store.getSubjects(null, null, null)[0].value;
+    return this.rdfModel.store.getSubjects(null, null, null)[0]?.value || '';
   }
 }
 
@@ -118,7 +118,7 @@ export class LoadedFilesService {
     return this.filesSignal();
   }
 
-  get currentLoadedFile(): NamespaceFile {
+  get currentLoadedFile(): NamespaceFile | null {
     return this.currentLoadedFileSignal();
   }
 
@@ -131,8 +131,8 @@ export class LoadedFilesService {
   }
 
   constructor() {
-    if (!environment.production) {
-      window['angular.LoadedFilesService'] = this;
+    if (typeof window !== 'undefined' && !environment.production) {
+      (window as any)['angular.LoadedFilesService'] = this;
     }
   }
 
@@ -143,7 +143,7 @@ export class LoadedFilesService {
   isElementInCurrentFile(element: NamedElement): boolean {
     if (!element) return false;
     if (!this.currentLoadedFile) return false;
-    if (element.name.includes('[') && element.name.includes(']')) return true;
+    if (element.name?.includes('[') && element.name?.includes(']')) return true;
     if (!this.currentLoadedFile.cachedFile) return false;
 
     return Boolean(this.currentLoadedFile.cachedFile.get(element.aspectModelUrn));
@@ -169,9 +169,18 @@ export class LoadedFilesService {
   addFile(fileInfo: LoadedFilePayload, force = false): NamespaceFile {
     const newFile = new NamespaceFile(fileInfo.rdfModel, fileInfo.cachedFile, fileInfo.aspect);
     if (fileInfo.absoluteName) {
-      const [namespace, version, name] = fileInfo.absoluteName.split(':');
-      if (namespace && version) newFile.namespace = `${namespace}:${version}`;
-      if (name) newFile.name = name;
+      const parts = fileInfo.absoluteName.split(':');
+      if (parts.length >= 2) {
+        newFile.name = parts.pop();
+
+        if (newFile.name === undefined) {
+          throw new Error('parts array is empty');
+        }
+
+        newFile.namespace = parts.join(':');
+      } else {
+        newFile.name = parts[0];
+      }
     }
 
     if (this.files[newFile.absoluteName] && !force) {
@@ -202,7 +211,7 @@ export class LoadedFilesService {
    * @param filesInfo - a list of files payloads to be used for storing files
    * @returns - a list of NamespaceFile class instances
    */
-  addFiles(filesInfo: LoadedFilePayload[]) {
+  addFiles(filesInfo: LoadedFilePayload[]): NamespaceFile[] {
     return filesInfo.map(fileInfo => this.addFile(fileInfo));
   }
 
@@ -240,13 +249,22 @@ export class LoadedFilesService {
     }
 
     const file = this.files[oldAbsoluteName];
-    const [namespace, version, name] = newAbsoluteName.split(':');
-    file.name = name;
-    file.namespace = `${namespace}:${version}`;
+    const parts = newAbsoluteName.split(':');
+    if (parts.length >= 2) {
+      const lastPart = parts.pop();
+
+      if (lastPart === undefined) {
+        throw new Error('parts array is empty');
+      }
+
+      file.namespace = parts.join(':');
+    } else {
+      file.name = parts[0];
+    }
 
     if (rewriteOriginal) {
-      file.originalName = name;
-      file.originalNamespace = `${namespace}:${version}`;
+      file.originalName = file.name;
+      file.originalNamespace = file.namespace;
     }
 
     this.updateFiles(files => {
@@ -255,11 +273,11 @@ export class LoadedFilesService {
     });
   }
 
-  getFile(absoluteName: string): NamespaceFile {
+  getFile(absoluteName: string): NamespaceFile | undefined {
     return this.files[absoluteName];
   }
 
-  getElement<T extends NamedElement>(aspectModelUrn: string): T {
+  getElement<T extends NamedElement>(aspectModelUrn: string): T | null {
     for (const file of Object.values(this.files)) {
       const element = file.cachedFile?.get<T>(aspectModelUrn);
       if (element) return element;
@@ -268,7 +286,7 @@ export class LoadedFilesService {
     return null;
   }
 
-  getFileFromElement(element: NamedElement): string {
+  getFileFromElement(element: NamedElement): string | null {
     for (const file of Object.values(this.files)) {
       if (file.rdfModel.store?.getQuads(element.aspectModelUrn, null, null, null)?.length) {
         return file.name;
@@ -278,9 +296,9 @@ export class LoadedFilesService {
     return null;
   }
 
-  findElementOnExtReferences<T extends NamedElement>(aspectModelUrn: string): T {
+  findElementOnExtReferences<T extends NamedElement>(aspectModelUrn: string): T | null {
     for (const file of this.filesAsList) {
-      if (this.currentLoadedFile.absoluteName === file.absoluteName) continue;
+      if (this.currentLoadedFile?.absoluteName === file.absoluteName) continue;
       const element = file.cachedFile?.get<T>(aspectModelUrn);
       if (element) return element;
     }

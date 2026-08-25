@@ -11,8 +11,9 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Characteristic, DefaultSet} from '@esmf/aspect-model-loader';
 import {Quad} from 'n3';
+import {Characteristic} from '../../aspect-meta-model/characteristic/default-characteristic';
+import {DefaultSet} from '../../aspect-meta-model/characteristic/default-set';
 import {BaseInitProps} from '../../shared/base-init-props';
 import {characteristicFactory} from './characteristic-instantiator';
 

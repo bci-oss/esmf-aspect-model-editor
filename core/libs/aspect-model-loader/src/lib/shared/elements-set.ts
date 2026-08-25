@@ -25,15 +25,14 @@ export class ElementSet<T extends NamedElement = NamedElement> extends Array<T> 
   }
 
   override push(...items: T[]): number {
-    let pushedItems = 0;
     for (const item of items) {
       if (this.some(e => e.aspectModelUrn === item.aspectModelUrn)) {
         continue;
       }
 
-      pushedItems += super.push(item);
+      super.push(item);
     }
-    return pushedItems;
+    return this.length;
   }
 
   append(items: T[]): ElementSet<T> {

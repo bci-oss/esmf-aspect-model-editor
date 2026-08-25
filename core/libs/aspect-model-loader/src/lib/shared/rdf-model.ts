@@ -11,9 +11,9 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Samm, SammC, SammE, SammU} from '@esmf/aspect-model-loader';
 import * as locale from 'locale-codes';
 import {DataFactory, NamedNode, Prefixes, Quad, Store, Util} from 'n3';
+import {Samm, SammC, SammE, SammU} from '../vocabulary';
 import {KnownVersion, SammVersion} from './known-version';
 import {RdfModelUtil} from './rdf-model-util';
 import {XsdDataTypes} from './xsd-datatypes';

@@ -13,7 +13,7 @@
 
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {Component, inject, signal} from '@angular/core';
-import {FormControl, ReactiveFormsModule} from '@angular/forms';
+import {form, FormField} from '@angular/forms/signals';
 import {MatOptionModule} from '@angular/material/core';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {MatSelectModule} from '@angular/material/select';
@@ -24,21 +24,25 @@ import {MatButtonModule} from '@angular/material/button';
 
 @Component({
   templateUrl: './language-selector-modal.component.html',
-  imports: [MatButtonModule, MatDialogModule, TranslocoDirective, MatSelectModule, MatOptionModule, ReactiveFormsModule],
+  imports: [MatButtonModule, MatDialogModule, TranslocoDirective, MatSelectModule, MatOptionModule, FormField],
 })
 export class LanguageSelectorModalComponent {
   private dialogRef = inject(MatDialogRef<LanguageSelectorModalComponent>);
   private languageService = inject(SammLanguageSettingsService);
 
   public languages = signal<locale.ILocale[]>([]);
-  public languageControl: FormControl;
+  public languageModel = signal<{language: string}>({language: ''});
+  public languageForm = form(this.languageModel);
 
   constructor() {
-    this.languages.set(this.languageService.getSammLanguageCodes().map(tag => locale.getByTag(tag)));
-    this.languageControl = new FormControl(this.languages()[0].tag);
+    const sammLanguages = this.languageService.getSammLanguageCodes().map(tag => locale.getByTag(tag));
+    this.languages.set(sammLanguages);
+    if (sammLanguages.length > 0) {
+      this.languageModel.set({language: sammLanguages[0].tag});
+    }
 
-    if (this.languages().length === 1) {
-      this.dialogRef.close(this.languages()[0].tag);
+    if (sammLanguages.length === 1) {
+      this.dialogRef.close(sammLanguages[0].tag);
     }
   }
 
@@ -47,6 +51,6 @@ export class LanguageSelectorModalComponent {
   }
 
   selectLanguage() {
-    this.dialogRef.close(this.languageControl.value);
+    this.dialogRef.close(this.languageModel().language);
   }
 }

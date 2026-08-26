@@ -12,7 +12,7 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-  <form [formGroup]="form">
+  <form>
     <h2 mat-dialog-title>{{ t('generateOpenapiSpecDialog.title') }}</h2>
     <button class="close-button" mat-icon-button tabindex="-1" mat-dialog-close>
       <mat-icon>close</mat-icon>
@@ -23,7 +23,7 @@
         <p>{{ t('generateOpenapiSpecDialog.configuration') }}</p>
         <mat-form-field appearance="fill">
           <mat-label>{{ t('generateOpenapiSpecDialog.language') }}</mat-label>
-          <mat-select [formControl]="getControl('language')" data-cy="tbLanguageButton">
+          <mat-select [formField]="openApiForm.language" data-cy="tbLanguageButton">
             @for (language of languages(); track language) {
               <mat-option [value]="language.tag">{{ language.name }}</mat-option>
             }
@@ -33,7 +33,7 @@
         <section>
           <mat-form-field appearance="fill">
             <mat-label>{{ t('generateOpenapiSpecDialog.outputFileFormat') }}</mat-label>
-            <mat-select [formControl]="getControl('output')" data-cy="tbOutputButton">
+            <mat-select [formField]="openApiForm.output" data-cy="tbOutputButton">
               <mat-option data-cy="tbOutputButton-json" value="json">JSON</mat-option>
               <mat-option data-cy="tbOutputButton-yaml" value="yaml">YAML</mat-option>
             </mat-select>
@@ -41,8 +41,8 @@
 
           <mat-form-field appearance="fill">
             <mat-label>{{ t('generateOpenapiSpecDialog.baseurl') }}</mat-label>
-            <input [formControl]="getControl('baseUrl')" matInput placeholder="https://example.com" data-cy="tbBaseUrlInput" />
-            @if (getControl('baseUrl')?.errors?.invalidUrl) {
+            <input [formField]="openApiForm.baseUrl" matInput placeholder="https://example.com" data-cy="tbBaseUrlInput" />
+            @if (openApiForm.baseUrl().invalid()) {
               <mat-error data-cy="tbBaseUrlInputError">
                 {{ t('generateOpenapiSpecDialog.pleaseAddValidUrl') }}
               </mat-error>
@@ -51,7 +51,7 @@
 
           <mat-form-field appearance="fill">
             <mat-label>{{ t('generateOpenapiSpecDialog.pagingTypeOption') }}</mat-label>
-            <mat-select [formControl]="getControl('paging')">
+            <mat-select [formField]="openApiForm.paging">
               <mat-option value="NO_PAGING">{{ t('generateOpenapiSpecDialog.noPaging') }}</mat-option>
               <mat-option value="CURSOR_BASED_PAGING">{{ t('generateOpenapiSpecDialog.cursorBasedPaging') }}</mat-option>
               <mat-option value="OFFSET_BASED_PAGING">{{ t('generateOpenapiSpecDialog.offsetBasedPaging') }}</mat-option>
@@ -63,7 +63,7 @@
         <section>
           <mat-checkbox
             class="dialog__checkbox"
-            [formControl]="getControl('includeQueryApi')"
+            [formField]="openApiForm.includeQueryApi"
             [matTooltip]="t('generateOpenapiSpecDialog.includeQueryApiTooltip')"
           >
             {{ t('generateOpenapiSpecDialog.includeQueryApi') }}
@@ -71,7 +71,7 @@
 
           <mat-checkbox
             class="dialog__checkbox"
-            [formControl]="getControl('useSemanticVersion')"
+            [formField]="openApiForm.useSemanticVersion"
             [matTooltip]="t('generateOpenapiSpecDialog.useSemanticVersionTooltip')"
           >
             {{ t('generateOpenapiSpecDialog.useSemanticVersion') }}
@@ -79,43 +79,39 @@
 
           <mat-checkbox
             class="dialog__checkbox"
-            [formControl]="activateResourcePath"
+            [formField]="openApiForm.activateResourcePath"
             [matTooltip]="t('generateOpenapiSpecDialog.activateResourcePath')"
+            (change)="toggleResourcePath($event.checked)"
             data-cy="activateResourcePathCheckbox"
           >
             {{ t('generateOpenapiSpecDialog.activateResourcePathTooltip') }}
           </mat-checkbox>
         </section>
 
-        @if (activateResourcePath.value) {
+        @if (openApiModel().activateResourcePath) {
           <section>
             <mat-form-field appearance="fill">
               <mat-label data-cy="resourcePathTitle">{{ t('generateOpenapiSpecDialog.resourcePath') }}</mat-label>
-              <input [formControl]="getControl('resourcePath')" matInput placeholder="/resource/{resourceId}" data-cy="resourcePathInput" />
-              @if (getControl('resourcePath')?.errors?.required) {
+              <input [formField]="openApiForm.resourcePath" matInput placeholder="/resource/{resourceId}" data-cy="resourcePathInput" />
+              @if (openApiForm.resourcePath().invalid()) {
                 <mat-error data-cy="resourcePathRequiredError">
                   {{ t('generateOpenapiSpecDialog.resourcePathRequired') }}
-                </mat-error>
-              }
-              @if (getControl('resourcePath')?.errors?.pattern) {
-                <mat-error data-cy="resourcePathPatternError">
-                  {{ t('generateOpenapiSpecDialog.resourcePathPattern') }}
                 </mat-error>
               }
             </mat-form-field>
 
             <h1 class="dialog__title" data-cy="uploadTitle">
-              {{ t('generateOpenapiSpecDialog.uploadFileTitle', {output: output.value.toUpperCase()}) }}:
+              {{ t('generateOpenapiSpecDialog.uploadFileTitle', {output: openApiModel().output.toUpperCase()}) }}:
             </h1>
             <p class="dialog__description">
-              {{ t('generateOpenapiSpecDialog.uploadFileDescription', {output: output.value.toUpperCase()}) }}
-              <a [href]="linkToSpecification()" target="_blank" rel="noopener">{{ output.value.toUpperCase() }} file properties</a>
+              {{ t('generateOpenapiSpecDialog.uploadFileDescription', {output: openApiModel().output.toUpperCase()}) }}
+              <a [href]="linkToSpecification()" target="_blank" rel="noopener">{{ openApiModel().output.toUpperCase() }} file properties</a>
             </p>
 
             @if (uploadedFile()) {
               <div class="dialog__file-info">
                 <h2 data-cy="uploadFileTitle">
-                  {{ t('generateOpenapiSpecDialog.uploadedFileTitle', {output: output.value.toUpperCase()}) }}:
+                  {{ t('generateOpenapiSpecDialog.uploadedFileTitle', {output: openApiModel().output.toUpperCase()}) }}:
                 </h2>
                 <span class="dialog__file-name">{{ uploadedFile().name }}</span>
                 <button (click)="removeUploadedFile()" mat-icon-button>
@@ -128,13 +124,13 @@
               <div
                 class="dialog__upload-content"
                 #dropArea
-                [ngClass]="file?.errors?.required ? 'dialog__border--error' : 'dialog__border--dashed'"
+                [ngClass]="openApiForm.file().invalid() ? 'dialog__border--error' : 'dialog__border--dashed'"
                 data-cy="uploadContent"
               >
                 <input
                   class="dialog__upload-input"
                   #fileDropRef
-                  [accept]="output.value === 'yaml' ? '.yml,.yaml' : '.json'"
+                  [accept]="openApiModel().output === 'yaml' ? '.yml,.yaml' : '.json'"
                   (change)="onFileBrowseHandler($event)"
                   type="file"
                   data-cy="uploadContentFileInput"
@@ -146,9 +142,9 @@
                   <p class="dialog__upload-text">{{ t('generateOpenapiSpecDialog.uploadDragAndDropText') }}</p>
                 </div>
               </div>
-              @if (file?.errors?.required) {
+              @if (openApiForm.file().invalid()) {
                 <mat-error data-cy="uploadFileRequireError">
-                  {{ t('generateOpenapiSpecDialog.uploadFileRequired', {output: output.value.toUpperCase()}) }}
+                  {{ t('generateOpenapiSpecDialog.uploadFileRequired', {output: openApiModel().output.toUpperCase()}) }}
                 </mat-error>
               }
             }
@@ -163,7 +159,7 @@
                       </mat-panel-title>
                     </mat-expansion-panel-header>
                     <textarea class="dialog__textarea" spellcheck="false" matInput readonly>{{
-                      output.value === 'json' ? getControlValue('jsonProperties') : getControlValue('ymlProperties')
+                      openApiModel().output === 'json' ? openApiModel().jsonProperties : openApiModel().ymlProperties
                     }}</textarea>
                   </mat-expansion-panel>
                 </mat-accordion>
@@ -179,7 +175,7 @@
 
           <mat-checkbox
             class="dialog__checkbox"
-            [formControl]="getControl('includePost')"
+            [formField]="openApiForm.includePost"
             [matTooltip]="t('generateOpenapiSpecDialog.addOpenApiPostTooltip')"
             data-cy="includePost"
           >
@@ -188,7 +184,7 @@
 
           <mat-checkbox
             class="dialog__checkbox"
-            [formControl]="getControl('includePut')"
+            [formField]="openApiForm.includePut"
             [matTooltip]="t('generateOpenapiSpecDialog.addOpenApiPutTooltip')"
             data-cy="includePut"
           >
@@ -197,7 +193,7 @@
 
           <mat-checkbox
             class="dialog__checkbox"
-            [formControl]="getControl('includePatch')"
+            [formField]="openApiForm.includePatch"
             [matTooltip]="t('generateOpenapiSpecDialog.addOpenApiPatchTooltip')"
             data-cy="includePatch"
           >
@@ -217,7 +213,7 @@
         {{ t('generateOpenapiSpecDialog.button.cancel') }}
       </button>
       <button
-        [disabled]="!form.valid"
+        [disabled]="openApiForm().invalid()"
         (click)="generateOpenApiSpec()"
         type="button"
         mat-flat-button

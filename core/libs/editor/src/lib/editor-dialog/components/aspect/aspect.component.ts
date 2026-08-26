@@ -11,8 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {AsyncPipe} from '@angular/common';
 import {Component, input} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {FormControl, FormGroup} from '@angular/forms';
 import {DefaultAspect} from '@esmf/aspect-model-loader';
 import {TranslocoDirective} from '@jsverse/transloco';
@@ -24,12 +24,12 @@ import {PropertiesButtonComponent, UpdatedProperties} from '../properties';
 @Component({
   selector: 'ame-aspect',
   templateUrl: './aspect.component.html',
-  imports: [BaseInputComponent, PropertiesButtonComponent, ElementListComponent, AsyncPipe, TranslocoDirective],
+  imports: [BaseInputComponent, PropertiesButtonComponent, ElementListComponent, TranslocoDirective],
 })
 export class AspectComponent extends ModelElementEditorComponent<DefaultAspect> {
   readonly parentForm = input<FormGroup>();
 
-  public element$ = this.metaModelDialogService.getMetaModelElement();
+  public element = toSignal(this.metaModelDialogService.getMetaModelElement());
 
   overwriteProperties(data: UpdatedProperties) {
     this.parentForm().setControl('editedProperties', new FormControl(data));

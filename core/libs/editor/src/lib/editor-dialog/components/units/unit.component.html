@@ -21,11 +21,11 @@
   <ame-quantity-kinds-input-field [parentForm]="parentForm()"></ame-quantity-kinds-input-field>
   <ame-element-list
     [label]="t('editorCanvas.shapeSetting.ameElementListLabel.incomingEdges')"
-    [elements]="(element$ | async)?.parents"
+    [elements]="element()?.parents"
     iconRotation="rotate270"
   ></ame-element-list>
   <ame-element-list
     [label]="t('editorCanvas.shapeSetting.ameElementListLabel.outgoingEdges')"
-    [elements]="(element$ | async)?.children"
+    [elements]="element()?.children"
   ></ame-element-list>
 </ng-container>

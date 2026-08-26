@@ -52,11 +52,11 @@ describe('LanguageSelectorModalComponent', () => {
   it('should create and load languages', () => {
     expect(component).toBeTruthy();
     expect(component.languages().length).toBe(2);
-    expect(component.languageControl.value).toBe('en');
+    expect(component.languageModel().language).toBe('en');
   });
 
   it('selectLanguage should close dialog with selected language', () => {
-    component.languageControl.setValue('de');
+    component.languageModel.set({language: 'de'});
     component.selectLanguage();
 
     expect(dialogRef.close).toHaveBeenCalledWith('de');

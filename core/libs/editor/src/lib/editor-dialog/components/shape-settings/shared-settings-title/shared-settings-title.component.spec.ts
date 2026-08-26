@@ -65,10 +65,10 @@ describe('SharedSettingsTitleComponent', () => {
       metaModelVersion: '2.0.0',
     });
 
-    component.metaModelElementInput = aspect;
+    fixture.componentRef.setInput('metaModelElement', aspect);
     fixture.detectChanges();
 
-    expect(component.metaModelElement).toBe(aspect);
-    expect(component.elementName).toBe('Edit element');
+    expect(component.metaModelElement()).toBe(aspect);
+    expect(component.elementName()).toBe('Edit element');
   });
 });

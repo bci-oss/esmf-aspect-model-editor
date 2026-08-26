@@ -50,7 +50,7 @@ describe('LargeFileWarningComponent', () => {
 
   it('should create and set elementsCount', () => {
     expect(component).toBeTruthy();
-    expect(component.elementsCount).toBe(150);
+    expect(component.elementsCount()).toBe(150);
   });
 
   it('should close with open response', () => {

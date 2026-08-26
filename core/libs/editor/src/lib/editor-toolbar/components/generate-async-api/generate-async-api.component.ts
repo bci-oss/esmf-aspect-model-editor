@@ -13,7 +13,7 @@
 
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {Component, DestroyRef, inject, OnInit, signal} from '@angular/core';
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {form, FormField, pattern} from '@angular/forms/signals';
 import {MatButtonModule} from '@angular/material/button';
 import {MatOptionModule} from '@angular/material/core';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
@@ -53,7 +53,7 @@ export interface AsyncApi {
     MatFormFieldModule,
     MatProgressSpinnerModule,
     MatButtonModule,
-    ReactiveFormsModule,
+    FormField,
     MatSelectModule,
     MatOptionModule,
     MatCheckboxModule,
@@ -69,37 +69,40 @@ export class GenerateAsyncApiComponent implements OnInit {
   private dialogRef = inject(MatDialogRef<GenerateAsyncApiComponent>);
   private loadedFilesService = inject(LoadedFilesService);
 
-  form: FormGroup;
   languages = signal<locale.ILocale[]>([]);
   isGenerating = signal(false);
 
-  public get output(): FormControl {
-    return this.form.get('output') as FormControl;
-  }
+  asyncApiModel = signal<AsyncApi>({
+    language: '',
+    output: 'yaml',
+    applicationId: '',
+    channelAddress: '',
+    useSemanticVersion: false,
+    writeSeparateFiles: false,
+  });
 
-  public get file(): FormControl {
-    return this.form.get('file') as FormControl;
-  }
+  asyncApiForm = form(this.asyncApiModel, schemaPath => {
+    pattern(schemaPath.channelAddress, /^(?:[a-zA-Z]+:\/\/|\/)?[^\s]*$/);
+  });
 
   ngOnInit(): void {
     this.initializeForm();
   }
 
   private initializeForm(): void {
-    this.languages.set(this.languageService.getSammLanguageCodes().map(tag => locale.getByTag(tag)));
-    this.form = new FormGroup({
-      language: new FormControl(this.languages()[0].tag),
-      output: new FormControl('yaml'),
-      applicationId: new FormControl(''),
-      channelAddress: new FormControl('', Validators.pattern(/^(?:[a-zA-Z]+:\/\/|\/)?[^\s]*$/)),
-      useSemanticVersion: new FormControl(false),
-      writeSeparateFiles: new FormControl(false),
-    });
+    const sammLanguages = this.languageService.getSammLanguageCodes().map(tag => locale.getByTag(tag));
+    this.languages.set(sammLanguages);
+    if (sammLanguages.length > 0) {
+      this.asyncApiModel.update(model => ({
+        ...model,
+        language: sammLanguages[0].tag,
+      }));
+    }
   }
 
   generateAsyncApiSpec(): void {
     this.isGenerating.set(true);
-    const asyncApiSpec = this.form.value as AsyncApi;
+    const asyncApiSpec = this.asyncApiModel();
     this.editorService
       .generateAsyncApiSpec(this.loadedFilesService.currentLoadedFile?.rdfModel, asyncApiSpec)
       .pipe(
@@ -121,9 +124,5 @@ export class GenerateAsyncApiComponent implements OnInit {
     const formattedAspectName = `${aspectName}-async-api`;
     const fileName = `${formattedAspectName}.${spec.writeSeparateFiles ? 'zip' : spec.output}`;
     saveAs(new Blob([fileData], {type: fileType}), fileName);
-  }
-
-  getControl(path: string): FormControl {
-    return this.form.get(path) as FormControl;
   }
 }

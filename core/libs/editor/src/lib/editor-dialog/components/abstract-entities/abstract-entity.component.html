@@ -16,8 +16,8 @@
   <ame-properties-button (overwrite)="overwriteProperties($event)"></ame-properties-button>
   <ame-element-list
     [label]="t('editorCanvas.shapeSetting.ameElementListLabel.incomingEdges')"
-    [elements]="(element$ | async)?.parents"
+    [elements]="element()?.parents"
     iconRotation="rotate270"
   />
-  <ame-element-list [label]="t('editorCanvas.shapeSetting.ameElementListLabel.outgoingEdges')" [elements]="(element$ | async)?.children" />
+  <ame-element-list [label]="t('editorCanvas.shapeSetting.ameElementListLabel.outgoingEdges')" [elements]="element()?.children" />
 </ng-container>

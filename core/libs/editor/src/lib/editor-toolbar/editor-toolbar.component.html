@@ -55,7 +55,7 @@
         <mat-icon class="material-icons">commit</mat-icon>
       </ame-bar-item>
 
-      @if (isAllShapesExpanded$ | async) {
+      @if (isAllShapesExpanded()) {
         <ame-bar-item
           [matTooltipShowDelay]="0"
           [matTooltipHideDelay]="0"

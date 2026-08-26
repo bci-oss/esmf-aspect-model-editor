@@ -16,9 +16,9 @@ import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {NotificationsService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {CommonModule} from '@angular/common';
-import {Component, DestroyRef, ElementRef, inject, OnInit, signal, viewChild} from '@angular/core';
+import {Component, DestroyRef, effect, ElementRef, inject, OnInit, signal, untracked, viewChild} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {applyWhen, form, FormField, pattern, required, validate} from '@angular/forms/signals';
 import {MatButtonModule} from '@angular/material/button';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatOptionModule} from '@angular/material/core';
@@ -35,7 +35,6 @@ import {saveAs} from 'file-saver';
 import * as locale from 'locale-codes';
 import {map} from 'rxjs';
 import {finalize, first} from 'rxjs/operators';
-import {EditorDialogValidators} from '../../../editor-dialog';
 import {EditorService} from '../../../editor.service';
 
 export interface OpenApi {
@@ -53,6 +52,23 @@ export interface OpenApi {
   includePatch: boolean;
 }
 
+export interface OpenApiModel {
+  baseUrl: string;
+  language: string;
+  includeQueryApi: boolean;
+  useSemanticVersion: boolean;
+  activateResourcePath: boolean;
+  output: string;
+  paging: string;
+  resourcePath: string;
+  file: File | null;
+  ymlProperties: string | null;
+  jsonProperties: string | null;
+  includePost: boolean;
+  includePut: boolean;
+  includePatch: boolean;
+}
+
 @Component({
   host: {
     '(window:dragover)': '$event.preventDefault()',
@@ -63,7 +79,7 @@ export interface OpenApi {
   styleUrls: ['./generate-open-api.component.scss'],
   imports: [
     CommonModule,
-    ReactiveFormsModule,
+    FormField,
     MatDialogModule,
     MatFormFieldModule,
     MatSelectModule,
@@ -87,106 +103,100 @@ export class GenerateOpenApiComponent implements OnInit {
   private editorService = inject(EditorService);
   private notificationsService = inject(NotificationsService);
   private translate = inject(LanguageTranslationService);
-
   private loadedFilesService = inject(LoadedFilesService);
-
-  form: FormGroup;
 
   languages = signal<locale.ILocale[]>([]);
   isGenerating = signal(false);
   linkToSpecification = signal('https://eclipse-esmf.github.io/ame-guide/generate/generate-openapi-doc.html');
   uploadedFile = signal<File | null>(null);
 
-  private resourcePathValidators = [
-    Validators.required,
-    Validators.pattern(/^\/[a-zA-Z{}/]*$/),
-    Validators.pattern(/^(?!.*\/\/)(?!.*{{)(?!.*}}).*$/),
-    Validators.pattern(/.*({.*})?.*$/),
-  ];
+  openApiModel = signal<OpenApiModel>({
+    baseUrl: 'https://example.com',
+    language: '',
+    includeQueryApi: false,
+    useSemanticVersion: false,
+    activateResourcePath: false,
+    output: 'yaml',
+    paging: 'NO_PAGING',
+    resourcePath: '',
+    file: null,
+    ymlProperties: null,
+    jsonProperties: null,
+    includePost: false,
+    includePut: false,
+    includePatch: false,
+  });
 
-  public get output(): FormControl {
-    return this.form.get('output') as FormControl;
-  }
+  openApiForm = form(this.openApiModel, schemaPath => {
+    required(schemaPath.baseUrl);
+    validate(schemaPath.baseUrl, ({value}) => {
+      let validUrl: boolean;
+      try {
+        new URL(value());
+        validUrl = value().includes('.');
+      } catch {
+        validUrl = false;
+      }
+      return validUrl ? null : {kind: 'invalidUrl', message: 'Invalid URL'};
+    });
 
-  public get activateResourcePath(): FormControl {
-    return this.form.get('activateResourcePath') as FormControl;
-  }
+    applyWhen(
+      schemaPath,
+      ({valueOf}) => valueOf(schemaPath.activateResourcePath),
+      path => {
+        required(path.resourcePath);
+        pattern(path.resourcePath, /^\/[a-zA-Z{}/]*$/);
+        pattern(path.resourcePath, /^(?!.*\/\/)(?!.*{{)(?!.*}}).*$/);
+        pattern(path.resourcePath, /.*({.*})?.*$/);
 
-  public get resourcePath(): FormControl {
-    return this.form.get('resourcePath') as FormControl;
-  }
+        applyWhen(
+          path,
+          ({valueOf}) => /{.*}/.test(valueOf(path.resourcePath) || ''),
+          subPath => {
+            required(subPath.file);
+          },
+        );
+      },
+    );
+  });
 
-  public get file(): FormControl {
-    return this.form.get('file') as FormControl;
-  }
-
-  public get ymlProperties(): FormControl {
-    return this.form.get('ymlProperties') as FormControl;
-  }
-
-  public get jsonProperties(): FormControl {
-    return this.form.get('jsonProperties') as FormControl;
+  constructor() {
+    let previousOutput: string | null = null;
+    effect(() => {
+      const currentOutput = this.openApiModel().output;
+      if (previousOutput !== null && previousOutput !== currentOutput) {
+        untracked(() => this.removeUploadedFile());
+      }
+      previousOutput = currentOutput;
+    });
   }
 
   ngOnInit(): void {
     this.initializeForm();
-    this.setupFormListeners();
   }
 
   private initializeForm(): void {
-    this.languages.set(this.languageService.getSammLanguageCodes().map(tag => locale.getByTag(tag)));
-    this.form = new FormGroup({
-      baseUrl: new FormControl('https://example.com', Validators.compose([Validators.required, EditorDialogValidators.baseUrl])),
-      language: new FormControl(this.languages()[0].tag),
-      includeQueryApi: new FormControl(false),
-      useSemanticVersion: new FormControl(false),
-      activateResourcePath: new FormControl(false),
-      output: new FormControl('yaml'),
-      paging: new FormControl('NO_PAGING'),
-      resourcePath: new FormControl(''),
-      file: new FormControl(null),
-      ymlProperties: new FormControl(null),
-      jsonProperties: new FormControl(null),
-      includePost: new FormControl(false),
-      includePut: new FormControl(false),
-      includePatch: new FormControl(false),
-    });
+    const sammLanguages = this.languageService.getSammLanguageCodes().map(tag => locale.getByTag(tag));
+    this.languages.set(sammLanguages);
+    if (sammLanguages.length > 0) {
+      this.openApiModel.update(model => ({
+        ...model,
+        language: sammLanguages[0].tag,
+      }));
+    }
   }
 
-  private setupFormListeners(): void {
-    this.output?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.removeUploadedFile());
-
-    this.activateResourcePath?.valueChanges.subscribe(activateResourcePath => {
-      const resourcePathControl = this.form.get('resourcePath');
-
-      if (activateResourcePath) {
-        resourcePathControl?.setValue('/resource/{resourceId}');
-        resourcePathControl?.setValidators(this.resourcePathValidators);
-      } else {
-        resourcePathControl?.setValue('');
-        resourcePathControl?.setValidators(null);
-      }
-
-      resourcePathControl?.updateValueAndValidity();
-    });
-
-    this.resourcePath?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(resourcePath => {
-      const fileControl = this.form.get('file');
-      const hasBrackets = /{.*}/.test(resourcePath);
-
-      if (hasBrackets) {
-        fileControl?.setValidators(Validators.required);
-      } else {
-        fileControl?.setValidators(null);
-      }
-
-      fileControl?.updateValueAndValidity();
-    });
+  toggleResourcePath(active: boolean): void {
+    this.openApiModel.update(model => ({
+      ...model,
+      activateResourcePath: active,
+      resourcePath: active ? model.resourcePath || '/resource/{resourceId}' : '',
+    }));
   }
 
   handleFileDrop(event: DragEvent): void {
     event.preventDefault();
-    if (!this.dropArea().nativeElement.contains(event.target)) return;
+    if (!this.dropArea()?.nativeElement.contains(event.target)) return;
 
     const files = event.dataTransfer?.files;
     if (files && files.length) {
@@ -200,13 +210,13 @@ export class GenerateOpenApiComponent implements OnInit {
   }
 
   private validateFile(file: File): boolean {
-    const fileType = this.form.value.output;
+    const fileType = this.openApiModel().output;
     return fileType === 'json' ? file.name.endsWith('.json') : file.name.endsWith('.yaml') || file.name.endsWith('.yml');
   }
 
   private processFile(file: File): void {
     this.uploadedFile.set(file);
-    this.form.patchValue({file: file});
+    this.openApiModel.update(model => ({...model, file}));
     this.readFileContent(file);
   }
 
@@ -219,7 +229,7 @@ export class GenerateOpenApiComponent implements OnInit {
   private handleFileContent(file: File, content: string): void {
     const fileType = this.getFileType(file);
     const propertyName = fileType === 'json' ? 'jsonProperties' : 'ymlProperties';
-    this.form.patchValue({[propertyName]: content});
+    this.openApiModel.update(model => ({...model, [propertyName]: content}));
   }
 
   private getFileType(file: File): 'json' | 'yml' {
@@ -236,14 +246,28 @@ export class GenerateOpenApiComponent implements OnInit {
     this.notificationsService.error({
       title: this.translate.translateService.translate('generateOpenapiSpecDialog.uploadErrorTitle'),
       message: this.translate.translateService.translate('generateOpenapiSpecDialog.uploadErrorMessage', {
-        output: this.form.value.output.toUpperCase(),
+        output: this.openApiModel().output.toUpperCase(),
       }),
     });
   }
 
   generateOpenApiSpec(): void {
     this.isGenerating.set(true);
-    const openApiSpec = this.form.value as OpenApi;
+    const model = this.openApiModel();
+    const openApiSpec: OpenApi = {
+      baseUrl: model.baseUrl,
+      language: model.language,
+      output: model.output,
+      includeQueryApi: model.includeQueryApi,
+      useSemanticVersion: model.useSemanticVersion,
+      paging: model.paging,
+      resourcePath: model.resourcePath,
+      ymlProperties: model.ymlProperties ?? '',
+      jsonProperties: model.jsonProperties ?? '',
+      includePost: model.includePost,
+      includePut: model.includePut,
+      includePatch: model.includePatch,
+    };
     this.editorService
       .generateOpenApiSpec(this.loadedFilesService.currentLoadedFile?.rdfModel, openApiSpec)
       .pipe(
@@ -270,26 +294,21 @@ export class GenerateOpenApiComponent implements OnInit {
   onFileBrowseHandler($event: Event): void {
     const files = ($event.target as HTMLInputElement).files;
 
-    if (files.length) {
+    if (files && files.length) {
       const file = files[0];
       this.uploadedFile.set(file);
       this.readFileContent(file);
-      this.file.patchValue(file);
+      this.openApiModel.update(model => ({...model, file}));
     }
   }
 
   removeUploadedFile(): void {
-    this.uploadedFile = null;
-    this.ymlProperties?.reset();
-    this.jsonProperties?.reset();
-    this.file?.reset();
-  }
-
-  getControl(path: string): FormControl {
-    return this.form.get(path) as FormControl;
-  }
-
-  getControlValue(path: string): string | boolean {
-    return this.getControl(path).value;
+    this.uploadedFile.set(null);
+    this.openApiModel.update(model => ({
+      ...model,
+      file: null,
+      ymlProperties: null,
+      jsonProperties: null,
+    }));
   }
 }

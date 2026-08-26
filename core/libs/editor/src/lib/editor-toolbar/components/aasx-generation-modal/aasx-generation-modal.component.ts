@@ -16,7 +16,7 @@ import {LoadedFilesService} from '@ame/cache';
 import {RdfService} from '@ame/rdf/services';
 import {Component, DestroyRef, inject, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {FormControl, ReactiveFormsModule} from '@angular/forms';
+import {form, FormField} from '@angular/forms/signals';
 import {MatButtonModule} from '@angular/material/button';
 import {MatOptionModule} from '@angular/material/core';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
@@ -36,7 +36,7 @@ import {finalize, first, tap} from 'rxjs';
     MatFormFieldModule,
     MatProgressSpinnerModule,
     MatButtonModule,
-    ReactiveFormsModule,
+    FormField,
     MatSelectModule,
     MatOptionModule,
     MatIcon,
@@ -50,7 +50,8 @@ export class AASXGenerationModalComponent {
   private dialogRef = inject(MatDialogRef<AASXGenerationModalComponent>);
   private loadedFilesService = inject(LoadedFilesService);
 
-  control = new FormControl('aasx');
+  formatModel = signal<{format: string}>({format: 'aasx'});
+  formatForm = form(this.formatModel);
   isGenerating = signal(false);
 
   generate() {
@@ -58,8 +59,9 @@ export class AASXGenerationModalComponent {
     const currentFile = this.loadedFilesService.currentLoadedFile;
     const rdfModel = this.rdfService.serializeModel(currentFile.rdfModel);
     const sourceLocation = currentFile.rdfModel.getSourceLocation();
+    const selectedFormat = this.formatModel().format;
     const assx =
-      this.control.value === 'aasx'
+      selectedFormat === 'aasx'
         ? this.modelApiService.generateAASX(rdfModel, sourceLocation)
         : this.modelApiService.generatetAASasXML(rdfModel, sourceLocation);
 
@@ -68,9 +70,9 @@ export class AASXGenerationModalComponent {
         takeUntilDestroyed(this.destroyRef),
         first(),
         tap(content => {
-          const file = new Blob([content], {type: this.control.value === 'aasx' ? 'text/aasx' : 'text/xml'});
+          const file = new Blob([content], {type: selectedFormat === 'aasx' ? 'text/aasx' : 'text/xml'});
 
-          const fileName = `${currentFile.name}${this.control.value === 'aasx' ? '.aasx' : '-aas.xml'}`;
+          const fileName = `${currentFile.name}${selectedFormat === 'aasx' ? '.aasx' : '-aas.xml'}`;
           saveAs(file, fileName);
         }),
         finalize(() => {

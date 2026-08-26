@@ -76,8 +76,8 @@ describe('GenerateOpenApiComponent', () => {
 
   it('should create and initialize form', () => {
     expect(component).toBeTruthy();
-    expect(component.form).toBeDefined();
-    expect(component.form.get('baseUrl').value).toBe('https://example.com');
+    expect(component.openApiForm).toBeDefined();
+    expect(component.openApiModel().baseUrl).toBe('https://example.com');
   });
 
   it('generateOpenApiSpec should call editorService.generateOpenApiSpec and close dialog', () => {

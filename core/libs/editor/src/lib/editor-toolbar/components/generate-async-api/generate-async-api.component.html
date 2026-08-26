@@ -12,7 +12,7 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-  <form [formGroup]="form">
+  <form>
     <h2 mat-dialog-title>{{ t('generateAsyncapiSpecDialog.title') }}</h2>
     <button class="close-button" mat-icon-button tabindex="-1" mat-dialog-close>
       <mat-icon>close</mat-icon>
@@ -23,7 +23,7 @@
         <p>{{ t('generateAsyncapiSpecDialog.configuration') }}</p>
         <mat-form-field appearance="fill">
           <mat-label>{{ t('generateAsyncapiSpecDialog.language') }}</mat-label>
-          <mat-select [formControl]="getControl('language')" data-cy="tbLanguageButton">
+          <mat-select [formField]="asyncApiForm.language" data-cy="tbLanguageButton">
             @for (language of languages(); track language) {
               <mat-option [value]="language.tag">{{ language.name }}</mat-option>
             }
@@ -33,7 +33,7 @@
         <section>
           <mat-form-field appearance="fill">
             <mat-label>{{ t('generateAsyncapiSpecDialog.outputFileFormat') }}</mat-label>
-            <mat-select [formControl]="getControl('output')" data-cy="tbOutputButton">
+            <mat-select [formField]="asyncApiForm.output" data-cy="tbOutputButton">
               <mat-option data-cy="tbOutputButton-json" value="json">JSON</mat-option>
               <mat-option data-cy="tbOutputButton-yaml" value="yaml">YAML</mat-option>
             </mat-select>
@@ -42,7 +42,7 @@
           <mat-form-field appearance="fill">
             <mat-label>{{ t('generateAsyncapiSpecDialog.applicationId') }}</mat-label>
             <input
-              [formControl]="getControl('applicationId')"
+              [formField]="asyncApiForm.applicationId"
               matInput
               placeholder="application:id or application.id"
               data-cy="tbApplicationIdInput"
@@ -52,12 +52,12 @@
           <mat-form-field appearance="fill">
             <mat-label>{{ t('generateAsyncapiSpecDialog.channelAddress') }}</mat-label>
             <input
-              [formControl]="getControl('channelAddress')"
+              [formField]="asyncApiForm.channelAddress"
               matInput
               placeholder="/foo..., foo/... or mqtt://... "
               data-cy="tbChannelAddressInput"
             />
-            @if (getControl('channelAddress')?.errors?.pattern) {
+            @if (asyncApiForm.channelAddress().invalid()) {
               <mat-error data-cy="tbChannelAddressError">
                 {{ t('generateAsyncapiSpecDialog.channelAddressError') }}
               </mat-error>
@@ -68,7 +68,7 @@
         <section>
           <mat-checkbox
             class="dialog__checkbox"
-            [formControl]="getControl('useSemanticVersion')"
+            [formField]="asyncApiForm.useSemanticVersion"
             [matTooltip]="t('generateAsyncapiSpecDialog.useSemanticVersionTooltip')"
           >
             {{ t('generateAsyncapiSpecDialog.useSemanticVersion') }}
@@ -76,7 +76,7 @@
 
           <mat-checkbox
             class="dialog__checkbox"
-            [formControl]="getControl('writeSeparateFiles')"
+            [formField]="asyncApiForm.writeSeparateFiles"
             [matTooltip]="t('generateAsyncapiSpecDialog.writeSeparateFilesTooltip')"
             data-cy="writeSeparateFilesCheckbox"
           >
@@ -94,7 +94,7 @@
     <mat-dialog-actions align="end">
       <button mat-flat-button mat-dialog-close>{{ t('generateAsyncapiSpecDialog.button.cancel') }}</button>
       <button
-        [disabled]="!form.valid"
+        [disabled]="asyncApiForm().invalid()"
         (click)="generateAsyncApiSpec()"
         type="button"
         mat-flat-button

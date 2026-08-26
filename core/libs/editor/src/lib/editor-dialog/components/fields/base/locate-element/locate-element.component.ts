@@ -12,12 +12,11 @@
  */
 
 import {MaxGraphService} from '@ame/max-graph';
-import {Component, DestroyRef, inject, signal} from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {Component, inject} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {MatIconButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
-import {NamedElement} from '@esmf/aspect-model-loader';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../../../editor-model.service';
 
@@ -40,20 +39,13 @@ import {EditorModelService} from '../../../../editor-model.service';
   imports: [MatTooltipModule, MatIconModule, MatIconButton, TranslocoDirective],
 })
 export class LocateElementComponent {
-  public destroyRef = inject(DestroyRef);
   public metaModelDialogService = inject(EditorModelService);
   private maxgraphService = inject(MaxGraphService);
 
-  public element = signal<NamedElement>(undefined);
-
-  constructor() {
-    this.metaModelDialogService
-      .getMetaModelElement()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(element => this.element.set(element));
-  }
+  public element = toSignal(this.metaModelDialogService.getMetaModelElement());
 
   locate() {
-    if (this.element()) this.maxgraphService.navigateToCellByUrn(this.element().aspectModelUrn);
+    const el = this.element();
+    if (el) this.maxgraphService.navigateToCellByUrn(el.aspectModelUrn);
   }
 }

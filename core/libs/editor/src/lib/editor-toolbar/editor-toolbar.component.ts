@@ -14,16 +14,14 @@
 import {ShapeConnectorService} from '@ame/connection';
 import {FiltersService} from '@ame/loader-filters';
 import {MaxGraphService, MaxGraphShapeSelectorService} from '@ame/max-graph';
-import {ConfigurationService, Settings} from '@ame/settings-dialog';
 import {BarItemComponent, BindingsService, NotificationsService} from '@ame/shared';
-import {AsyncPipe, CommonModule} from '@angular/common';
-import {AfterViewInit, Component, DestroyRef, inject, OnDestroy, OnInit} from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {CommonModule} from '@angular/common';
+import {AfterViewInit, Component, DestroyRef, inject, OnDestroy} from '@angular/core';
+import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
 import {MatDialog} from '@angular/material/dialog';
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {Observable} from 'rxjs';
 import {first} from 'rxjs/operators';
 import {ConnectWithDialogComponent} from '../connect-with-dialog/connect-with-dialog.component';
 import {ShapeSettingsService} from '../editor-dialog';
@@ -34,14 +32,13 @@ import {FileHandlingService} from './services';
   selector: 'ame-editor-toolbar',
   templateUrl: './editor-toolbar.component.html',
   styleUrls: ['./editor-toolbar.component.scss'],
-  imports: [BarItemComponent, CommonModule, MatTooltipModule, TranslocoDirective, MatIconModule, AsyncPipe],
+  imports: [BarItemComponent, CommonModule, MatTooltipModule, TranslocoDirective, MatIconModule],
 })
-export class EditorToolbarComponent implements AfterViewInit, OnInit, OnDestroy {
+export class EditorToolbarComponent implements AfterViewInit, OnDestroy {
   private destroyRef = inject(DestroyRef);
   private fileHandlingService = inject(FileHandlingService);
   private editorService = inject(EditorService);
   private shapeConnectorService = inject(ShapeConnectorService);
-  private configurationService = inject(ConfigurationService);
   private bindingsService = inject(BindingsService);
   private maxgraphShapeSelectorService = inject(MaxGraphShapeSelectorService);
   private matDialog = inject(MatDialog);
@@ -51,18 +48,14 @@ export class EditorToolbarComponent implements AfterViewInit, OnInit, OnDestroy 
   public notificationsService = inject(NotificationsService);
 
   public filtersService = inject(FiltersService);
-  public isAllShapesExpanded$: Observable<boolean>;
-  public settings$: Observable<Settings>;
+  public isAllShapesExpanded = toSignal(this.editorService.isAllShapesExpanded$, {
+    initialValue: true,
+  });
 
   protected isModelEmpty = this.maxgraphService.isModelEmpty;
   protected selectedCells = this.maxgraphShapeSelectorService.selectedCells;
 
   private checkChangesInterval: NodeJS.Timeout;
-
-  ngOnInit(): void {
-    this.settings$ = this.configurationService.settings$;
-    this.isAllShapesExpanded$ = this.editorService.isAllShapesExpanded$;
-  }
 
   ngAfterViewInit(): void {
     this.bindingsService.registerAction('connectElements', () => this.onConnect());

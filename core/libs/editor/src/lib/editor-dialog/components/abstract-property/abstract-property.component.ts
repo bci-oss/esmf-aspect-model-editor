@@ -10,8 +10,8 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {AsyncPipe} from '@angular/common';
 import {Component, inject, input} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {FormGroup} from '@angular/forms';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../editor-model.service';
@@ -21,11 +21,11 @@ import {BaseInputComponent} from '../fields';
 @Component({
   selector: 'ame-abstract-property',
   templateUrl: './abstract-property.component.html',
-  imports: [BaseInputComponent, ElementListComponent, TranslocoDirective, AsyncPipe],
+  imports: [BaseInputComponent, ElementListComponent, TranslocoDirective],
 })
 export class AbstractPropertyComponent {
   readonly parentForm = input<FormGroup>();
 
   public metaModelDialogService = inject(EditorModelService);
-  public element$ = this.metaModelDialogService.getMetaModelElement();
+  public element = toSignal(this.metaModelDialogService.getMetaModelElement());
 }

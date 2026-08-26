@@ -70,8 +70,8 @@ describe('GenerateAsyncApiComponent', () => {
 
   it('should create and initialize form', () => {
     expect(component).toBeTruthy();
-    expect(component.form).toBeDefined();
-    expect(component.form.get('output').value).toBe('yaml');
+    expect(component.asyncApiForm).toBeDefined();
+    expect(component.asyncApiModel().output).toBe('yaml');
   });
 
   it('generateAsyncApiSpec should call editorService.generateAsyncApiSpec and close dialog', () => {

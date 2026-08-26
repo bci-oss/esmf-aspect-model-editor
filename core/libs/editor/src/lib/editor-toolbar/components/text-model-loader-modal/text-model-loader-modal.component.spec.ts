@@ -1,7 +1,7 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {FormsModule} from '@angular/forms';
+import {FormField} from '@angular/forms/signals';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
@@ -19,7 +19,7 @@ describe('TextModelLoaderModalComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        FormsModule,
+        FormField,
         MatFormFieldModule,
         MatInputModule,
         MatDialogModule,
@@ -48,7 +48,8 @@ describe('TextModelLoaderModalComponent', () => {
   it('should not call loadModel when textarea text is empty', () => {
     vi.spyOn(component, 'loadModel');
 
-    const button = fixture.debugElement.nativeElement.querySelectorAll('button')[1];
+    const button = fixture.debugElement.nativeElement.querySelectorAll('button')[2];
+    expect(button.disabled).toBe(true);
     button.click();
 
     fixture.detectChanges();
@@ -59,13 +60,11 @@ describe('TextModelLoaderModalComponent', () => {
   it('should call loadModel when textarea text is not empty', () => {
     vi.spyOn(component, 'loadModel');
 
-    const textarea = fixture.debugElement.nativeElement.querySelector('textarea[matInput]');
-    const text = 'ttl value';
-    textarea.value = text;
-    textarea.dispatchEvent(new Event('input'));
+    component.modelData.set({modelText: 'ttl value'});
     fixture.detectChanges();
 
     const button = fixture.debugElement.nativeElement.querySelectorAll('button')[2];
+    expect(button.disabled).toBe(false);
     button.click();
     fixture.detectChanges();
 

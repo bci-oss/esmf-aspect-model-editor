@@ -21,7 +21,7 @@
     @if (!isGenerating()) {
       <mat-form-field appearance="fill">
         <mat-label>{{ t('generateHtmlDocDialog.language') }}</mat-label>
-        <mat-select [formControl]="languageControl" data-cy="htmlGenerationLanguage">
+        <mat-select [formField]="docForm.language" data-cy="htmlGenerationLanguage">
           @for (language of languages(); track language) {
             <mat-option [value]="language.tag">{{ language.name }}</mat-option>
           }

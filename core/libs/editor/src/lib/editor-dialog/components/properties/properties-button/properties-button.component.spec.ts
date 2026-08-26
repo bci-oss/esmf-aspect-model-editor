@@ -11,25 +11,21 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelApiService} from '@ame/api';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
-import {RdfService} from '@ame/rdf/services';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {MatDialogRef} from '@angular/material/dialog';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {MatDialog} from '@angular/material/dialog';
 import {DefaultAspect, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {TranslocoTestingModule} from '@jsverse/transloco';
 import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {of} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {AASXGenerationModalComponent} from './aasx-generation-modal.component';
+import {EditorModelService} from '../../../editor-model.service';
+import {PropertiesButtonComponent} from './properties-button.component';
 
-describe('AASXGenerationModalComponent', () => {
-  let component: AASXGenerationModalComponent;
-  let fixture: ComponentFixture<AASXGenerationModalComponent>;
-  let dialogRef: MatDialogRef<AASXGenerationModalComponent>;
-  let modelApiService: ModelApiService;
+describe('PropertiesButtonComponent', () => {
+  let component: PropertiesButtonComponent;
+  let fixture: ComponentFixture<PropertiesButtonComponent>;
 
   const aspect = new DefaultAspect({
     aspectModelUrn: 'urn:test:1.0.0#Aspect',
@@ -37,47 +33,42 @@ describe('AASXGenerationModalComponent', () => {
     metaModelVersion: '2.0.0',
   });
 
-  beforeEach(async () => {
-    dialogRef = {
-      close: vi.fn(),
-    } as unknown as MatDialogRef<AASXGenerationModalComponent>;
+  const dialogMock = {
+    open: vi.fn(() => ({
+      afterClosed: () => of(null),
+    })),
+  };
 
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        AASXGenerationModalComponent,
-        BrowserAnimationsModule,
+        PropertiesButtonComponent,
         TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
       ],
       providers: [
-        {provide: MatDialogRef, useValue: dialogRef},
-        MockProvider(ModelApiService, {
-          generateAASX: vi.fn(() => of('aasx blob content')),
-          generatetAASasXML: vi.fn(() => of('<xml></xml>')),
-        }),
-        MockProvider(RdfService, {
-          serializeModel: vi.fn(() => 'turtle content'),
+        MockProvider(EditorModelService, {
+          getMetaModelElement: vi.fn(() => of(aspect)),
         }),
         MockProvider(LoadedFilesService, {
           currentLoadedFile: new NamespaceFile(new RdfModel(new Store(), '2.0.0', 'urn:test:1.0.0#'), new ModelElementCache(), aspect),
+          isElementExtern: vi.fn(() => false),
         }),
+        {provide: MatDialog, useValue: dialogMock},
       ],
     }).compileComponents();
 
-    modelApiService = TestBed.inject(ModelApiService);
-    fixture = TestBed.createComponent(AASXGenerationModalComponent);
+    fixture = TestBed.createComponent(PropertiesButtonComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create with aasx selected by default', () => {
+  it('should create and receive metaModelElement', () => {
     expect(component).toBeTruthy();
-    expect(component.formatModel().format).toBe('aasx');
+    expect(component.metaModelElement).toBe(aspect);
   });
 
-  it('generate should call generateAASX and close dialog', () => {
-    component.generate();
-
-    expect(modelApiService.generateAASX).toHaveBeenCalled();
-    expect(dialogRef.close).toHaveBeenCalled();
+  it('should open properties dialog', () => {
+    component.openPropertiesTable();
+    expect(dialogMock.open).toHaveBeenCalled();
   });
 });

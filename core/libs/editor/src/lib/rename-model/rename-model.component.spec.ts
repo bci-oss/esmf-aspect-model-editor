@@ -79,14 +79,14 @@ describe('RenameModelComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create and initialize fileNameControl', () => {
+  it('should create and initialize renameForm', () => {
     expect(component).toBeTruthy();
-    expect(component.fileNameControl).toBeDefined();
+    expect(component.renameForm).toBeDefined();
     expect(component.loading()).toBe(false);
   });
 
   it('closeAndGiveResult should format name and close dialog', () => {
-    component.fileNameControl.setValue('MyRenamedModel');
+    component.renameModel.set({fileName: 'MyRenamedModel'});
     component.closeAndGiveResult(true);
 
     expect(dialogRef.close).toHaveBeenCalledWith({name: 'MyRenamedModel.ttl'});

@@ -19,7 +19,13 @@
 
   <mat-dialog-content>
     <mat-form-field appearance="outline">
-      <textarea [ngModel]="content()" (ngModelChange)="content.set($event)" data-cy="dialogContent" spellcheck="false" matInput></textarea>
+      <textarea
+        [value]="content()"
+        (input)="content.set($any($event.target).value)"
+        data-cy="dialogContent"
+        spellcheck="false"
+        matInput
+      ></textarea>
     </mat-form-field>
   </mat-dialog-content>
 

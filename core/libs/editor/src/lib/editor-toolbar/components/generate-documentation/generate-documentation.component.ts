@@ -15,7 +15,7 @@ import {ModelApiService} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {Component, DestroyRef, inject, signal} from '@angular/core';
-import {FormControl, ReactiveFormsModule} from '@angular/forms';
+import {form, FormField} from '@angular/forms/signals';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {saveAs} from 'file-saver';
@@ -34,6 +34,10 @@ import {MatIcon} from '@angular/material/icon';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSelectModule} from '@angular/material/select';
 
+export interface GenerateDocumentationData {
+  language: string;
+}
+
 @Component({
   selector: 'ame-generate-documentation',
   templateUrl: './generate-documentation.component.html',
@@ -45,7 +49,7 @@ import {MatSelectModule} from '@angular/material/select';
     MatSelectModule,
     MatOptionModule,
     MatProgressSpinnerModule,
-    ReactiveFormsModule,
+    FormField,
     MatButtonModule,
     MatIcon,
   ],
@@ -61,7 +65,8 @@ export class GenerateDocumentationComponent {
 
   private browserService = inject(BrowserService);
 
-  public languageControl: FormControl;
+  public docModel = signal<GenerateDocumentationData>({language: ''});
+  public docForm = form(this.docModel);
   public languages = signal<locale.ILocale[]>([]);
   public isGenerating = signal(false);
 
@@ -70,14 +75,17 @@ export class GenerateDocumentationComponent {
   }
 
   constructor() {
-    this.languages.set(this.languageService.getSammLanguageCodes().map(tag => locale.getByTag(tag)));
-    this.languageControl = new FormControl(this.languages()[0].tag);
+    const sammLanguages = this.languageService.getSammLanguageCodes().map(tag => locale.getByTag(tag));
+    this.languages.set(sammLanguages);
+    if (sammLanguages.length > 0) {
+      this.docModel.set({language: sammLanguages[0].tag});
+    }
   }
 
   openDocumentation(): void {
     this.isGenerating.set(true);
 
-    this.generateDocumentation(this.editorService.getSerializedModel(), this.languageControl.value)
+    this.generateDocumentation(this.editorService.getSerializedModel(), this.docModel().language)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         first(),
@@ -95,7 +103,7 @@ export class GenerateDocumentationComponent {
     this.modelApiService
       .generateDocumentation(
         this.editorService.getSerializedModel(),
-        this.languageControl.value,
+        this.docModel().language,
         this.loadedFiles.currentLoadedFile.rdfModel.getSourceLocation(),
       )
       .pipe(

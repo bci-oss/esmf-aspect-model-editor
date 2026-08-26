@@ -20,13 +20,13 @@
     <p>{{ t('loadModal.content') }}</p>
     <mat-form-field>
       <mat-label>{{ t('loadModal.fieldLabel') }}</mat-label>
-      <textarea #model matInput></textarea>
+      <textarea [formField]="modelForm.modelText" matInput></textarea>
     </mat-form-field>
   </mat-dialog-content>
 
   <mat-dialog-actions align="end">
     <button mat-flat-button mat-dialog-close>{{ t('loadModal.cancel') }}</button>
-    <button [disabled]="!model.value.length" (click)="loadModel(model.value)" mat-flat-button color="primary">
+    <button [disabled]="modelForm().invalid()" (click)="loadModel()" mat-flat-button color="primary">
       {{ t('loadModal.loadModelButton') }}
     </button>
   </mat-dialog-actions>

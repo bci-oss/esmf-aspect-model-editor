@@ -10,9 +10,7 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {CdkTextareaAutosize} from '@angular/cdk/text-field';
-import {Component, inject, signal, viewChild} from '@angular/core';
-import {FormsModule} from '@angular/forms';
+import {Component, inject, signal} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -31,11 +29,9 @@ interface PreviewDialogOptions {
   selector: 'ame-preview-dialog',
   templateUrl: './preview-dialog.component.html',
   styleUrls: ['./preview-dialog.component.scss'],
-  imports: [MatDialogModule, MatIconModule, MatFormFieldModule, FormsModule, MatInputModule, MatButtonModule, TranslocoDirective],
+  imports: [MatDialogModule, MatIconModule, MatFormFieldModule, MatInputModule, MatButtonModule, TranslocoDirective],
 })
 export class PreviewDialogComponent {
-  readonly autosize = viewChild<CdkTextareaAutosize>('autosize');
-
   private data = inject<PreviewDialogOptions>(MAT_DIALOG_DATA);
   private dialogRef = inject(MatDialogRef<PreviewDialogComponent>);
 

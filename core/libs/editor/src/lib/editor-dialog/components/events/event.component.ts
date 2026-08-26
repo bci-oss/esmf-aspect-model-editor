@@ -11,8 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {AsyncPipe} from '@angular/common';
 import {Component, inject, input} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {FormGroup} from '@angular/forms';
 import {DefaultEvent} from '@esmf/aspect-model-loader';
 import {TranslocoDirective} from '@jsverse/transloco';
@@ -24,10 +24,10 @@ import {ModelElementEditorComponent} from '../model-element-editor-component';
 @Component({
   selector: 'ame-event',
   templateUrl: './event.component.html',
-  imports: [BaseInputComponent, ElementListComponent, AsyncPipe, TranslocoDirective],
+  imports: [BaseInputComponent, ElementListComponent, TranslocoDirective],
 })
 export class EventComponent extends ModelElementEditorComponent<DefaultEvent> {
   readonly parentForm = input<FormGroup>();
   public metaModelDialogService = inject(EditorModelService);
-  public element$ = this.metaModelDialogService.getMetaModelElement();
+  public element = toSignal(this.metaModelDialogService.getMetaModelElement());
 }

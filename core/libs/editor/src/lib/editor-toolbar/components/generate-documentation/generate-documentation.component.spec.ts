@@ -82,7 +82,7 @@ describe('GenerateDocumentationComponent', () => {
   it('should create and load languages', () => {
     expect(component).toBeTruthy();
     expect(component.languages().length).toBeGreaterThan(0);
-    expect(component.languageControl.value).toBe('en');
+    expect(component.docModel().language).toBe('en');
   });
 
   it('downloadDocumentation should call modelApiService.generateDocumentation and close dialog', () => {

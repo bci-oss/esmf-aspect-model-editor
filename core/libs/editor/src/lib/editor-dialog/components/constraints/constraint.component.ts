@@ -10,8 +10,8 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {AsyncPipe} from '@angular/common';
 import {AfterViewInit, ChangeDetectorRef, Component, inject, input, OnDestroy, signal} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {FormGroup} from '@angular/forms';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../editor-model.service';
@@ -39,7 +39,6 @@ import {
   templateUrl: './constraint.component.html',
   imports: [
     ElementListComponent,
-    AsyncPipe,
     TranslocoDirective,
     ConstraintNameDropdownFieldComponent,
     BaseInputComponent,
@@ -66,7 +65,7 @@ export class ConstraintComponent implements OnDestroy, AfterViewInit {
 
   public selectedConstraint = signal<string>(undefined);
   public previousData = signal<PreviousFormDataSnapshot>({});
-  public element$ = this.metaModelDialogService.getMetaModelElement();
+  public element = toSignal(this.metaModelDialogService.getMetaModelElement());
 
   ngAfterViewInit(): void {
     this.changeDetector.detectChanges();

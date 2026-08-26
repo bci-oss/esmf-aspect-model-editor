@@ -22,9 +22,8 @@ import {
   UnitInputFieldComponent,
   ValuesInputFieldComponent,
 } from '@ame/editor';
-import {AsyncPipe} from '@angular/common';
 import {ChangeDetectorRef, Component, DestroyRef, inject, input, OnInit, signal} from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
 import {FormGroup} from '@angular/forms';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {StateCharacteristicComponent} from '../../components/characteristics/state-characteristic/state-characteristic.component';
@@ -47,7 +46,6 @@ import {PreviousFormDataSnapshot} from '../../interfaces';
     LeftInputFieldComponent,
     RightInputFieldComponent,
     ElementListComponent,
-    AsyncPipe,
     TranslocoDirective,
   ],
 })
@@ -62,7 +60,7 @@ export class CharacteristicComponent implements OnInit {
   public property = signal(false);
   public selectedCharacteristic = signal<CharacteristicClassType>(undefined);
   public previousData = signal<PreviousFormDataSnapshot>({});
-  public element$ = this.metaModelDialogService.getMetaModelElement();
+  public element = toSignal(this.metaModelDialogService.getMetaModelElement());
 
   public characteristicClassType = signal(CharacteristicClassType);
   allowedClassesForElementCharacteristic = signal<CharacteristicClassType[]>([

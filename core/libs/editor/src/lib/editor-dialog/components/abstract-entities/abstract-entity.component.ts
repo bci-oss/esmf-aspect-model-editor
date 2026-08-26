@@ -10,8 +10,8 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {AsyncPipe} from '@angular/common';
 import {Component, inject, input} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {FormControl, FormGroup} from '@angular/forms';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../editor-model.service';
@@ -22,19 +22,12 @@ import {PropertiesButtonComponent, UpdatedProperties} from '../properties';
 @Component({
   selector: 'ame-abstract-entity',
   templateUrl: './abstract-entity.component.html',
-  imports: [
-    BaseInputComponent,
-    EntityExtendsFieldComponent,
-    PropertiesButtonComponent,
-    ElementListComponent,
-    TranslocoDirective,
-    AsyncPipe,
-  ],
+  imports: [BaseInputComponent, EntityExtendsFieldComponent, PropertiesButtonComponent, ElementListComponent, TranslocoDirective],
 })
 export class AbstractEntityComponent {
   public readonly parentForm = input<FormGroup>();
   public metaModelDialogService = inject(EditorModelService);
-  public element$ = this.metaModelDialogService.getMetaModelElement();
+  public element = toSignal(this.metaModelDialogService.getMetaModelElement());
 
   overwriteProperties(data: UpdatedProperties) {
     this.parentForm().setControl('editedProperties', new FormControl(data));

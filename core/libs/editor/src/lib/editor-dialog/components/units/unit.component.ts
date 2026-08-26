@@ -10,8 +10,8 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {AsyncPipe} from '@angular/common';
 import {Component, inject, input} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {FormGroup} from '@angular/forms';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../editor-model.service';
@@ -38,7 +38,6 @@ import {
     NumericConversionFactorInputFieldComponent,
     QuantityKindsInputFieldComponent,
     ElementListComponent,
-    AsyncPipe,
     TranslocoDirective,
   ],
 })
@@ -46,5 +45,5 @@ export class UnitComponent {
   readonly parentForm = input<FormGroup>();
 
   public metaModelDialogService = inject(EditorModelService);
-  public element$ = this.metaModelDialogService.getMetaModelElement();
+  public element = toSignal(this.metaModelDialogService.getMetaModelElement());
 }

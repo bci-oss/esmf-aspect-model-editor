@@ -14,8 +14,8 @@
 import {LoadedFilesService} from '@ame/cache';
 import {ElementIconComponent, sammElements} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, Input, OnInit} from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {ChangeDetectionStrategy, Component, computed, inject, input} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {NamedElement} from '@esmf/aspect-model-loader';
 import {ModelElementParserPipe} from '../../element-list/element-list.pipe';
 
@@ -26,43 +26,32 @@ import {ModelElementParserPipe} from '../../element-list/element-list.pipe';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ElementIconComponent, ModelElementParserPipe],
 })
-export class SharedSettingsTitleComponent implements OnInit {
-  private destroyRef = inject(DestroyRef);
-  private cd = inject(ChangeDetectorRef);
+export class SharedSettingsTitleComponent {
   private translate = inject(LanguageTranslationService);
   private loadedFilesService = inject(LoadedFilesService);
 
-  public metaModelElement: NamedElement;
-  public metaModelClassName: string;
+  readonly metaModelElement = input<NamedElement>();
 
-  @Input() set metaModelElementInput(value: NamedElement) {
-    this.metaModelElement = value;
-    this.elementName = this.getTitle();
-  }
+  private currentLang = toSignal(this.translate.translateService.langChanges$, {
+    initialValue: this.translate.translateService.getActiveLang ? this.translate.translateService.getActiveLang() : 'en',
+  });
 
-  elementName: string;
-
-  ngOnInit(): void {
-    this.elementName = this.getTitle();
-
-    this.translate.translateService.langChanges$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((lang: string) => {
-      this.translate.translateService.load(lang).subscribe(() => {
-        this.elementName = this.getTitle();
-        this.cd.detectChanges();
-      });
-    });
-  }
-
-  getTitle(): string {
-    if (this.metaModelElement === undefined || this.metaModelElement === null) {
+  readonly elementName = computed(() => {
+    this.currentLang();
+    const element = this.metaModelElement();
+    if (element === undefined || element === null) {
       return this.translate.language.editorCanvas.shapeSetting.edit;
     } else {
-      let name = `${this.metaModelElement.getPreferredName('en') || this.metaModelElement.name}`;
+      let name = `${element.getPreferredName('en') || element.name}`;
       name = name.length > 150 ? `${name.substring(0, 100)}...` : name;
-      return this.loadedFilesService.isElementExtern(this.metaModelElement)
+      return this.loadedFilesService.isElementExtern(element)
         ? name
         : this.translate.translateService.translate('editorCanvas.shapeSetting.edit', {value: 'element'});
     }
+  });
+
+  getTitle(): string {
+    return this.elementName();
   }
 
   protected readonly sammElements = sammElements;

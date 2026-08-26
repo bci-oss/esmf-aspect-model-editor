@@ -270,77 +270,85 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
   }
 
   searchExtProperty(value: string): FilteredType[] {
-    return this.searchExtElement(value)
-      ?.map((cell: Cell) => {
-        const modelElement = MaxGraphHelper.getModelElement(cell);
-        if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultProperty) {
-          return {
-            name: modelElement.name,
-            description: modelElement.getDescription('en') || '',
-            urn: modelElement.aspectModelUrn,
-            namespace: modelElement.aspectModelUrn.split('#')[0],
-          };
-        }
-        return null;
-      })
-      .filter(cell => cell);
+    return (
+      this.searchExtElement(value)
+        ?.map((cell: Cell) => {
+          const modelElement = MaxGraphHelper.getModelElement(cell);
+          if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultProperty) {
+            return {
+              name: modelElement.name,
+              description: modelElement.getDescription('en') || '',
+              urn: modelElement.aspectModelUrn,
+              namespace: modelElement.aspectModelUrn.split('#')[0],
+            };
+          }
+          return null;
+        })
+        .filter(cell => cell) ?? []
+    );
   }
 
   searchExtCharacteristic(value: string): FilteredType[] {
-    return this.searchExtElement(value)
-      ?.map((cell: Cell) => {
-        const modelElement = MaxGraphHelper.getModelElement(cell);
-        if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultCharacteristic) {
-          return {
-            name: modelElement.name,
-            description: modelElement.getDescription('en') || '',
-            urn: modelElement.aspectModelUrn,
-            namespace: modelElement.aspectModelUrn.split('#')[0],
-          };
-        }
-        return null;
-      })
-      .filter(cell => cell);
+    return (
+      this.searchExtElement(value)
+        ?.map((cell: Cell) => {
+          const modelElement = MaxGraphHelper.getModelElement(cell);
+          if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultCharacteristic) {
+            return {
+              name: modelElement.name,
+              description: modelElement.getDescription('en') || '',
+              urn: modelElement.aspectModelUrn,
+              namespace: modelElement.aspectModelUrn.split('#')[0],
+            };
+          }
+          return null;
+        })
+        .filter(cell => cell) ?? []
+    );
   }
 
   searchExtEntity(value: string): FilteredType[] {
-    return this.searchExtElement(value)
-      ?.map((cell: Cell) => {
-        const modelElement = MaxGraphHelper.getModelElement(cell);
-        if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultEntity) {
-          const entity = this.loadedFiles.findElementOnExtReferences<DefaultEntity>(modelElement.aspectModelUrn);
-          return {
-            name: modelElement.name,
-            description: modelElement.getDescription('en') || '',
-            urn: modelElement.aspectModelUrn,
-            namespace: modelElement.aspectModelUrn.split('#')[0],
-            complex: true,
-            entity: entity,
-          };
-        }
-        return null;
-      })
-      .filter(cell => cell);
+    return (
+      this.searchExtElement(value)
+        ?.map((cell: Cell) => {
+          const modelElement = MaxGraphHelper.getModelElement(cell);
+          if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultEntity) {
+            const entity = this.loadedFiles.findElementOnExtReferences<DefaultEntity>(modelElement.aspectModelUrn);
+            return {
+              name: modelElement.name,
+              description: modelElement.getDescription('en') || '',
+              urn: modelElement.aspectModelUrn,
+              namespace: modelElement.aspectModelUrn.split('#')[0],
+              complex: true,
+              entity: entity,
+            };
+          }
+          return null;
+        })
+        .filter(cell => cell) ?? []
+    );
   }
 
   searchExtAbstractEntity(value: string): FilteredType[] {
-    return this.searchExtElement(value)
-      ?.map((cell: Cell) => {
-        const modelElement = MaxGraphHelper.getModelElement(cell);
-        if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultEntity && modelElement.isAbstractEntity()) {
-          const entity = this.loadedFiles.findElementOnExtReferences<DefaultEntity>(modelElement.aspectModelUrn);
-          return {
-            name: modelElement.name,
-            description: modelElement.getDescription('en') || '',
-            urn: modelElement.aspectModelUrn,
-            namespace: modelElement.aspectModelUrn.split('#')[0],
-            complex: true,
-            entity: entity,
-          };
-        }
-        return null;
-      })
-      .filter(cell => cell);
+    return (
+      this.searchExtElement(value)
+        ?.map((cell: Cell) => {
+          const modelElement = MaxGraphHelper.getModelElement(cell);
+          if (this.loadedFiles.isElementExtern(modelElement) && modelElement instanceof DefaultEntity && modelElement.isAbstractEntity()) {
+            const entity = this.loadedFiles.findElementOnExtReferences<DefaultEntity>(modelElement.aspectModelUrn);
+            return {
+              name: modelElement.name,
+              description: modelElement.getDescription('en') || '',
+              urn: modelElement.aspectModelUrn,
+              namespace: modelElement.aspectModelUrn.split('#')[0],
+              complex: true,
+              entity: entity,
+            };
+          }
+          return null;
+        })
+        .filter(cell => cell) ?? []
+    );
   }
 
   enableWhenEmpty(currentControl: () => FormControl, dependantControlKey: string) {

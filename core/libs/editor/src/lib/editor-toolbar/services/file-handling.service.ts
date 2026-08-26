@@ -14,17 +14,6 @@
 import {ModelApiService, ModelData} from '@ame/api';
 import {RdfNodeService} from '@ame/aspect-exporter';
 import {LoadedFilePayload, LoadedFilesService, NamespaceFile} from '@ame/cache';
-import {
-  ConfirmDialogService,
-  DialogOptions,
-  EditorService,
-  FileTypes,
-  FileUploadOptions,
-  FileUploadService,
-  ModelLoaderService,
-  ModelSaverService,
-  ShapeSettingsStateService,
-} from '@ame/editor';
 import {MaxGraphService} from '@ame/max-graph';
 import {ModelService, RdfService} from '@ame/rdf/services';
 import {RdfModelUtil} from '@ame/rdf/utils';
@@ -50,7 +39,14 @@ import {BlankNode, NamedNode, Store} from 'n3';
 import {forkJoin, Observable, of, throwError} from 'rxjs';
 import {catchError, finalize, first, map, switchMap, tap} from 'rxjs/operators';
 import {environment} from '../../../../../../environments/environment';
+import {ConfirmDialogService, DialogOptions} from '../../confirm-dialog/confirm-dialog.service';
+import {ShapeSettingsStateService} from '../../editor-dialog/services/shape-settings-state.service';
+import {EditorService} from '../../editor.service';
+import {ModelLoaderService} from '../../model-loader.service';
+import {ModelSaverService} from '../../model-saver.service';
 import {ConfirmDialogEnum} from '../../models/confirm-dialog.enum';
+import {FileUploadOptions} from '../interfaces/file-upload-options';
+import {FileTypes, FileUploadService} from './file-upload.service';
 
 export interface FileInfo {
   content: BufferSource;

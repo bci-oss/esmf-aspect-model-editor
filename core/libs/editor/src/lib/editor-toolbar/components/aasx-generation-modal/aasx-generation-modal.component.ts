@@ -47,7 +47,7 @@ export class AASXGenerationModalComponent {
   private destroyRef = inject(DestroyRef);
   private modelApiService = inject(ModelApiService);
   private rdfService = inject(RdfService);
-  private dialogRef = inject(MatDialogRef<AssignedNodesOptions>);
+  private dialogRef = inject(MatDialogRef<AASXGenerationModalComponent>);
   private loadedFilesService = inject(LoadedFilesService);
 
   control = new FormControl('aasx');

@@ -33,10 +33,6 @@ import {BehaviorSubject, of, Subject} from 'rxjs';
 import {EditorModelService} from '../../../../editor-model.service';
 import {EntityExtendsFieldComponent} from './extends-field.component';
 
-vi.mock('@ame/editor', () => ({
-  ModelElementEditorComponent: class {},
-}));
-
 describe('EntityExtendsFieldComponent', () => {
   let component: EntityExtendsFieldComponent;
   let fixture: ComponentFixture<EntityExtendsFieldComponent>;

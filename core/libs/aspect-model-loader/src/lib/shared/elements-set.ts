@@ -19,9 +19,16 @@ export interface IElementsSet<T extends NamedElement = NamedElement> extends Arr
 }
 
 export class ElementSet<T extends NamedElement = NamedElement> extends Array<T> {
-  constructor(...items: T[]) {
+  static override get [Symbol.species]() {
+    return Array;
+  }
+
+  constructor(...items: (T | number)[]) {
     super();
-    this.push(...items);
+    if (items.length === 1 && typeof items[0] === 'number') {
+      return;
+    }
+    this.push(...(items.filter(item => typeof item !== 'number') as T[]));
   }
 
   override push(...items: T[]): number {

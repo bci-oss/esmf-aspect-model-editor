@@ -12,12 +12,13 @@
  */
 
 import {CacheUtils, LoadedFilesService} from '@ame/cache';
-import {ConfirmDialogService, EntityInstanceUtil} from '@ame/editor';
 import {MaxGraphHelper} from '@ame/max-graph';
-import {NotificationsService, config} from '@ame/shared';
-import {Injectable, inject} from '@angular/core';
+import {config, NotificationsService} from '@ame/shared';
+import {inject, Injectable} from '@angular/core';
 import {DefaultEntity, DefaultEntityInstance, DefaultEnumeration, DefaultProperty, Entity, Value} from '@esmf/aspect-model-loader';
+import {ConfirmDialogService} from '../../../../confirm-dialog/confirm-dialog.service';
 import {ConfirmDialogEnum} from '../../../../models/confirm-dialog.enum';
+import {EntityInstanceUtil} from '../utils/EntityInstanceUtil';
 
 @Injectable({providedIn: 'root'})
 export class EntityInstanceService {
@@ -30,9 +31,9 @@ export class EntityInstanceService {
   }
 
   onPropertyRemove(property: DefaultProperty, acceptCallback: () => void) {
-    const entityValues = CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntityInstance).filter(eInstance => {
-      eInstance.getTuples().some(([propertyUrn]) => property.aspectModelUrn === propertyUrn);
-    });
+    const entityValues = CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntityInstance).filter(eInstance =>
+      eInstance.getTuples().some(([propertyUrn]) => property.aspectModelUrn === propertyUrn),
+    );
 
     if (!entityValues.length) {
       acceptCallback?.();

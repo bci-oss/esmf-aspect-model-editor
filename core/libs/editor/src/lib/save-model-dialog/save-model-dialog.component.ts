@@ -11,11 +11,11 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelSaverService} from '@ame/editor';
 import {Component, inject, NgZone, signal} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {TranslocoDirective} from '@jsverse/transloco';
+import {ModelSaverService} from '../model-saver.service';
 
 @Component({
   templateUrl: 'save-model-dialog.component.html',

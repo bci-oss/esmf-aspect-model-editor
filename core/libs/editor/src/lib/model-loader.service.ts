@@ -20,8 +20,7 @@ import {BrowserService, config, ElectronSignalsService, ModelSavingTrackerServic
 import {ExporterHelper} from '@ame/sidebar';
 import {DestroyRef, inject, Injectable} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {DefaultAspect, loadAspectModel, ModelElementCache, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
-import {RdfLoader} from 'libs/aspect-model-loader/src/lib/shared/rdf-loader';
+import {DefaultAspect, loadAspectModel, ModelElementCache, NamedElement, RdfLoader, RdfModel} from '@esmf/aspect-model-loader';
 import {NamedNode} from 'n3';
 import {catchError, concatMap, first, forkJoin, from, map, Observable, of, switchMap, tap, throwError} from 'rxjs';
 import {FileEntry, FileInformation} from './editor-toolbar';

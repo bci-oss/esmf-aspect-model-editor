@@ -12,12 +12,12 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {ModelElementParserPipe} from '@ame/editor';
 import {ElementIconComponent, sammElements} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, Input, OnInit} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {NamedElement} from '@esmf/aspect-model-loader';
+import {ModelElementParserPipe} from '../../element-list/element-list.pipe';
 
 @Component({
   selector: 'ame-shared-settings-title',

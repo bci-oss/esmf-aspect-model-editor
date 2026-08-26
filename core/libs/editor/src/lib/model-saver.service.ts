@@ -1,6 +1,18 @@
+/*
+ * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+ *
+ * See the AUTHORS file(s) distributed with this work for
+ * additional information regarding authorship.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
 import {ModelApiService} from '@ame/api';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
-import {FileHandlingService} from '@ame/editor';
 import {ModelService, RdfSerializerService} from '@ame/rdf/services';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {ModelSavingTrackerService, NotificationsService, SaveValidateErrorsCodes} from '@ame/shared';
@@ -10,6 +22,7 @@ import {DestroyRef, inject, Injectable, Injector, runInInjectionContext} from '@
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {RdfModel} from '@esmf/aspect-model-loader';
 import {catchError, delayWhen, first, map, Observable, of, retry, Subscription, switchMap, tap, throwError, timer} from 'rxjs';
+import {FileHandlingService} from './editor-toolbar/services/file-handling.service';
 
 @Injectable({providedIn: 'root'})
 export class ModelSaverService {

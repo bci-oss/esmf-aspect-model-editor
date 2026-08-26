@@ -17,6 +17,7 @@ export default [
     rules: {
       'cypress/no-unnecessary-waiting': 'warn',
       'cypress/unsafe-to-chain-command': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
     },
   },
   {

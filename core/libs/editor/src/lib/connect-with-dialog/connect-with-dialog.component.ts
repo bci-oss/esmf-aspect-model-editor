@@ -11,7 +11,6 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelElementParserPipe} from '@ame/editor';
 import {MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {CommonModule} from '@angular/common';
 import {Component, inject, signal} from '@angular/core';
@@ -22,6 +21,7 @@ import {MatInputModule} from '@angular/material/input';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {NamedElement} from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
+import {ModelElementParserPipe} from '../editor-dialog/components/element-list/element-list.pipe';
 
 interface Element {
   cell: Cell;

@@ -66,7 +66,7 @@ export class GenerateAsyncApiComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private languageService = inject(SammLanguageSettingsService);
   private editorService = inject(EditorService);
-  private dialogRef = inject(MatDialogRef<AssignedNodesOptions>);
+  private dialogRef = inject(MatDialogRef<GenerateAsyncApiComponent>);
   private loadedFilesService = inject(LoadedFilesService);
 
   form: FormGroup;

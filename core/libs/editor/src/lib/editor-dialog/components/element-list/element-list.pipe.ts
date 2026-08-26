@@ -24,10 +24,8 @@ export class ModelElementParserPipe implements PipeTransform {
         const isAbstract =
           (element instanceof DefaultProperty && element.isAbstract) || (element instanceof DefaultEntity && element.isAbstractEntity());
 
-        const isNotAbstractType = !isAbstract && !value.type.includes('abstract');
-        const isOfClass = isNotAbstractType && element instanceof value.class;
-
-        return isAbstract ? key.includes('abstract') && isOfClass : isOfClass;
+        const matchesClass = element instanceof value.class;
+        return isAbstract ? key.includes('abstract') && matchesClass : !value.type.includes('abstract') && matchesClass;
       }) || (['', null] as any)
     );
   }

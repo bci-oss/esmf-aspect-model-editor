@@ -12,15 +12,6 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {
-  AASXGenerationModalComponent,
-  EditorService,
-  FileHandlingService,
-  GenerateAsyncApiComponent,
-  GenerateDocumentationComponent,
-  GenerateOpenApiComponent,
-  LanguageSelectorModalComponent,
-} from '@ame/editor';
 import {ModelService} from '@ame/rdf/services';
 import {LoadingScreenOptions, LoadingScreenService, NotificationsService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
@@ -30,7 +21,14 @@ import {MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {catchError, map, Observable, switchMap, throwError} from 'rxjs';
 import {finalize, first} from 'rxjs/operators';
 import {environment} from '../../../../../../environments/environment';
+import {EditorService} from '../../editor.service';
 import {PreviewDialogComponent} from '../../preview-dialog';
+import {AASXGenerationModalComponent} from '../components/aasx-generation-modal/aasx-generation-modal.component';
+import {GenerateAsyncApiComponent} from '../components/generate-async-api/generate-async-api.component';
+import {GenerateDocumentationComponent} from '../components/generate-documentation/generate-documentation.component';
+import {GenerateOpenApiComponent} from '../components/generate-open-api/generate-open-api.component';
+import {LanguageSelectorModalComponent} from '../components/language-sector-modal/language-selector-modal.component';
+import {FileHandlingService} from './file-handling.service';
 
 @Injectable({providedIn: 'root'})
 export class GenerateHandlingService {

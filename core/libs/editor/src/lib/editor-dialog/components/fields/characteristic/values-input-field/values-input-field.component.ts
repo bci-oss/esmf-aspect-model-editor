@@ -14,23 +14,9 @@
 import {CacheUtils} from '@ame/cache';
 import {DataTypeService, ElementIconComponent} from '@ame/shared';
 import {ENTER} from '@angular/cdk/keycodes';
-import {
-  Component,
-  computed,
-  effect,
-  ElementRef,
-  inject,
-  Injector,
-  OnDestroy,
-  OnInit,
-  runInInjectionContext,
-  Signal,
-  signal,
-  viewChild,
-  WritableSignal,
-} from '@angular/core';
-import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
-import {FormControl, ReactiveFormsModule, Validators} from '@angular/forms';
+import {Component, computed, effect, ElementRef, inject, OnDestroy, OnInit, signal, viewChild} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {disabled, form, FormField, validate} from '@angular/forms/signals';
 import {MatAutocomplete, MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatChipEditedEvent, MatChipGrid, MatChipInput, MatChipRow, MatChipsModule} from '@angular/material/chips';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -45,7 +31,6 @@ import {
   ScalarValue,
   Value,
 } from '@esmf/aspect-model-loader';
-import {debounceTime} from 'rxjs/operators';
 import {EntityInstanceViewComponent} from '../../../entity-instance';
 import {InputFieldComponent} from '../../input-field.component';
 
@@ -57,7 +42,7 @@ import {InputFieldComponent} from '../../input-field.component';
     MatFormFieldModule,
     MatLabel,
     MatChipGrid,
-    ReactiveFormsModule,
+    FormField,
     MatChipRow,
     MatIconModule,
     MatChipInput,
@@ -74,18 +59,29 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
   private autoComplete = viewChild(MatAutocomplete);
   private valuesInput = viewChild<ElementRef<HTMLInputElement>>('valuesInput');
 
-  private injector = inject(Injector);
   private dataTypeService = inject(DataTypeService);
   private values = signal<DefaultValue[]>([]);
-  private valueControlSignal: Signal<string>;
+  private readonly searchModel = signal('');
+  private readonly blocked = signal(false);
+  private unregisterSearch = () => undefined;
+  private unregisterChipList = () => undefined;
+  private unregisterEnumValues = () => undefined;
+  private dataTypeInitialized = false;
+  private previousDataType: unknown;
 
   readonly separatorKeysCodes: number[] = [ENTER];
 
   public removable = signal(true);
-  public hasComplexValues = signal(false);
+  public hasComplexValues = computed(() => this.signalForm()?.value().dataTypeEntity instanceof DefaultEntity);
   public initialValues = signal<Record<string, boolean>>({});
 
-  public enumValues: WritableSignal<Array<Value | DefaultValue | DefaultEntityInstance>> = signal([]);
+  public enumValues = signal<Array<Value | DefaultValue | DefaultEntityInstance>>([]);
+  readonly searchField = form(this.searchModel, path => disabled(path, {when: this.blocked}));
+  readonly chipListField = form(this.enumValues, path => {
+    validate(path, ({value}) => (value().length ? null : {kind: 'required', message: 'Please provide at least one enumeration value'}));
+    disabled(path, {when: this.blocked});
+  });
+  readonly enumValuesField = form(this.enumValues, path => disabled(path, {when: this.blocked}));
   public enumEntityValues = computed(() => this.enumValues().filter(v => v instanceof DefaultEntityInstance));
   public valuesElements = computed(() => this.enumValues().filter(v => v instanceof DefaultValue));
 
@@ -99,7 +95,8 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
 
   public filteredValues = computed(() => {
     const valuesElementsMap = this.valuesElementsMap();
-    return this.values().filter(v => !valuesElementsMap[v.name] && v.name.match(new RegExp(this.valueControlSignal(), 'i')));
+    const value = this.searchModel().toLowerCase();
+    return this.values().filter(v => !valuesElementsMap[v.name] && v.name.toLowerCase().includes(value));
   });
 
   get samm() {
@@ -110,7 +107,14 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
     super();
 
     effect(() => {
-      this.onEnumChange();
+      const formValue = this.signalForm()?.value();
+      if (!this.metaModelElement || !formValue) return;
+
+      if (this.dataTypeInitialized && formValue.dataType !== this.previousDataType) {
+        this.changeValuesByDataType(String(formValue.dataType || ''));
+      }
+      this.previousDataType = formValue.dataType;
+      this.dataTypeInitialized = true;
     });
   }
 
@@ -120,21 +124,16 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
       .subscribe(() => {
         this.handleNextModelElement(this.metaModelElement);
         this.initForm();
-
-        runInInjectionContext(this.injector, () => {
-          this.valueControlSignal = toSignal(this.parentForm().get('values').valueChanges, {initialValue: ''});
-        });
       });
 
     this.values.set(CacheUtils.getCachedElements(this.loadedFiles.currentLoadedFile.cachedFile, DefaultValue));
   }
 
   ngOnDestroy() {
+    this.unregisterSearch();
+    this.unregisterChipList();
+    this.unregisterEnumValues();
     super.ngOnDestroy();
-    this.parentForm().removeControl('enumValues');
-    this.parentForm().removeControl('chipList');
-    this.parentForm().removeControl('deletedEntityValues');
-    this.parentForm().removeControl('newEntityValues');
     this.enumValues.set([]);
   }
 
@@ -143,12 +142,12 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
   }
 
   onEnumChange() {
-    this.parentForm().get('enumValues')?.setValue(this.enumValues());
+    this.enumValues.set([...this.enumValues()]);
   }
 
   addValue(value: ScalarValue | DefaultValue | string, isLiteral = true) {
-    this.getControl('values').setValue('');
-    this.valuesInput().nativeElement.value = '';
+    this.searchModel.set('');
+    if (this.valuesInput()) this.valuesInput().nativeElement.value = '';
 
     if (isLiteral && typeof value === 'string') {
       value = new ScalarValue({value, type: this.metaModelElement.dataType || null});
@@ -162,10 +161,7 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
     }
 
     this.enumValues.update(values => [...values, value]);
-    this.parentForm().get('chipList').setValue(this.enumValues());
-    this.onEnumChange();
-
-    this.autoComplete().options.forEach(option => option.deselect());
+    this.autoComplete()?.options.forEach(option => option.deselect());
   }
 
   editValue(value: Value | DefaultValue, event: MatChipEditedEvent) {
@@ -201,36 +197,19 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
 
   enumValueChange(enumValues: DefaultEntityInstance[]) {
     this.enumValues.set(enumValues);
-    this.parentForm().get('chipList').setValue(this.enumEntityValues());
   }
 
   initForm() {
-    this.parentForm().setControl('values', new FormControl({value: '', disabled: this.loadedFiles.isElementExtern(this.metaModelElement)}));
-    this.parentForm().setControl(
-      'chipList',
-      new FormControl({value: this.enumValues(), disabled: this.loadedFiles.isElementExtern(this.metaModelElement)}, Validators.required),
-    );
     this.enumValues.set(this.metaModelElement.values || []);
-    this.parentForm().setControl('enumValues', new FormControl(this.enumValues()));
+    this.blocked.set(this.loadedFiles.isElementExtern(this.metaModelElement));
+    this.searchModel.set('');
+    this.unregisterSearch = this.signalForm().register('values', this.searchField);
+    this.unregisterChipList = this.signalForm().register('chipList', this.chipListField);
+    this.unregisterEnumValues = this.signalForm().register('enumValues', this.enumValuesField);
 
-    if (this.parentForm().get('dataTypeEntity').value instanceof DefaultEntity) {
+    if (this.signalForm().value().dataTypeEntity instanceof DefaultEntity) {
       this.enumValueChange((this.metaModelElement.values as DefaultEntityInstance[]) || []);
-      this.hasComplexValues.set(true);
     }
-
-    const parentForm = this.parentForm();
-    this.formSubscription.add(
-      parentForm
-        .get('dataType')
-        .valueChanges.pipe(debounceTime(300))
-        .subscribe(value => this.changeValuesByDataType(value)),
-    );
-
-    this.formSubscription.add(
-      parentForm.get('dataTypeEntity')?.valueChanges.subscribe(entity => {
-        this.hasComplexValues.set(!!entity);
-      }),
-    );
 
     for (const value of this.enumValues()) {
       if (!(value instanceof DefaultValue)) continue;
@@ -246,20 +225,11 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
     const dataTypeKeys = Object.keys(this.dataTypeService.getDataTypes());
 
     if (dataTypeKeys.includes(dataType)) {
-      this.hasComplexValues.set(false);
       return;
     }
 
-    this.parentForm().get('values').setValue([]);
+    this.searchModel.set('');
     this.enumValueChange([]);
-
-    CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntity)
-      .filter(e => !e.isAbstractEntity())
-      .forEach(entity => {
-        if (entity.name === dataType) {
-          this.hasComplexValues.set(true);
-        }
-      });
   }
 
   private handleNextModelElement(modelElement: NamedElement): void {
@@ -269,7 +239,6 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
     }
 
     const currentValues = this.getCurrentValue();
-    this.hasComplexValues.set(modelElement.dataType instanceof DefaultEntity);
     if (!currentValues || (Array.isArray(currentValues) && currentValues.length === 0)) {
       return;
     }

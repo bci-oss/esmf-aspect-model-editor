@@ -11,33 +11,33 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-<mat-form-field [floatLabel]="getControl('dataType')?.disabled ? 'always' : 'auto'" appearance="fill" subscriptSizing="dynamic">
-  <mat-label for="dataType">dataType</mat-label>
-  <input #dataType [matAutocomplete]="auto" [formControl]="getControl('dataType')" matInput name="dataType" data-cy="dataType" />
-  @if (!frozen && dataTypeControl?.disabled && loadedFiles.isElementInCurrentFile(metaModelElement)) {
+<mat-form-field [floatLabel]="displayField().disabled() ? 'always' : 'auto'" appearance="fill" subscriptSizing="dynamic">
+  <mat-label>dataType</mat-label>
+  <input #dataType [matAutocomplete]="auto" [formField]="displayField" matInput data-cy="dataType" />
+  @if (!frozen() && displayField().disabled() && loadedFiles.isElementInCurrentFile(metaModelElement)) {
     <button (click)="unlockDataType()" data-cy="clear-dataType-button" matSuffix mat-icon-button tabindex="-1">
       <mat-icon>close</mat-icon>
     </button>
   }
 
-  @if (getControl('dataType')?.errors?.checkShapeName) {
+  @if (hasError('checkShapeName')) {
     <mat-error>Please select a different name as this one is of different type</mat-error>
   }
-  @if (getControl('dataType')?.errors?.checkShapeNameExtRef) {
+  @if (hasError('checkShapeNameExtRef')) {
     <mat-error>Please select a different name as this one is of different type in the same namespace</mat-error>
   }
 
   <mat-autocomplete class="characteristic-datatype-autocomplete" #auto="matAutocomplete">
-    @if (!entitiesDisabled() && filteredEntityTypes$ | async; as filteredEntityTypes) {
+    @if (!entitiesDisabled() && filteredEntityTypes(); as filteredEntityTypes) {
       <mat-optgroup label="Entities">
-        @if (filteredEntityTypes.length === 0 && !getControl('dataType')?.errors) {
+        @if (filteredEntityTypes.length === 0 && displayField().errors().length === 0) {
           <mat-option
-            [disabled]="!isUpperCase(dataType.value)"
-            [value]="!isUpperCase(dataType.value) ? '' : dataType.value"
-            (click)="createNewEntity(dataType.value)"
+            [disabled]="!isUpperCase(displayValue())"
+            [value]="!isUpperCase(displayValue()) ? '' : displayValue()"
+            (click)="createNewEntity(displayValue())"
           >
-            @if (isUpperCase(dataType.value)) {
-              <ame-element [type]="{type: 'entity', symbol: 'E'}" [isNewValue]="true" [name]="dataType.value" size="medium"></ame-element>
+            @if (isUpperCase(displayValue())) {
+              <ame-element [type]="{type: 'entity', symbol: 'E'}" [isNewValue]="true" [name]="displayValue()" size="medium"></ame-element>
             } @else {
               <span class="ellipsis">Please provide the name for the new Entity in upper case.</span>
             }
@@ -67,7 +67,7 @@
       </mat-optgroup>
     }
 
-    @if (filteredDataTypes$ | async; as filteredDataTypes) {
+    @if (filteredDataTypes(); as filteredDataTypes) {
       @if (filteredDataTypes?.length) {
         <mat-optgroup label="Types">
           @for (dataType of filteredDataTypes; track dataType.name) {
@@ -77,7 +77,7 @@
               data-cy="dataTypeOption"
             >
               <span class="option-title">{{ dataType.name }}</span
-              ><span class="option-description">{{ dataType.description }}</span>
+              ><span class="option-description">{{ dataType.getDescription('en') }}</span>
             </mat-option>
           }
         </mat-optgroup>

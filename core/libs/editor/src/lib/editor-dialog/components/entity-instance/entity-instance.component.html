@@ -12,8 +12,8 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-  <ame-name-input-field [parentForm]="parentForm()"></ame-name-input-field>
-  <ame-entity-instance-table [parentForm]="parentForm()"> </ame-entity-instance-table>
+  <ame-name-input-field [signalForm]="signalForm()"></ame-name-input-field>
+  <ame-entity-instance-table [signalForm]="signalForm()" />
   <ame-element-list
     [label]="t('editorCanvas.shapeSetting.ameElementListLabel.incomingEdges')"
     [elements]="element()?.parents"

@@ -16,9 +16,8 @@
   <mat-select
     #characteristicName
     [disabled]="this.loadedFilesService.isElementExtern(selectedMetaModelElement)"
-    [ngModel]="metaModelClassName"
-    (ngModelChange)="onCharacteristicChange($event)"
-    name="characteristicName"
+    [value]="metaModelClassName"
+    (selectionChange)="onCharacteristicChange($event.value)"
     data-cy="characteristicName"
     panelClass="characteristic-items-panel"
   >

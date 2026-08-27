@@ -13,8 +13,9 @@
 
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {ElementCreatorService} from '@ame/shared';
+import {signal} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {FormControl, ReactiveFormsModule} from '@angular/forms';
+import {form} from '@angular/forms/signals';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DefaultAspect, DefaultProperty, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {Store} from 'n3';
@@ -41,7 +42,7 @@ describe('StructuredValuePropertyFieldComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [StructuredValuePropertyFieldComponent, ReactiveFormsModule, BrowserAnimationsModule],
+      imports: [StructuredValuePropertyFieldComponent, BrowserAnimationsModule],
       providers: [
         MockProvider(LoadedFilesService, {
           currentLoadedFile: new NamespaceFile(new RdfModel(new Store(), '2.0.0', 'urn:test:1.0.0#'), new ModelElementCache(), dummyAspect),
@@ -54,20 +55,33 @@ describe('StructuredValuePropertyFieldComponent', () => {
 
     fixture = TestBed.createComponent(StructuredValuePropertyFieldComponent);
     component = fixture.componentInstance;
+    const selectedModel = signal<{property: DefaultProperty | null}>({property: defaultProp});
+    const selectedForm = TestBed.runInInjectionContext(() => form(selectedModel));
     fixture.componentRef.setInput('defaultProperty', defaultProp);
-    fixture.componentRef.setInput('fieldControl', new FormControl());
+    fixture.componentRef.setInput('field', selectedForm.property);
     fixture.detectChanges();
   });
 
-  it('should create and initialize control', () => {
+  it('should create and initialize the signal form', () => {
     expect(component).toBeTruthy();
-    expect(component.control).toBeDefined();
-    expect(component.control.value).toBe('testProp');
+    expect(component.displayForm).toBeDefined();
+    expect(component.displayModel()).toBe('testProp');
+    expect(component.locked()).toBe(true);
   });
 
-  it('should unlock control', () => {
+  it('should unlock and clear both signal models', () => {
     component.unlock();
-    expect(component.control.enabled).toBe(true);
-    expect(component.control.value).toBe('');
+    expect(component.locked()).toBe(false);
+    expect(component.displayModel()).toBe('');
+    expect(component.field()().value()).toBeNull();
+  });
+
+  it('should update the parent signal field on selection', () => {
+    component.unlock();
+    component.onSelectionChange(defaultProp);
+
+    expect(component.field()().value()).toBe(defaultProp);
+    expect(component.displayModel()).toBe('testProp');
+    expect(component.locked()).toBe(true);
   });
 });

@@ -34,34 +34,34 @@
 
   <div class="shape-settings__content">
     @if (metaModelElement()) {
-      <form [formGroup]="formGroup" novalidate>
+      <form novalidate>
         <!-- the same view can be shown in more than one case -->
         @if (isOfType(['DefaultAspect'])) {
-          <ame-aspect [parentForm]="formGroup"></ame-aspect>
+          <ame-aspect [signalForm]="signalForm"></ame-aspect>
         } @else if (isCharacteristic() && !isOfType(['DefaultTrait'])) {
-          <ame-characteristic [parentForm]="formGroup"></ame-characteristic>
+          <ame-characteristic [signalForm]="signalForm"></ame-characteristic>
         } @else if (isConstraint()) {
-          <ame-constraint [parentForm]="formGroup"></ame-constraint>
+          <ame-constraint [signalForm]="signalForm"></ame-constraint>
         } @else if (isOfType(['DefaultProperty'])) {
-          <ame-property [parentForm]="formGroup"></ame-property>
+          <ame-property [signalForm]="signalForm"></ame-property>
         } @else if (isOfType(['DefaultAbstractProperty'])) {
-          <ame-abstract-property [parentForm]="formGroup"></ame-abstract-property>
+          <ame-abstract-property [signalForm]="signalForm"></ame-abstract-property>
         } @else if (isOfType(['DefaultOperation'])) {
-          <ame-operation [parentForm]="formGroup"></ame-operation>
+          <ame-operation [signalForm]="signalForm"></ame-operation>
         } @else if (isOfType(['DefaultAbstractEntity'])) {
-          <ame-abstract-entity [parentForm]="formGroup"></ame-abstract-entity>
+          <ame-abstract-entity [signalForm]="signalForm"></ame-abstract-entity>
         } @else if (isOfType(['DefaultEntity'])) {
-          <ame-entity [parentForm]="formGroup"></ame-entity>
+          <ame-entity [signalForm]="signalForm"></ame-entity>
         } @else if (isOfType(['DefaultUnit'])) {
-          <ame-unit [parentForm]="formGroup"></ame-unit>
+          <ame-unit [signalForm]="signalForm"></ame-unit>
         } @else if (isOfType(['DefaultTrait'])) {
-          <ame-trait-characteristic [parentForm]="formGroup"></ame-trait-characteristic>
+          <ame-trait-characteristic [signalForm]="signalForm"></ame-trait-characteristic>
         } @else if (isOfType(['DefaultEntityInstance'])) {
-          <ame-entity-instance [parentForm]="formGroup"></ame-entity-instance>
+          <ame-entity-instance [signalForm]="signalForm"></ame-entity-instance>
         } @else if (isOfType(['DefaultValue'])) {
-          <ame-value [parentForm]="formGroup"></ame-value>
+          <ame-value [signalForm]="signalForm"></ame-value>
         } @else if (isOfType(['DefaultEvent'])) {
-          <ame-event [parentForm]="formGroup"></ame-event>
+          <ame-event [signalForm]="signalForm"></ame-event>
         }
       </form>
     }
@@ -75,7 +75,7 @@
     }
     @if (metaModelDialogService.isSaveButtonEnabled()) {
       <button
-        [disabled]="!formGroup.valid || loadedFilesService.isElementExtern(metaModelElement())"
+        [disabled]="!signalForm.valid() || loadedFilesService.isElementExtern(metaModelElement())"
         (click)="onSave()"
         mat-flat-button
         color="primary"

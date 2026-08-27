@@ -12,13 +12,13 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-  <ame-base-input [parentForm]="parentForm()" [hideDescription]="true" [hideSee]="true"></ame-base-input>
-  <ame-symbol-input-field [parentForm]="parentForm()"></ame-symbol-input-field>
-  <ame-code-input-field [parentForm]="parentForm()"></ame-code-input-field>
-  <ame-reference-unit-input-field [parentForm]="parentForm()"></ame-reference-unit-input-field>
-  <ame-conversion-factor-input-field [parentForm]="parentForm()"></ame-conversion-factor-input-field>
-  <ame-numeric-conversion-factor-input-field [parentForm]="parentForm()"></ame-numeric-conversion-factor-input-field>
-  <ame-quantity-kinds-input-field [parentForm]="parentForm()"></ame-quantity-kinds-input-field>
+  <ame-base-input [signalForm]="signalForm()" [hideDescription]="true" [hideSee]="true"></ame-base-input>
+  <ame-symbol-input-field [signalForm]="signalForm()"></ame-symbol-input-field>
+  <ame-code-input-field [signalForm]="signalForm()"></ame-code-input-field>
+  <ame-reference-unit-input-field [signalForm]="signalForm()"></ame-reference-unit-input-field>
+  <ame-conversion-factor-input-field [signalForm]="signalForm()"></ame-conversion-factor-input-field>
+  <ame-numeric-conversion-factor-input-field [signalForm]="signalForm()"></ame-numeric-conversion-factor-input-field>
+  <ame-quantity-kinds-input-field [signalForm]="signalForm()"></ame-quantity-kinds-input-field>
   <ame-element-list
     [label]="t('editorCanvas.shapeSetting.ameElementListLabel.incomingEdges')"
     [elements]="element()?.parents"

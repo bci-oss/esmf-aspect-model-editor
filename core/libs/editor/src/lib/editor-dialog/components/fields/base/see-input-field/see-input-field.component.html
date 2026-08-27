@@ -13,14 +13,14 @@
   -->
 
   <mat-form-field
-    [floatLabel]="searchControl?.disabled ? 'always' : 'auto'"
+    [floatLabel]="searchField().disabled() ? 'always' : 'auto'"
     [matTooltip]="isInherited ? 'This was extended from ' + elementExtends.extends_?.name : ''"
     [matTooltipPosition]="'left'"
     appearance="fill"
     subscriptSizing="dynamic"
   >
-    <mat-label for="see">see</mat-label>
-    <mat-chip-grid #chipList [formControl]="chipControl">
+    <mat-label>see</mat-label>
+    <mat-chip-grid #chipList>
       @for (element of elements(); track element.urn) {
         <mat-chip-row
           [matTooltip]="element.urn"
@@ -38,12 +38,11 @@
 
     <input
       #see
-      [formControl]="searchControl"
+      [formField]="searchField"
       [matAutocomplete]="auto"
       [matChipInputFor]="chipList"
       [placeholder]="t('editorCanvas.shapeSetting.field.seeInput.typeToSearch')"
       matInput
-      name="see"
       data-cy="see"
     />
 
@@ -59,8 +58,8 @@
           <span class="shape-urn">{{ shape.aspectModelUrn }}</span>
         </mat-option>
       }
-      @if (searchControl.hasError('uri')) {
-        <mat-error class="error">Invalid URI '{{ searchControl?.errors.uri.invalidUris[0] }}'</mat-error>
+      @if (hasSearchError('uri')) {
+        <mat-error class="error">Invalid URI</mat-error>
       }
     </mat-autocomplete>
   </mat-form-field>

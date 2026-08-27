@@ -12,7 +12,14 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {EditorService, EditorToolbarComponent, ShapeSettingsComponent, ShapeSettingsService, ShapeSettingsStateService} from '@ame/editor';
+import {
+  EditorFormModel,
+  EditorService,
+  EditorToolbarComponent,
+  ShapeSettingsComponent,
+  ShapeSettingsService,
+  ShapeSettingsStateService,
+} from '@ame/editor';
 import {MaxGraphService} from '@ame/max-graph';
 import {ElementModelService} from '@ame/meta-model';
 import {ConfigurationService} from '@ame/settings-dialog';
@@ -21,7 +28,6 @@ import {CdkDrag, CdkDragEnd, CdkDragHandle} from '@angular/cdk/drag-drop';
 import {CommonModule} from '@angular/common';
 import {AfterViewInit, Component, DestroyRef, ElementRef, inject, OnInit, signal, viewChild} from '@angular/core';
 import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
-import {FormGroup} from '@angular/forms';
 import {MatIconModule} from '@angular/material/icon';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NamedElement} from '@esmf/aspect-model-loader';
@@ -154,7 +160,7 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
     this.shapeSettingsStateService.closeShapeSettings();
   }
 
-  onSave(formData: FormGroup) {
+  onShapeSettingsSave(formData: EditorFormModel) {
     if (this.selectedShapeForUpdate) {
       this.elementModelService.updateElement(this.selectedShapeForUpdate, formData);
     } else {

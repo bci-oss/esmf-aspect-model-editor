@@ -17,7 +17,6 @@ import {MaxGraphService} from '@ame/max-graph';
 import {RdfService} from '@ame/rdf/services';
 import {NotificationsService, SearchService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DefaultEntity, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {TranslocoTestingModule} from '@jsverse/transloco';
@@ -44,7 +43,6 @@ describe('AbstractEntityComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         AbstractEntityComponent,
-        ReactiveFormsModule,
         BrowserAnimationsModule,
         TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
       ],
@@ -70,11 +68,14 @@ describe('AbstractEntityComponent', () => {
 
     fixture = TestBed.createComponent(AbstractEntityComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('parentForm', new FormGroup({}));
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should aggregate the extends fields in its shared Signal Forms context', () => {
+    expect(component.signalForm().value()).toMatchObject({extendsValue: '', extends: null});
   });
 });

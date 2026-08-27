@@ -35,7 +35,6 @@ describe('EditorService', () => {
   let service: EditorService;
   let modelApiService: ModelApiService;
   let rdfService: RdfService;
-  let maxgraphAttributeService: MaxGraphAttributeService;
 
   const aspect = new DefaultAspect({
     aspectModelUrn: 'urn:test:1.0.0#Aspect',
@@ -131,7 +130,6 @@ describe('EditorService', () => {
     service = TestBed.inject(EditorService);
     modelApiService = TestBed.inject(ModelApiService);
     rdfService = TestBed.inject(RdfService);
-    maxgraphAttributeService = TestBed.inject(MaxGraphAttributeService);
   });
 
   it('generateJsonSample should serialize model and call api', async () => {

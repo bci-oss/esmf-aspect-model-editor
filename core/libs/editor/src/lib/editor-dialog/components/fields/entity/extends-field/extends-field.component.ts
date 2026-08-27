@@ -11,21 +11,28 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {LoadedFilesService, NamespaceFile} from '@ame/cache';
+import {CacheUtils, LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {NotificationsService} from '@ame/shared';
-import {AsyncPipe} from '@angular/common';
-import {Component, inject, OnDestroy, OnInit} from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {FormControl, ReactiveFormsModule} from '@angular/forms';
+import {Component, computed, inject, OnDestroy, OnInit, signal, Signal} from '@angular/core';
+import {rxResource, takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {disabled, form, FormField, validateAsync} from '@angular/forms/signals';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOptgroup, MatOption} from '@angular/material/autocomplete';
 import {MatIconButton} from '@angular/material/button';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatError, MatInput, MatLabel} from '@angular/material/input';
 import {DefaultEntity, Entity, useLoader} from '@esmf/aspect-model-loader';
-import {combineLatest, map, Observable, of} from 'rxjs';
+import {of} from 'rxjs';
 import {EditorDialogValidators} from '../../../../validators';
 import {InputFieldComponent} from '../../input-field.component';
+
+export interface EntityExtendsOption {
+  name: string;
+  description: string;
+  urn: string;
+  namespace?: string;
+  entity?: Entity;
+}
 
 @Component({
   selector: 'ame-entity-extends-field',
@@ -35,14 +42,13 @@ import {InputFieldComponent} from '../../input-field.component';
     MatFormFieldModule,
     MatLabel,
     MatAutocompleteTrigger,
-    ReactiveFormsModule,
+    FormField,
     MatInput,
     MatIconButton,
     MatAutocomplete,
     MatIconModule,
     MatOptgroup,
     MatOption,
-    AsyncPipe,
     MatError,
   ],
 })
@@ -50,12 +56,41 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
   private notificationsService = inject(NotificationsService);
   private editorDialogValidators = inject(EditorDialogValidators);
   private loadedFilesService = inject(LoadedFilesService);
+  private readonly displayModel = signal('');
+  private readonly extendsModel = signal<Entity | null>(null);
+  private readonly locked = signal(false);
+  private readonly blocked = signal(false);
+  private unregisterDisplay = () => undefined;
+  private unregisterExtends = () => undefined;
 
-  public filteredAbstractEntities$: Observable<any[]>;
-  public filteredEntities$: Observable<any[]>;
+  private readonly createDuplicateNameResource = (name: Signal<string>) =>
+    rxResource({
+      params: () => name(),
+      stream: ({params}) =>
+        this.metaModelElement
+          ? this.editorDialogValidators.duplicateNameWithDifferentTypeValue(params, this.metaModelElement, DefaultEntity)
+          : of(null),
+    });
 
-  public extendsValueControl: FormControl;
-  public extendsControl: FormControl;
+  readonly displayField = form(this.displayModel, path => {
+    validateAsync(path, {
+      params: ({value}) => value(),
+      factory: this.createDuplicateNameResource,
+      onSuccess: result => {
+        const kind = result?.['foundModel'] ? 'foundModel' : result && Object.keys(result)[0];
+        return kind ? {kind, message: 'Entity name is already used by another type'} : null;
+      },
+      onError: () => ({kind: 'duplicateNameValidation', message: 'Entity name could not be validated'}),
+    });
+    disabled(path, {when: () => this.locked() || this.blocked()});
+  });
+  readonly extendsField = form(this.extendsModel, path => disabled(path, {when: this.blocked}));
+  readonly displayValue = this.displayModel.asReadonly();
+  readonly filteredEntities = computed<EntityExtendsOption[]>(() => this.filterEntities(false));
+  readonly filteredAbstractEntities = computed<EntityExtendsOption[]>(() => {
+    const entities = this.metaModelElement instanceof DefaultEntity ? this.filteredEntities() : [];
+    return [...entities, ...this.filterEntities(true)].filter(entity => entity.name !== this.metaModelElement?.name);
+  });
   public predefinedEntities: {
     name: string;
     entity: Entity;
@@ -98,9 +133,9 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
   }
 
   ngOnDestroy() {
+    this.unregisterDisplay();
+    this.unregisterExtends();
     super.ngOnDestroy();
-    this.parentForm().removeControl('extendsValue');
-    this.parentForm().removeControl('extends');
   }
 
   getCurrentValue() {
@@ -111,44 +146,20 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
     const extendsElement = this.getCurrentValue();
     const value = extendsElement?.name || '';
 
-    this.parentForm().setControl(
-      'extendsValue',
-      new FormControl(
-        {
-          value,
-          disabled: !!value || this.loadedFiles.isElementExtern(this.metaModelElement) || this.metaModelElement.isPredefined,
-        },
-        {
-          asyncValidators: [this.editorDialogValidators.duplicateNameWithDifferentType(this.metaModelElement, DefaultEntity)],
-        },
-      ),
-    );
-
-    this.parentForm().setControl(
-      'extends',
-      new FormControl({
-        value: extendsElement,
-        disabled: this.loadedFiles.isElementExtern(this.metaModelElement),
-      }),
-    );
-
-    this.extendsValueControl = this.parentForm().get('extendsValue') as FormControl;
-    this.extendsControl = this.parentForm().get('extends') as FormControl;
-
-    this.filteredAbstractEntities$ = combineLatest([
-      this.metaModelElement instanceof DefaultEntity ? this.initFilteredEntities(this.extendsValueControl) : of([]),
-      this.initFilteredAbstractEntities(this.extendsValueControl),
-    ]).pipe(map(([a, b]) => [...a, ...b].filter(e => e.name !== this.metaModelElement.name)));
-
-    this.filteredEntities$ = this.initFilteredEntities(this.extendsValueControl);
+    this.blocked.set(this.loadedFiles.isElementExtern(this.metaModelElement) || this.metaModelElement.isPredefined);
+    this.locked.set(!!value);
+    this.displayModel.set(value);
+    this.extendsModel.set(extendsElement);
+    this.unregisterDisplay = this.signalForm().register('extendsValue', this.displayField);
+    this.unregisterExtends = this.signalForm().register('extends', this.extendsField);
   }
 
-  onSelectionChange(newValue: any) {
+  onSelectionChange(newValue: {urn: string; name: string; entity?: Entity} | null) {
     if (newValue === null) {
       return; // happens on reset form
     }
 
-    let foundEntity: DefaultEntity = this.currentFile.cachedFile.get(newValue.urn);
+    let foundEntity = this.currentFile.cachedFile.get<Entity>(newValue.urn);
 
     if (!foundEntity) {
       foundEntity = this.loadedFilesService.findElementOnExtReferences(newValue.urn);
@@ -158,11 +169,7 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
       foundEntity = newValue.entity;
     }
 
-    this.parentForm().setControl('extends', new FormControl(foundEntity));
-
-    this.extendsValueControl.patchValue(newValue.name);
-    this.extendsControl.setValue(foundEntity);
-    this.extendsValueControl.disable();
+    this.selectEntity(foundEntity, newValue.name);
   }
 
   createNewAbstractEntity(entityName: string) {
@@ -172,10 +179,9 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
 
     const urn = `${this.metaModelElement.aspectModelUrn.split('#')?.[0]}#${entityName}`;
 
-    const parentForm = this.parentForm();
-    if (this.metaModelElement.aspectModelUrn === urn || parentForm.get('name').value === entityName) {
+    if (this.metaModelElement.aspectModelUrn === urn || this.signalForm().value().name === entityName) {
       this.notificationsService.error({title: 'Element left cannot link itself'});
-      this.extendsValueControl.setValue('');
+      this.displayModel.set('');
       return;
     }
 
@@ -185,11 +191,7 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
       aspectModelUrn: urn,
       metaModelVersion: this.metaModelElement.metaModelVersion,
     });
-    parentForm.setControl('extends', new FormControl(newAbstractEntity));
-
-    this.extendsValueControl.patchValue(entityName);
-    this.extendsControl.setValue(newAbstractEntity);
-    this.extendsValueControl.disable();
+    this.selectEntity(newAbstractEntity, entityName);
   }
 
   createEntity(entityName: string) {
@@ -199,10 +201,9 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
 
     const urn = `${this.metaModelElement.aspectModelUrn.split('#')?.[0]}#${entityName}`;
 
-    const parentForm = this.parentForm();
-    if (this.metaModelElement.aspectModelUrn === urn || parentForm.get('name').value === entityName) {
+    if (this.metaModelElement.aspectModelUrn === urn || this.signalForm().value().name === entityName) {
       this.notificationsService.error({title: 'Element left cannot link itself'});
-      this.extendsValueControl.setValue('');
+      this.displayModel.set('');
       return;
     }
 
@@ -211,17 +212,39 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
       aspectModelUrn: urn,
       metaModelVersion: this.metaModelElement.metaModelVersion,
     });
-    parentForm.setControl('extends', new FormControl(newAbstractEntity));
-
-    this.extendsValueControl.patchValue(entityName);
-    this.extendsControl.setValue(newAbstractEntity);
-    this.extendsValueControl.disable();
+    this.selectEntity(newAbstractEntity, entityName);
   }
 
   unlockExtends() {
-    this.extendsValueControl.enable();
-    this.extendsValueControl.patchValue('');
-    this.extendsControl.patchValue(null);
-    this.extendsControl.markAllAsTouched();
+    this.locked.set(false);
+    this.displayModel.set('');
+    this.extendsModel.set(null);
+    this.extendsField().markAsTouched();
+  }
+
+  hasError(kind: string): boolean {
+    return this.displayField()
+      .errors()
+      .some(error => error.kind === kind);
+  }
+
+  private selectEntity(entity: Entity, name: string): void {
+    this.displayModel.set(name);
+    this.extendsModel.set(entity);
+    this.locked.set(true);
+  }
+
+  private filterEntities(isAbstract: boolean): EntityExtendsOption[] {
+    const value = this.displayModel();
+    const local = CacheUtils.getCachedElements(this.currentFile.cachedFile, DefaultEntity)
+      .filter(entity => entity.isAbstractEntity() === isAbstract)
+      .map(entity => ({
+        name: entity.name,
+        description: entity.getDescription('en') || '',
+        urn: entity.aspectModelUrn,
+        namespace: undefined as string | undefined,
+      }));
+    const external = isAbstract ? this.searchExtAbstractEntity(value) : this.searchExtEntity(value);
+    return [...local, ...external].filter(entity => this.inSearchList(entity, value));
   }
 }

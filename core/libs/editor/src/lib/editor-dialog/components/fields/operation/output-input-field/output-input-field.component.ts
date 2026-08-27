@@ -12,16 +12,15 @@
  */
 
 import {CacheUtils} from '@ame/cache';
-import {Component, inject, OnDestroy, OnInit} from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {FormControl, ReactiveFormsModule} from '@angular/forms';
+import {Component, computed, inject, OnDestroy, OnInit, signal, Signal} from '@angular/core';
+import {rxResource, takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {disabled, form, FormField, validateAsync} from '@angular/forms/signals';
 import {MatError, MatInput, MatLabel} from '@angular/material/input';
 import {DefaultOperation, DefaultProperty, Property} from '@esmf/aspect-model-loader';
-import {Observable} from 'rxjs';
+import {of} from 'rxjs';
 import {EditorDialogValidators} from '../../../../validators';
 import {InputFieldComponent} from '../../input-field.component';
 
-import {AsyncPipe} from '@angular/common';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOptgroup, MatOption} from '@angular/material/autocomplete';
 import {MatIconButton} from '@angular/material/button';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -36,23 +35,59 @@ import {MatIconModule} from '@angular/material/icon';
     MatLabel,
     MatIconModule,
     MatAutocompleteTrigger,
-    ReactiveFormsModule,
+    FormField,
     MatError,
     MatInput,
     MatIconButton,
     MatAutocomplete,
-    AsyncPipe,
     MatOptgroup,
     MatOption,
   ],
 })
 export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperation> implements OnInit, OnDestroy {
-  private editorDialogValidators = inject(EditorDialogValidators);
+  private readonly editorDialogValidators = inject(EditorDialogValidators);
+  private readonly displayModel = signal('');
+  private readonly outputModel = signal<Property | null>(null);
+  private readonly locked = signal(false);
+  private readonly external = signal(false);
+  private unregisterDisplay = () => undefined;
+  private unregisterOutput = () => undefined;
 
-  filteredPropertyTypes$: Observable<any[]>;
+  private readonly createDuplicateNameResource = (name: Signal<string>) =>
+    rxResource({
+      params: () => name(),
+      stream: ({params}) =>
+        this.metaModelElement
+          ? this.editorDialogValidators.duplicateNameWithDifferentTypeValue(params, this.metaModelElement, DefaultProperty)
+          : of(null),
+    });
 
-  outputControl: FormControl;
-  newPropertyControl: FormControl;
+  readonly displayField = form(this.displayModel, path => {
+    validateAsync(path, {
+      params: ({value}) => value(),
+      factory: this.createDuplicateNameResource,
+      onSuccess: result => {
+        const kind = result && Object.keys(result)[0];
+        return kind ? {kind, message: 'Property name is already used by another type'} : null;
+      },
+      onError: () => ({kind: 'duplicateNameValidation', message: 'Property name could not be validated'}),
+    });
+    disabled(path, {when: () => this.locked() || this.external()});
+  });
+  readonly outputField = form(this.outputModel, path => disabled(path, {when: this.external}));
+  readonly displayValue = this.displayModel.asReadonly();
+  readonly filteredPropertyTypes = computed(() => {
+    const value = this.displayModel();
+    const properties = CacheUtils.getCachedElements(this.currentCachedFile, DefaultProperty)
+      .filter(property => !property.isAbstract)
+      .map(property => ({
+        name: property.name,
+        description: property.getDescription('en') || '',
+        urn: property.aspectModelUrn,
+        namespace: undefined as string | undefined,
+      }));
+    return [...properties, ...this.searchExtProperty(value)].filter(type => this.inSearchList(type, value));
+  });
 
   ngOnInit(): void {
     this.getMetaModelData()
@@ -61,40 +96,22 @@ export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperat
   }
 
   ngOnDestroy() {
+    this.unregisterDisplay();
+    this.unregisterOutput();
     super.ngOnDestroy();
-    this.parentForm().removeControl('output');
   }
 
   setOutputControl() {
     const property = this.metaModelElement?.output;
     const value = property?.name ? property?.name : '';
 
-    this.parentForm().setControl(
-      'output',
-      new FormControl(
-        {
-          value,
-          disabled: !!value || this.loadedFiles.isElementExtern(this.metaModelElement),
-        },
-        {
-          asyncValidators: [this.editorDialogValidators.duplicateNameWithDifferentType(this.metaModelElement, DefaultProperty)],
-        },
-      ),
-    );
-    this.getControl('output').markAsTouched();
-
-    this.parentForm().setControl(
-      'outputValue',
-      new FormControl({
-        value: property,
-        disabled: this.loadedFiles.isElementExtern(this.metaModelElement),
-      }),
-    );
-
-    this.outputControl = this.parentForm().get('output') as FormControl;
-    this.newPropertyControl = this.parentForm().get('outputValue') as FormControl;
-
-    this.filteredPropertyTypes$ = this.initFilteredPropertyTypes(this.outputControl);
+    this.external.set(this.loadedFiles.isElementExtern(this.metaModelElement));
+    this.locked.set(!!value);
+    this.displayModel.set(value);
+    this.outputModel.set(property || null);
+    this.unregisterDisplay = this.signalForm().register('output', this.displayField);
+    this.unregisterOutput = this.signalForm().register('outputValue', this.outputField);
+    this.displayField().markAsTouched();
   }
 
   onSelectionChange(fieldPath: string, newValue: any) {
@@ -114,11 +131,9 @@ export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperat
       property = this.loadedFiles.findElementOnExtReferences<Property>(newValue.urn);
     }
 
-    this.parentForm().setControl('outputValue', new FormControl(property));
-
-    this.outputControl.patchValue(newValue.name);
-    this.newPropertyControl.setValue(property);
-    this.outputControl.disable();
+    this.displayModel.set(newValue.name);
+    this.outputModel.set(property);
+    this.locked.set(true);
   }
 
   createNewProperty(propertyName: string) {
@@ -132,18 +147,21 @@ export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperat
       aspectModelUrn: urn,
       name: propertyName,
     });
-    this.parentForm().setControl('outputValue', new FormControl(newProperty));
-
-    this.outputControl.patchValue(propertyName);
-    this.newPropertyControl.setValue(newProperty);
-    this.outputControl.disable();
+    this.displayModel.set(propertyName);
+    this.outputModel.set(newProperty);
+    this.locked.set(true);
   }
 
   unlockOutput() {
-    this.outputControl.enable();
-    this.outputControl.patchValue('');
-    this.newPropertyControl.patchValue('');
-    this.parentForm().setControl('outputValue', new FormControl(null));
-    this.newPropertyControl.markAllAsTouched();
+    this.locked.set(false);
+    this.displayModel.set('');
+    this.outputModel.set(null);
+    this.outputField().markAsTouched();
+  }
+
+  hasError(kind: string): boolean {
+    return this.displayField()
+      .errors()
+      .some(error => error.kind === kind);
   }
 }

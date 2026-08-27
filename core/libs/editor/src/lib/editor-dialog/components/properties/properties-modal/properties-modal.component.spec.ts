@@ -13,7 +13,6 @@
 
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {FormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DefaultAspect, DefaultEntity, DefaultProperty, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
@@ -63,12 +62,10 @@ describe('PropertiesModalComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         PropertiesModalComponent,
-        ReactiveFormsModule,
         BrowserAnimationsModule,
         TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
       ],
       providers: [
-        FormBuilder,
         {provide: MAT_DIALOG_DATA, useValue: dialogData},
         {provide: MatDialogRef, useValue: dialogRefMock},
         MockProvider(LoadedFilesService, {
@@ -85,13 +82,14 @@ describe('PropertiesModalComponent', () => {
 
   it('should create and build form', () => {
     expect(component).toBeTruthy();
-    expect(component.form).toBeDefined();
+    expect(component.propertiesModel()['urn:test:1.0.0#prop1']).toBeDefined();
+    expect(component.propertiesModel()['urn:test:1.0.0#prop1'].payloadName).toBe('propOne');
     expect(component.dataSource.data.length).toBe(1);
   });
 
   it('should save changes and close dialog', () => {
     component.saveChanges();
-    expect(dialogRefMock.close).toHaveBeenCalledWith(component.form.value);
+    expect(dialogRefMock.close).toHaveBeenCalledWith(component.propertiesModel());
   });
 
   it('should close on cancel', () => {

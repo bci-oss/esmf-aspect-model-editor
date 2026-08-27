@@ -12,7 +12,7 @@
  */
 
 import {Component, input} from '@angular/core';
-import {FormGroup} from '@angular/forms';
+import {EditorSignalFormContext} from '../../../../forms/editor-signal-form-context';
 import {PreviousFormDataSnapshot} from '../../../../interfaces';
 import {DescriptionInputFieldComponent} from '../description-input-field/description-input-field.component';
 import {NameInputFieldComponent} from '../name-input-field/name-input-field.component';
@@ -27,6 +27,6 @@ import {SeeInputFieldComponent} from '../see-input-field/see-input-field.compone
 export class BaseInputComponent {
   readonly hideDescription = input(false);
   readonly hideSee = input(false);
-  readonly parentForm = input<FormGroup>();
+  readonly signalForm = input.required<EditorSignalFormContext>();
   readonly previousData = input<PreviousFormDataSnapshot>();
 }

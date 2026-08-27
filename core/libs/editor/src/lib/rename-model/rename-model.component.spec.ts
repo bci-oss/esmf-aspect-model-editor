@@ -28,8 +28,6 @@ describe('RenameModelComponent', () => {
   let component: RenameModelComponent;
   let fixture: ComponentFixture<RenameModelComponent>;
   let dialogRef: MatDialogRef<RenameModelComponent>;
-  let modelApiService: ModelApiService;
-  let loadedFilesService: LoadedFilesService;
 
   beforeEach(async () => {
     dialogRef = {
@@ -72,8 +70,6 @@ describe('RenameModelComponent', () => {
       ],
     }).compileComponents();
 
-    modelApiService = TestBed.inject(ModelApiService);
-    loadedFilesService = TestBed.inject(LoadedFilesService);
     fixture = TestBed.createComponent(RenameModelComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

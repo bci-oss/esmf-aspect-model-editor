@@ -12,9 +12,9 @@
  */
 import {Component, inject, input} from '@angular/core';
 import {toSignal} from '@angular/core/rxjs-interop';
-import {FormGroup} from '@angular/forms';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../editor-model.service';
+import {EditorSignalFormContext} from '../../forms/editor-signal-form-context';
 import {ElementListComponent} from '../element-list';
 import {NameInputFieldComponent} from '../fields';
 import {EntityInstanceTableComponent} from './entity-instance-table/entity-instance-table.component';
@@ -25,7 +25,7 @@ import {EntityInstanceTableComponent} from './entity-instance-table/entity-insta
   imports: [NameInputFieldComponent, EntityInstanceTableComponent, ElementListComponent, TranslocoDirective],
 })
 export class EntityInstanceComponent {
-  readonly parentForm = input<FormGroup>();
+  readonly signalForm = input.required<EditorSignalFormContext>();
 
   public metaModelDialogService = inject(EditorModelService);
   public element = toSignal(this.metaModelDialogService.getMetaModelElement());

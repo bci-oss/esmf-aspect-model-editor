@@ -32,7 +32,6 @@ describe('GenerateDocumentationComponent', () => {
   let fixture: ComponentFixture<GenerateDocumentationComponent>;
   let dialogRef: MatDialogRef<GenerateDocumentationComponent>;
   let modelApiService: ModelApiService;
-  let editorService: EditorService;
 
   const aspect = new DefaultAspect({
     aspectModelUrn: 'urn:test:1.0.0#Aspect',
@@ -73,7 +72,6 @@ describe('GenerateDocumentationComponent', () => {
     }).compileComponents();
 
     modelApiService = TestBed.inject(ModelApiService);
-    editorService = TestBed.inject(EditorService);
     fixture = TestBed.createComponent(GenerateDocumentationComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

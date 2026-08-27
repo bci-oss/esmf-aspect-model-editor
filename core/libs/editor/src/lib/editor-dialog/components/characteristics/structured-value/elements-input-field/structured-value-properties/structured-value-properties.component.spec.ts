@@ -16,7 +16,7 @@ import {ElementCreatorService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {DefaultAspect, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
+import {DefaultAspect, DefaultProperty, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
@@ -37,18 +37,25 @@ describe('StructuredValuePropertiesComponent', () => {
     close: vi.fn(),
   };
 
+  const property = new DefaultProperty({
+    aspectModelUrn: 'urn:test:1.0.0#prop1',
+    name: 'prop1',
+    metaModelVersion: '2.0.0',
+  });
+
   const dialogData = {
     groups: [
       {
         start: 0,
         end: 5,
         text: '([a-z]+)',
-        property: 'prop1',
+        property,
       },
     ],
   };
 
   beforeEach(async () => {
+    dialogRefMock.close.mockClear();
     await TestBed.configureTestingModule({
       imports: [StructuredValuePropertiesComponent, BrowserAnimationsModule],
       providers: [
@@ -68,13 +75,29 @@ describe('StructuredValuePropertiesComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create and populate table', () => {
+  it('should create and populate a valid signal form', () => {
     expect(component).toBeTruthy();
     expect(component.dataSource.data.length).toBe(1);
+    expect(component.propertiesModel()[0].property).toBe(property);
+    expect(component.propertiesForm().valid()).toBe(true);
   });
 
   it('should close modal on cancel', () => {
     component.closeModal(false);
     expect(dialogRefMock.close).toHaveBeenCalledWith(null);
+  });
+
+  it('should prevent saving while a required property is missing', () => {
+    component.propertiesForm[0].property().value.set(null);
+    component.closeModal(true);
+
+    expect(component.propertiesForm().invalid()).toBe(true);
+    expect(dialogRefMock.close).not.toHaveBeenCalled();
+  });
+
+  it('should save the signal model as the expected key-value record', () => {
+    component.closeModal(true);
+
+    expect(dialogRefMock.close).toHaveBeenCalledWith({'[0-5] -> ([a-z]+)': property});
   });
 });

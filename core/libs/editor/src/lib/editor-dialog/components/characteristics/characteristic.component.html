@@ -13,40 +13,40 @@
   -->
   @if (property()) {
     <ame-characteristic-name-dropdown-field
-      [parentForm]="parentForm()"
+      [signalForm]="signalForm()"
       [previousDataSnapshot]="previousData()"
       (selectedCharacteristic)="onClassChange($event)"
       (previousData)="onPreviousDataChange($event)"
     />
 
-    <ame-base-input [previousData]="previousData()" [parentForm]="parentForm()" />
+    <ame-base-input [previousData]="previousData()" [signalForm]="signalForm()" />
     @if (selectedCharacteristic() !== characteristicClassType().Either) {
-      <ame-data-type-input-field [previousData]="previousData()" [parentForm]="parentForm()" />
+      <ame-data-type-input-field [previousData]="previousData()" [signalForm]="signalForm()" />
     }
 
     @if (isElementCharacteristicAllowed()) {
-      <ame-element-characteristic-input-field [previousData]="previousData()" [parentForm]="parentForm()" />
+      <ame-element-characteristic-input-field [previousData]="previousData()" [signalForm]="signalForm()" />
     }
 
     @if (selectedCharacteristic() === characteristicClassType().Enumeration) {
-      <ame-values-input-field [previousData]="previousData()" [parentForm]="parentForm()" />
+      <ame-values-input-field [previousData]="previousData()" [signalForm]="signalForm()" />
     }
 
     @if (isUnitAllowed()) {
-      <ame-unit-input-field [previousData]="previousData()" [parentForm]="parentForm()" />
+      <ame-unit-input-field [previousData]="previousData()" [signalForm]="signalForm()" />
     }
 
     @if (selectedCharacteristic() === characteristicClassType().State) {
-      <ame-state-characteristic [previousData]="previousData()" [parentForm]="parentForm()" />
+      <ame-state-characteristic [previousData]="previousData()" [signalForm]="signalForm()" />
     }
 
     @if (selectedCharacteristic() === characteristicClassType().StructuredValue) {
-      <ame-structured-value [parentForm]="parentForm()"></ame-structured-value>
+      <ame-structured-value [signalForm]="signalForm()"></ame-structured-value>
     }
 
     @if (selectedCharacteristic() === characteristicClassType().Either) {
-      <ame-left-input-field [previousData]="previousData() || {}" [parentForm]="parentForm()" />
-      <ame-right-input-field [previousData]="previousData() || {}" [parentForm]="parentForm()" />
+      <ame-left-input-field [previousData]="previousData() || {}" [signalForm]="signalForm()" />
+      <ame-right-input-field [previousData]="previousData() || {}" [signalForm]="signalForm()" />
     }
 
     <ame-element-list

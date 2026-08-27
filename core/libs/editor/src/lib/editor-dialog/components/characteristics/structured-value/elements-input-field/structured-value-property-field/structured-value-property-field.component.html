@@ -13,8 +13,8 @@
 
 <mat-form-field>
   <mat-label for="left">Property</mat-label>
-  <input #property [matAutocomplete]="auto" [formControl]="control" matInput name="property-element" data-cy="property-element" />
-  @if (control?.disabled) {
+  <input #property [matAutocomplete]="auto" [formField]="displayForm" matInput data-cy="property-element" />
+  @if (locked()) {
     <button (click)="unlock()" data-cy="clear-property-button" matSuffix mat-icon-button tabindex="-1">
       <mat-icon>close</mat-icon>
     </button>
@@ -46,10 +46,7 @@
       </mat-optgroup>
     }
   </mat-autocomplete>
-  @if (control?.errors?.required) {
+  @if (displayForm().errors().some(error => error.kind === 'required')) {
     <mat-error>Please choose or create a Property</mat-error>
-  }
-  @if (control?.errors?.disabled) {
-    <mat-error>No property defined</mat-error>
   }
 </mat-form-field>

@@ -12,7 +12,7 @@
  */
 import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {FormControl, ReactiveFormsModule} from '@angular/forms';
+import {disabled, form, FormField} from '@angular/forms/signals';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatLabel} from '@angular/material/input';
 import {MatOption, MatSelect} from '@angular/material/select';
@@ -22,9 +22,15 @@ import {InputFieldComponent} from '../../input-field.component';
 @Component({
   selector: 'ame-lower-bound-input-field',
   templateUrl: './lower-bound-input-field.component.html',
-  imports: [MatFormFieldModule, MatLabel, MatSelect, ReactiveFormsModule, MatOption],
+  imports: [MatFormFieldModule, MatLabel, MatSelect, FormField, MatOption],
 })
 export class LowerBoundInputFieldComponent extends InputFieldComponent<DefaultConstraint> implements OnInit, OnDestroy {
+  private readonly model = signal('');
+  private unregisterField = () => undefined;
+
+  readonly field = form(this.model, path =>
+    disabled(path, {when: () => !!this.metaModelElement && this.loadedFiles.isElementExtern(this.metaModelElement)}),
+  );
   public lowerBoundDefinitionList = signal([]);
 
   constructor() {
@@ -48,17 +54,12 @@ export class LowerBoundInputFieldComponent extends InputFieldComponent<DefaultCo
   }
 
   ngOnDestroy() {
+    this.unregisterField();
     super.ngOnDestroy();
-    this.parentForm().removeControl(this.fieldName);
   }
 
   initForm() {
-    this.parentForm().setControl(
-      this.fieldName,
-      new FormControl({
-        value: this.getCurrentValue(this.fieldName),
-        disabled: this.loadedFiles.isElementExtern(this.metaModelElement),
-      }),
-    );
+    this.model.set(this.getCurrentValue(this.fieldName));
+    this.unregisterField = this.signalForm().register(this.fieldName, this.field);
   }
 }

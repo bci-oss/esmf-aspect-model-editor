@@ -17,7 +17,6 @@ import {MaxGraphService} from '@ame/max-graph';
 import {RdfService} from '@ame/rdf/services';
 import {NotificationsService, SearchService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DefaultCharacteristic, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {TranslocoTestingModule} from '@jsverse/transloco';
@@ -26,6 +25,7 @@ import {MockProvider} from 'ng-mocks';
 import {of} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {EditorModelService} from '../../editor-model.service';
+import {EditorSignalFormContext} from '../../forms/editor-signal-form-context';
 import {EditorDialogValidators} from '../../validators';
 import {CharacteristicComponent} from './characteristic.component';
 
@@ -43,7 +43,6 @@ describe('CharacteristicComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         CharacteristicComponent,
-        ReactiveFormsModule,
         BrowserAnimationsModule,
         TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
       ],
@@ -67,11 +66,32 @@ describe('CharacteristicComponent', () => {
 
     fixture = TestBed.createComponent(CharacteristicComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('parentForm', new FormGroup({}));
+    fixture.componentRef.setInput(
+      'signalForm',
+      TestBed.runInInjectionContext(() => EditorSignalFormContext.create()),
+    );
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should expose element-characteristic fields only for collection-like classes', () => {
+    component.onClassChange(component.characteristicClassType().Collection);
+    expect(component.isElementCharacteristicAllowed()).toBe(true);
+    expect(component.isUnitAllowed()).toBe(false);
+
+    component.onClassChange(component.characteristicClassType().Enumeration);
+    expect(component.isElementCharacteristicAllowed()).toBe(false);
+  });
+
+  it('should expose unit fields only for quantifiable classes', () => {
+    component.onClassChange(component.characteristicClassType().Measurement);
+    expect(component.isUnitAllowed()).toBe(true);
+    expect(component.isElementCharacteristicAllowed()).toBe(false);
+
+    component.onClassChange(component.characteristicClassType().Duration);
+    expect(component.isUnitAllowed()).toBe(true);
   });
 });

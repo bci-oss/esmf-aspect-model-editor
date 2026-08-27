@@ -23,7 +23,6 @@ import {OpenReferencedElementService} from './open-element-window.service';
 describe('OpenReferencedElementService', () => {
   let service: OpenReferencedElementService;
   let dialog: MatDialog;
-  let loadedFilesService: LoadedFilesService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -43,7 +42,6 @@ describe('OpenReferencedElementService', () => {
 
     service = TestBed.inject(OpenReferencedElementService);
     dialog = TestBed.inject(MatDialog);
-    loadedFilesService = TestBed.inject(LoadedFilesService);
   });
 
   it('should do nothing if element is null', () => {

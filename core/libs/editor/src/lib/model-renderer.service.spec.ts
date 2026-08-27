@@ -31,7 +31,6 @@ describe('ModelRendererService', () => {
   let service: ModelRendererService;
   let maxgraphService: MaxGraphService;
   let largeFileWarningService: LargeFileWarningService;
-  let loadedFilesService: LoadedFilesService;
 
   const aspect = new DefaultAspect({
     aspectModelUrn: 'urn:test:1.0.0#Aspect',
@@ -83,7 +82,6 @@ describe('ModelRendererService', () => {
     service = TestBed.inject(ModelRendererService);
     maxgraphService = TestBed.inject(MaxGraphService);
     largeFileWarningService = TestBed.inject(LargeFileWarningService);
-    loadedFilesService = TestBed.inject(LoadedFilesService);
   });
 
   it('renderModel should delete old shapes and prepare graph update', async () => {

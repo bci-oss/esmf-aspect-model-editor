@@ -15,12 +15,12 @@ import {LoadedFilesService} from '@ame/cache';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {ChangeDetectorRef, Component, DestroyRef, inject, input, OnChanges, OnInit, output, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {DefaultCharacteristic, DefaultConstraint, NamedElement, Unit} from '@esmf/aspect-model-loader';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../editor-model.service';
+import {EditorFormModel, EditorSignalFormContext} from '../../forms/editor-signal-form-context';
 import {AbstractEntityComponent} from '../abstract-entities';
 import {AbstractPropertyComponent} from '../abstract-property';
 import {AspectComponent} from '../aspect';
@@ -48,7 +48,6 @@ import {SharedSettingsTitleComponent} from './shared-settings-title/shared-setti
     LocateElementComponent,
     MatIconButton,
     MatIconModule,
-    ReactiveFormsModule,
     AspectComponent,
     CharacteristicComponent,
     ConstraintComponent,
@@ -77,16 +76,14 @@ export class ShapeSettingsComponent implements OnInit, OnChanges {
   public selectedMetaModelElement: NamedElement;
   public tmpCharacteristic: DefaultCharacteristic | DefaultConstraint;
   public units: Unit[] = [];
-  public formGroup: FormGroup = new FormGroup({
-    changedMetaModel: new FormControl(null),
-  });
+  public signalForm = new EditorSignalFormContext<EditorFormModel>({changedMetaModel: null});
 
   public metaModelElement = signal<NamedElement>(undefined);
 
   readonly isOpened = input(false);
   readonly modelElement = input<NamedElement>(null);
 
-  readonly save = output<FormGroup>();
+  readonly save = output<EditorFormModel>();
   readonly afterClose = output();
 
   saveOnKeyControlEnterEvent() {
@@ -115,15 +112,15 @@ export class ShapeSettingsComponent implements OnInit, OnChanges {
   }
 
   onSave(): void {
-    if (this.formGroup?.valid) {
-      this.save.emit(this.formGroup.getRawValue());
-      this.formGroup.reset();
+    if (this.signalForm.valid()) {
+      this.save.emit(this.signalForm.value());
+      this.signalForm.reset({changedMetaModel: null});
       this.onClose();
     }
   }
 
   onClose(): void {
-    this.formGroup.reset();
+    this.signalForm.reset({changedMetaModel: null});
     this.afterClose.emit();
   }
 

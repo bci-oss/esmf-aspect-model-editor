@@ -17,7 +17,6 @@ import {MaxGraphService} from '@ame/max-graph';
 import {RdfService} from '@ame/rdf/services';
 import {NotificationsService, SearchService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DefaultEvent, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {TranslocoTestingModule} from '@jsverse/transloco';
@@ -43,7 +42,6 @@ describe('EventComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         EventComponent,
-        ReactiveFormsModule,
         BrowserAnimationsModule,
         TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
       ],
@@ -69,7 +67,6 @@ describe('EventComponent', () => {
 
     fixture = TestBed.createComponent(EventComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('parentForm', new FormGroup({}));
     fixture.detectChanges();
   });
 

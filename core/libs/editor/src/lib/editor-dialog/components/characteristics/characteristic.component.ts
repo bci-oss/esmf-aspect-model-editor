@@ -24,11 +24,11 @@ import {
 } from '@ame/editor';
 import {ChangeDetectorRef, Component, DestroyRef, inject, input, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
-import {FormGroup} from '@angular/forms';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {StateCharacteristicComponent} from '../../components/characteristics/state-characteristic/state-characteristic.component';
 import {StructuredValueComponent} from '../../components/characteristics/structured-value/structured-value.component';
 import {EditorModelService} from '../../editor-model.service';
+import {EditorSignalFormContext} from '../../forms/editor-signal-form-context';
 import {PreviousFormDataSnapshot} from '../../interfaces';
 
 @Component({
@@ -50,7 +50,7 @@ import {PreviousFormDataSnapshot} from '../../interfaces';
   ],
 })
 export class CharacteristicComponent implements OnInit {
-  readonly parentForm = input<FormGroup>();
+  readonly signalForm = input.required<EditorSignalFormContext>();
 
   private destroyRef = inject(DestroyRef);
   private changeDetector = inject(ChangeDetectorRef);

@@ -12,45 +12,45 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-  <mat-form-field [floatLabel]="getControl('unit')?.disabled ? 'always' : 'auto'" appearance="fill" subscriptSizing="dynamic">
-    <mat-label for="unit">unit</mat-label>
-    <input #unit [matAutocomplete]="auto" [formControl]="unitDisplayControl" matInput name="unit" data-cy="unit" />
-    @if (unitDisplayControl?.disabled && !loadedFiles.isElementExtern(metaModelElement)) {
+  <mat-form-field [floatLabel]="unitField().disabled() ? 'always' : 'auto'" appearance="fill" subscriptSizing="dynamic">
+    <mat-label>unit</mat-label>
+    <input #unit [matAutocomplete]="auto" [formField]="displayField" matInput data-cy="unit" />
+    @if (displayField().disabled() && !loadedFiles.isElementExtern(metaModelElement)) {
       <button (click)="unlockUnit()" data-cy="clear-unit-button" matSuffix mat-icon-button tabindex="-1">
         <mat-icon>close</mat-icon>
       </button>
     }
 
-    @if (unitDisplayControl?.errors?.checkShapeName) {
+    @if (hasError('checkShapeName')) {
       <mat-error>{{ t('editorCanvas.shapeSetting.field.unit.selectDifferentNameType') }} </mat-error>
     }
-    @if (unitDisplayControl?.errors?.checkShapeNameExtRef) {
+    @if (hasError('checkShapeNameExtRef')) {
       <mat-error>{{ t('editorCanvas.shapeSetting.field.unit.selectDifferentNameNamespace') }}</mat-error>
     }
-    @if (getControl('unit')?.errors?.required) {
+    @if (hasError('required')) {
       <mat-error>{{ t('editorCanvas.shapeSetting.field.unit.fieldRequired') }}</mat-error>
     }
 
     <mat-autocomplete #auto="matAutocomplete">
-      @if (filteredUnits$ | async; as filteredUnits) {
-        @if ((unit.value || filteredUnits.length) && !unitDisplayControl.errors) {
+      @if (filteredUnits(); as filteredUnits) {
+        @if ((displayValue() || filteredUnits.length) && displayField().errors().length === 0) {
           <mat-optgroup label="Units">
-            @if (filteredUnits.length <= 0 && unit.value) {
-              <mat-option [value]="unit.value" (click)="createNewUnit(unit.value)">
+            @if (filteredUnits.length <= 0 && displayValue()) {
+              <mat-option [value]="displayValue()" (click)="createNewUnit(displayValue())">
                 <span>
-                  + {{ t('editorCanvas.shapeSetting.field.unit.create') }}: <strong>{{ unit.value }}</strong>
+                  + {{ t('editorCanvas.shapeSetting.field.unit.create') }}: <strong>{{ displayValue() }}</strong>
                 </span>
               </mat-option>
             }
             @for (unit of filteredUnits; track unit.aspectModelUrn) {
-              <mat-option [value]="unit.name" [title]="unit.name" (onSelectionChange)="onExistingUnitChange(unit)">
+              <mat-option [value]="unit.name" [title]="unit.name" (onSelectionChange)="$event.isUserInput && onExistingUnitChange(unit)">
                 {{ unit?.name }}
               </mat-option>
             }
           </mat-optgroup>
         }
       }
-      @if (filteredPredefinedUnits$ | async; as filteredPredefinedUnits) {
+      @if (filteredPredefinedUnits(); as filteredPredefinedUnits) {
         <ng-container #predefinedUnits>
           @if (filteredPredefinedUnits?.length) {
             <mat-optgroup label="Predefined Units">

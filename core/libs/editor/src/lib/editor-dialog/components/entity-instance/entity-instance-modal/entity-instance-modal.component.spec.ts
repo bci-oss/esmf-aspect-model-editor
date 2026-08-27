@@ -13,10 +13,16 @@
 
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {FormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {DefaultAspect, DefaultEntity, DefaultEnumeration, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
+import {
+  DefaultAspect,
+  DefaultEntity,
+  DefaultEntityInstance,
+  DefaultEnumeration,
+  ModelElementCache,
+  RdfModel,
+} from '@esmf/aspect-model-loader';
 import {TranslocoTestingModule} from '@jsverse/transloco';
 import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
@@ -61,15 +67,14 @@ describe('EntityInstanceModalComponent', () => {
   };
 
   beforeEach(async () => {
+    vi.clearAllMocks();
     await TestBed.configureTestingModule({
       imports: [
         EntityInstanceModalComponent,
-        ReactiveFormsModule,
         BrowserAnimationsModule,
         TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
       ],
       providers: [
-        FormBuilder,
         {provide: MAT_DIALOG_DATA, useValue: dialogData},
         {provide: MatDialogRef, useValue: dialogRefMock},
         MockProvider(EditorModelService, {
@@ -88,13 +93,48 @@ describe('EntityInstanceModalComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create and build form', () => {
+  it('should create and build the Signal Form', () => {
     expect(component).toBeTruthy();
-    expect(component.form).toBeDefined();
+    expect(component.entityValueName).toBeDefined();
   });
 
   it('should close on cancel', () => {
     component.onClose();
     expect(dialogRefMock.close).toHaveBeenCalled();
+  });
+
+  it('should validate required and whitespace names', () => {
+    expect(component.hasNameError('required')).toBe(true);
+
+    component.entityValueNameModel.set('invalid name');
+
+    expect(component.hasNameError('whitespace')).toBe(true);
+    expect(component.valid()).toBe(false);
+  });
+
+  it('should reject names already present in the enumeration values', () => {
+    component.complexValues.set([
+      new DefaultEntityInstance({
+        aspectModelUrn: 'urn:test:1.0.0#Duplicate',
+        name: 'Duplicate',
+        metaModelVersion: '2.0.0',
+        type: entity,
+      }),
+    ]);
+    component.entityValueNameModel.set('Duplicate');
+
+    expect(component.hasNameError('nameAlreadyExists')).toBe(true);
+  });
+
+  it('should close with a created entity instance when valid', () => {
+    component.entityValueNameModel.set('Created');
+    fixture.detectChanges();
+
+    component.onSave();
+
+    expect(dialogRefMock.close).toHaveBeenCalledWith({
+      entityValue: expect.objectContaining({name: 'Created', type: entity}),
+      newEntityValues: [],
+    });
   });
 });

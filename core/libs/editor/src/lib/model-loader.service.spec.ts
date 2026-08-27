@@ -28,8 +28,6 @@ import {ModelRendererService} from './model-renderer.service';
 describe('ModelLoaderService', () => {
   let service: ModelLoaderService;
   let loadedFilesService: LoadedFilesService;
-  let modelApiService: ModelApiService;
-  let modelRenderer: ModelRendererService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -81,8 +79,6 @@ describe('ModelLoaderService', () => {
 
     service = TestBed.inject(ModelLoaderService);
     loadedFilesService = TestBed.inject(LoadedFilesService);
-    modelApiService = TestBed.inject(ModelApiService);
-    modelRenderer = TestBed.inject(ModelRendererService);
   });
 
   it('createRdfModelFromContent should parse and register file', async () => {

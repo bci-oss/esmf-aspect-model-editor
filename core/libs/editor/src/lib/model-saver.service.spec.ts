@@ -30,7 +30,6 @@ import {ModelSaverService} from './model-saver.service';
 describe('ModelSaverService', () => {
   let service: ModelSaverService;
   let modelApiService: ModelApiService;
-  let rdfSerializer: RdfSerializerService;
   let modelSavingTracker: ModelSavingTrackerService;
   let notificationsService: NotificationsService;
 
@@ -94,7 +93,6 @@ describe('ModelSaverService', () => {
 
     service = TestBed.inject(ModelSaverService);
     modelApiService = TestBed.inject(ModelApiService);
-    rdfSerializer = TestBed.inject(RdfSerializerService);
     modelSavingTracker = TestBed.inject(ModelSavingTrackerService);
     notificationsService = TestBed.inject(NotificationsService);
   });

@@ -17,7 +17,6 @@ import {MaxGraphService} from '@ame/max-graph';
 import {RdfService} from '@ame/rdf/services';
 import {NotificationsService, SearchService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DefaultValue, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {TranslocoTestingModule} from '@jsverse/transloco';
@@ -44,7 +43,6 @@ describe('ValueComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         ValueComponent,
-        ReactiveFormsModule,
         BrowserAnimationsModule,
         TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
       ],
@@ -70,11 +68,14 @@ describe('ValueComponent', () => {
 
     fixture = TestBed.createComponent(ValueComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('parentForm', new FormGroup({}));
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should expose the value through the native Signal Form context', () => {
+    expect(component.signalForm().value().value).toBe(value.value);
   });
 });

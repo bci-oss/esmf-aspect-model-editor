@@ -34,7 +34,6 @@ import {EntityInstanceService} from './entity-instance.service';
 describe('EntityInstanceService', () => {
   let service: EntityInstanceService;
   let confirmDialogService: ConfirmDialogService;
-  let loadedFilesService: LoadedFilesService;
   let cache: ModelElementCache;
 
   beforeEach(() => {
@@ -58,7 +57,6 @@ describe('EntityInstanceService', () => {
 
     service = TestBed.inject(EntityInstanceService);
     confirmDialogService = TestBed.inject(ConfirmDialogService);
-    loadedFilesService = TestBed.inject(LoadedFilesService);
   });
 
   it('onPropertyRemove should call acceptCallback directly if no entity instances exist', () => {

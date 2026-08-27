@@ -11,28 +11,25 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {CacheUtils, LoadedFilesService} from '@ame/cache';
+import {LoadedFilesService} from '@ame/cache';
 import {MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
-import {mxCellSearchOption, SearchService, unitSearchOption} from '@ame/shared';
+import {mxCellSearchOption, SearchService} from '@ame/shared';
 import {DestroyRef, Directive, inject, input, OnChanges, OnDestroy, SimpleChanges} from '@angular/core';
-import {FormControl, FormGroup} from '@angular/forms';
 import {
   DefaultCharacteristic,
   DefaultConstraint,
   DefaultEntity,
   DefaultProperty,
-  DefaultUnit,
   HasExtends,
   NamedElement,
-  Unit,
 } from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
-import {Observable, of, startWith, Subscription} from 'rxjs';
-import {filter, map, tap} from 'rxjs/operators';
+import {tap} from 'rxjs/operators';
 import {EditorModelService} from '../../editor-model.service';
+import {EditorSignalFormContext} from '../../forms/editor-signal-form-context';
 import {PreviousFormDataSnapshot} from '../../interfaces';
 
-interface FilteredType {
+export interface FilteredType {
   name: string;
   description: string;
   urn: string;
@@ -42,7 +39,7 @@ interface FilteredType {
 
 @Directive()
 export abstract class InputFieldComponent<T extends NamedElement> implements OnDestroy, OnChanges {
-  public readonly parentForm = input<FormGroup>();
+  public readonly signalForm = input.required<EditorSignalFormContext>();
   readonly previousData = input<PreviousFormDataSnapshot>({});
 
   public destroyRef = inject(DestroyRef);
@@ -52,8 +49,6 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
   public loadedFiles = inject(LoadedFilesService);
 
   public metaModelElement: T;
-  public formSubscription: Subscription = new Subscription(); // subscriptions from form controls are added here
-  public frozen: boolean;
   protected resetFormOnDestroy = true;
   protected fieldName: string = null;
 
@@ -86,25 +81,31 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
     const multiLanguageFields = ['description', 'preferredName'];
 
     for (const key in this.previousData()) {
-      const parentForm = this.parentForm();
       if (key.startsWith(this.fieldName) && multiLanguageFields.includes(this.fieldName)) {
         const locale = key.substr(0, this.fieldName.length);
-        parentForm.get(key)?.patchValue(this.getCurrentValue(key, locale));
+        this.signalForm().set(key, this.getCurrentValue(key, locale));
       }
 
       if (key === this.fieldName) {
-        parentForm.get(key)?.setValue(this.getCurrentValue(key));
+        this.signalForm().set(key, this.getCurrentValue(key));
       }
     }
   }
 
   ngOnDestroy() {
-    this.cleanSubscriptions();
     if (this.resetFormOnDestroy) this.resetForm();
   }
 
-  getControl(path: string | string[]): FormControl {
-    return this.parentForm().get(path) as FormControl;
+  getField<TValue>(key: string) {
+    return this.signalForm()?.field<TValue>(key);
+  }
+
+  setFieldValue<TValue>(key: string, value: TValue): void {
+    this.signalForm()?.set(key, value);
+  }
+
+  removeField(key: string): void {
+    this.signalForm()?.remove(key);
   }
 
   getMetaModelData() {
@@ -112,140 +113,6 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
       tap(metaModelElement => {
         this.metaModelElement = <T>metaModelElement;
       }),
-    );
-  }
-
-  cleanSubscriptions() {
-    this.formSubscription.unsubscribe();
-    this.formSubscription = new Subscription();
-  }
-
-  initFilteredEntities(control: FormControl, disabled = false) {
-    return disabled
-      ? of([])
-      : control?.valueChanges.pipe(
-          startWith(''),
-          filter(value => value !== null),
-          map((value: string) => {
-            const entities = CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntity)
-              .filter(e => !e.isAbstractEntity())
-              ?.map(entity => ({
-                name: entity.name,
-                description: entity.getDescription('en') || '',
-                urn: entity.getUrn(),
-                complex: true,
-                entity,
-              }));
-
-            return [...entities, ...this.searchExtEntity(value)]?.filter(type => this.inSearchList(type, value));
-          }),
-          startWith([]),
-        );
-  }
-
-  initFilteredAbstractEntities(control: FormControl, disabled = false) {
-    return disabled
-      ? of([])
-      : control?.valueChanges.pipe(
-          startWith(''),
-          filter(value => value !== null),
-          map((value: string) => {
-            const entities = CacheUtils.getCachedElements(this.currentCachedFile, DefaultEntity)
-              .filter(e => e.isAbstractEntity())
-              ?.map(abstractEntity => ({
-                name: abstractEntity.name,
-                description: abstractEntity.getDescription('en') || '',
-                urn: abstractEntity.getUrn(),
-                complex: true,
-                entity: abstractEntity,
-              }));
-
-            return [...entities, ...this.searchExtAbstractEntity(value)]?.filter(type => this.inSearchList(type, value));
-          }),
-          startWith([]),
-        );
-  }
-
-  initFilteredPropertyTypes(control: FormControl): Observable<any> {
-    return control?.valueChanges.pipe(
-      startWith(''),
-      filter(value => value !== null),
-      map((value: string) => {
-        const properties: Array<any> = CacheUtils.getCachedElements(this.currentCachedFile, DefaultProperty)
-          .filter(e => !e.isAbstract)
-          ?.map(property => ({
-            name: property.name,
-            description: property.getDescription('en') || '',
-            urn: property.aspectModelUrn,
-          }));
-        return [...properties, ...this.searchExtProperty(value)]?.filter(type => this.inSearchList(type, value));
-      }),
-      startWith([]),
-    );
-  }
-
-  initFilteredAbstractPropertyTypes(control: FormControl): Observable<any> {
-    return control?.valueChanges.pipe(
-      startWith(''),
-      filter(value => value !== null),
-      map((value: string) => {
-        const properties: Array<any> = CacheUtils.getCachedElements(this.currentCachedFile, DefaultProperty)
-          .filter(e => e.isAbstract)
-          ?.map(property => ({
-            name: property.name,
-            description: property.getDescription('en') || '',
-            urn: property.aspectModelUrn,
-          }));
-        return [...properties, ...this.searchExtProperty(value)]?.filter(type => this.inSearchList(type, value));
-      }),
-      startWith([]),
-    );
-  }
-
-  initFilteredCharacteristicTypes(control: FormControl, elementAspectUrn: string): Observable<any> {
-    return control?.valueChanges.pipe(
-      startWith(''),
-      filter(value => value !== null),
-      map((value: string) => {
-        const characteristics: Array<any> = CacheUtils.getCachedElements(this.currentCachedFile, DefaultCharacteristic)
-          ?.map(cachedCharacteristic => ({
-            name: cachedCharacteristic.name,
-            description: cachedCharacteristic.getDescription('en') || '',
-            urn: cachedCharacteristic.aspectModelUrn,
-          }))
-          .filter(char => char.urn !== elementAspectUrn);
-
-        return [...characteristics, ...this.searchExtCharacteristic(value)]?.filter(type => this.inSearchList(type, value));
-      }),
-      startWith([]),
-    );
-  }
-
-  initFilteredUnits(control: FormControl, searchService: SearchService) {
-    const units = CacheUtils.getCachedElements(this.currentCachedFile, DefaultUnit);
-    return control?.valueChanges.pipe(
-      startWith(''),
-      filter(value => value !== null),
-      map((value: string) => {
-        if (!value) {
-          return units;
-        }
-        return searchService.search<DefaultUnit>(value, units, unitSearchOption);
-      }),
-      startWith(units),
-    );
-  }
-
-  initFilteredPredefinedUnits(control: FormControl, units: Array<Unit>, searchService: SearchService) {
-    return control?.valueChanges.pipe(
-      filter(value => value !== null),
-      map((value: string) => {
-        if (!value) {
-          return units;
-        }
-        return searchService.search<Unit>(value, units, unitSearchOption);
-      }),
-      startWith(units),
     );
   }
 
@@ -351,52 +218,10 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
     );
   }
 
-  enableWhenEmpty(currentControl: () => FormControl, dependantControlKey: string) {
-    const subscription = this.parentForm().valueChanges.subscribe(() => {
-      const charElementControl = this.parentForm().get(dependantControlKey);
-      if (!charElementControl) {
-        return;
-      }
-
-      if (charElementControl.value && currentControl().enabled) {
-        currentControl().disable();
-        this.frozen = true;
-      }
-
-      const charElementSubscription = charElementControl.valueChanges.subscribe(value => {
-        this.frozen = !!value;
-        if (this.frozen) {
-          currentControl().disable();
-        } else {
-          currentControl().enable();
-        }
-      });
-
-      subscription.unsubscribe();
-      this.formSubscription.add(charElementSubscription);
-    });
-
-    this.formSubscription.add(subscription);
-  }
-
   private resetForm() {
-    const parentForm = this.parentForm();
-    if (!parentForm) {
-      return;
+    if (!this.signalForm().value().changedMetaModel) {
+      this.signalForm().reset({changedMetaModel: null});
     }
-    // we need to keep the meta model changed form field
-    const changedMetaModel = parentForm.value.changedMetaModel;
-    if (changedMetaModel) {
-      return;
-    }
-    Object.keys(parentForm.controls).forEach((key: string) => {
-      if (key === 'changedMetaModel') {
-        return;
-      }
-      this.parentForm().setControl(key, new FormControl());
-    });
-    parentForm.reset();
-    parentForm.setControl('changedMetaModel', new FormControl());
   }
 
   private searchExtElement(value: string): Cell[] {

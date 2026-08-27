@@ -17,7 +17,9 @@ import {MaxGraphService} from '@ame/max-graph';
 import {RdfService} from '@ame/rdf/services';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {NotificationsService, SearchService} from '@ame/shared';
+import {signal} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {form, required} from '@angular/forms/signals';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DefaultAspect, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {TranslocoTestingModule} from '@jsverse/transloco';
@@ -26,13 +28,13 @@ import {MockProvider} from 'ng-mocks';
 import {of} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {EditorModelService} from '../../editor-model.service';
+import {EditorSignalFormContext} from '../../forms/editor-signal-form-context';
 import {EditorDialogValidators} from '../../validators';
 import {ShapeSettingsComponent} from './shape-settings.component';
 
 describe('ShapeSettingsComponent', () => {
   let component: ShapeSettingsComponent;
   let fixture: ComponentFixture<ShapeSettingsComponent>;
-  let editorModelService: EditorModelService;
 
   const aspect = new DefaultAspect({
     aspectModelUrn: 'urn:test:1.0.0#Aspect',
@@ -69,7 +71,6 @@ describe('ShapeSettingsComponent', () => {
       ],
     }).compileComponents();
 
-    editorModelService = TestBed.inject(EditorModelService);
     fixture = TestBed.createComponent(ShapeSettingsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -87,5 +88,29 @@ describe('ShapeSettingsComponent', () => {
     component.onClose();
 
     expect(afterCloseSpy).toHaveBeenCalled();
+  });
+
+  it('should emit the aggregated Signal Forms value on save', () => {
+    const saveSpy = vi.fn();
+    component.save.subscribe(saveSpy);
+    component.signalForm = TestBed.runInInjectionContext(
+      () => new EditorSignalFormContext<Record<string, unknown>>({changedMetaModel: null, customField: 'saved'}),
+    );
+
+    component.onSave();
+
+    expect(saveSpy).toHaveBeenCalledWith(expect.objectContaining({customField: 'saved'}));
+  });
+
+  it('should not save while a registered Signal Forms field is invalid', () => {
+    const saveSpy = vi.fn();
+    component.save.subscribe(saveSpy);
+    const model = signal('');
+    const requiredField = TestBed.runInInjectionContext(() => form(model, path => required(path)));
+    component.signalForm.register('requiredField', requiredField);
+
+    component.onSave();
+
+    expect(saveSpy).not.toHaveBeenCalled();
   });
 });

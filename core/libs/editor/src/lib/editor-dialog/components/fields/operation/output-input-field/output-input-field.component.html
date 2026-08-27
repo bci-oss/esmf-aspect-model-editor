@@ -11,43 +11,43 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-<mat-form-field [floatLabel]="getControl('output')?.disabled ? 'always' : 'auto'" appearance="fill" subscriptSizing="dynamic">
-  <mat-label for="output">output</mat-label>
-  <input #output [matAutocomplete]="auto" [formControl]="getControl('output')" spellcheck="false" matInput name="output" data-cy="output" />
-  @if (outputControl?.disabled && !loadedFiles.isElementExtern(metaModelElement)) {
+<mat-form-field [floatLabel]="displayField().disabled() ? 'always' : 'auto'" appearance="fill" subscriptSizing="dynamic">
+  <mat-label>output</mat-label>
+  <input #output [matAutocomplete]="auto" [formField]="displayField" spellcheck="false" matInput data-cy="output" />
+  @if (displayField().disabled() && !loadedFiles.isElementExtern(metaModelElement)) {
     <button (click)="unlockOutput()" data-cy="clear-output-button" matSuffix mat-icon-button tabindex="-1">
       <mat-icon>close</mat-icon>
     </button>
   }
 
-  @if (getControl('output')?.errors?.checkShapeName) {
+  @if (hasError('checkShapeName')) {
     <mat-error>Please select a different name as this one is of different type</mat-error>
   }
-  @if (getControl('output')?.errors?.checkShapeNameExtRef) {
+  @if (hasError('checkShapeNameExtRef')) {
     <mat-error>Please select a different name as this one is of different type in the same namespace</mat-error>
   }
 
   <mat-autocomplete class="characteristic-output-autocomplete" #auto="matAutocomplete">
-    @if (filteredPropertyTypes$ | async; as filteredPropertyTypes) {
+    @if (filteredPropertyTypes(); as filteredPropertyTypes) {
       <mat-optgroup label="Property">
-        @if (!isAlreadyDefined(filteredPropertyTypes, output.value) && !getControl('output').errors) {
+        @if (!isAlreadyDefined(filteredPropertyTypes, displayValue()) && displayField().valid()) {
           <mat-option
-            [disabled]="!isLowerCase(output.value)"
-            [value]="!isLowerCase(output.value) ? '' : output.value"
-            (click)="createNewProperty(output.value)"
+            [disabled]="!isLowerCase(displayValue())"
+            [value]="!isLowerCase(displayValue()) ? '' : displayValue()"
+            (click)="createNewProperty(displayValue())"
           >
-            @if (isLowerCase(output.value)) {
+            @if (isLowerCase(displayValue())) {
               <span>
-                + Create new property: <strong>{{ output.value }}</strong>
+                + Create new property: <strong>{{ displayValue() }}</strong>
               </span>
             }
-            @if (!isLowerCase(output.value)) {
+            @if (!isLowerCase(displayValue())) {
               <span>Please provide the name for the new Property in lower case.</span>
             }
           </mat-option>
         }
         @for (output of filteredPropertyTypes; track output) {
-          <mat-option [value]="output.name" (onSelectionChange)="onSelectionChange('output', output)">
+          <mat-option [value]="output.name" (onSelectionChange)="$event.isUserInput && onSelectionChange('output', output)">
             <div class="ellipsis">
               {{ output.name }}
               @if (output.description) {
@@ -64,10 +64,10 @@
       </mat-optgroup>
     }
   </mat-autocomplete>
-  @if (getControl('output')?.errors?.required) {
+  @if (hasError('required')) {
     <mat-error>Please define a output</mat-error>
   }
-  @if (getControl('output')?.errors?.disabled) {
+  @if (hasError('disabled')) {
     <mat-error>No output defined</mat-error>
   }
 </mat-form-field>

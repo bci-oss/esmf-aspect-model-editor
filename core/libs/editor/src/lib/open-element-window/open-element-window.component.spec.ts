@@ -76,6 +76,7 @@ describe('OpenElementWindowComponent', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
 
+    expect(component).toBeTruthy();
     expect(electronSignalsService.call).toHaveBeenCalledWith('openWindow', {
       namespace: 'com.test:1.0.0',
       file: 'test.ttl',

@@ -11,9 +11,9 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, DestroyRef, inject, OnInit, output} from '@angular/core';
+import {Component, DestroyRef, inject, OnInit, output, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {FormsModule} from '@angular/forms';
+import {disabled, form, FormField} from '@angular/forms/signals';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatLabel} from '@angular/material/input';
 import {MatOption, MatSelect} from '@angular/material/select';
@@ -34,10 +34,15 @@ import {DropdownFieldComponent} from '../../dropdown-field.component';
 @Component({
   selector: 'ame-constraint-name-dropdown-field',
   templateUrl: './constraint-name-dropdown-field.component.html',
-  imports: [MatFormFieldModule, MatLabel, MatSelect, FormsModule, MatOption],
+  imports: [MatFormFieldModule, MatLabel, MatSelect, FormField, MatOption],
 })
 export class ConstraintNameDropdownFieldComponent extends DropdownFieldComponent<DefaultConstraint> implements OnInit {
   private destroyRef = inject(DestroyRef);
+  private readonly classModel = signal('');
+
+  readonly classField = form(this.classModel, path =>
+    disabled(path, {when: () => !!this.selectedMetaModelElement && this.loadedFilesService.isElementExtern(this.selectedMetaModelElement)}),
+  );
 
   public listConstraintNames: Array<string>;
   public listConstraints: Map<string, () => NamedElement> = new Map();
@@ -51,11 +56,13 @@ export class ConstraintNameDropdownFieldComponent extends DropdownFieldComponent
       .subscribe(() => {
         this.selectedMetaModelElement = this.metaModelElement;
         this.setMetaModelClassName();
+        this.classModel.set(this.metaModelClassName);
         this.selectedConstraint.emit(this.metaModelClassName);
       });
   }
 
   onConstraintChange(constraint: string) {
+    this.classModel.set(constraint);
     this.setPreviousData();
 
     const createInstanceFunction = this.listConstraints.get(constraint);

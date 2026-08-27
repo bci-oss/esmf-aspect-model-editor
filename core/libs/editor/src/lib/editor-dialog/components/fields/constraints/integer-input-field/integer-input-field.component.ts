@@ -10,9 +10,9 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {FormControl, ReactiveFormsModule, Validators} from '@angular/forms';
+import {disabled, form, FormField, required, validate} from '@angular/forms/signals';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatError, MatInput, MatLabel} from '@angular/material/input';
 import {DefaultFixedPointConstraint} from '@esmf/aspect-model-loader';
@@ -22,9 +22,23 @@ import {InputFieldComponent} from '../../input-field.component';
   selector: 'ame-integer-input-field',
   templateUrl: './integer-input-field.component.html',
   styleUrls: ['../../field.scss'],
-  imports: [MatFormFieldModule, MatLabel, MatError, MatInput, ReactiveFormsModule],
+  imports: [MatFormFieldModule, MatLabel, MatError, MatInput, FormField],
 })
 export class IntegerInputFieldComponent extends InputFieldComponent<DefaultFixedPointConstraint> implements OnInit, OnDestroy {
+  private readonly model = signal<number | null>(null);
+  private unregisterField = () => undefined;
+
+  readonly field = form(this.model, path => {
+    required(path);
+    validate(path, ({value}) => {
+      const integer = value();
+      return integer === null || (Number.isInteger(integer) && integer > 0)
+        ? null
+        : {kind: 'pattern', message: 'Please provide a positive integer'};
+    });
+    disabled(path, {when: () => !!this.metaModelElement && this.loadedFiles.isElementExtern(this.metaModelElement)});
+  });
+
   constructor() {
     super();
     this.resetFormOnDestroy = false;
@@ -41,16 +55,18 @@ export class IntegerInputFieldComponent extends InputFieldComponent<DefaultFixed
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.parentForm().removeControl(this.fieldName);
+    this.unregisterField();
   }
 
   initForm() {
-    this.parentForm().setControl(
-      this.fieldName,
-      new FormControl(
-        {value: this.getCurrentValue(this.fieldName), disabled: this.loadedFiles.isElementExtern(this.metaModelElement)},
-        Validators.required,
-      ),
-    );
+    const currentValue = this.getCurrentValue(this.fieldName);
+    this.model.set(currentValue === '' ? null : Number(currentValue));
+    this.unregisterField = this.signalForm().register(this.fieldName, this.field);
+  }
+
+  hasError(kind: string): boolean {
+    return this.field()
+      .errors()
+      .some(error => error.kind === kind);
   }
 }

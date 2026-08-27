@@ -22,7 +22,6 @@ describe('DocumentComponent', () => {
   let component: DocumentComponent;
   let fixture: ComponentFixture<DocumentComponent>;
   let ipcRenderer: any;
-  let browserService: BrowserService;
 
   beforeEach(async () => {
     ipcRenderer = {
@@ -43,7 +42,6 @@ describe('DocumentComponent', () => {
       ],
     }).compileComponents();
 
-    browserService = TestBed.inject(BrowserService);
     fixture = TestBed.createComponent(DocumentComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

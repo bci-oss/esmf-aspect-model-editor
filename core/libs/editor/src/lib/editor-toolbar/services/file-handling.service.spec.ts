@@ -125,7 +125,7 @@ describe('FileHandlingService', () => {
   });
 
   it('loadModel should validate and render model', async () => {
-    const result = await new Promise(resolve => service.loadModel('valid turtle content').subscribe(resolve));
+    await new Promise(resolve => service.loadModel('valid turtle content').subscribe(resolve));
 
     expect(modelApiService.validate).toHaveBeenCalledWith('valid turtle content');
     expect(modelLoaderService.renderModel).toHaveBeenCalled();

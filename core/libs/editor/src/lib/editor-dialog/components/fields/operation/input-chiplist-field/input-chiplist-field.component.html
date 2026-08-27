@@ -10,10 +10,10 @@
   ~
   ~ SPDX-License-Identifier: MPL-2.0
   -->
-<mat-form-field [floatLabel]="chipControl?.disabled ? 'always' : 'auto'" appearance="fill" subscriptSizing="dynamic">
-  <mat-label for="input">input</mat-label>
-  <mat-chip-grid #chipList [formControl]="chipControl" [errorStateMatcher]="hasErrors()">
-    @for (input of inputValues; track input) {
+<mat-form-field [floatLabel]="searchField().disabled() ? 'always' : 'auto'" appearance="fill" subscriptSizing="dynamic">
+  <mat-label>input</mat-label>
+  <mat-chip-grid #chipList>
+    @for (input of inputValues(); track input) {
       <mat-chip-row [removable]="removable()" (removed)="remove(input)">
         @if (!input.aspectModelUrn.includes(currentRdfModel.getAspectModelUrn())) {
           <span>ext: </span>
@@ -27,12 +27,11 @@
     <input
       class="enumeration-value-input"
       #searchInput
-      [formControl]="searchControl"
+      [formField]="searchField"
       [matAutocomplete]="auto"
       [matChipInputFor]="chipList"
       [matChipInputSeparatorKeyCodes]="separatorKeysCodes()"
       matInput
-      name="inputValues"
       spellcheck="false"
       placeholder="Add value, click option"
       data-cy="inputValues"
@@ -40,26 +39,26 @@
   </mat-chip-grid>
 
   <mat-autocomplete #auto="matAutocomplete">
-    @if (filteredPropertyTypes$ | async; as filteredPropertyTypes) {
+    @if (filteredPropertyTypes(); as filteredPropertyTypes) {
       <mat-optgroup label="Property">
-        @if (!isAlreadyDefined(filteredPropertyTypes, searchControl.value) && !searchControl.errors) {
+        @if (!isAlreadyDefined(filteredPropertyTypes, searchValue()) && searchField().valid()) {
           <mat-option
-            [disabled]="!isLowerCase(searchControl.value)"
-            [value]="!isLowerCase(searchControl.value) ? '' : searchControl.value"
-            (click)="createNewProperty(searchControl.value)"
+            [disabled]="!isLowerCase(searchValue())"
+            [value]="!isLowerCase(searchValue()) ? '' : searchValue()"
+            (click)="createNewProperty(searchValue())"
           >
-            @if (isLowerCase(searchControl.value)) {
+            @if (isLowerCase(searchValue())) {
               <span>
-                + Create new property: <strong>{{ searchControl.value }}</strong>
+                + Create new property: <strong>{{ searchValue() }}</strong>
               </span>
             }
-            @if (!isLowerCase(searchControl.value)) {
+            @if (!isLowerCase(searchValue())) {
               <span>Please provide the name for the new Property in lower case.</span>
             }
           </mat-option>
         }
         @for (filteredInput of filteredPropertyTypes; track filteredInput) {
-          <mat-option [value]="filteredInput.name" (onSelectionChange)="onSelectionChange('input', filteredInput)">
+          <mat-option [value]="filteredInput.name" (onSelectionChange)="$event.isUserInput && onSelectionChange('input', filteredInput)">
             <div class="ellipsis">
               {{ filteredInput.name }}
               @if (filteredInput.description) {
@@ -77,10 +76,10 @@
     }
   </mat-autocomplete>
 
-  @if (searchControl?.errors?.checkShapeName) {
+  @if (hasError('checkShapeName')) {
     <mat-error>Please select a different name as this one is of different type</mat-error>
   }
-  @if (searchControl?.errors?.checkShapeNameExtRef) {
+  @if (hasError('checkShapeNameExtRef')) {
     <mat-error>Please select a different name as this one is of different type in the same namespace</mat-error>
   }
 </mat-form-field>

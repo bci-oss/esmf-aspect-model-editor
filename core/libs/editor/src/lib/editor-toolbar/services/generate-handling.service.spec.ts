@@ -34,8 +34,6 @@ describe('GenerateHandlingService', () => {
   let service: GenerateHandlingService;
   let dialog: MatDialog;
   let editorService: EditorService;
-  let fileHandlingService: FileHandlingService;
-  let loadedFilesService: LoadedFilesService;
 
   const aspect = new DefaultAspect({
     aspectModelUrn: 'urn:test:1.0.0#MyAspect',
@@ -89,8 +87,6 @@ describe('GenerateHandlingService', () => {
     service = TestBed.inject(GenerateHandlingService);
     dialog = TestBed.inject(MatDialog);
     editorService = TestBed.inject(EditorService);
-    fileHandlingService = TestBed.inject(FileHandlingService);
-    loadedFilesService = TestBed.inject(LoadedFilesService);
   });
 
   it('openGenerationOpenApiSpec should open dialog', () => {

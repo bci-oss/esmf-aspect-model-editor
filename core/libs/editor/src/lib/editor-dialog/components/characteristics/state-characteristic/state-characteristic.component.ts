@@ -11,20 +11,20 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 import {Component, input} from '@angular/core';
-import {FormGroup} from '@angular/forms';
 import {DefaultEntity, DefaultState} from '@esmf/aspect-model-loader';
+import {EditorSignalFormContext} from '../../../forms/editor-signal-form-context';
 import {PreviousFormDataSnapshot} from '../../../interfaces';
 import {DefaultValueEntityInputFieldComponent, DefaultValueInputFieldComponent, ValuesInputFieldComponent} from '../../fields';
-import {ModelElementEditorComponent} from '../../model-element-editor-component';
 
 @Component({
   selector: 'ame-state-characteristic',
   templateUrl: './state-characteristic.component.html',
   imports: [ValuesInputFieldComponent, DefaultValueEntityInputFieldComponent, DefaultValueInputFieldComponent],
 })
-export class StateCharacteristicComponent extends ModelElementEditorComponent<DefaultState> {
+export class StateCharacteristicComponent {
   readonly previousData = input<PreviousFormDataSnapshot>({});
-  readonly parentForm = input<FormGroup>();
+  readonly signalForm = input.required<EditorSignalFormContext>();
+  public metaModelElement: DefaultState;
 
   get hasEntityType(): boolean {
     return this.metaModelElement?.dataType instanceof DefaultEntity;

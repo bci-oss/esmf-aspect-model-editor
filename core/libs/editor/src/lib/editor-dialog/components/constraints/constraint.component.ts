@@ -12,9 +12,9 @@
  */
 import {AfterViewInit, ChangeDetectorRef, Component, inject, input, OnDestroy, signal} from '@angular/core';
 import {toSignal} from '@angular/core/rxjs-interop';
-import {FormGroup} from '@angular/forms';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../editor-model.service';
+import {EditorFormModel, EditorSignalFormContext} from '../../forms/editor-signal-form-context';
 import {PreviousFormDataSnapshot} from '../../interfaces';
 import {ElementListComponent} from '../element-list';
 import {
@@ -57,7 +57,7 @@ import {
   ],
 })
 export class ConstraintComponent implements OnDestroy, AfterViewInit {
-  readonly parentForm = input<FormGroup>();
+  readonly signalForm = input(new EditorSignalFormContext<EditorFormModel>({changedMetaModel: null}));
 
   private changeDetector = inject(ChangeDetectorRef);
 

@@ -18,41 +18,40 @@
     <mat-icon>close</mat-icon>
   </button>
 
-  <form (ngSubmit)="onSave()">
+  <form (submit)="$event.preventDefault(); onSave()">
     <mat-dialog-content>
       <mat-form-field class="entity-form-field" appearance="fill">
         <mat-label for="entityValueName">{{ t('entityValue.name') }}</mat-label>
         <input
-          [formControl]="entityValueName"
-          [ngClass]="entityValueName.hasError('checkShapeName') || entityValueName.hasError('whitespace') ? 'ng-invalid-error' : ''"
+          [formField]="entityValueName"
+          [ngClass]="hasNameError('checkShapeName') || hasNameError('whitespace') ? 'ng-invalid-error' : ''"
           matInput
           type="text"
-          name="entityValueName"
           data-cy="entityValueName"
         />
-        @if (entityValueName.hasError('required')) {
+        @if (hasNameError('required')) {
           <mat-error class="entity-form-field__error">{{ t('editorCanvas.shapeSetting.field.name.pleaseDefine') }}</mat-error>
         }
-        @if (entityValueName.hasError('checkShapeName')) {
+        @if (hasNameError('checkShapeName') || hasNameError('nameAlreadyExists')) {
           <mat-error class="entity-form-field__error">
             {{ t('editorCanvas.shapeSetting.field.name.pleaseSelectDifferentNameNamespace') }}
           </mat-error>
         }
-        @if (entityValueName.hasError('whitespace')) {
+        @if (hasNameError('whitespace')) {
           <mat-error class="entity-form-field__error">
             {{ t('editorCanvas.shapeSetting.field.name.noContainWhitespaces') }}
           </mat-error>
         }
       </mat-form-field>
 
-      <ame-entity-instance-modal-table [form]="form" [entity]="entity()" [entityValue]="entityValue()" [enumeration]="enumeration()" />
+      <ame-entity-instance-modal-table [entity]="entity()" [entityValue]="entityValue()" [enumeration]="enumeration()" />
     </mat-dialog-content>
 
     <mat-dialog-actions class="sticky-dialog-actions" align="end">
       <button (click)="onClose()" type="button" mat-raised-button data-cy="entityCancelButton">
         {{ t('editorCanvas.shapeSetting.propertiesModal.cancel') }}
       </button>
-      <button [disabled]="form.invalid" mat-raised-button color="primary" type="submit" data-cy="entitySaveButton">
+      <button [disabled]="!valid()" mat-raised-button color="primary" type="submit" data-cy="entitySaveButton">
         {{ t('editorCanvas.shapeSetting.propertiesModal.save') }}
       </button>
     </mat-dialog-actions>

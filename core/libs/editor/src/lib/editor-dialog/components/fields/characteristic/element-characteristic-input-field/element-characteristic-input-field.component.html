@@ -11,53 +11,40 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-<mat-form-field
-  [floatLabel]="getControl('elementCharacteristic')?.disabled ? 'always' : 'auto'"
-  appearance="fill"
-  subscriptSizing="dynamic"
->
-  <mat-label for="elementCharacteristic">elementCharacteristic</mat-label>
-  <input
-    #elementCharacteristic
-    [matAutocomplete]="auto"
-    [formControl]="getControl('elementCharacteristicDisplay')"
-    matInput
-    name="elementCharacteristic"
-    data-cy="elementCharacteristic"
-  />
-  @if (getControl('elementCharacteristicDisplay').disabled) {
+<mat-form-field [floatLabel]="characteristicField().disabled() ? 'always' : 'auto'" appearance="fill" subscriptSizing="dynamic">
+  <mat-label>elementCharacteristic</mat-label>
+  <input #elementCharacteristic [matAutocomplete]="auto" [formField]="displayField" matInput data-cy="elementCharacteristic" />
+  @if (displayField().disabled()) {
     <mat-hint>To enable this field, remove datatype.</mat-hint>
   }
-  @if (!frozen && elementCharacteristicDisplayControl?.disabled && loadedFiles.isElementInCurrentFile(metaModelElement)) {
+  @if (!frozen() && displayField().disabled() && loadedFiles.isElementInCurrentFile(metaModelElement)) {
     <button (click)="unlockElementCharacteristic()" data-cy="clear-element-characteristic-button" matSuffix mat-icon-button tabindex="-1">
       <mat-icon>close</mat-icon>
     </button>
   }
 
-  @if (getControl('elementCharacteristicDisplay')?.errors?.checkShapeName) {
+  @if (hasError('checkShapeName')) {
     <mat-error>Please select a different name as this one is of different type</mat-error>
   }
-  @if (getControl('elementCharacteristicDisplay')?.errors?.checkShapeNameExtRef) {
+  @if (hasError('checkShapeNameExtRef')) {
     <mat-error>Please select a different name as this one is of different type in the same namespace</mat-error>
   }
 
   <mat-autocomplete class="element-characteristic" #auto="matAutocomplete">
-    @if (filteredCharacteristicTypes$ | async; as filteredCharacteristicTypes) {
+    @if (filteredCharacteristicTypes(); as filteredCharacteristicTypes) {
       <div label="Characteristic">
-        @if (
-          !isAlreadyDefined(filteredCharacteristicTypes, elementCharacteristic.value) && !getControl('elementCharacteristicDisplay')?.errors
-        ) {
+        @if (!isAlreadyDefined(filteredCharacteristicTypes, displayValue()) && displayField().errors().length === 0) {
           <mat-option
-            [disabled]="!isUpperCase(elementCharacteristic.value)"
-            [value]="!isUpperCase(elementCharacteristic.value) ? '' : elementCharacteristic.value"
-            (click)="createNewCharacteristic(elementCharacteristic.value)"
+            [disabled]="!isUpperCase(displayValue())"
+            [value]="!isUpperCase(displayValue()) ? '' : displayValue()"
+            (click)="createNewCharacteristic(displayValue())"
           >
-            @if (isUpperCase(elementCharacteristic.value)) {
+            @if (isUpperCase(displayValue())) {
               <span>
-                + Create new characteristic: <strong>{{ elementCharacteristic.value }}</strong>
+                + Create new characteristic: <strong>{{ displayValue() }}</strong>
               </span>
             }
-            @if (!isUpperCase(elementCharacteristic.value)) {
+            @if (!isUpperCase(displayValue())) {
               <span>Please provide the name for the new Characteristic in upper case.</span>
             }
           </mat-option>
@@ -65,7 +52,7 @@
         @for (elementCharacteristic of filteredCharacteristicTypes; track elementCharacteristic.name) {
           <mat-option
             [value]="elementCharacteristic.name"
-            (onSelectionChange)="onSelectionChange('elementCharacteristicDisplay', elementCharacteristic)"
+            (onSelectionChange)="$event.isUserInput && onSelectionChange('elementCharacteristicDisplay', elementCharacteristic)"
           >
             <div class="ellipsis">
               <span>{{ elementCharacteristic.name }}</span>

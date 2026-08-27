@@ -14,11 +14,10 @@
 import {ModelApiService} from '@ame/api';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {TestBed} from '@angular/core/testing';
-import {FormControl} from '@angular/forms';
 import {DefaultEntity, DefaultProperty, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
-import {of} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {EditorDialogValidators} from './editor-dialog-validators';
 
@@ -45,112 +44,75 @@ describe('EditorDialogValidators', () => {
     loadedFilesService = TestBed.inject(LoadedFilesService);
   });
 
-  describe('Static validators', () => {
-    it('namingLowerCase should validate camelCase / lowercase naming', () => {
-      expect(EditorDialogValidators.namingLowerCase(new FormControl(''))).toBeNull();
-      expect(EditorDialogValidators.namingLowerCase(new FormControl('camelCase'))).toBeNull();
-      expect(EditorDialogValidators.namingLowerCase(new FormControl('prop1'))).toBeNull();
-      expect(EditorDialogValidators.namingLowerCase(new FormControl('PascalCase'))).toEqual({namingLowerCase: true});
-      expect(EditorDialogValidators.namingLowerCase(new FormControl('1invalid'))).toEqual({namingLowerCase: true});
-    });
-
-    it('namingUpperCase should validate PascalCase naming', () => {
-      expect(EditorDialogValidators.namingUpperCase(new FormControl(''))).toBeNull();
-      expect(EditorDialogValidators.namingUpperCase(new FormControl('PascalCase'))).toBeNull();
-      expect(EditorDialogValidators.namingUpperCase(new FormControl('Entity1'))).toBeNull();
-      expect(EditorDialogValidators.namingUpperCase(new FormControl('camelCase'))).toEqual({namingUpperCase: true});
-      expect(EditorDialogValidators.namingUpperCase(new FormControl('1Invalid'))).toEqual({namingUpperCase: true});
-    });
-
-    it('noWhiteSpace should reject whitespace', () => {
-      expect(EditorDialogValidators.noWhiteSpace(new FormControl(''))).toBeNull();
-      expect(EditorDialogValidators.noWhiteSpace(new FormControl('noSpace'))).toBeNull();
-      expect(EditorDialogValidators.noWhiteSpace(new FormControl('has space'))).toEqual({whitespace: true});
-    });
-
-    it('requiredObject should check for empty value', () => {
-      expect(EditorDialogValidators.requiredObject(new FormControl(null))).toEqual({required: true});
-      expect(EditorDialogValidators.requiredObject(new FormControl('something'))).toBeNull();
-    });
-
-    it('regexValidator should validate regex syntax', () => {
-      expect(EditorDialogValidators.regexValidator(new FormControl(''))).toBeNull();
-      expect(EditorDialogValidators.regexValidator(new FormControl('^[a-z]+$'))).toBeNull();
-      expect(EditorDialogValidators.regexValidator(new FormControl('[invalid('))).toBeDefined();
-    });
-
-    it('baseUrl should validate URL format', () => {
-      expect(EditorDialogValidators.baseUrl(new FormControl('https://example.com'))).toBeNull();
-      expect(EditorDialogValidators.baseUrl(new FormControl('http://example.com:8080'))).toBeNull();
-      expect(EditorDialogValidators.baseUrl(new FormControl('not-a-url'))).toEqual({invalidUrl: true});
-    });
-
-    it('disabled validator should check control status', async () => {
-      const enabledControl = new FormControl('test');
-      const disabledControl = new FormControl({value: 'test', disabled: true});
-
-      const enabledResult = await new Promise(resolve => EditorDialogValidators.disabled(enabledControl).subscribe(resolve));
-      const disabledResult = await new Promise(resolve => EditorDialogValidators.disabled(disabledControl).subscribe(resolve));
-
-      expect(enabledResult).toEqual({disabled: true});
-      expect(disabledResult).toBeNull();
-    });
-
-    it('seeURI should validate comma separated URLs and URNs', () => {
-      expect(EditorDialogValidators.seeURI(new FormControl(''))).toBeNull();
-      expect(EditorDialogValidators.seeURI(new FormControl('https://example.com/spec, urn:samm:com.example:1.0.0#Test'))).toBeNull();
-      expect(EditorDialogValidators.seeURI(new FormControl('invalid-uri-here'))).toEqual({
-        uri: {invalidUris: ['invalid-uri-here'], elementsCount: 1},
-      });
+  it('validates comma-separated URL and URN values without an AbstractControl', () => {
+    expect(EditorDialogValidators.seeURIValue('')).toBeNull();
+    expect(EditorDialogValidators.seeURIValue('https://example.com/spec, urn:samm:com.example:1.0.0#Test')).toBeNull();
+    expect(EditorDialogValidators.seeURIValue('invalid-uri-here')).toEqual({
+      uri: {invalidUris: ['invalid-uri-here'], elementsCount: 1},
     });
   });
 
-  describe('Instance validators', () => {
-    it('duplicateName should return null if value is empty or same as current element', async () => {
-      const element = new DefaultProperty({aspectModelUrn: 'urn:test:1.0.0#myProp', name: 'myProp', metaModelVersion: '2.0.0'});
-      const validator = validators.duplicateName(element);
+  it('returns null for an empty value or the unchanged element name', async () => {
+    const element = property('myProp');
 
-      const emptyResult = await new Promise(resolve => (validator(new FormControl('')) as any).subscribe(resolve));
-      const sameNameResult = await new Promise(resolve => (validator(new FormControl('myProp')) as any).subscribe(resolve));
+    expect(await resultOf(validators.duplicateNameValue('', element))).toBeNull();
+    expect(await resultOf(validators.duplicateNameValue('myProp', element))).toBeNull();
+    expect(modelApiService.checkElementExists).not.toHaveBeenCalled();
+  });
 
-      expect(emptyResult).toBeNull();
-      expect(sameNameResult).toBeNull();
-    });
+  it('returns an external-reference error when the element exists in the workspace', async () => {
+    const element = property('myProp');
+    vi.spyOn(modelApiService, 'checkElementExists').mockReturnValue(of(true));
 
-    it('duplicateName should return error when element exists in workspace', async () => {
-      const element = new DefaultProperty({aspectModelUrn: 'urn:test:1.0.0#myProp', name: 'myProp', metaModelVersion: '2.0.0'});
-      vi.spyOn(modelApiService, 'checkElementExists').mockReturnValue(of(true));
+    const result = await resultOf(validators.duplicateNameValue('otherProp', element));
 
-      const validator = validators.duplicateName(element);
-      const result = await new Promise(resolve => (validator(new FormControl('otherProp')) as any).subscribe(resolve));
+    expect(result).toEqual({checkShapeNameExtRef: true, foundModel: true});
+  });
 
-      expect(result).toEqual({checkShapeNameExtRef: true, foundModel: true});
-    });
+  it('returns the cached duplicate when it does not exist in the workspace', async () => {
+    const element = property('myProp');
+    const cached = property('cachedProp');
+    loadedFilesService.currentLoadedFile.cachedFile.resolveInstance(cached);
 
-    it('duplicateName should check cache when not in workspace', async () => {
-      const element = new DefaultProperty({aspectModelUrn: 'urn:test:1.0.0#myProp', name: 'myProp', metaModelVersion: '2.0.0'});
-      const cached = new DefaultProperty({aspectModelUrn: 'urn:test:1.0.0#cachedProp', name: 'cachedProp', metaModelVersion: '2.0.0'});
-      loadedFilesService.currentLoadedFile.cachedFile.resolveInstance(cached);
+    const result = await resultOf(validators.duplicateNameValue('cachedProp', element));
 
-      vi.spyOn(modelApiService, 'checkElementExists').mockReturnValue(of(false));
+    expect(result).toEqual({checkShapeName: true, foundModel: cached});
+  });
 
-      const validator = validators.duplicateName(element);
-      const result = await new Promise(resolve => (validator(new FormControl('cachedProp')) as any).subscribe(resolve));
+  it('can force checking the unchanged name', async () => {
+    const element = property('myProp');
+    loadedFilesService.currentLoadedFile.cachedFile.resolveInstance(element);
 
-      expect(result).toEqual({checkShapeName: true, foundModel: cached});
-    });
+    const result = await resultOf(validators.duplicateNameValue('myProp', element, false));
 
-    it('duplicateNameWithDifferentType should allow duplicate name if of the specified modelType', async () => {
-      const element = new DefaultProperty({aspectModelUrn: 'urn:test:1.0.0#myEntity', name: 'myEntity', metaModelVersion: '2.0.0'});
-      const entity = new DefaultEntity({aspectModelUrn: 'urn:test:1.0.0#myEntity', name: 'myEntity', metaModelVersion: '2.0.0'});
-      loadedFilesService.currentLoadedFile.cachedFile.resolveInstance(entity);
+    expect(result).toEqual({checkShapeName: true, foundModel: element});
+  });
 
-      vi.spyOn(modelApiService, 'checkElementExists').mockReturnValue(of(false));
+  it('allows a cached duplicate of the requested type', async () => {
+    const element = property('property');
+    const entity = new DefaultEntity({aspectModelUrn: 'urn:test:1.0.0#Entity', name: 'Entity', metaModelVersion: '2.0.0'});
+    loadedFilesService.currentLoadedFile.cachedFile.resolveInstance(entity);
 
-      const validator = validators.duplicateNameWithDifferentType(element, DefaultEntity);
-      const result = await new Promise(resolve => (validator(new FormControl('myEntity')) as any).subscribe(resolve));
+    const result = await resultOf(validators.duplicateNameWithDifferentTypeValue('Entity', element, DefaultEntity));
 
-      expect(result).toBeNull();
-    });
+    expect(result).toBeNull();
+  });
+
+  it('rejects a cached duplicate of another type', async () => {
+    const element = new DefaultEntity({aspectModelUrn: 'urn:test:1.0.0#Entity', name: 'Entity', metaModelVersion: '2.0.0'});
+    const duplicate = property('duplicate');
+    loadedFilesService.currentLoadedFile.cachedFile.resolveInstance(duplicate);
+
+    const result = await resultOf(validators.duplicateNameWithDifferentTypeValue('duplicate', element, DefaultEntity));
+
+    expect(result).toEqual({checkShapeName: true, foundModel: duplicate});
   });
 });
+
+function property(name: string): DefaultProperty {
+  return new DefaultProperty({aspectModelUrn: `urn:test:1.0.0#${name}`, name, metaModelVersion: '2.0.0'});
+}
+
+function resultOf<T>(observable: Observable<T>): Promise<T> {
+  return new Promise(resolve => observable.subscribe(resolve));
+}

@@ -16,7 +16,6 @@ import {MaxGraphService} from '@ame/max-graph';
 import {RdfService} from '@ame/rdf/services';
 import {NotificationsService, SearchService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DefaultAspect, DefaultEntity, DefaultState, ModelElementCache, RdfModel, Value} from '@esmf/aspect-model-loader';
 import {TranslocoTestingModule} from '@jsverse/transloco';
@@ -25,6 +24,7 @@ import {MockProvider} from 'ng-mocks';
 import {of} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {EditorModelService} from '../../../editor-model.service';
+import {EditorSignalFormContext} from '../../../forms/editor-signal-form-context';
 import {EditorDialogValidators} from '../../../validators';
 import {StateCharacteristicComponent} from './state-characteristic.component';
 
@@ -55,7 +55,6 @@ describe('StateCharacteristicComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         StateCharacteristicComponent,
-        ReactiveFormsModule,
         BrowserAnimationsModule,
         TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
       ],
@@ -79,12 +78,25 @@ describe('StateCharacteristicComponent', () => {
     fixture = TestBed.createComponent(StateCharacteristicComponent);
     component = fixture.componentInstance;
     component.metaModelElement = state;
-    fixture.componentRef.setInput('parentForm', new FormGroup({}));
+    fixture.componentRef.setInput(
+      'signalForm',
+      TestBed.runInInjectionContext(() => EditorSignalFormContext.create()),
+    );
     fixture.detectChanges();
   });
 
   it('should create and detect entity dataType', () => {
     expect(component).toBeTruthy();
     expect(component.hasEntityType).toBe(true);
+    expect(component.signalForm().value().defaultValue).toBe('');
+  });
+
+  it('should select the scalar default-value branch for non-entity data types', () => {
+    const entityType = state.dataType;
+    state.dataType = null;
+
+    expect(component.hasEntityType).toBe(false);
+
+    state.dataType = entityType;
   });
 });

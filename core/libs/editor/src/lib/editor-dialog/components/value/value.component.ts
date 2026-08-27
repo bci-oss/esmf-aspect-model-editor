@@ -13,21 +13,19 @@
 
 import {Component, inject, input} from '@angular/core';
 import {toSignal} from '@angular/core/rxjs-interop';
-import {FormGroup} from '@angular/forms';
-import {DefaultValue} from '@esmf/aspect-model-loader';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../editor-model.service';
+import {EditorSignalFormContext} from '../../forms/editor-signal-form-context';
 import {ElementListComponent} from '../element-list';
 import {BaseInputComponent, ValueInputFieldComponent} from '../fields';
-import {ModelElementEditorComponent} from '../model-element-editor-component';
 
 @Component({
   selector: 'ame-value',
   templateUrl: './value.component.html',
   imports: [BaseInputComponent, ElementListComponent, TranslocoDirective, ValueInputFieldComponent],
 })
-export class ValueComponent extends ModelElementEditorComponent<DefaultValue> {
-  readonly parentForm = input<FormGroup>();
+export class ValueComponent {
+  readonly signalForm = input(EditorSignalFormContext.create());
   public metaModelDialogService = inject(EditorModelService);
   public element = toSignal(this.metaModelDialogService.getMetaModelElement());
 }

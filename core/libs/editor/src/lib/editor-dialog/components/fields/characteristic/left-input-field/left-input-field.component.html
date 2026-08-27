@@ -12,36 +12,36 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-  <mat-form-field [floatLabel]="getControl('left')?.disabled ? 'always' : 'auto'" appearance="fill" subscriptSizing="dynamic">
-    <mat-label for="left">left</mat-label>
-    <input #left [matAutocomplete]="auto" [formControl]="getControl('left')" matInput name="left" data-cy="left" required />
-    @if (leftControl?.disabled && !loadedFiles.isElementExtern(metaModelElement)) {
+  <mat-form-field [floatLabel]="displayField().disabled() ? 'always' : 'auto'" appearance="fill" subscriptSizing="dynamic">
+    <mat-label>left</mat-label>
+    <input #left [matAutocomplete]="auto" [formField]="displayField" matInput data-cy="left" required />
+    @if (displayField().disabled() && !loadedFiles.isElementExtern(metaModelElement)) {
       <button (click)="unlockLeft()" data-cy="clear-left-button" matSuffix mat-icon-button tabindex="-1">
         <mat-icon>close</mat-icon>
       </button>
     }
 
     <mat-autocomplete class="left" #auto="matAutocomplete">
-      @if (filteredCharacteristicTypes$ | async; as filteredCharacteristicTypes) {
+      @if (filteredCharacteristicTypes(); as filteredCharacteristicTypes) {
         <div>
-          @if (!isAlreadyDefined(filteredCharacteristicTypes, left.value) && !getControl('left')?.errors?.foundModel) {
+          @if (!isAlreadyDefined(filteredCharacteristicTypes, displayValue()) && !hasError('foundModel')) {
             <mat-option
-              [disabled]="!isUpperCase(left.value)"
-              [value]="!isUpperCase(left.value) ? '' : left.value"
-              (click)="createNewCharacteristic(left.value)"
+              [disabled]="!isUpperCase(displayValue())"
+              [value]="!isUpperCase(displayValue()) ? '' : displayValue()"
+              (click)="createNewCharacteristic(displayValue())"
             >
-              @if (isUpperCase(left.value)) {
+              @if (isUpperCase(displayValue())) {
                 <span>
-                  + Create new characteristic: <strong>{{ left.value }}</strong>
+                  + Create new characteristic: <strong>{{ displayValue() }}</strong>
                 </span>
               }
-              @if (!isUpperCase(left.value)) {
+              @if (!isUpperCase(displayValue())) {
                 <span>Characteristic should be upper case</span>
               }
             </mat-option>
           }
-          @for (left of filteredCharacteristicTypes; track left.aspectModelUrn) {
-            <mat-option [value]="left.name" (onSelectionChange)="onSelectionChange('left', left)">
+          @for (left of filteredCharacteristicTypes; track left.urn) {
+            <mat-option [value]="left.name" (onSelectionChange)="$event.isUserInput && onSelectionChange('left', left)">
               <div class="result">
                 <div class="ellipsis">
                   {{ left.name }}
@@ -60,15 +60,11 @@
         </div>
       }
     </mat-autocomplete>
-    @if (getControl('left')?.errors?.required) {
+    @if (hasError('required')) {
       <mat-error>Please define a left characteristic</mat-error>
     }
 
-    @if (getControl('left')?.errors?.disabled) {
-      <mat-error>Please select a left characteristic</mat-error>
-    }
-
-    @if (getControl('left')?.errors?.checkShapeNameExtRef) {
+    @if (hasError('checkShapeNameExtRef')) {
       <mat-error>{{ t('editorCanvas.shapeSetting.field.name.alreadyDefinedInSameNamespace') }}</mat-error>
     }
   </mat-form-field>

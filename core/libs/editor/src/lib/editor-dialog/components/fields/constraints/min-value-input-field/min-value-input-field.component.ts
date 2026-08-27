@@ -15,7 +15,7 @@ import {RdfModelUtil} from '@ame/rdf/utils';
 import {DataTypeService} from '@ame/shared';
 import {Component, inject, OnDestroy, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {FormControl, ReactiveFormsModule} from '@angular/forms';
+import {disabled, form, FormField} from '@angular/forms/signals';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput, MatLabel} from '@angular/material/input';
 import {DefaultRangeConstraint, DefaultTrait, NamedElement, Type} from '@esmf/aspect-model-loader';
@@ -24,10 +24,16 @@ import {InputFieldComponent} from '../../input-field.component';
 @Component({
   selector: 'ame-min-value-input-field',
   templateUrl: './min-value-input-field.component.html',
-  imports: [MatFormFieldModule, MatLabel, ReactiveFormsModule, MatInput],
+  imports: [MatFormFieldModule, MatLabel, FormField, MatInput],
 })
 export class MinValueInputFieldComponent extends InputFieldComponent<DefaultRangeConstraint> implements OnInit, OnDestroy {
   private dataTypeService = inject(DataTypeService);
+  private readonly model = signal('');
+  private unregisterField = () => undefined;
+
+  readonly field = form(this.model, path =>
+    disabled(path, {when: () => !!this.metaModelElement && this.loadedFiles.isElementExtern(this.metaModelElement)}),
+  );
 
   public rangeConstraintDataType = signal<Type>(null);
 
@@ -54,8 +60,8 @@ export class MinValueInputFieldComponent extends InputFieldComponent<DefaultRang
   }
 
   ngOnDestroy() {
+    this.unregisterField();
     super.ngOnDestroy();
-    this.parentForm().removeControl(this.fieldName);
   }
 
   getPlaceholder(rangeValueDataType: string): string {
@@ -64,16 +70,11 @@ export class MinValueInputFieldComponent extends InputFieldComponent<DefaultRang
   }
 
   initForm() {
-    this.parentForm().setControl(
-      this.fieldName,
-      new FormControl({
-        value: this.getCurrentValue(this.fieldName),
-        disabled: this.loadedFiles.isElementExtern(this.metaModelElement),
-      }),
-    );
+    this.model.set(this.getCurrentValue(this.fieldName));
+    this.unregisterField = this.signalForm().register(this.fieldName, this.field);
   }
 
-  getValueWithoutUrnDefinition(value: any) {
+  getValueWithoutUrnDefinition(value: string) {
     return RdfModelUtil.getValueWithoutUrnDefinition(value);
   }
 

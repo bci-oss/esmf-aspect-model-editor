@@ -11,8 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, inject, OnInit} from '@angular/core';
-import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {Component, inject, OnInit, signal} from '@angular/core';
+import {applyEach, form, required} from '@angular/forms/signals';
 import {MatButton} from '@angular/material/button';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {
@@ -28,7 +28,14 @@ import {
   MatTable,
   MatTableDataSource,
 } from '@angular/material/table';
+import {DefaultProperty} from '@esmf/aspect-model-loader';
 import {StructuredValuePropertyFieldComponent} from '../structured-value-property-field/structured-value-property-field.component';
+
+interface StructuredValuePropertyRow {
+  key: string;
+  regex: string;
+  property: DefaultProperty | null;
+}
 
 @Component({
   selector: 'ame-structured-value-properties',
@@ -54,20 +61,20 @@ export class StructuredValuePropertiesComponent implements OnInit {
   private dialogRef = inject(MatDialogRef<StructuredValuePropertiesComponent>);
 
   public readonly displayedColumns = ['regex', 'property'];
-  public dataSource: MatTableDataSource<any>;
-  public form = new FormGroup({});
+  public dataSource: MatTableDataSource<StructuredValuePropertyRow>;
+  public propertiesModel = signal<StructuredValuePropertyRow[]>([]);
+  public propertiesForm = form(this.propertiesModel, path => {
+    applyEach(path, row => required(row.property));
+  });
 
   ngOnInit() {
-    this.dataSource = new MatTableDataSource(
-      this.data.groups.map(group => ({data: group, regex: group.text, property: group.property || ''})),
-    );
-    for (const group of this.data.groups || []) {
-      this.form.addControl(this.getKey(group), new FormControl(group.property, [Validators.required]));
-    }
-  }
-
-  getControl(name: string): FormControl {
-    return this.form.controls[name] as FormControl;
+    const rows = this.data.groups.map(group => ({
+      key: this.getKey(group),
+      regex: group.text,
+      property: group.property || null,
+    }));
+    this.propertiesModel.set(rows);
+    this.dataSource = new MatTableDataSource(rows);
   }
 
   getKey(group) {
@@ -75,8 +82,14 @@ export class StructuredValuePropertiesComponent implements OnInit {
   }
 
   closeModal(save?: boolean) {
-    if (this.form.valid || !save) {
-      this.dialogRef.close(save ? this.form.value : null);
+    if (!save) {
+      this.dialogRef.close(null);
+      return;
+    }
+
+    if (this.propertiesForm().valid()) {
+      const result = Object.fromEntries(this.propertiesModel().map(row => [row.key, row.property]));
+      this.dialogRef.close(result);
     }
   }
 }

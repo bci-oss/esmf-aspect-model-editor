@@ -17,7 +17,6 @@ import {MaxGraphService} from '@ame/max-graph';
 import {RdfService} from '@ame/rdf/services';
 import {NotificationsService, SearchService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DefaultAspect, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {TranslocoTestingModule} from '@jsverse/transloco';
@@ -32,7 +31,6 @@ import {AspectComponent} from './aspect.component';
 describe('AspectComponent', () => {
   let component: AspectComponent;
   let fixture: ComponentFixture<AspectComponent>;
-  let editorModelService: EditorModelService;
 
   const aspect = new DefaultAspect({
     aspectModelUrn: 'urn:test:1.0.0#Aspect',
@@ -44,7 +42,6 @@ describe('AspectComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         AspectComponent,
-        ReactiveFormsModule,
         BrowserAnimationsModule,
         TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
       ],
@@ -68,14 +65,20 @@ describe('AspectComponent', () => {
       ],
     }).compileComponents();
 
-    editorModelService = TestBed.inject(EditorModelService);
     fixture = TestBed.createComponent(AspectComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('parentForm', new FormGroup({}));
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should write overwritten properties to the Signal Form model', () => {
+    const properties = {} as Parameters<AspectComponent['overwriteProperties']>[0];
+
+    component.overwriteProperties(properties);
+
+    expect(component.signalForm().value().editedProperties).toEqual(properties);
   });
 });

@@ -16,15 +16,15 @@ import {ModelService} from '@ame/rdf/services';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {Directive, inject, input, output} from '@angular/core';
-import {FormGroup} from '@angular/forms';
 import {DefaultCharacteristic, DefaultConstraint, NamedElement} from '@esmf/aspect-model-loader';
 import {tap} from 'rxjs/operators';
 import {EditorModelService} from '../../editor-model.service';
+import {EditorSignalFormContext} from '../../forms/editor-signal-form-context';
 import {PreviousFormDataSnapshot} from '../../interfaces';
 
 @Directive()
 export abstract class DropdownFieldComponent<T extends DefaultCharacteristic | DefaultConstraint> {
-  readonly parentForm = input<FormGroup>();
+  readonly signalForm = input.required<EditorSignalFormContext>();
   readonly previousDataSnapshot = input<PreviousFormDataSnapshot>({});
 
   public editorModelService = inject(EditorModelService);
@@ -48,24 +48,25 @@ export abstract class DropdownFieldComponent<T extends DefaultCharacteristic | D
       return;
     }
 
+    const formValue = this.signalForm().value();
     this._previousData = {
       ...this.previousDataSnapshot(),
       ...this._previousData,
-      ...(this.parentForm().value || {}),
+      ...formValue,
       value: {
         ...(this.previousDataSnapshot().value || {}),
         ...(this._previousData.value || {}),
-        [this.metaModelElement.className]: this.parentForm().value?.value || '',
+        [this.metaModelElement.className]: formValue.value || '',
       },
       minValue: {
         ...(this.previousDataSnapshot().minValue || {}),
         ...(this._previousData.minValue || {}),
-        [this.metaModelElement.className]: this.parentForm().value?.minValue || '',
+        [this.metaModelElement.className]: formValue.minValue || '',
       },
       maxValue: {
         ...(this.previousDataSnapshot().maxValue || {}),
         ...(this._previousData.maxValue || {}),
-        [this.metaModelElement.className]: this.parentForm().value?.maxValue || '',
+        [this.metaModelElement.className]: formValue.maxValue || '',
       },
     };
 
@@ -107,6 +108,6 @@ export abstract class DropdownFieldComponent<T extends DefaultCharacteristic | D
   public updateFields(modelElement: T) {
     this.metaModelElement.metaModelVersion = this.loadedFilesService.currentLoadedFile.rdfModel.getMetaModelVersion();
     this.editorModelService.updateMetaModelElement(this.metaModelElement);
-    this.parentForm().get('changedMetaModel').setValue(modelElement);
+    this.signalForm().set('changedMetaModel', modelElement);
   }
 }

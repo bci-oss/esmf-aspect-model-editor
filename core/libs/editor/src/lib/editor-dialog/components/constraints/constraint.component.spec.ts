@@ -17,7 +17,6 @@ import {ModelService, RdfService} from '@ame/rdf/services';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {NotificationsService, SearchService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DefaultAspect, DefaultConstraint, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {TranslocoTestingModule} from '@jsverse/transloco';
@@ -49,7 +48,6 @@ describe('ConstraintComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         ConstraintComponent,
-        ReactiveFormsModule,
         BrowserAnimationsModule,
         TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
       ],
@@ -76,7 +74,6 @@ describe('ConstraintComponent', () => {
 
     fixture = TestBed.createComponent(ConstraintComponent);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('parentForm', new FormGroup({}));
     fixture.detectChanges();
   });
 
@@ -92,5 +89,12 @@ describe('ConstraintComponent', () => {
   it('should handle previous data change', () => {
     component.onPreviousDataChange({name: 'Updated'});
     expect(component.previousData()).toEqual({name: 'Updated'});
+  });
+
+  it('should use a native Signal Form context without a legacy parent form', () => {
+    component.signalForm().set('languageCode', 'en');
+
+    expect(component.signalForm().value().languageCode).toBe('en');
+    expect(component.signalForm().valid()).toBe(true);
   });
 });

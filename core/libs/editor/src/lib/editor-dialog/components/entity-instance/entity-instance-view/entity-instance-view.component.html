@@ -13,13 +13,13 @@
   -->
 
   <ame-entity-instance-search-bar
-    [count]="(complexValues() | entityInstance: searchFilter())?.length"
+    [count]="(displayedValues() | entityInstance: searchFilter())?.length"
     [disableAddNewEntityValue]="loadedFiles.isElementExtern(enumeration())"
     (add)="onNew()"
     (newSearch)="searchFilter.set($event)"
   ></ame-entity-instance-search-bar>
 
-  @for (complexValue of complexValues() | entityInstance: searchFilter(); track complexValue.aspectModelUrn) {
+  @for (complexValue of displayedValues() | entityInstance: searchFilter(); track complexValue.aspectModelUrn) {
     <mat-expansion-panel class="complex-value-items" [attr.data-cy]="complexValue.name" expanded="true">
       <mat-expansion-panel-header class="complex-value-header">
         <mat-panel-title class="complex-value-bar">
@@ -86,10 +86,10 @@
     </mat-expansion-panel>
   }
 
-  @if (complexValues()?.length === 0) {
+  @if (displayedValues()?.length === 0) {
     <div class="text--center">No entity values</div>
   }
-  @if ((complexValues() | entityInstance: searchFilter())?.length === 0) {
+  @if ((displayedValues() | entityInstance: searchFilter())?.length === 0) {
     <div class="text--center">Entity values are filtered out.</div>
   }
 </ng-container>

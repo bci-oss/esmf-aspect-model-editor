@@ -14,10 +14,9 @@
 import {CacheUtils} from '@ame/cache';
 import {RdfService} from '@ame/rdf/services';
 import {NotificationsService} from '@ame/shared';
-import {AsyncPipe} from '@angular/common';
-import {Component, inject, OnDestroy, OnInit} from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {FormControl, ReactiveFormsModule} from '@angular/forms';
+import {Component, computed, inject, OnDestroy, OnInit, signal, Signal} from '@angular/core';
+import {rxResource, takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {disabled, form, FormField, required, validateAsync} from '@angular/forms/signals';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from '@angular/material/autocomplete';
 import {MatIconButton} from '@angular/material/button';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -25,9 +24,16 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatError, MatInput, MatLabel} from '@angular/material/input';
 import {Characteristic, DefaultCharacteristic, DefaultEither} from '@esmf/aspect-model-loader';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {map, Observable} from 'rxjs';
+import {of} from 'rxjs';
 import {EditorDialogValidators} from '../../../../validators';
 import {InputFieldComponent} from '../../input-field.component';
+
+export interface LeftCharacteristicOption {
+  name: string;
+  description: string;
+  urn: string;
+  namespace?: string;
+}
 
 @Component({
   selector: 'ame-left-input-field',
@@ -37,11 +43,10 @@ import {InputFieldComponent} from '../../input-field.component';
     MatFormFieldModule,
     MatLabel,
     MatAutocompleteTrigger,
-    ReactiveFormsModule,
+    FormField,
     MatInput,
     MatIconModule,
     MatIconButton,
-    AsyncPipe,
     MatAutocomplete,
     MatOption,
     MatError,
@@ -53,10 +58,51 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
   private validators = inject(EditorDialogValidators);
   public rdfService = inject(RdfService);
 
-  filteredCharacteristicTypes$: Observable<any[]>;
+  private readonly displayModel = signal('');
+  private readonly characteristicModel = signal<Characteristic | null>(null);
+  private readonly locked = signal(false);
+  private readonly blocked = signal(false);
+  private unregisterDisplay = () => undefined;
+  private unregisterCharacteristic = () => undefined;
 
-  leftControl: FormControl;
-  leftCharacteristicControl: FormControl;
+  private readonly createDuplicateNameResource = (name: Signal<string>) =>
+    rxResource({
+      params: () => name(),
+      stream: ({params}) =>
+        this.metaModelElement
+          ? this.validators.duplicateNameWithDifferentTypeValue(params, this.metaModelElement, DefaultCharacteristic)
+          : of(null),
+    });
+
+  readonly displayField = form(this.displayModel, path => {
+    validateAsync(path, {
+      params: ({value}) => value(),
+      factory: this.createDuplicateNameResource,
+      onSuccess: result => {
+        const kind = result?.['checkShapeNameExtRef'] ? 'checkShapeNameExtRef' : result?.['checkShapeName'] ? 'checkShapeName' : undefined;
+        return kind ? {kind, message: 'Characteristic name is already used by another type'} : null;
+      },
+      onError: () => ({kind: 'duplicateNameValidation', message: 'Characteristic name could not be validated'}),
+    });
+    disabled(path, {when: () => this.locked() || this.blocked()});
+  });
+  readonly characteristicField = form(this.characteristicModel, path => {
+    required(path);
+    disabled(path, {when: this.blocked});
+  });
+  readonly displayValue = this.displayModel.asReadonly();
+  readonly filteredCharacteristicTypes = computed<LeftCharacteristicOption[]>(() => {
+    const value = this.displayModel();
+    const rightUrn = (this.signalForm()?.value().rightCharacteristic as Characteristic)?.aspectModelUrn;
+    const local = CacheUtils.getCachedElements(this.currentCachedFile, DefaultCharacteristic)
+      .filter(characteristic => characteristic.aspectModelUrn !== this.metaModelElement?.aspectModelUrn)
+      .map(characteristic => ({
+        name: characteristic.name,
+        description: characteristic.getDescription('en') || '',
+        urn: characteristic.aspectModelUrn,
+      }));
+    return [...local, ...this.searchExtCharacteristic(value)].filter(option => option.urn !== rightUrn && this.inSearchList(option, value));
+  });
 
   constructor() {
     super();
@@ -70,9 +116,9 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
   }
 
   ngOnDestroy() {
+    this.unregisterDisplay();
+    this.unregisterCharacteristic();
     super.ngOnDestroy();
-    this.parentForm().removeControl('left');
-    this.parentForm().removeControl('leftCharacteristic');
   }
 
   getCurrentValue() {
@@ -83,39 +129,15 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
     const eitherLeft = this.getCurrentValue();
     const value = eitherLeft?.name || '';
 
-    this.parentForm().setControl(
-      'left',
-      new FormControl(
-        {
-          value,
-          disabled: !!value || this.loadedFiles.isElementExtern(this.metaModelElement),
-        },
-        {
-          asyncValidators: [
-            EditorDialogValidators.disabled,
-            this.validators.duplicateNameWithDifferentType(this.metaModelElement, DefaultCharacteristic),
-          ],
-        },
-      ),
-    );
-
-    this.parentForm().setControl(
-      'leftCharacteristic',
-      new FormControl({
-        value: eitherLeft,
-        disabled: this.loadedFiles.isElementExtern(this.metaModelElement),
-      }),
-    );
-
-    this.leftControl = this.parentForm().get('left') as FormControl;
-    this.leftCharacteristicControl = this.parentForm().get('leftCharacteristic') as FormControl;
-
-    this.filteredCharacteristicTypes$ = this.initFilteredCharacteristicTypes(this.leftControl, this.metaModelElement.aspectModelUrn).pipe(
-      map(charList => charList.filter(char => char.urn !== this.parentForm().get('rightCharacteristic')?.value?.aspectModelUrn)),
-    );
+    this.blocked.set(this.loadedFiles.isElementExtern(this.metaModelElement));
+    this.locked.set(!!value);
+    this.displayModel.set(value);
+    this.characteristicModel.set(eitherLeft);
+    this.unregisterDisplay = this.signalForm().register('left', this.displayField);
+    this.unregisterCharacteristic = this.signalForm().register('leftCharacteristic', this.characteristicField);
   }
 
-  onSelectionChange(fieldPath: string, newValue: any) {
+  onSelectionChange(fieldPath: string, newValue: LeftCharacteristicOption | null) {
     if (fieldPath !== 'left') {
       return;
     }
@@ -132,11 +154,7 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
       defaultCharacteristic = this.loadedFiles.findElementOnExtReferences<Characteristic>(newValue.urn);
     }
 
-    this.parentForm().setControl('leftCharacteristic', new FormControl(defaultCharacteristic));
-
-    this.leftControl.patchValue(newValue.name);
-    this.leftCharacteristicControl.setValue(defaultCharacteristic);
-    this.leftControl.disable();
+    if (defaultCharacteristic) this.selectCharacteristic(defaultCharacteristic, newValue.name);
   }
 
   createNewCharacteristic(characteristicName: string) {
@@ -146,16 +164,15 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
 
     const urn = `${this.metaModelElement.aspectModelUrn.split('#')?.[0]}#${characteristicName}`;
 
-    const parentForm = this.parentForm();
-    if (this.metaModelElement.aspectModelUrn === urn || parentForm.get('name').value === characteristicName) {
+    if (this.metaModelElement.aspectModelUrn === urn || this.signalForm().value().name === characteristicName) {
       this.notificationsService.error({title: 'Element left cannot link itself'});
-      this.leftControl.setValue('');
+      this.displayModel.set('');
       return;
     }
 
-    if (characteristicName === parentForm.get('rightCharacteristic')?.value?.name) {
+    if (characteristicName === (this.signalForm().value().rightCharacteristic as Characteristic)?.name) {
       this.notificationsService.error({title: 'Element left cannot point to the same characteristic as the right element.'});
-      this.leftControl.setValue('');
+      this.displayModel.set('');
       return;
     }
 
@@ -166,18 +183,23 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
       dataType: null,
     });
 
-    parentForm.setControl('leftCharacteristic', new FormControl(newCharacteristic));
-
-    this.leftControl.patchValue(characteristicName);
-    this.leftCharacteristicControl.setValue(newCharacteristic);
-    this.leftControl.disable();
+    this.selectCharacteristic(newCharacteristic, characteristicName);
   }
 
   unlockLeft() {
-    this.leftControl.enable();
-    this.leftControl.patchValue('');
-    this.leftCharacteristicControl.patchValue('');
-    this.parentForm().setControl('leftCharacteristic', new FormControl(null));
-    this.leftCharacteristicControl.markAllAsTouched();
+    this.locked.set(false);
+    this.displayModel.set('');
+    this.characteristicModel.set(null);
+    this.characteristicField().markAsTouched();
+  }
+
+  hasError(kind: string): boolean {
+    return [...this.displayField().errors(), ...this.characteristicField().errors()].some(error => error.kind === kind);
+  }
+
+  private selectCharacteristic(characteristic: Characteristic, name: string): void {
+    this.displayModel.set(name);
+    this.characteristicModel.set(characteristic);
+    this.locked.set(true);
   }
 }

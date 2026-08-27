@@ -12,16 +12,16 @@
   -->
 
 @if (!hasComplexValues()) {
-  <mat-form-field [floatLabel]="getControl('values')?.disabled ? 'always' : 'auto'" appearance="fill" subscriptSizing="dynamic">
-    <mat-label for="values">values</mat-label>
-    <mat-chip-grid #chipList [formControl]="getControl('chipList')">
+  <mat-form-field [floatLabel]="searchField().disabled() ? 'always' : 'auto'" appearance="fill" subscriptSizing="dynamic">
+    <mat-label>values</mat-label>
+    <mat-chip-grid #chipList [formField]="chipListField">
       @for (value of enumValues(); track value) {
         <mat-chip-row
           [class.is-value]="!!value?.['name']"
           [editable]="!initialValues()[value?.['aspectModelUrn'] || '']"
           [removable]="removable()"
           (edited)="editValue(value, $event)"
-          (removed)="remove(value); onEnumChange()"
+          (removed)="remove(value)"
         >
           <span>{{ value?.['name'] || value?.['value'] }}</span>
           @if (!initialValues()[value?.['aspectModelUrn'] || '']) {
@@ -35,12 +35,11 @@
       <input
         class="enumeration-value-input"
         #valuesInput
-        [formControl]="getControl('values')"
+        [formField]="searchField"
         [matChipInputFor]="chipList"
         [matAutocomplete]="auto"
         (paste)="paste($event)"
         matInput
-        name="values"
         placeholder="Type and select"
         data-cy="values"
       />
@@ -51,7 +50,7 @@
       <span>Only newly created Values and simple values can be edited!</span>
     </mat-hint>
 
-    @if (getControl('values')?.errors?.required) {
+    @if (chipListField().errors().length) {
       <mat-error>This field is required</mat-error>
     }
 
@@ -81,7 +80,7 @@
     class="entity-values"
     [complexValues]="enumEntityValues()"
     [enumeration]="metaModelElement"
-    [parentForm]="parentForm()"
+    [signalForm]="signalForm()"
     (complexValueChange)="enumValueChange($event)"
   ></ame-entity-instance-view>
 }

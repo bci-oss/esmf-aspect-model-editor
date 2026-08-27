@@ -13,9 +13,9 @@
 
 import {Component, inject, input} from '@angular/core';
 import {toSignal} from '@angular/core/rxjs-interop';
-import {FormGroup} from '@angular/forms';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../../editor-model.service';
+import {EditorSignalFormContext} from '../../../forms/editor-signal-form-context';
 import {ElementListComponent} from '../../element-list';
 import {BaseInputComponent} from '../../fields';
 
@@ -25,7 +25,7 @@ import {BaseInputComponent} from '../../fields';
   imports: [BaseInputComponent, ElementListComponent, TranslocoDirective],
 })
 export class TraitCharacteristicComponent {
-  readonly parentForm = input<FormGroup>();
+  readonly signalForm = input(EditorSignalFormContext.create());
   public metaModelDialogService = inject(EditorModelService);
   public element = toSignal(this.metaModelDialogService.getMetaModelElement());
 }

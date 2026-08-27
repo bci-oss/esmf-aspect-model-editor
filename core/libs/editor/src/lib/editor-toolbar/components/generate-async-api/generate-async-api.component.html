@@ -12,9 +12,9 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-  <form>
+  <form (submit)="$event.preventDefault(); asyncApiForm().valid() && generateAsyncApiSpec()" novalidate>
     <h2 mat-dialog-title>{{ t('generateAsyncapiSpecDialog.title') }}</h2>
-    <button class="close-button" mat-icon-button tabindex="-1" mat-dialog-close>
+    <button class="close-button" type="button" mat-icon-button tabindex="-1" mat-dialog-close>
       <mat-icon>close</mat-icon>
     </button>
 
@@ -92,15 +92,8 @@
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-flat-button mat-dialog-close>{{ t('generateAsyncapiSpecDialog.button.cancel') }}</button>
-      <button
-        [disabled]="asyncApiForm().invalid()"
-        (click)="generateAsyncApiSpec()"
-        type="button"
-        mat-flat-button
-        color="primary"
-        data-cy="tbGenerateAsyncApiButton"
-      >
+      <button type="button" mat-flat-button mat-dialog-close>{{ t('generateAsyncapiSpecDialog.button.cancel') }}</button>
+      <button [disabled]="asyncApiForm().invalid()" type="submit" mat-flat-button color="primary" data-cy="tbGenerateAsyncApiButton">
         <span>{{ t('generateAsyncapiSpecDialog.button.generate') }}</span>
       </button></mat-dialog-actions
     >

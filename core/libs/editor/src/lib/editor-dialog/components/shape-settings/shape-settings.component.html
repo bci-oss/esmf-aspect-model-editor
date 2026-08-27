@@ -26,15 +26,15 @@
 
     <div class="actions">
       <ame-locate-element></ame-locate-element>
-      <button (click)="onClose()" mat-icon-button tabindex="-1">
+      <button (click)="onClose()" type="button" mat-icon-button tabindex="-1">
         <mat-icon>close</mat-icon>
       </button>
     </div>
   </div>
 
-  <div class="shape-settings__content">
-    @if (metaModelElement()) {
-      <form novalidate>
+  @if (metaModelElement()) {
+    <form class="shape-settings__form" (submit)="$event.preventDefault(); onSave()" novalidate>
+      <div class="shape-settings__content">
         <!-- the same view can be shown in more than one case -->
         @if (isOfType(['DefaultAspect'])) {
           <ame-aspect [signalForm]="signalForm"></ame-aspect>
@@ -63,27 +63,26 @@
         } @else if (isOfType(['DefaultEvent'])) {
           <ame-event [signalForm]="signalForm"></ame-event>
         }
-      </form>
-    }
-  </div>
+      </div>
 
-  <div class="shape-settings__actions">
-    @if (metaModelDialogService.isSaveButtonEnabled()) {
-      <button (click)="onClose()" type="button" mat-flat-button data-cy="editorCancelButton">
-        {{ t('editorCanvas.shapeSetting.cancel') }}
-      </button>
-    }
-    @if (metaModelDialogService.isSaveButtonEnabled()) {
-      <button
-        [disabled]="!signalForm.valid() || loadedFilesService.isElementExtern(metaModelElement())"
-        (click)="onSave()"
-        mat-flat-button
-        color="primary"
-        type="button"
-        data-cy="editorSaveButton"
-      >
-        {{ t('editorCanvas.shapeSetting.save') }}
-      </button>
-    }
-  </div>
+      <div class="shape-settings__actions">
+        @if (metaModelDialogService.isSaveButtonEnabled()) {
+          <button (click)="onClose()" type="button" mat-flat-button data-cy="editorCancelButton">
+            {{ t('editorCanvas.shapeSetting.cancel') }}
+          </button>
+        }
+        @if (metaModelDialogService.isSaveButtonEnabled()) {
+          <button
+            [disabled]="!signalForm.valid() || loadedFilesService.isElementExtern(metaModelElement())"
+            mat-flat-button
+            color="primary"
+            type="submit"
+            data-cy="editorSaveButton"
+          >
+            {{ t('editorCanvas.shapeSetting.save') }}
+          </button>
+        }
+      </div>
+    </form>
+  }
 </ng-container>

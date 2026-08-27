@@ -47,6 +47,7 @@
                       (click)="unlockValue(source[0].name, i, 'value')"
                       data-cy="clear-entityValue-button"
                       matSuffix
+                      type="button"
                       mat-icon-button
                       tabindex="-1"
                     >
@@ -111,6 +112,7 @@
                       (click)="unlockValue(source[0].name, i, 'language')"
                       data-cy="clear-language-button"
                       matSuffix
+                      type="button"
                       mat-icon-button
                       tabindex="-1"
                     >
@@ -137,6 +139,7 @@
                     <button
                       [attr.data-cy]="source[0].name + 'Add'"
                       (click)="addLanguage(source)"
+                      type="button"
                       mat-mini-fab
                       color="primary"
                       aria-label="Add new language"
@@ -147,6 +150,7 @@
                     <button
                       [attr.data-cy]="source[0].name + 'Remove'"
                       (click)="removeLanguage(source, i)"
+                      type="button"
                       mat-mini-fab
                       color="primary"
                       aria-label="Delete added language"

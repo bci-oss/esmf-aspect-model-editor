@@ -12,7 +12,7 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-  <button class="close-button" (click)="closeModal()" mat-icon-button tabindex="-1">
+  <button class="close-button" (click)="closeModal()" type="button" mat-icon-button tabindex="-1">
     <mat-icon>close</mat-icon>
   </button>
 
@@ -82,7 +82,7 @@
     <button (click)="closeModal()" type="button" mat-flat-button data-cy="propertiesCancelButton">
       {{ t('editorCanvas.shapeSetting.propertiesModal.cancel') }}
     </button>
-    <button [disabled]="isReadonly()" (click)="saveChanges()" mat-flat-button type="submit" color="primary" data-cy="propertiesSaveButton">
+    <button [disabled]="isReadonly()" (click)="saveChanges()" mat-flat-button type="button" color="primary" data-cy="propertiesSaveButton">
       {{ t('editorCanvas.shapeSetting.propertiesModal.save') }}
     </button>
   </mat-dialog-actions>

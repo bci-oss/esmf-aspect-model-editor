@@ -12,9 +12,9 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-  <form>
+  <form (submit)="$event.preventDefault(); openApiForm().valid() && generateOpenApiSpec()" novalidate>
     <h2 mat-dialog-title>{{ t('generateOpenapiSpecDialog.title') }}</h2>
-    <button class="close-button" mat-icon-button tabindex="-1" mat-dialog-close>
+    <button class="close-button" type="button" mat-icon-button tabindex="-1" mat-dialog-close>
       <mat-icon>close</mat-icon>
     </button>
 
@@ -114,7 +114,7 @@
                   {{ t('generateOpenapiSpecDialog.uploadedFileTitle', {output: openApiModel().output.toUpperCase()}) }}:
                 </h2>
                 <span class="dialog__file-name">{{ uploadedFile().name }}</span>
-                <button (click)="removeUploadedFile()" mat-icon-button>
+                <button (click)="removeUploadedFile()" type="button" mat-icon-button>
                   <mat-icon data-cy="removeUploadFile">remove_circle</mat-icon>
                 </button>
               </div>
@@ -136,7 +136,7 @@
                   data-cy="uploadContentFileInput"
                 />
                 <div>
-                  <button (click)="fileDropRef.click()" mat-icon-button tabindex="0">
+                  <button (click)="fileDropRef.click()" type="button" mat-icon-button tabindex="0">
                     <mat-icon>cloud_upload</mat-icon>
                   </button>
                   <p class="dialog__upload-text">{{ t('generateOpenapiSpecDialog.uploadDragAndDropText') }}</p>
@@ -209,17 +209,10 @@
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-flat-button mat-dialog-close data-cy="cancelOpenApiButton">
+      <button type="button" mat-flat-button mat-dialog-close data-cy="cancelOpenApiButton">
         {{ t('generateOpenapiSpecDialog.button.cancel') }}
       </button>
-      <button
-        [disabled]="openApiForm().invalid()"
-        (click)="generateOpenApiSpec()"
-        type="button"
-        mat-flat-button
-        color="primary"
-        data-cy="tbGenerateOpenApiButton"
-      >
+      <button [disabled]="openApiForm().invalid()" type="submit" mat-flat-button color="primary" data-cy="tbGenerateOpenApiButton">
         <span>{{ t('generateOpenapiSpecDialog.button.generate') }}</span>
       </button>
     </mat-dialog-actions>

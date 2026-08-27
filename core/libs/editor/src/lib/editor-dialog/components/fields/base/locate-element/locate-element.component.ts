@@ -24,7 +24,13 @@ import {EditorModelService} from '../../../../editor-model.service';
   selector: 'ame-locate-element',
   template: `<ng-container *transloco="let t">
     @if (element()) {
-      <button [matTooltip]="t('editorCanvas.shapeSetting.locateElement')" (click)="locate()" mat-icon-button matTooltipPosition="above">
+      <button
+        [matTooltip]="t('editorCanvas.shapeSetting.locateElement')"
+        (click)="locate()"
+        type="button"
+        mat-icon-button
+        matTooltipPosition="above"
+      >
         <mat-icon>gps_fixed</mat-icon>
       </button>
     }

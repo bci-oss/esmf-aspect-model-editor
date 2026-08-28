@@ -16,7 +16,6 @@ import {AlertService, LoadingScreenService, TitleService} from '@ame/shared';
 import {FlatTreeControl} from '@angular/cdk/tree';
 import {NgClass} from '@angular/common';
 import {Component, inject} from '@angular/core';
-import {FormGroup} from '@angular/forms';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatDialogActions, MatDialogClose, MatDialogContent, MatDialogRef, MatDialogTitle} from '@angular/material/dialog';
 import {MatIconModule} from '@angular/material/icon';
@@ -127,19 +126,19 @@ const TREE_DATA: ConfigurationNode[] = [
   ],
 })
 export class SettingDialogComponent {
-  private settingDialogComponentMatDialogRef = inject(MatDialogRef<SettingDialogComponent>);
-  private formService = inject(SettingsFormService);
-  private alertService = inject(AlertService);
-  private maxgraphService = inject(MaxGraphService);
-  private sammLangService = inject(SammLanguageSettingsService);
-  private shapeLanguageRemover = inject(ShapeLanguageRemover);
-  private loadingScreen = inject(LoadingScreenService);
-  private titleService = inject(TitleService);
-  private loadedFilesService = inject(LoadedFilesService);
+  private readonly settingDialogComponentMatDialogRef = inject(MatDialogRef<SettingDialogComponent>);
+  private readonly formService = inject(SettingsFormService);
+  private readonly alertService = inject(AlertService);
+  private readonly maxgraphService = inject(MaxGraphService);
+  private readonly sammLangService = inject(SammLanguageSettingsService);
+  private readonly shapeLanguageRemover = inject(ShapeLanguageRemover);
+  private readonly loadingScreen = inject(LoadingScreenService);
+  private readonly titleService = inject(TitleService);
+  private readonly loadedFilesService = inject(LoadedFilesService);
 
   public readonly NodeNames = NodeNames;
 
-  private _transformer = (node: ConfigurationNode, level: number): ConfigurationFlatNode => {
+  private readonly _transformer = (node: ConfigurationNode, level: number): ConfigurationFlatNode => {
     return {
       expandable: !!node.children && node.children.length > 0,
       name: node.name,
@@ -149,24 +148,24 @@ export class SettingDialogComponent {
     };
   };
 
-  treeControl = new FlatTreeControl<ConfigurationFlatNode>(
+  readonly treeControl = new FlatTreeControl<ConfigurationFlatNode>(
     node => node.level,
     node => node.expandable,
   );
 
-  treeFlattener = new MatTreeFlattener(
+  readonly treeFlattener = new MatTreeFlattener(
     this._transformer,
     node => node.level,
     node => node.expandable,
     node => node.children,
   );
 
-  dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
+  readonly dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
 
   selectedNodeType: string | null = NodeNames.AUTOMATED_WORKFLOW;
 
-  get settingsForm(): FormGroup {
-    return this.formService.getForm();
+  get settingsForm() {
+    return this.formService.settingsForm;
   }
 
   get currentLoadedFile() {
@@ -177,17 +176,17 @@ export class SettingDialogComponent {
     this.initializeComponent();
   }
 
-  initializeComponent() {
+  initializeComponent(): void {
     this.dataSource.data = TREE_DATA;
     this.treeControl.expandAll();
     this.formService.initializeForm();
     this.formService.clearLanguagesToRemove();
   }
 
-  hasChild = (_: number, node: ConfigurationFlatNode) => node.expandable;
+  hasChild = (_: number, node: ConfigurationFlatNode): boolean => node.expandable;
 
   onNodeSelected(type: string): void {
-    const typeMappings = {
+    const typeMappings: Record<string, string> = {
       [NodeNames.CONFIGURATION]: NodeNames.AUTOMATED_WORKFLOW,
       [NodeNames.MODEL_CONFIGURATION]: NodeNames.LANGUAGES,
     };
@@ -260,6 +259,7 @@ export class SettingDialogComponent {
     this.formService.setNamespace(newNamespace);
     this.formService.setVersion(newVersion);
   }
+
   private updateNamespaceKey(newNamespace: string, newVersion: string): void {
     this.currentLoadedFile.namespace = `${newNamespace}:${newVersion}`;
   }
@@ -275,7 +275,7 @@ export class SettingDialogComponent {
       data: {
         title: 'Deleting all language related information',
         content: `Click 'Continue' to remove the language${removedLanguages.length > 1 ? 's' : ''} "${removedLanguages
-          .map((entry: string) => `${locale.getByTag(entry).name} (${locale.getByTag(entry).tag})`)
+          .map((entry: string) => `${locale.getByTag(entry)?.name || entry} (${locale.getByTag(entry)?.tag || entry})`)
           .join(', ')}" from the settings and delete all preferredNames and descriptions in ${
           removedLanguages.length > 1 ? 'these SAMM languages' : 'this SAMM language'
         }.`,
@@ -298,10 +298,11 @@ export class SettingDialogComponent {
       });
 
       const aspectModelLanguages = this.formService
-        .getForm()
-        .get('languageConfiguration')
-        .get('aspectModel')
-        .value.map(entry => entry.language.tag);
+        .settingsModel()
+        .languageConfiguration.aspectModel.map(entry =>
+          typeof entry.language === 'object' && entry.language ? entry.language.tag : String(entry.language || ''),
+        )
+        .filter(Boolean);
 
       try {
         this.maxgraphService.updateGraph((): void => {
@@ -317,6 +318,27 @@ export class SettingDialogComponent {
   }
 
   isNodeInvalid(node: ConfigurationFlatNode): boolean {
-    return this.settingsForm.get(node.id)?.invalid || false;
+    switch (node.id) {
+      case 'automatedWorkflow':
+        return this.settingsForm.automatedWorkflow().invalid();
+      case 'editorConfiguration':
+        return this.settingsForm.editorConfiguration().invalid();
+      case 'languageConfiguration':
+        return this.settingsForm.languageConfiguration().invalid();
+      case 'namespaceConfiguration':
+        return this.settingsForm.namespaceConfiguration().invalid();
+      case 'copyrightHeaderConfiguration':
+        return this.settingsForm.copyrightHeaderConfiguration().invalid();
+      case 'systemConfiguration':
+        return this.settingsForm.automatedWorkflow().invalid() || this.settingsForm.editorConfiguration().invalid();
+      case 'modelConfiguration':
+        return (
+          this.settingsForm.languageConfiguration().invalid() ||
+          this.settingsForm.namespaceConfiguration().invalid() ||
+          this.settingsForm.copyrightHeaderConfiguration().invalid()
+        );
+      default:
+        return false;
+    }
   }
 }

@@ -14,11 +14,11 @@
 
   <div>
     <h3>{{ t('settingsDialog.subNode.automatedWorkflow') }}</h3>
-    <form [formGroup]="form">
+    <div>
       <div class="settings-container">
         <div class="setting-item">
           <div class="setting-item__toggle">
-            <mat-slide-toggle formControlName="autoFormatEnabled" data-cy="autoFormatToggle">
+            <mat-slide-toggle [formField]="form.automatedWorkflow.autoFormatEnabled" data-cy="autoFormatToggle">
               {{ t('settingsDialog.configuration.autoFormatting') }}
             </mat-slide-toggle>
             <mat-icon
@@ -33,15 +33,15 @@
 
         <div class="setting-item">
           <div class="setting-item__content">
-            <mat-slide-toggle class="setting-item__toggle" formControlName="autoSaveEnabled" data-cy="autoSaveToggle">
+            <mat-slide-toggle class="setting-item__toggle" [formField]="form.automatedWorkflow.autoSaveEnabled" data-cy="autoSaveToggle">
               {{ t('settingsDialog.configuration.autoSave') }}
             </mat-slide-toggle>
           </div>
           <div class="settings-item">
             <mat-form-field class="setting-item__value" appearance="fill">
               <mat-label for="autoSaveTime">{{ t('settingsDialog.configuration.waitingPeriod') }}</mat-label>
-              <input formControlName="saveTimerSeconds" matInput type="number" data-cy="autoSaveTime" />
-              @if (form.get('saveTimerSeconds').hasError('min')) {
+              <input [formField]="form.automatedWorkflow.saveTimerSeconds" matInput type="number" data-cy="autoSaveTime" />
+              @if (form.automatedWorkflow.saveTimerSeconds().invalid()) {
                 <mat-error>The time must be at least 60 second</mat-error>
               }
             </mat-form-field>
@@ -51,7 +51,7 @@
         <div class="setting-item">
           <div class="setting-item__content">
             <div class="setting-item__toggle">
-              <mat-slide-toggle formControlName="autoValidationEnabled" data-cy="autoValidateToggle">
+              <mat-slide-toggle [formField]="form.automatedWorkflow.autoValidationEnabled" data-cy="autoValidateToggle">
                 {{ t('settingsDialog.configuration.autoValidation') }}
               </mat-slide-toggle>
               <mat-icon
@@ -64,14 +64,14 @@
             </div>
             <mat-form-field class="setting-item__value" appearance="fill">
               <mat-label for="autoValidateTime">{{ t('settingsDialog.configuration.waitingPeriod') }}</mat-label>
-              <input formControlName="validationTimerSeconds" matInput type="number" data-cy="autoValidateTime" />
-              @if (form.get('validationTimerSeconds').hasError('min')) {
+              <input [formField]="form.automatedWorkflow.validationTimerSeconds" matInput type="number" data-cy="autoValidateTime" />
+              @if (form.automatedWorkflow.validationTimerSeconds().invalid()) {
                 <mat-error>The time must be at least 60 second</mat-error>
               }
             </mat-form-field>
           </div>
         </div>
       </div>
-    </form>
+    </div>
   </div>
 </ng-container>

@@ -12,21 +12,20 @@
  */
 
 import {MaxGraphService} from '@ame/max-graph';
-import {Settings} from '@ame/settings-dialog';
 import {inject, Injectable} from '@angular/core';
-import {FormGroup} from '@angular/forms';
+import {Settings, SettingsFormData} from '../model';
 import {SettingsUpdateStrategy} from './settings-update.strategy';
 
 @Injectable({providedIn: 'root'})
 export class EditorConfigurationUpdateStrategy implements SettingsUpdateStrategy {
-  private maxgraphService = inject(MaxGraphService);
+  private readonly maxgraphService = inject(MaxGraphService);
 
-  updateSettings(form: FormGroup, settings: Settings): void {
-    const editorConfiguration = form.get('editorConfiguration');
+  updateSettings(model: SettingsFormData, settings: Settings): void {
+    const editorConfiguration = model?.editorConfiguration;
     if (!editorConfiguration) return;
 
-    settings.enableHierarchicalLayout = editorConfiguration.get('enableHierarchicalLayout')?.value;
-    settings.showConnectionLabels = editorConfiguration.get('showConnectionLabels')?.value;
+    settings.enableHierarchicalLayout = editorConfiguration.enableHierarchicalLayout;
+    settings.showConnectionLabels = editorConfiguration.showConnectionLabels;
 
     this.maxgraphService.formatShapes(true);
   }

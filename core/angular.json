@@ -267,6 +267,25 @@
           }
         }
       }
+    },
+    "settings-dialog": {
+      "projectType": "library",
+      "root": "libs/settings-dialog",
+      "sourceRoot": "libs/settings-dialog/src",
+      "prefix": "ame",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "options": {"project": "libs/settings-dialog/ng-package.json"}
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "libs/settings-dialog/tsconfig.spec.json",
+            "buildTarget": "settings-dialog:build"
+          }
+        }
+      }
     }
   }
 }

@@ -228,6 +228,7 @@
     "test:editor": "nx test editor",
     "test:namespace-manager": "nx test namespace-manager",
     "test:rdf": "nx test rdf",
+    "test:settings-dialog": "nx test settings-dialog",
     "test:shared": "nx test shared",
     "test:sidebar": "nx test sidebar",
     "test:utils": "nx test utils",

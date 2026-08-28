@@ -11,8 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, inject, OnInit} from '@angular/core';
-import {FormGroup, ReactiveFormsModule} from '@angular/forms';
+import {Component, inject} from '@angular/core';
+import {FormField} from '@angular/forms/signals';
 import {MatIconModule} from '@angular/material/icon';
 import {MatSlideToggle} from '@angular/material/slide-toggle';
 import {MatTooltip} from '@angular/material/tooltip';
@@ -25,14 +25,10 @@ export const editorConfigurationControlName = 'editorConfiguration';
   selector: 'ame-editor-configuration',
   templateUrl: './editor-configuration.component.html',
   styleUrls: ['./editor-configuration.component.scss'],
-  imports: [ReactiveFormsModule, MatSlideToggle, MatTooltip, MatIconModule, TranslocoDirective],
+  imports: [FormField, MatSlideToggle, MatTooltip, MatIconModule, TranslocoDirective],
 })
-export class EditorConfigurationComponent implements OnInit {
-  private formService = inject(SettingsFormService);
+export class EditorConfigurationComponent {
+  protected readonly formService = inject(SettingsFormService);
 
-  public form: FormGroup;
-
-  ngOnInit(): void {
-    this.form = this.formService.getForm().get('editorConfiguration') as FormGroup;
-  }
+  readonly form = this.formService.settingsForm;
 }

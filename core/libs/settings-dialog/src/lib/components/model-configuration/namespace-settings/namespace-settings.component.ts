@@ -12,7 +12,7 @@
  */
 
 import {Component, inject, OnInit, signal} from '@angular/core';
-import {FormGroup, ReactiveFormsModule} from '@angular/forms';
+import {FormField} from '@angular/forms/signals';
 import {MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle} from '@angular/material/expansion';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
@@ -39,7 +39,7 @@ import {SettingsFormService} from '../../../services';
   templateUrl: './namespace-settings.component.html',
   styleUrls: ['./namespace-settings.component.scss'],
   imports: [
-    ReactiveFormsModule,
+    FormField,
     MatIconModule,
     MatTooltip,
     MatFormFieldModule,
@@ -64,24 +64,23 @@ import {SettingsFormService} from '../../../services';
   ],
 })
 export class NamespaceSettingsComponent implements OnInit {
-  private formService = inject(SettingsFormService);
+  protected readonly formService = inject(SettingsFormService);
 
-  public form: FormGroup;
+  readonly form = this.formService.settingsForm;
 
   public columns = signal(['name', 'value', 'version']);
   public panelOpenState = signal(false);
-  public predefinedNamespaces = signal(undefined);
+  public predefinedNamespaces = signal<{name: string; value: string; version: string}[]>([]);
 
   ngOnInit(): void {
-    this.form = this.formService.getForm().get('namespaceConfiguration') as FormGroup;
     this.initializePredefinedNamespaces();
   }
 
   private initializePredefinedNamespaces(): void {
     const loadedRdfModel = this.formService.getLoadedRdfModel();
-    const namespaces = loadedRdfModel ? loadedRdfModel.getNamespaces() : '';
+    const namespaces = loadedRdfModel ? loadedRdfModel.getNamespaces() : {};
     this.predefinedNamespaces.set(
-      Object.keys(namespaces)
+      Object.keys(namespaces || {})
         .filter(key => this.isValidNamespaceKey(key, namespaces[key]))
         .map(key => this.createNamespaceEntry(namespaces[key])),
     );
@@ -111,9 +110,9 @@ export class NamespaceSettingsComponent implements OnInit {
     const namespaceParts = uri.split(':');
 
     return {
-      name: namespaceParts[3],
+      name: namespaceParts[3] || '',
       value: `${namespaceParts[0]}:${namespaceParts[1]}:${namespaceParts[2]}`,
-      version: namespaceParts[4].replace('#', ''),
+      version: namespaceParts[4] ? namespaceParts[4].replace('#', '') : '',
     };
   }
 

@@ -14,15 +14,18 @@
 
   <div>
     <h3>{{ t('settingsDialog.subNode.editor') }}</h3>
-    <form [formGroup]="form">
+    <div>
       <div class="setting-item">
-        <mat-slide-toggle matTooltip="may be more suitable for some models, e.g. with recursion" formControlName="enableHierarchicalLayout">
+        <mat-slide-toggle
+          [formField]="form.editorConfiguration.enableHierarchicalLayout"
+          matTooltip="may be more suitable for some models, e.g. with recursion"
+        >
           {{ t('settingsDialog.configuration.usingHierarchicalLayout') }}
         </mat-slide-toggle>
       </div>
 
       <div class="setting-item">
-        <mat-slide-toggle formControlName="showConnectionLabels">
+        <mat-slide-toggle [formField]="form.editorConfiguration.showConnectionLabels">
           {{ t('settingsDialog.configuration.displayDisambiguationLabel') }}
           <mat-icon
             [matTooltipShowDelay]="0"
@@ -33,6 +36,6 @@
           </mat-icon>
         </mat-slide-toggle>
       </div>
-    </form>
+    </div>
   </div>
 </ng-container>

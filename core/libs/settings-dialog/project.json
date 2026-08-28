@@ -15,6 +15,14 @@
         "project": "libs/settings-dialog/ng-package.json"
       },
       "dependsOn": []
+    },
+    "test": {
+      "executor": "@angular/build:unit-test",
+      "outputs": ["{workspaceRoot}/coverage/libs/settings-dialog"],
+      "options": {
+        "tsConfig": "libs/settings-dialog/tsconfig.spec.json",
+        "buildTarget": "settings-dialog:build"
+      }
     }
   }
 }

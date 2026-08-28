@@ -398,7 +398,9 @@
     "constraint": "应用于Characteristic的限制",
     "trait": "封装对于Characteristics的多个限制",
     "operation": "操作代表可以在 Aspect 上触发的操作",
-    "event": "Aspect支持的一个事件定义"
+    "event": "Aspect支持的一个事件定义",
+    "entityInstance": "实体的一个实例",
+    "value": "一个带有语义元数据的值"
   },
   "editorCanvas": {
     "fittingProgress": "将完整Model拟合到当前视图上",

@@ -86,13 +86,13 @@
         {{ t('settingsDialog.cancel') }}
       </button>
     </div>
-    <div matTooltip="{{ settingsForm.invalid ? t('settingsDialog.errorMessage') : '' }}">
-      <button [disabled]="settingsForm.invalid" (click)="applySettings()" mat-raised-button data-cy="settingsDialogApplyButton">
+    <div matTooltip="{{ settingsForm().invalid() ? t('settingsDialog.errorMessage') : '' }}">
+      <button [disabled]="settingsForm().invalid()" (click)="applySettings()" mat-raised-button data-cy="settingsDialogApplyButton">
         {{ t('settingsDialog.apply') }}
       </button>
     </div>
-    <div matTooltip="{{ settingsForm.invalid ? t('settingsDialog.errorMessage') : '' }}">
-      <button [disabled]="settingsForm.invalid" (click)="onOk()" mat-raised-button color="primary" data-cy="settingsDialogOkButton">
+    <div matTooltip="{{ settingsForm().invalid() ? t('settingsDialog.errorMessage') : '' }}">
+      <button [disabled]="settingsForm().invalid()" (click)="onOk()" mat-raised-button color="primary" data-cy="settingsDialogOkButton">
         {{ t('settingsDialog.ok') }}
       </button>
     </div>

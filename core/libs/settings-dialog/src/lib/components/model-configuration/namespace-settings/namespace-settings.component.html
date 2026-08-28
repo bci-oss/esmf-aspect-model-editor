@@ -12,7 +12,7 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-  <form [formGroup]="form">
+  <div>
     <h3>
       Model Namespace
       <mat-icon [matTooltipShowDelay]="0" [matTooltipHideDelay]="100" [matTooltip]="t('settingsDialog.namespaces.aspectNamespaceTooltip')"
@@ -23,40 +23,72 @@
     <div class="namespace-fields">
       <mat-form-field class="namespace-setting-field">
         <mat-label class="label-top">{{ t('settingsDialog.namespaces.value') }}</mat-label>
-        <input class="form-control" matInput spellcheck="false" formControlName="aspectUri" data-cy="namespaceTabValueInput" />
-        @if (form.get('aspectUri').errors?.required) {
-          <mat-error>Namespace is required</mat-error>
-        }
-        @if (form.get('aspectUri').errors?.invalidPattern) {
-          <mat-error>Not a valid namespace</mat-error>
+        <input
+          class="form-control"
+          [formField]="form.namespaceConfiguration.aspectUri"
+          matInput
+          spellcheck="false"
+          data-cy="namespaceTabValueInput"
+        />
+        @if (form.namespaceConfiguration.aspectUri().invalid()) {
+          @for (error of form.namespaceConfiguration.aspectUri().errors(); track error) {
+            @if (error.kind === 'required') {
+              <mat-error>Namespace is required</mat-error>
+            }
+            @if (error.kind === 'pattern') {
+              <mat-error>Not a valid namespace</mat-error>
+            }
+          }
         }
       </mat-form-field>
 
       <mat-form-field class="namespace-setting-field">
         <mat-label class="label-top">{{ t('settingsDialog.namespaces.version') }}</mat-label>
-        <input class="form-control" matInput spellcheck="false" formControlName="aspectVersion" data-cy="namespaceTabVersionInput" />
-        @if (form.get('aspectVersion').errors?.required) {
-          <mat-error>Version is required</mat-error>
-        }
-        @if (form.get('aspectVersion').errors?.invalidVersionFormat) {
-          <mat-error>Not a valid version</mat-error>
+        <input
+          class="form-control"
+          [formField]="form.namespaceConfiguration.aspectVersion"
+          matInput
+          spellcheck="false"
+          data-cy="namespaceTabVersionInput"
+        />
+        @if (form.namespaceConfiguration.aspectVersion().invalid()) {
+          @for (error of form.namespaceConfiguration.aspectVersion().errors(); track error) {
+            @if (error.kind === 'required') {
+              <mat-error>Version is required</mat-error>
+            }
+            @if (error.kind === 'pattern') {
+              <mat-error>Not a valid version</mat-error>
+            }
+          }
         }
       </mat-form-field>
 
       <mat-form-field class="namespace-setting-field">
         <mat-label class="label-top">{{ t('settingsDialog.namespaces.name') }}</mat-label>
-        <input class="form-control" matInput spellcheck="false" formControlName="aspectName" data-cy="namespaceTabFileNameInput" />
+        <input
+          class="form-control"
+          [formField]="form.namespaceConfiguration.aspectName"
+          matInput
+          spellcheck="false"
+          data-cy="namespaceTabFileNameInput"
+        />
       </mat-form-field>
 
       <mat-form-field class="namespace-setting-field">
         <mat-label class="label-top">{{ t('settingsDialog.namespaces.sammVersion') }}</mat-label>
-        <input class="form-control" matInput spellcheck="false" formControlName="sammVersion" data-cy="namespaceTabSammVersionInput" />
+        <input
+          class="form-control"
+          [formField]="form.namespaceConfiguration.sammVersion"
+          matInput
+          spellcheck="false"
+          data-cy="namespaceTabSammVersionInput"
+        />
       </mat-form-field>
     </div>
-  </form>
+  </div>
 
   <mat-accordion>
-    <mat-expansion-panel (opened)="panelOpenState()" (closed)="!panelOpenState()">
+    <mat-expansion-panel (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
       <mat-expansion-panel-header>
         <mat-panel-title>
           {{ t('settingsDialog.namespaces.predefinedNamespaces') }}

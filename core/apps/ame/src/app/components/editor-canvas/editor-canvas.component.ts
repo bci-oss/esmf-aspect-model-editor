@@ -87,6 +87,7 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
 
   public readonly isElementsSearchOpened = toSignal(this.searchesStateService.elementsSearch.opened$, {initialValue: false});
   public readonly isFilesSearchOpened = toSignal(this.searchesStateService.filesSearch.opened$, {initialValue: false});
+  public readonly isModelEmpty = this.maxgraphService.isModelEmpty;
 
   get selectedShapeForUpdate(): Cell | null {
     return this.shapeSettingsStateService.selectedShapeForUpdate;
@@ -94,10 +95,6 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
 
   get modelElement(): NamedElement {
     return this.shapeSettingsService.modelElement;
-  }
-
-  get isModelEmpty(): boolean {
-    return !this.maxgraphService.getAllCells()?.length;
   }
 
   ngOnInit() {

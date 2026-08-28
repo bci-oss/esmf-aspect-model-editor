@@ -17,6 +17,7 @@ import {MaxGraphService} from '@ame/max-graph';
 import {ElementModelService} from '@ame/meta-model';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {SearchesStateService} from '@ame/utils';
+import {signal} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Cell} from '@maxgraph/core';
@@ -61,7 +62,7 @@ describe('EditorCanvasComponent Signal Forms save contract', () => {
             filesSearch: {opened$: of(false)},
           } as unknown as SearchesStateService,
         },
-        MockProvider(MaxGraphService, {getAllCells: vi.fn(() => [])}),
+        MockProvider(MaxGraphService, {getAllCells: vi.fn(() => []), isModelEmpty: signal(false)}),
         MockProvider(EditorService),
         MockProvider(LoadedFilesService),
         MockProvider(Router),

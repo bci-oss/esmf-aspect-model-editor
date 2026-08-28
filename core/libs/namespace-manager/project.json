@@ -5,6 +5,14 @@
   "sourceRoot": "libs/namespace-manager/src",
   "prefix": "ame",
   "targets": {
+    "test": {
+      "executor": "@angular/build:unit-test",
+      "outputs": ["{workspaceRoot}/coverage/libs/namespace-manager"],
+      "options": {
+        "tsConfig": "libs/namespace-manager/tsconfig.spec.json",
+        "buildTarget": "namespace-manager:build"
+      }
+    },
     "lint": {
       "executor": "@nx/eslint:lint"
     },

@@ -46,15 +46,15 @@ import {finalize} from 'rxjs';
   ],
 })
 export class SelectNamespacesComponent implements OnInit {
-  private modelApiService = inject(ModelApiService);
-  private modelCheckerService = inject(ModelCheckerService);
-  private notificationService = inject(NotificationsService);
-  private translate = inject(LanguageTranslationService);
-  private dialogRef = inject(MatDialogRef<SelectNamespacesComponent>);
+  private readonly modelApiService = inject(ModelApiService);
+  private readonly modelCheckerService = inject(ModelCheckerService);
+  private readonly notificationService = inject(NotificationsService);
+  private readonly translate = inject(LanguageTranslationService);
+  private readonly dialogRef = inject(MatDialogRef<SelectNamespacesComponent>);
 
-  public entries = signal(undefined);
-  public extracting = signal(false);
-  public selectedKey = signal('');
+  public readonly entries = signal<Record<string, {namespace: string; model: string; version: string}> | undefined>(undefined);
+  public readonly extracting = signal(false);
+  public readonly selectedKey = signal('');
 
   ngOnInit(): void {
     this.extracting.set(true);
@@ -83,8 +83,12 @@ export class SelectNamespacesComponent implements OnInit {
       });
   }
 
-  export() {
-    this.modelApiService.fetchExportPackage(this.selectedKey()).subscribe({
+  export(): void {
+    const key = this.selectedKey();
+    if (!key) {
+      return;
+    }
+    this.modelApiService.fetchExportPackage(key).subscribe({
       next: response => {
         const url = URL.createObjectURL(response);
         this.downloadFile(url);
@@ -92,14 +96,14 @@ export class SelectNamespacesComponent implements OnInit {
       },
       error: () => {
         this.notificationService.error({
-          title: this.translate.language.notificationService.namespaceExportFailure,
-          message: this.translate.language.notificationService.internalExportError,
+          title: this.translate?.language?.notificationService?.namespaceExportFailure ?? 'Export Failed',
+          message: this.translate?.language?.notificationService?.internalExportError ?? 'Internal export error occurred.',
         });
       },
     });
   }
 
-  private downloadFile(url: string) {
+  private downloadFile(url: string): void {
     const a = document.createElement('a');
     a.href = url;
     a.download = 'namespaces.zip';

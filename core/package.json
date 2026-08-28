@@ -226,6 +226,7 @@
     "test:aspect-exporter": "nx test aspect-exporter",
     "test:connection": "nx test connection",
     "test:editor": "nx test editor",
+    "test:namespace-manager": "nx test namespace-manager",
     "test:rdf": "nx test rdf",
     "test:shared": "nx test shared",
     "test:sidebar": "nx test sidebar",

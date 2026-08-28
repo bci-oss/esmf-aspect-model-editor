@@ -248,6 +248,25 @@
           }
         }
       }
+    },
+    "namespace-manager": {
+      "projectType": "library",
+      "root": "libs/namespace-manager",
+      "sourceRoot": "libs/namespace-manager/src",
+      "prefix": "ame",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "options": {"project": "libs/namespace-manager/ng-package.json"}
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "libs/namespace-manager/tsconfig.spec.json",
+            "buildTarget": "namespace-manager:build"
+          }
+        }
+      }
     }
   }
 }

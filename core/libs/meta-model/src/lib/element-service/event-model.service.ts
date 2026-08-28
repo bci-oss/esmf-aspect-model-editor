@@ -19,8 +19,8 @@ import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
 export class EventModelService extends BaseModelService {
-  private maxgraphService = inject(MaxGraphService);
-  private aspectRenderer = inject(EventRenderService);
+  private readonly maxgraphService = inject(MaxGraphService);
+  private readonly aspectRenderer = inject(EventRenderService);
 
   isApplicable(metaModelElement: NamedElement): boolean {
     return metaModelElement instanceof DefaultEvent;

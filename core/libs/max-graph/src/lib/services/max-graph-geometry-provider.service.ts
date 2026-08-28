@@ -20,7 +20,7 @@ import {MaxGraphAttributeService} from './max-graph-attribute.service';
 
 @Injectable({providedIn: 'root'})
 export class MaxGraphGeometryProviderService {
-  private maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
   public createGeometry(node: ModelTree<NamedElement>, x?: number, y?: number): Geometry {
     return this.maxgraphAttributeService.inCollapsedMode
       ? new Geometry(x, y, node.shape.collapsedWidth, node.shape.collapsedHeight)

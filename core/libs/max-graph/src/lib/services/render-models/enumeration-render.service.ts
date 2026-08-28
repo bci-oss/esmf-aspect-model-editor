@@ -13,7 +13,6 @@
 
 import {ShapeConnectorService} from '@ame/connection';
 import {FiltersService} from '@ame/loader-filters';
-import {MaxGraphShapeOverlayService} from '@ame/max-graph';
 import {Injectable, inject} from '@angular/core';
 import {
   DefaultCharacteristic,
@@ -27,6 +26,7 @@ import {
 } from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
 import {MaxGraphHelper} from '../../helpers';
+import {MaxGraphShapeOverlayService} from '../max-graph-shape-overlay.service';
 import {BaseRenderService} from './base-render-service';
 import {EntityValueRenderService} from './entity-value-render.service';
 import {UnitRenderService} from './unit-render.service';
@@ -40,11 +40,11 @@ interface EnumerationForm {
 
 @Injectable({providedIn: 'root'})
 export class EnumerationRenderService extends BaseRenderService {
-  private filtersService = inject(FiltersService);
-  private shapeConnectorService = inject(ShapeConnectorService);
-  private entityValueRenderer = inject(EntityValueRenderService);
-  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
-  private unitRendererService = inject(UnitRenderService);
+  private readonly filtersService = inject(FiltersService);
+  private readonly shapeConnectorService = inject(ShapeConnectorService);
+  private readonly entityValueRenderer = inject(EntityValueRenderService);
+  private readonly maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
+  private readonly unitRendererService = inject(UnitRenderService);
 
   isApplicable(cell: Cell): boolean {
     return MaxGraphHelper.getModelElement(cell) instanceof DefaultEnumeration;

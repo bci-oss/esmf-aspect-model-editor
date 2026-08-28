@@ -22,11 +22,11 @@ import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
 export class PropertyModelService extends BaseModelService {
-  private entityInstanceService = inject(EntityInstanceService);
-  private maxgraphService = inject(MaxGraphService);
-  private sammLangService = inject(SammLanguageSettingsService);
-  private propertyRenderer = inject(PropertyRenderService);
-  private maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private readonly entityInstanceService = inject(EntityInstanceService);
+  private readonly maxgraphService = inject(MaxGraphService);
+  private readonly sammLangService = inject(SammLanguageSettingsService);
+  private readonly propertyRenderer = inject(PropertyRenderService);
+  private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
   isApplicable(metaModelElement: NamedElement): boolean {
     return metaModelElement instanceof DefaultProperty;
   }

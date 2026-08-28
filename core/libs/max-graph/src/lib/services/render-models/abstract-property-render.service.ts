@@ -22,8 +22,8 @@ import {BaseRenderService} from './base-render-service';
 
 @Injectable({providedIn: 'root'})
 export class AbstractPropertyRenderService extends BaseRenderService {
-  private filtersService = inject(FiltersService);
-  private shapeConnectorService = inject(ShapeConnectorService);
+  private readonly filtersService = inject(FiltersService);
+  private readonly shapeConnectorService = inject(ShapeConnectorService);
 
   update({cell, callback}: RendererUpdatePayload) {
     this.handleExtendsElement(cell);

@@ -30,13 +30,13 @@ import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
 export class EntityModelService extends BaseModelService {
-  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
-  private entityInstanceService = inject(EntityInstanceService);
-  private maxgraphService = inject(MaxGraphService);
-  private maxgraphAttributeService = inject(MaxGraphAttributeService);
-  private entityRenderer = inject(EntityRenderService);
-  private languageService = inject(SammLanguageSettingsService);
-  private baseEntityModel = inject(BaseEntityModelService);
+  private readonly maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
+  private readonly entityInstanceService = inject(EntityInstanceService);
+  private readonly maxgraphService = inject(MaxGraphService);
+  private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private readonly entityRenderer = inject(EntityRenderService);
+  private readonly languageService = inject(SammLanguageSettingsService);
+  private readonly baseEntityModel = inject(BaseEntityModelService);
 
   isApplicable(metaModelElement: NamedElement): boolean {
     return metaModelElement instanceof DefaultEntity;

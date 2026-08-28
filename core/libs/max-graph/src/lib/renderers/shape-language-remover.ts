@@ -18,9 +18,9 @@ import {MaxGraphAttributeService, MaxGraphService, MaxGraphShapeSelectorService}
 
 @Injectable({providedIn: 'root'})
 export class ShapeLanguageRemover {
-  private maxgraphService = inject(MaxGraphService);
-  private maxgraphShapeSelectorService = inject(MaxGraphShapeSelectorService);
-  private maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private readonly maxgraphService = inject(MaxGraphService);
+  private readonly maxgraphShapeSelectorService = inject(MaxGraphShapeSelectorService);
+  private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
   removeUnnecessaryLanguages(locales: string[]) {
     this.maxgraphAttributeService.graph.getChildCells(this.maxgraphAttributeService.graph.getDefaultParent()).forEach(cell => {
       const modelElement = MaxGraphHelper.getModelElement(cell);

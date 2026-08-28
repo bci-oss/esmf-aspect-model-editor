@@ -40,10 +40,10 @@ import {UnitRenderService} from './unit-render.service';
 @Injectable({providedIn: 'root'})
 export class CharacteristicRenderService extends BaseRenderService {
   private metaModelElement: DefaultCharacteristic;
-  private filtersService = inject(FiltersService);
-  private shapeConnectorService = inject(ShapeConnectorService);
-  private unitRendererService = inject(UnitRenderService);
-  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
+  private readonly filtersService = inject(FiltersService);
+  private readonly shapeConnectorService = inject(ShapeConnectorService);
+  private readonly unitRendererService = inject(UnitRenderService);
+  private readonly maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
 
   isApplicable(cell: Cell): boolean {
     return MaxGraphHelper.getModelElement(cell) instanceof DefaultCharacteristic;

@@ -22,10 +22,10 @@ declare const sammUDefinition: any;
 
 @Injectable({providedIn: 'root'})
 export class UnitModelService extends BaseModelService {
-  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
-  private maxgraphAttributeService = inject(MaxGraphAttributeService);
-  private maxgraphService = inject(MaxGraphService);
-  private unitRenderer = inject(UnitRenderService);
+  private readonly maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
+  private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private readonly maxgraphService = inject(MaxGraphService);
+  private readonly unitRenderer = inject(UnitRenderService);
 
   private get sammU(): SammU {
     return this.loadedFile?.rdfModel.sammU;

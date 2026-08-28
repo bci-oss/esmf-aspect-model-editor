@@ -20,8 +20,8 @@ import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
 export class ValueModelService extends BaseModelService {
-  private maxgraphService = inject(MaxGraphService);
-  private valueRender = inject(ValueRenderService);
+  private readonly maxgraphService = inject(MaxGraphService);
+  private readonly valueRender = inject(ValueRenderService);
 
   isApplicable(metaModelElement: NamedElement): boolean {
     return metaModelElement instanceof DefaultValue;

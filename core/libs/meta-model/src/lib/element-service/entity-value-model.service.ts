@@ -19,7 +19,7 @@ import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
 export class EntityValueModelService extends BaseModelService {
-  private entityValueRenderService = inject(EntityValueRenderService);
+  private readonly entityValueRenderService = inject(EntityValueRenderService);
 
   isApplicable(metaModelElement: NamedElement): boolean {
     return metaModelElement instanceof DefaultEntityInstance;

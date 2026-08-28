@@ -41,19 +41,19 @@ import {ModelRootService} from './model-root.service';
 
 @Injectable({providedIn: 'root'})
 export class ElementModelService {
-  private injector = inject(Injector);
-  private titleService = inject(TitleService);
-  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
-  private maxgraphService = inject(MaxGraphService);
-  private entityInstanceService = inject(EntityInstanceService);
-  private sammLangService = inject(SammLanguageSettingsService);
-  private modelRootService = inject(ModelRootService);
-  private modelService = inject(ModelService);
-  private renameModelService = inject(RenameModelDialogService);
-  private notificationService = inject(NotificationsService);
-  private translate = inject(LanguageTranslationService);
-  private loadedFilesService = inject(LoadedFilesService);
-  private zone = inject(NgZone);
+  private readonly injector = inject(Injector);
+  private readonly titleService = inject(TitleService);
+  private readonly maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
+  private readonly maxgraphService = inject(MaxGraphService);
+  private readonly entityInstanceService = inject(EntityInstanceService);
+  private readonly sammLangService = inject(SammLanguageSettingsService);
+  private readonly modelRootService = inject(ModelRootService);
+  private readonly modelService = inject(ModelService);
+  private readonly renameModelService = inject(RenameModelDialogService);
+  private readonly notificationService = inject(NotificationsService);
+  private readonly translate = inject(LanguageTranslationService);
+  private readonly loadedFilesService = inject(LoadedFilesService);
+  private readonly zone = inject(NgZone);
 
   get currentCachedFile() {
     return this.loadedFilesService.currentLoadedFile.cachedFile;

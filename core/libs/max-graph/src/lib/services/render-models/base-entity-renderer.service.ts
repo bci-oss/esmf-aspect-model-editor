@@ -25,12 +25,12 @@ import {MaxGraphService} from '../max-graph.service';
 
 @Injectable({providedIn: 'root'})
 export class BaseEntityRendererService {
-  private filtersService = inject(FiltersService);
-  private loadedFiles = inject(LoadedFilesService);
-  private maxgraphService = inject(MaxGraphService);
-  private sammLangService = inject(SammLanguageSettingsService);
-  private shapeConnectorService = inject(ShapeConnectorService);
-  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
+  private readonly filtersService = inject(FiltersService);
+  private readonly loadedFiles = inject(LoadedFilesService);
+  private readonly maxgraphService = inject(MaxGraphService);
+  private readonly sammLangService = inject(SammLanguageSettingsService);
+  private readonly shapeConnectorService = inject(ShapeConnectorService);
+  private readonly maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
 
   public handleExtendsElement(cell: Cell) {
     const metaModelElement = MaxGraphHelper.getModelElement<DefaultEntity>(cell);

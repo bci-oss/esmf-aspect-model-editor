@@ -20,7 +20,7 @@ import {BaseRenderService} from './base-render-service';
 
 @Injectable({providedIn: 'root'})
 export class AbstractEntityRenderService extends BaseRenderService {
-  private baseEntityRenderer = inject(BaseEntityRendererService);
+  private readonly baseEntityRenderer = inject(BaseEntityRendererService);
 
   update({cell}) {
     this.baseEntityRenderer.handleExtendsElement(cell);

@@ -21,10 +21,10 @@ import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
 export class AspectModelService extends BaseModelService {
-  private aspectRenderer = inject(AspectRenderService);
-  private titleService = inject(TitleService);
-  private maxgraphService = inject(MaxGraphService);
-  private sidebarStateService = inject(SidebarStateService);
+  private readonly aspectRenderer = inject(AspectRenderService);
+  private readonly titleService = inject(TitleService);
+  private readonly maxgraphService = inject(MaxGraphService);
+  private readonly sidebarStateService = inject(SidebarStateService);
 
   isApplicable(metaModelElement: NamedElement): boolean {
     return metaModelElement instanceof DefaultAspect;

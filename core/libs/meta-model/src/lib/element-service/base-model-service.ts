@@ -22,11 +22,11 @@ import {DefaultAspect, DefaultEntityInstance, DefaultEnumeration, HasExtends, Na
 import {Cell} from '@maxgraph/core';
 
 export abstract class BaseModelService {
-  protected rdfService: RdfService = inject(RdfService);
-  protected modelService: ModelService = inject(ModelService);
-  protected editorService: EditorService = inject(EditorService);
-  protected modelApiService: ModelApiService = inject(ModelApiService);
-  protected loadedFilesService: LoadedFilesService = inject(LoadedFilesService);
+  protected readonly rdfService: RdfService = inject(RdfService);
+  protected readonly modelService: ModelService = inject(ModelService);
+  protected readonly editorService: EditorService = inject(EditorService);
+  protected readonly modelApiService: ModelApiService = inject(ModelApiService);
+  protected readonly loadedFilesService: LoadedFilesService = inject(LoadedFilesService);
 
   get currentCachedFile() {
     return this.loadedFile.cachedFile;

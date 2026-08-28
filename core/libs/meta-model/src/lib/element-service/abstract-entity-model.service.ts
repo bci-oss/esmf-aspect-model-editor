@@ -30,16 +30,16 @@ import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
 export class AbstractEntityModelService extends BaseModelService {
-  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
-  private entityInstanceService = inject(EntityInstanceService);
-  private maxgraphService = inject(MaxGraphService);
-  private maxgraphAttributeService = inject(MaxGraphAttributeService);
-  private abstractEntityRenderer = inject(AbstractEntityRenderService);
-  private baseEntityModel = inject(BaseEntityModelService);
-  private languageService = inject(SammLanguageSettingsService);
+  private readonly maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
+  private readonly entityInstanceService = inject(EntityInstanceService);
+  private readonly maxgraphService = inject(MaxGraphService);
+  private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private readonly abstractEntityRenderer = inject(AbstractEntityRenderService);
+  private readonly baseEntityModel = inject(BaseEntityModelService);
+  private readonly languageService = inject(SammLanguageSettingsService);
 
   isApplicable(metaModelElement: NamedElement): boolean {
-    return metaModelElement instanceof DefaultEntity && metaModelElement.isAbstractEntity();
+    return metaModelElement instanceof DefaultEntity && Boolean(metaModelElement.isAbstractEntity());
   }
 
   update(cell: Cell, form: {[key: string]: any}) {

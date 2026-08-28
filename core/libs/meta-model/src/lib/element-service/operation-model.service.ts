@@ -21,11 +21,11 @@ import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
 export class OperationModelService extends BaseModelService {
-  private filtersService = inject(FiltersService);
-  private maxgraphAttributeService = inject(MaxGraphAttributeService);
-  private shapeConnectorService = inject(ShapeConnectorService);
-  private maxgraphService = inject(MaxGraphService);
-  private operationRender = inject(OperationRenderService);
+  private readonly filtersService = inject(FiltersService);
+  private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private readonly shapeConnectorService = inject(ShapeConnectorService);
+  private readonly maxgraphService = inject(MaxGraphService);
+  private readonly operationRender = inject(OperationRenderService);
 
   isApplicable(metaModelElement: NamedElement): boolean {
     return metaModelElement instanceof DefaultOperation;

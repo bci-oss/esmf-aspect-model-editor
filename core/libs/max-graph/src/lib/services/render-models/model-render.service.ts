@@ -29,16 +29,16 @@ import {EntityValueRenderService} from './entity-value-render.service';
 
 @Injectable({providedIn: 'root'})
 export class ModelRenderService {
-  private aspectRenderService = inject(AspectRenderService);
-  private characteristicRenderService = inject(CharacteristicRenderService);
-  private entityRenderService = inject(EntityRenderService);
-  private propertyRenderService = inject(PropertyRenderService);
-  private traitRenderService = inject(TraitRenderService);
-  private entityValueRenderService = inject(EntityValueRenderService);
-  private enumerationRenderService = inject(EnumerationRenderService);
-  private eventRenderService = inject(EventRenderService);
-  private unitRenderService = inject(UnitRenderService);
-  private constraintRenderService = inject(ConstraintRenderService);
+  private readonly aspectRenderService = inject(AspectRenderService);
+  private readonly characteristicRenderService = inject(CharacteristicRenderService);
+  private readonly entityRenderService = inject(EntityRenderService);
+  private readonly propertyRenderService = inject(PropertyRenderService);
+  private readonly traitRenderService = inject(TraitRenderService);
+  private readonly entityValueRenderService = inject(EntityValueRenderService);
+  private readonly enumerationRenderService = inject(EnumerationRenderService);
+  private readonly eventRenderService = inject(EventRenderService);
+  private readonly unitRenderService = inject(UnitRenderService);
+  private readonly constraintRenderService = inject(ConstraintRenderService);
 
   update(cell: Cell) {
     this.getElementModelService(cell)?.update({cell});

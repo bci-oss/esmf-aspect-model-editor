@@ -19,8 +19,8 @@ import {PredefinedRemove} from './predefined-remove.type';
 
 @Injectable({providedIn: 'root'})
 export class TimeSeriesEntityRemoveService implements PredefinedRemove {
-  private modelRootService = inject(ModelRootService);
-  private maxgraphService = inject(MaxGraphService);
+  private readonly modelRootService = inject(ModelRootService);
+  private readonly maxgraphService = inject(MaxGraphService);
 
   public delete(cell: Cell) {
     const modelElement = MaxGraphHelper.getModelElement(cell);

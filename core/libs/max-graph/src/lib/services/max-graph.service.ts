@@ -35,17 +35,17 @@ export interface Coordinates {
 
 @Injectable({providedIn: 'root'})
 export class MaxGraphService {
-  private filterAttributes = inject(FILTER_ATTRIBUTES);
-  private loadedFiles = inject(LoadedFilesService);
-  private configurationService = inject(ConfigurationService);
-  private graphSetupService = inject(MaxGraphSetupService);
-  private maxgraphGeometryProviderService = inject(MaxGraphGeometryProviderService);
-  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
-  private maxgraphAttributeService = inject(MaxGraphAttributeService);
-  private notificationsService = inject(NotificationsService);
-  private themeService = inject(ThemeService);
-  private ngZone = inject(NgZone);
-  public maxgraphShapeSelectorService = inject(MaxGraphShapeSelectorService);
+  private readonly filterAttributes = inject(FILTER_ATTRIBUTES);
+  private readonly loadedFiles = inject(LoadedFilesService);
+  private readonly configurationService = inject(ConfigurationService);
+  private readonly graphSetupService = inject(MaxGraphSetupService);
+  private readonly maxgraphGeometryProviderService = inject(MaxGraphGeometryProviderService);
+  private readonly maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
+  private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private readonly notificationsService = inject(NotificationsService);
+  private readonly themeService = inject(ThemeService);
+  private readonly ngZone = inject(NgZone);
+  public readonly maxgraphShapeSelectorService = inject(MaxGraphShapeSelectorService);
 
   private nextCellCoordinates: {x: number; y: number} = null;
 

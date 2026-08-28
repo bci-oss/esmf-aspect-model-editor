@@ -42,13 +42,13 @@ import {ModelInfo} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class MaxGraphShapeOverlayService {
-  private injector = inject(Injector);
-  private browserService = inject(BrowserService);
-  private maxgraphShapeSelectorService = inject(MaxGraphShapeSelectorService);
-  private maxgraphAttributeService = inject(MaxGraphAttributeService);
-  private filtersService = inject(FiltersService);
-  private sammLangService = inject(SammLanguageSettingsService);
-  protected loadedFilesService = inject(LoadedFilesService);
+  private readonly injector = inject(Injector);
+  private readonly browserService = inject(BrowserService);
+  private readonly maxgraphShapeSelectorService = inject(MaxGraphShapeSelectorService);
+  private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private readonly filtersService = inject(FiltersService);
+  private readonly sammLangService = inject(SammLanguageSettingsService);
+  protected readonly loadedFilesService = inject(LoadedFilesService);
 
   removeOverlay(cell: Cell, overlay?: CellOverlay): void {
     const modelElement = MaxGraphHelper.getModelElement(cell);

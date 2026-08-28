@@ -20,10 +20,10 @@ import {DefaultEntity} from '@esmf/aspect-model-loader';
 
 @Injectable({providedIn: 'root'})
 export class BaseEntityModelService {
-  private notificationService = inject(NotificationsService);
-  private shapeConnectorService = inject(ShapeConnectorService);
-  private maxgraphService = inject(MaxGraphService);
-  private translate = inject(LanguageTranslationService);
+  private readonly notificationService = inject(NotificationsService);
+  private readonly shapeConnectorService = inject(ShapeConnectorService);
+  private readonly maxgraphService = inject(MaxGraphService);
+  private readonly translate = inject(LanguageTranslationService);
 
   checkExtendedElement(metaModelElement: DefaultEntity, extendedElement: DefaultEntity) {
     if (!(extendedElement instanceof DefaultEntity)) {

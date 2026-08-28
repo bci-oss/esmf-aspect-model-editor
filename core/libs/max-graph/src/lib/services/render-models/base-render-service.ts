@@ -22,10 +22,10 @@ import {MaxGraphAttributeService} from '../max-graph-attribute.service';
 import {MaxGraphService} from '../max-graph.service';
 
 export abstract class BaseRenderService {
-  protected maxgraphService = inject(MaxGraphService);
-  protected sammLangService = inject(SammLanguageSettingsService);
-  protected loadedFilesService = inject(LoadedFilesService);
-  protected maxgraphAttributeService = inject(MaxGraphAttributeService);
+  protected readonly maxgraphService = inject(MaxGraphService);
+  protected readonly sammLangService = inject(SammLanguageSettingsService);
+  protected readonly loadedFilesService = inject(LoadedFilesService);
+  protected readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
 
   get graph(): Graph {
     return this.maxgraphService.graph;

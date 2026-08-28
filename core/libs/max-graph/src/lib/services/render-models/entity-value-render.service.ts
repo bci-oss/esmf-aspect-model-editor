@@ -23,9 +23,9 @@ import {BaseRenderService} from './base-render-service';
 
 @Injectable({providedIn: 'root'})
 export class EntityValueRenderService extends BaseRenderService {
-  private filtersService = inject(FiltersService);
-  private maxgraphShapeOverlay = inject(MaxGraphShapeOverlayService);
-  private shapeConnectorService = inject(ShapeConnectorService);
+  private readonly filtersService = inject(FiltersService);
+  private readonly maxgraphShapeOverlay = inject(MaxGraphShapeOverlayService);
+  private readonly shapeConnectorService = inject(ShapeConnectorService);
 
   isApplicable(cell: Cell): boolean {
     return MaxGraphHelper.getModelElement(cell) instanceof DefaultEntityInstance;

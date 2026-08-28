@@ -20,9 +20,9 @@ import {MaxGraphHelper} from '../helpers';
 
 @Injectable({providedIn: 'root'})
 export class MaxGraphShapeSelectorService {
-  private maxgraphAttributeService = inject(MaxGraphAttributeService);
-  private loadedFiles = inject(LoadedFilesService);
-  private ngZone = inject(NgZone);
+  private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private readonly loadedFiles = inject(LoadedFilesService);
+  private readonly ngZone = inject(NgZone);
 
   private selectedCellsSignal = signal<Cell[]>([]);
 

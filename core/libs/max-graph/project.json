@@ -5,6 +5,14 @@
   "sourceRoot": "libs/max-graph/src",
   "prefix": "ame",
   "targets": {
+    "test": {
+      "executor": "@angular/build:unit-test",
+      "outputs": ["{workspaceRoot}/coverage/libs/max-graph"],
+      "options": {
+        "tsConfig": "libs/max-graph/tsconfig.spec.json",
+        "buildTarget": "max-graph:build"
+      }
+    },
     "lint": {
       "executor": "@nx/eslint:lint"
     },

@@ -33,11 +33,11 @@ interface EitherInformation {
 
 @Injectable({providedIn: 'root'})
 export class TraitModelService extends BaseModelService {
-  private maxgraphAttributeService = inject(MaxGraphAttributeService);
-  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
-  private maxgraphService = inject(MaxGraphService);
-  private shapeConnectorService = inject(ShapeConnectorService);
-  private traitRendererService = inject(TraitRenderService);
+  private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private readonly maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
+  private readonly maxgraphService = inject(MaxGraphService);
+  private readonly shapeConnectorService = inject(ShapeConnectorService);
+  private readonly traitRendererService = inject(TraitRenderService);
 
   update(cell: Cell, form: {[key: string]: any}) {
     super.update(cell, form);

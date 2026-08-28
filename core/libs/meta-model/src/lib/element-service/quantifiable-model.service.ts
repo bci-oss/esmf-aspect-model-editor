@@ -19,9 +19,9 @@ import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
 export class QuantifiableModelService extends BaseModelService {
-  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
-  private maxgraphAttributeService = inject(MaxGraphAttributeService);
-  private maxgraphService = inject(MaxGraphService);
+  private readonly maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
+  private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private readonly maxgraphService = inject(MaxGraphService);
 
   isApplicable(metaModelElement: NamedElement): boolean {
     return metaModelElement instanceof DefaultQuantifiable;

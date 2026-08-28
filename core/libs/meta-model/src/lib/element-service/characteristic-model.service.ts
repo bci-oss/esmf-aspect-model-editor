@@ -45,12 +45,12 @@ import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
 export class CharacteristicModelService extends BaseModelService {
-  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
-  private maxgraphAttributeService = inject(MaxGraphAttributeService);
-  private maxgraphService = inject(MaxGraphService);
-  private characteristicRenderer = inject(CharacteristicRenderService);
-  private enumerationRenderer = inject(EnumerationRenderService);
-  private filtersService = inject(FiltersService);
+  private readonly maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
+  private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private readonly maxgraphService = inject(MaxGraphService);
+  private readonly characteristicRenderer = inject(CharacteristicRenderService);
+  private readonly enumerationRenderer = inject(EnumerationRenderService);
+  private readonly filtersService = inject(FiltersService);
 
   isApplicable(metaModelElement: NamedElement): boolean {
     return metaModelElement instanceof DefaultCharacteristic;

@@ -22,8 +22,8 @@ import {BaseRenderService} from './base-render-service';
 
 @Injectable({providedIn: 'root'})
 export class UnitRenderService extends BaseRenderService {
-  private filterService = inject(FiltersService);
-  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
+  private readonly filterService = inject(FiltersService);
+  private readonly maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
 
   create(parentCell: Cell, unit: DefaultUnit) {
     this.removeFrom(parentCell);

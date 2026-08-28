@@ -11,11 +11,11 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MaxGraphHelper} from '@ame/max-graph';
 import {Injectable} from '@angular/core';
 import {DefaultAspect} from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
 import {NamedNode} from 'n3';
+import {MaxGraphHelper} from '../../helpers';
 import {RendererUpdatePayload} from '../../models';
 import {BaseRenderService} from './base-render-service';
 

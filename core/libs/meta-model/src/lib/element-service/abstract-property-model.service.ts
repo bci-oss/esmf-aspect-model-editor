@@ -26,10 +26,10 @@ import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
 export class AbstractPropertyModelService extends BaseModelService {
-  private maxgraphService = inject(MaxGraphService);
-  private abstractPropertyRenderer = inject(AbstractPropertyRenderService);
-  private maxgraphAttributeService = inject(MaxGraphAttributeService);
-  private languageService = inject(SammLanguageSettingsService);
+  private readonly maxgraphService = inject(MaxGraphService);
+  private readonly abstractPropertyRenderer = inject(AbstractPropertyRenderService);
+  private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private readonly languageService = inject(SammLanguageSettingsService);
 
   isApplicable(metaModelElement: NamedElement): boolean {
     return metaModelElement instanceof DefaultProperty && metaModelElement.isAbstract;

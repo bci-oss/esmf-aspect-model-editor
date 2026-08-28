@@ -38,11 +38,11 @@ import {BaseModelService} from './base-model-service';
 
 @Injectable({providedIn: 'root'})
 export class ConstraintModelService extends BaseModelService {
-  private maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
-  private maxgraphAttributeService = inject(MaxGraphAttributeService);
-  private maxgraphService = inject(MaxGraphService);
-  private constraintRenderer = inject(ConstraintRenderService);
-  private filtersService = inject(FiltersService);
+  private readonly maxgraphShapeOverlayService = inject(MaxGraphShapeOverlayService);
+  private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private readonly maxgraphService = inject(MaxGraphService);
+  private readonly constraintRenderer = inject(ConstraintRenderService);
+  private readonly filtersService = inject(FiltersService);
 
   update(cell: Cell, form: {[key: string]: any}) {
     let metaModelElement = MaxGraphHelper.getModelElement<DefaultConstraint>(cell);

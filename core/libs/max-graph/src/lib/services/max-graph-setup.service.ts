@@ -45,14 +45,14 @@ import {MaxGraphShapeSelectorService} from './max-graph-shape-selector.service';
 
 @Injectable({providedIn: 'root'})
 export class MaxGraphSetupService {
-  private configurationService = inject(ConfigurationService);
-  private bindingsService = inject(BindingsService);
-  private browserService = inject(BrowserService);
-  private maxgraphShapeSelectorService = inject(MaxGraphShapeSelectorService);
-  private maxgraphAttributeService = inject(MaxGraphAttributeService);
-  private translate = inject(LanguageTranslationService);
-  private loadedFiles = inject(LoadedFilesService);
-  private ngZone = inject(NgZone);
+  private readonly configurationService = inject(ConfigurationService);
+  private readonly bindingsService = inject(BindingsService);
+  private readonly browserService = inject(BrowserService);
+  private readonly maxgraphShapeSelectorService = inject(MaxGraphShapeSelectorService);
+  private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
+  private readonly translate = inject(LanguageTranslationService);
+  private readonly loadedFiles = inject(LoadedFilesService);
+  private readonly ngZone = inject(NgZone);
 
   private scrollTileSize: Rectangle;
   private graph: Graph;

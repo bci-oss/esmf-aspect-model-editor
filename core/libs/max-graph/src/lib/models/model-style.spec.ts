@@ -42,42 +42,51 @@ describe('ModelStyle', () => {
 
   describe('ModelStyleResolver', () => {
     it('should resolve DefaultAspect to ModelStyle.ASPECT', () => {
-      const aspect = new DefaultAspect({name: 'TestAspect', aspectModelUrn: 'urn:test#TestAspect'});
+      const aspect = new DefaultAspect({name: 'TestAspect', aspectModelUrn: 'urn:test#TestAspect', metaModelVersion: '2.1.0'});
       expect(ModelStyleResolver.resolve(aspect)).toBe(ModelStyle.ASPECT);
     });
 
     it('should resolve concrete DefaultProperty to ModelStyle.PROPERTY', () => {
-      const prop = new DefaultProperty({name: 'testProp', aspectModelUrn: 'urn:test#testProp'});
+      const prop = new DefaultProperty({name: 'testProp', aspectModelUrn: 'urn:test#testProp', metaModelVersion: '2.1.0'});
       expect(ModelStyleResolver.resolve(prop)).toBe(ModelStyle.PROPERTY);
     });
 
     it('should resolve abstract DefaultProperty to ModelStyle.ABSTRACT_PROPERTY', () => {
-      const prop = new DefaultProperty({name: 'testProp', aspectModelUrn: 'urn:test#testProp', isAbstract: true});
+      const prop = new DefaultProperty({
+        name: 'testProp',
+        aspectModelUrn: 'urn:test#testProp',
+        isAbstract: true,
+        metaModelVersion: '2.1.0',
+      });
       expect(ModelStyleResolver.resolve(prop)).toBe(ModelStyle.ABSTRACT_PROPERTY);
     });
 
     it('should resolve DefaultOperation to ModelStyle.OPERATION', () => {
-      const op = new DefaultOperation({name: 'testOp', aspectModelUrn: 'urn:test#testOp', input: []});
+      const op = new DefaultOperation({name: 'testOp', aspectModelUrn: 'urn:test#testOp', input: [], metaModelVersion: '2.1.0'});
       expect(ModelStyleResolver.resolve(op)).toBe(ModelStyle.OPERATION);
     });
 
     it('should resolve DefaultConstraint to ModelStyle.CONSTRAINT', () => {
-      const constraint = new DefaultConstraint({name: 'testConstraint', aspectModelUrn: 'urn:test#testConstraint'});
+      const constraint = new DefaultConstraint({
+        name: 'testConstraint',
+        aspectModelUrn: 'urn:test#testConstraint',
+        metaModelVersion: '2.1.0',
+      });
       expect(ModelStyleResolver.resolve(constraint)).toBe(ModelStyle.CONSTRAINT);
     });
 
     it('should resolve DefaultTrait to ModelStyle.TRAIT', () => {
-      const trait = new DefaultTrait({name: 'testTrait', aspectModelUrn: 'urn:test#testTrait'});
+      const trait = new DefaultTrait({name: 'testTrait', aspectModelUrn: 'urn:test#testTrait', metaModelVersion: '2.1.0'});
       expect(ModelStyleResolver.resolve(trait)).toBe(ModelStyle.TRAIT);
     });
 
     it('should resolve DefaultCharacteristic to ModelStyle.CHARACTERISTIC', () => {
-      const characteristic = new DefaultCharacteristic({name: 'testChar', aspectModelUrn: 'urn:test#testChar'});
+      const characteristic = new DefaultCharacteristic({name: 'testChar', aspectModelUrn: 'urn:test#testChar', metaModelVersion: '2.1.0'});
       expect(ModelStyleResolver.resolve(characteristic)).toBe(ModelStyle.CHARACTERISTIC);
     });
 
     it('should resolve concrete DefaultEntity to ModelStyle.ENTITY', () => {
-      const entity = new DefaultEntity({name: 'testEntity', aspectModelUrn: 'urn:test#testEntity'});
+      const entity = new DefaultEntity({name: 'testEntity', aspectModelUrn: 'urn:test#testEntity', metaModelVersion: '2.1.0'});
       expect(ModelStyleResolver.resolve(entity)).toBe(ModelStyle.ENTITY);
     });
 
@@ -85,33 +94,35 @@ describe('ModelStyle', () => {
       const entity = new DefaultEntity({
         name: 'testAbstractEntity',
         aspectModelUrn: 'urn:test#testAbstractEntity',
-        isAbstractEntity: true,
+        isAbstract: true,
+        metaModelVersion: '2.1.0',
       });
       expect(ModelStyleResolver.resolve(entity)).toBe(ModelStyle.ABSTRACT_ENTITY);
     });
 
     it('should resolve DefaultUnit to ModelStyle.UNIT', () => {
-      const unit = new DefaultUnit({name: 'testUnit', aspectModelUrn: 'urn:test#testUnit'});
+      const unit = new DefaultUnit({name: 'testUnit', aspectModelUrn: 'urn:test#testUnit', quantityKinds: [], metaModelVersion: '2.1.0'});
       expect(ModelStyleResolver.resolve(unit)).toBe(ModelStyle.UNIT);
     });
 
     it('should resolve DefaultEntityInstance to ModelStyle.ENTITY_INSTANCE', () => {
-      const entity = new DefaultEntity({name: 'testEntity', aspectModelUrn: 'urn:test#testEntity'});
+      const entity = new DefaultEntity({name: 'testEntity', aspectModelUrn: 'urn:test#testEntity', metaModelVersion: '2.1.0'});
       const entityInstance = new DefaultEntityInstance({
         name: 'testInstance',
         aspectModelUrn: 'urn:test#testInstance',
         type: entity,
+        metaModelVersion: '2.1.0',
       });
       expect(ModelStyleResolver.resolve(entityInstance)).toBe(ModelStyle.ENTITY_INSTANCE);
     });
 
     it('should resolve DefaultEvent to ModelStyle.EVENT', () => {
-      const event = new DefaultEvent({name: 'testEvent', aspectModelUrn: 'urn:test#testEvent'});
+      const event = new DefaultEvent({name: 'testEvent', aspectModelUrn: 'urn:test#testEvent', metaModelVersion: '2.1.0'});
       expect(ModelStyleResolver.resolve(event)).toBe(ModelStyle.EVENT);
     });
 
     it('should resolve DefaultValue to ModelStyle.VALUE', () => {
-      const value = new DefaultValue({name: 'testVal', aspectModelUrn: 'urn:test#testVal', value: '42'});
+      const value = new DefaultValue({name: 'testVal', aspectModelUrn: 'urn:test#testVal', value: '42', metaModelVersion: '2.1.0'});
       expect(ModelStyleResolver.resolve(value)).toBe(ModelStyle.VALUE);
     });
 

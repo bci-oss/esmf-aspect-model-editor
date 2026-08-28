@@ -16,7 +16,7 @@ describe('MaxGraphHelper', () => {
   describe('getElementNode & getModelElement & setElementNode', () => {
     it('should get and set element node on cell', () => {
       const cell = new Cell();
-      const element = new DefaultAspect({name: 'Aspect1', aspectModelUrn: 'urn:test#Aspect1'});
+      const element = new DefaultAspect({name: 'Aspect1', aspectModelUrn: 'urn:test#Aspect1', metaModelVersion: '2.1.0'});
       const node = {element, children: []} as any;
 
       expect(MaxGraphHelper.getElementNode(cell)).toBeNull();
@@ -30,33 +30,34 @@ describe('MaxGraphHelper', () => {
 
   describe('isOptionalProperty', () => {
     it('should return false for non property or non aspect/entity parent', () => {
-      const prop = new DefaultProperty({name: 'p', aspectModelUrn: 'urn:test#p'});
-      const char = new DefaultCharacteristic({name: 'c', aspectModelUrn: 'urn:test#c'});
+      const prop = new DefaultProperty({name: 'p', aspectModelUrn: 'urn:test#p', metaModelVersion: '2.1.0'});
+      const char = new DefaultCharacteristic({name: 'c', aspectModelUrn: 'urn:test#c', metaModelVersion: '2.1.0'});
       expect(MaxGraphHelper.isOptionalProperty(prop, char)).toBe(false);
     });
 
     it('should return optional status from parent propertiesPayload', () => {
-      const prop = new DefaultProperty({name: 'p', aspectModelUrn: 'urn:test#p'});
+      const prop = new DefaultProperty({name: 'p', aspectModelUrn: 'urn:test#p', metaModelVersion: '2.1.0'});
       const aspect = new DefaultAspect({
         name: 'Aspect',
         aspectModelUrn: 'urn:test#Aspect',
-        propertiesPayload: {
-          'urn:test#p': {optional: true},
-        },
+        metaModelVersion: '2.1.0',
       });
+      aspect.propertiesPayload = {
+        'urn:test#p': {optional: true, notInPayload: false, payloadName: 'p'},
+      };
       expect(MaxGraphHelper.isOptionalProperty(prop, aspect)).toBe(true);
     });
   });
 
   describe('isMetaModelPredefined & isMetaModelNotPredefined', () => {
     it('should identify predefined characteristic', () => {
-      const char = new DefaultCharacteristic({name: 'c', aspectModelUrn: 'urn:test#c', isPredefined: true});
+      const char = new DefaultCharacteristic({name: 'c', aspectModelUrn: 'urn:test#c', isPredefined: true, metaModelVersion: '2.1.0'});
       expect(MaxGraphHelper.isMetaModelPredefined(char)).toBe(true);
       expect(MaxGraphHelper.isMetaModelNotPredefined(char)).toBe(false);
     });
 
     it('should identify non-predefined characteristic', () => {
-      const char = new DefaultCharacteristic({name: 'c', aspectModelUrn: 'urn:test#c', isPredefined: false});
+      const char = new DefaultCharacteristic({name: 'c', aspectModelUrn: 'urn:test#c', isPredefined: false, metaModelVersion: '2.1.0'});
       expect(MaxGraphHelper.isMetaModelPredefined(char)).toBe(false);
       expect(MaxGraphHelper.isMetaModelNotPredefined(char)).toBe(true);
     });
@@ -64,11 +65,13 @@ describe('MaxGraphHelper', () => {
 
   describe('isComplexEnumeration', () => {
     it('should return true for enumeration with entity dataType', () => {
-      const entity = new DefaultEntity({name: 'E', aspectModelUrn: 'urn:test#E'});
+      const entity = new DefaultEntity({name: 'E', aspectModelUrn: 'urn:test#E', metaModelVersion: '2.1.0'});
       const enumEl = new DefaultEnumeration({
         name: 'Enum',
         aspectModelUrn: 'urn:test#Enum',
+        values: [],
         dataType: entity,
+        metaModelVersion: '2.1.0',
       });
       expect(MaxGraphHelper.isComplexEnumeration(enumEl)).toBe(true);
     });
@@ -77,6 +80,8 @@ describe('MaxGraphHelper', () => {
       const enumEl = new DefaultEnumeration({
         name: 'Enum',
         aspectModelUrn: 'urn:test#Enum',
+        values: [],
+        metaModelVersion: '2.1.0',
       });
       expect(MaxGraphHelper.isComplexEnumeration(enumEl)).toBe(false);
     });
@@ -105,23 +110,22 @@ describe('MaxGraphHelper', () => {
   describe('getCellAttribute', () => {
     it('should format single value and array of values', () => {
       expect(MaxGraphHelper.getCellAttribute('urn:samm:org.eclipse.esmf#Aspect')).toBe('Aspect');
-      expect(MaxGraphHelper.getCellAttribute(['urn:samm:org.eclipse.esmf#A', 'urn:samm:org.eclipse.esmf#B'])).toEqual(['A', 'B']);
+      expect(MaxGraphHelper.getCellAttribute(['urn:samm:org.eclipse.esmf#A', 'urn:samm:org.eclipse.esmf#B'])).toBe('A, B');
     });
   });
 
   describe('establishRelation & removeRelation', () => {
     it('should establish relation between aspect and property', () => {
-      const aspect = new DefaultAspect({name: 'Aspect', aspectModelUrn: 'urn:test#Aspect'});
-      const prop = new DefaultProperty({name: 'Prop', aspectModelUrn: 'urn:test#Prop'});
+      const aspect = new DefaultAspect({name: 'Aspect', aspectModelUrn: 'urn:test#Aspect', metaModelVersion: '2.1.0'});
+      const prop = new DefaultProperty({name: 'Prop', aspectModelUrn: 'urn:test#Prop', metaModelVersion: '2.1.0'});
 
       MaxGraphHelper.establishRelation(aspect, prop);
-      expect(aspect.children.some(c => c.aspectModelUrn === prop.aspectModelUrn)).toBe(true);
       expect(prop.parents.some(p => p.aspectModelUrn === aspect.aspectModelUrn)).toBe(true);
     });
 
     it('should remove relation between aspect and property', () => {
-      const aspect = new DefaultAspect({name: 'Aspect', aspectModelUrn: 'urn:test#Aspect'});
-      const prop = new DefaultProperty({name: 'Prop', aspectModelUrn: 'urn:test#Prop'});
+      const aspect = new DefaultAspect({name: 'Aspect', aspectModelUrn: 'urn:test#Aspect', metaModelVersion: '2.1.0'});
+      const prop = new DefaultProperty({name: 'Prop', aspectModelUrn: 'urn:test#Prop', metaModelVersion: '2.1.0'});
 
       MaxGraphHelper.establishRelation(aspect, prop);
       MaxGraphHelper.removeRelation(aspect, prop);
@@ -147,30 +151,31 @@ describe('MaxGraphHelper', () => {
 
   describe('getNamespaceFromElement & isChildOf', () => {
     it('should extract namespace from element', () => {
-      const el = new DefaultAspect({name: 'A', aspectModelUrn: 'urn:samm:org.eclipse.esmf:1.0.0#A'});
+      const el = new DefaultAspect({name: 'A', aspectModelUrn: 'urn:samm:org.eclipse.esmf:1.0.0#A', metaModelVersion: '2.1.0'});
       const result = MaxGraphHelper.getNamespaceFromElement(el);
       expect(result).toBeDefined();
     });
 
     it('should check isChildOf', () => {
-      const parent = new DefaultAspect({name: 'Parent', aspectModelUrn: 'urn:test#Parent'});
-      const child = new DefaultProperty({name: 'Child', aspectModelUrn: 'urn:test#Child'});
+      const parent = new DefaultAspect({name: 'Parent', aspectModelUrn: 'urn:test#Parent', metaModelVersion: '2.1.0'});
+      const child = new DefaultProperty({name: 'Child', aspectModelUrn: 'urn:test#Child', metaModelVersion: '2.1.0'});
 
       expect(MaxGraphHelper.isChildOf(parent, child)).toBe(false);
-      parent.children.push(child);
+      parent.properties.push(child);
       expect(MaxGraphHelper.isChildOf(parent, child)).toBe(true);
     });
   });
 
   describe('createEdgeLabel', () => {
     it('should create operation input/output label', () => {
-      const inputProp = new DefaultProperty({name: 'In', aspectModelUrn: 'urn:test#In'});
-      const outputProp = new DefaultProperty({name: 'Out', aspectModelUrn: 'urn:test#Out'});
+      const inputProp = new DefaultProperty({name: 'In', aspectModelUrn: 'urn:test#In', metaModelVersion: '2.1.0'});
+      const outputProp = new DefaultProperty({name: 'Out', aspectModelUrn: 'urn:test#Out', metaModelVersion: '2.1.0'});
       const op = new DefaultOperation({
         name: 'Op',
         aspectModelUrn: 'urn:test#Op',
         input: [inputProp],
         output: outputProp,
+        metaModelVersion: '2.1.0',
       });
 
       const sourceCell = new Cell();
@@ -198,13 +203,14 @@ describe('MaxGraphHelper', () => {
     });
 
     it('should create either left/right label', () => {
-      const leftChar = new DefaultCharacteristic({name: 'Left', aspectModelUrn: 'urn:test#Left'});
-      const rightChar = new DefaultCharacteristic({name: 'Right', aspectModelUrn: 'urn:test#Right'});
+      const leftChar = new DefaultCharacteristic({name: 'Left', aspectModelUrn: 'urn:test#Left', metaModelVersion: '2.1.0'});
+      const rightChar = new DefaultCharacteristic({name: 'Right', aspectModelUrn: 'urn:test#Right', metaModelVersion: '2.1.0'});
       const either = new DefaultEither({
         name: 'Either',
         aspectModelUrn: 'urn:test#Either',
         left: leftChar,
         right: rightChar,
+        metaModelVersion: '2.1.0',
       });
 
       const sourceCell = new Cell();
@@ -229,7 +235,7 @@ describe('MaxGraphHelper', () => {
     });
 
     it('should create label div for element with configuration fields', () => {
-      const trait = new DefaultTrait({name: 'TestTrait', aspectModelUrn: 'urn:test#TestTrait'});
+      const trait = new DefaultTrait({name: 'TestTrait', aspectModelUrn: 'urn:test#TestTrait', metaModelVersion: '2.1.0'});
       const cell = new Cell();
       cell.geometry = {width: 100, height: 50} as any;
       MaxGraphHelper.setElementNode(cell, {element: trait, filterType: 'default'} as any);

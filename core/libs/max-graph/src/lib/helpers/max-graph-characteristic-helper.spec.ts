@@ -70,19 +70,21 @@ describe('MaxGraphCharacteristicHelper', () => {
 
   describe('getChildEntityValuesToDelete', () => {
     it('should recursively find child entity values', () => {
-      const entity = new DefaultEntity({name: 'TestEntity', aspectModelUrn: 'urn:test#TestEntity'});
+      const entity = new DefaultEntity({name: 'TestEntity', aspectModelUrn: 'urn:test#TestEntity', metaModelVersion: '2.1.0'});
       const childValue = new DefaultEntityInstance({
         name: 'ChildVal',
         aspectModelUrn: 'urn:test#ChildVal',
         type: entity,
+        metaModelVersion: '2.1.0',
       });
       const parentValue = new DefaultEntityInstance({
         name: 'ParentVal',
         aspectModelUrn: 'urn:test#ParentVal',
         type: entity,
+        metaModelVersion: '2.1.0',
       });
 
-      parentValue.addAssertion('urn:test#prop', childValue);
+      parentValue.setAssertion('urn:test#prop', childValue);
 
       const notInclude: DefaultEntityInstance[] = [];
       const result = MaxGraphCharacteristicHelper.getChildEntityValuesToDelete(parentValue, notInclude);
@@ -92,19 +94,21 @@ describe('MaxGraphCharacteristicHelper', () => {
     });
 
     it('should skip entity values already in notInclude array', () => {
-      const entity = new DefaultEntity({name: 'TestEntity', aspectModelUrn: 'urn:test#TestEntity'});
+      const entity = new DefaultEntity({name: 'TestEntity', aspectModelUrn: 'urn:test#TestEntity', metaModelVersion: '2.1.0'});
       const childValue = new DefaultEntityInstance({
         name: 'ChildVal',
         aspectModelUrn: 'urn:test#ChildVal',
         type: entity,
+        metaModelVersion: '2.1.0',
       });
       const parentValue = new DefaultEntityInstance({
         name: 'ParentVal',
         aspectModelUrn: 'urn:test#ParentVal',
         type: entity,
+        metaModelVersion: '2.1.0',
       });
 
-      parentValue.addAssertion('urn:test#prop', childValue);
+      parentValue.setAssertion('urn:test#prop', childValue);
 
       const notInclude: DefaultEntityInstance[] = [childValue];
       const result = MaxGraphCharacteristicHelper.getChildEntityValuesToDelete(parentValue, notInclude);

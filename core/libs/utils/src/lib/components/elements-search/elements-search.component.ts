@@ -1,5 +1,3 @@
-import {Component, computed, inject, signal} from '@angular/core';
-
 /*
  * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
  *
@@ -12,12 +10,14 @@ import {Component, computed, inject, signal} from '@angular/core';
  *
  * SPDX-License-Identifier: MPL-2.0
  */
+
 import {LoadedFilesService} from '@ame/cache';
-import {ConfirmDialogService, ShapeSettingsService} from '@ame/editor';
+import {ConfirmDialogEnum, ConfirmDialogService, ShapeSettingsService} from '@ame/editor';
 import {MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {
   ElectronSignals,
   ElectronSignalsService,
+  ElementIconComponent,
   ElementInfo,
   ElementType,
   mxCellSearchOption,
@@ -25,6 +25,7 @@ import {
   SearchService,
 } from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
+import {Component, computed, inject, signal} from '@angular/core';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -34,8 +35,6 @@ import {NamedElement} from '@esmf/aspect-model-loader';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {Cell} from '@maxgraph/core';
 import {throttleTime} from 'rxjs';
-import {ConfirmDialogEnum} from '../../../../../editor/src/lib/models/confirm-dialog.enum';
-import {ElementIconComponent} from '../../../../../shared/src/lib/components/element/element.component';
 import {SearchesStateService} from '../../search-state.service';
 
 @Component({

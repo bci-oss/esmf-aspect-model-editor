@@ -75,17 +75,17 @@ export class FilesSearchComponent {
           this.parseFiles(n);
           this.loading.set(false);
         });
-
-      toObservable(this.searchQuery)
-        .pipe(throttleTime(150))
-        .subscribe(value => {
-          if (value === '') {
-            this.searchableFiles.set(this.files);
-          } else {
-            this.searchableFiles.set(this.searchService.search(value, this.files, filesSearchOption));
-          }
-        });
     }
+
+    toObservable(this.searchQuery)
+      .pipe(throttleTime(150))
+      .subscribe(value => {
+        if (value === '') {
+          this.searchableFiles.set(this.files);
+        } else {
+          this.searchableFiles.set(this.searchService.search(value, this.files, filesSearchOption));
+        }
+      });
   }
 
   openFile({file, namespace, aspectModelUrn}) {

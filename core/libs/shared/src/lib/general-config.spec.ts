@@ -11,16 +11,11 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-export enum SammVersion {
-  SAMM_2_2_0 = '2.2.0',
-}
+import {describe, expect, it} from 'vitest';
+import {GeneralConfig} from './general-config';
 
-export class KnownVersion {
-  public static fromVersionString(version: string): SammVersion | null {
-    if (SammVersion.SAMM_2_2_0 === version) {
-      return SammVersion.SAMM_2_2_0;
-    }
-
-    return null;
-  }
-}
+describe('GeneralConfig', () => {
+  it('should define the sammVersion', () => {
+    expect(GeneralConfig.sammVersion).toBe('2.2.0');
+  });
+});

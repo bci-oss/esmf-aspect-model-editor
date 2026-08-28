@@ -53,7 +53,7 @@ export class ElementIconComponent {
         this.className.set(`${type.type.toLowerCase()} ame-${this.size()}`);
       }
 
-      this.matTooltip.message = `${this.isNewValue() ? 'New ' : ''}${type.type === 'text' ? 'Simple value' : 'Element'}`;
+      this.matTooltip.message = `${this.isNewValue() ? 'New ' : ''}${type?.type === 'text' ? 'Simple value' : 'Element'}`;
       this.matTooltip.position = 'before';
     });
   }

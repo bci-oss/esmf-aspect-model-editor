@@ -39,6 +39,6 @@ export class ElectronSignalsService implements ElectronSignals {
   }
 
   removeListener<K extends ElectronEventKeys>(listener: K) {
-    this.listeners[listener] = null;
+    delete this.listeners[listener];
   }
 }

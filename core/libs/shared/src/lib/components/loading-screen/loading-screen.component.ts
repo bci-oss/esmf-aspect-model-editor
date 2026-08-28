@@ -11,12 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {LoadingScreenOptions} from '@ame/shared';
 import {Component, inject} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {TranslocoDirective} from '@jsverse/transloco';
+import {LoadingScreenOptions} from '../../services/loading-screen.service';
 
 @Component({
   selector: 'ame-loading-screen',

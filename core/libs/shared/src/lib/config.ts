@@ -11,9 +11,9 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {AppConfig} from '@ame/shared';
 import {InjectionToken} from '@angular/core';
 import packageJson from '../../../../package.json';
+import {AppConfig} from './model';
 
 const defaultPort = '9090';
 

@@ -32,28 +32,28 @@ import {ArrowStyle, ChildrenArray, FilterLoader, ModelFilter, ModelTree, ModelTr
 const allowedElements = [DefaultAspect, DefaultProperty, DefaultEntity, DefaultEither];
 
 export class PropertiesFilterLoader implements FilterLoader {
-  cache = {};
-  filterType: ModelFilter = ModelFilter.PROPERTIES;
-  visibleElements = [DefaultAspect, DefaultProperty];
+  cache: Record<string, boolean> = {};
+  readonly filterType: ModelFilter = ModelFilter.PROPERTIES;
+  readonly visibleElements = [DefaultAspect, DefaultProperty];
 
-  private loadedFiles: LoadedFilesService;
+  private readonly loadedFiles: LoadedFilesService;
 
-  constructor(private injector: Injector) {
+  constructor(private readonly injector: Injector) {
     this.loadedFiles = this.injector.get(LoadedFilesService);
   }
 
   filter(rootElements: NamedElement[]): ModelTree<NamedElement>[] {
-    const shapeSettingsStateService = this.injector.get(ShapeSettingsStateService);
-    if (shapeSettingsStateService.isShapeSettingOpened) {
+    const shapeSettingsStateService = this.injector.get(ShapeSettingsStateService, null, {optional: true});
+    if (shapeSettingsStateService?.isShapeSettingOpened) {
       shapeSettingsStateService.closeShapeSettings();
     }
 
-    return rootElements
+    return (rootElements || [])
       .map(element => {
         this.cache = {};
         return this.generateTree(element);
       })
-      .filter(tree => tree);
+      .filter((tree): tree is ModelTree<NamedElement> => Boolean(tree));
   }
 
   generateTree(element: NamedElement, options?: ModelTreeOptions): ModelTree<NamedElement> {
@@ -73,7 +73,7 @@ export class PropertiesFilterLoader implements FilterLoader {
       options.parentNode.children.push(elementTree);
     }
 
-    for (const child of element.children) {
+    for (const child of element.children || []) {
       if (this.loadedFiles.isElementExtern(child) && this.loadedFiles.isElementExtern(element)) {
         continue;
       }
@@ -107,11 +107,11 @@ export class PropertiesFilterLoader implements FilterLoader {
 
       if (child instanceof DefaultEither) {
         const [leftTree, rightTree] = this.generateEitherTree(child, elementTree);
-        if (leftTree.children?.length) {
+        if (leftTree?.children?.length) {
           elementTree.children?.push(leftTree);
         }
 
-        if (rightTree.children?.length) {
+        if (rightTree?.children?.length) {
           elementTree.children?.push(rightTree);
         }
         continue;
@@ -128,7 +128,7 @@ export class PropertiesFilterLoader implements FilterLoader {
       }
     }
 
-    return this.isValid(elementTree) && elementTree;
+    return this.isValid(elementTree) ? elementTree : null;
   }
 
   getArrowStyle(element: NamedElement, parent: NamedElement): ArrowStyle {

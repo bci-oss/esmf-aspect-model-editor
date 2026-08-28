@@ -11,5 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-export * from './lib/helpers';
-export * from './lib/instantiator.service';
+import {describe, expect, it} from 'vitest';
+import * as instantiatorExports from './index';
+
+describe('instantiator library index exports', () => {
+  it('should export InstantiatorService and helpers', () => {
+    expect(instantiatorExports.InstantiatorService).toBeDefined();
+    expect(instantiatorExports.syncElementWithChildren).toBeDefined();
+  });
+});

@@ -5,6 +5,14 @@
   "sourceRoot": "libs/instantiator/src",
   "prefix": "ame",
   "targets": {
+    "test": {
+      "executor": "@angular/build:unit-test",
+      "outputs": ["{workspaceRoot}/coverage/libs/instantiator"],
+      "options": {
+        "tsConfig": "libs/instantiator/tsconfig.spec.json",
+        "buildTarget": "instantiator:build"
+      }
+    },
     "lint": {
       "executor": "@nx/eslint:lint"
     },

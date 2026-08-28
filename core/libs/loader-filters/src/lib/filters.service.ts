@@ -17,7 +17,7 @@ import {MaxGraphAttributeService, MaxGraphHelper, MaxGraphRenderer, MaxGraphServ
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {LoadingScreenService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
-import {inject, Injectable, Injector, runInInjectionContext} from '@angular/core';
+import {inject, Injectable, Injector} from '@angular/core';
 import {NamedElement} from '@esmf/aspect-model-loader';
 import {switchMap} from 'rxjs';
 import {FILTER_ATTRIBUTES} from './active-filter.session';
@@ -37,29 +37,31 @@ export type FilteredTrees = {
 
 @Injectable({providedIn: 'root'})
 export class FiltersService {
-  private injector = inject(Injector);
-  private loadingScreen = inject(LoadingScreenService);
-  private translate = inject(LanguageTranslationService);
-  private filterAttributesService = inject(FILTER_ATTRIBUTES);
+  private readonly injector = inject(Injector);
+  private readonly loadingScreen = inject(LoadingScreenService);
+  private readonly translate = inject(LanguageTranslationService);
+  private readonly filterAttributesService = inject(FILTER_ATTRIBUTES);
 
-  private filtersMethods = {
+  private readonly filtersMethods: Record<ModelFilter, () => void> = {
     [ModelFilter.DEFAULT]: () => this.selectDefaultFilter(),
     [ModelFilter.PROPERTIES]: () => this.selectPropertiesFilter(),
   };
   public filteredTree: Partial<FilteredTrees> = {};
-  public currentFilter: FilterLoader<any>;
+  public currentFilter: FilterLoader<NamedElement>;
 
   constructor() {
-    window['_filter'] = this;
+    if (typeof window !== 'undefined') {
+      (window as unknown as Record<string, unknown>)['_filter'] = this;
+    }
     this.selectDefaultFilter();
   }
 
-  selectDefaultFilter() {
-    this.currentFilter = new DefaultFilter(runInInjectionContext(this.injector, () => inject(LoadedFilesService)));
+  selectDefaultFilter(): void {
+    this.currentFilter = new DefaultFilter(this.injector.get(LoadedFilesService));
     this.filterAttributesService.activeFilter = ModelFilter.DEFAULT;
   }
 
-  selectPropertiesFilter() {
+  selectPropertiesFilter(): void {
     this.currentFilter = new PropertiesFilterLoader(this.injector);
     this.filterAttributesService.activeFilter = ModelFilter.PROPERTIES;
   }
@@ -88,12 +90,12 @@ export class FiltersService {
   updateNodeTree<T extends NamedElement = NamedElement>(node: ModelTree<T>, options?: ModelTreeOptions): ModelTree<T> {
     const generatedNode = this.currentFilter.generateTree(node.element, options);
     this.currentFilter.cache = {};
-    return generatedNode;
+    return generatedNode as ModelTree<T>;
   }
 
-  renderByFilter(filter: ModelFilter) {
-    const maxgraphService = runInInjectionContext(this.injector, () => inject(MaxGraphService));
-    const editorService = runInInjectionContext(this.injector, () => inject(EditorService));
+  renderByFilter(filter: ModelFilter): void {
+    const maxgraphService = this.injector.get(MaxGraphService);
+    const editorService = this.injector.get(EditorService);
     let selectedCell = maxgraphService.graph.selectionModel.cells?.[0];
     const selectedModelElement = selectedCell && MaxGraphHelper.getModelElement(selectedCell);
 
@@ -108,18 +110,19 @@ export class FiltersService {
           MaxGraphHelper.filterMode = filter;
           this.filterAttributesService.isFiltering = true;
           this.filtersMethods[filter]?.();
-          const loadedFilesService = runInInjectionContext(this.injector, () => inject(LoadedFilesService));
+          const loadedFilesService = this.injector.get(LoadedFilesService);
           const maxgraphRenderer = new MaxGraphRenderer(
             maxgraphService,
-            runInInjectionContext(this.injector, () => inject(MaxGraphShapeOverlayService)),
-            runInInjectionContext(this.injector, () => inject(SammLanguageSettingsService)),
-            runInInjectionContext(this.injector, () => inject(LoadedFilesService))?.currentLoadedFile?.rdfModel,
+            this.injector.get(MaxGraphShapeOverlayService),
+            this.injector.get(SammLanguageSettingsService),
+            loadedFilesService?.currentLoadedFile?.rdfModel,
           );
 
           const cachedFile = loadedFilesService.currentLoadedFile.cachedFile;
-          const rootElements = cachedFile.getKeys().reduce((acc, e) => {
-            if (cachedFile.get<NamedElement>(e).parents.length <= 0) {
-              acc.push(cachedFile.get<NamedElement>(e));
+          const rootElements = cachedFile.getKeys().reduce<NamedElement[]>((acc, e) => {
+            const cachedElement = cachedFile.get<NamedElement>(e);
+            if (cachedElement && cachedElement.parents.length <= 0) {
+              acc.push(cachedElement);
             }
             return acc;
           }, []);

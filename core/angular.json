@@ -211,6 +211,25 @@
         }
       }
     },
+    "loader-filters": {
+      "projectType": "library",
+      "root": "libs/loader-filters",
+      "sourceRoot": "libs/loader-filters/src",
+      "prefix": "ame",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "options": {"project": "libs/loader-filters/ng-package.json"}
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "libs/loader-filters/tsconfig.spec.json",
+            "buildTarget": "loader-filters:build"
+          }
+        }
+      }
+    },
     "translation": {
       "projectType": "library",
       "root": "libs/translation",

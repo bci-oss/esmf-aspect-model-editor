@@ -128,7 +128,6 @@ export class EntityInstanceModalComponent {
       type: this.entity(),
     });
 
-    entityValue.addParent(this.enumeration());
     const properties = table.propertiesModel();
 
     for (const property of this.entity().properties.filter(property => !property.isAbstract)) {

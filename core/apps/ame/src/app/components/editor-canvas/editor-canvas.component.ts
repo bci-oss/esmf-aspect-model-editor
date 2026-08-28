@@ -68,7 +68,7 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
   private elementModelService = inject(ElementModelService);
   private editorService = inject(EditorService);
   private configurationService = inject(ConfigurationService);
-  public searchesStateService = inject(SearchesStateService);
+  private searchesStateService = inject(SearchesStateService);
 
   public readonly sidebarWidth = signal(SIDEBAR_MIN_WIDTH);
   public readonly sidebarDragPosition = signal({...SIDEBAR_DEFAULT_DRAG_POSITION});

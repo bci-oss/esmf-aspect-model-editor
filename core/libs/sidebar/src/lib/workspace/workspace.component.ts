@@ -12,14 +12,14 @@
  */
 
 import {ModelCheckerService} from '@ame/editor';
-import {SidebarStateService} from '@ame/sidebar';
-import {ChangeDetectorRef, Component, DestroyRef, effect, inject, signal} from '@angular/core';
+import {Component, DestroyRef, effect, inject, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatMiniFabButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {EMPTY, Subject, catchError, debounceTime, finalize, map, switchMap, tap} from 'rxjs';
+import {SidebarStateService} from '../sidebar-state.service';
 import {WorkspaceEmptyComponent} from './workspace-empty/workspace-empty.component';
 import {WorkspaceErrorComponent} from './workspace-error/workspace-error.component';
 import {WorkspaceFileElementsComponent} from './workspace-file-elements/workspace-file-elements.component';
@@ -42,7 +42,6 @@ import {WorkspaceFileListComponent} from './workspace-file-list/workspace-file-l
 })
 export class WorkspaceComponent {
   private destroyRef = inject(DestroyRef);
-  private changeDetector = inject(ChangeDetectorRef);
   private modelChecker = inject(ModelCheckerService);
 
   public sidebarService = inject(SidebarStateService);
@@ -72,7 +71,6 @@ export class WorkspaceComponent {
         tap(() => {
           this.error.set(null);
           this.loading.set(true);
-          this.changeDetector.detectChanges();
         }),
         switchMap(() =>
           this.modelChecker.detectWorkspaceErrors().pipe(
@@ -85,7 +83,6 @@ export class WorkspaceComponent {
             }),
             finalize(() => {
               this.loading.set(false);
-              this.changeDetector.detectChanges();
             }),
           ),
         ),

@@ -23,6 +23,7 @@ import {
 import {MaxGraphService} from '@ame/max-graph';
 import {ElementModelService} from '@ame/meta-model';
 import {ConfigurationService} from '@ame/settings-dialog';
+import {SidebarComponent} from '@ame/sidebar';
 import {ElementsSearchComponent, FilesSearchComponent, SearchesStateService} from '@ame/utils';
 import {CdkDrag, CdkDragEnd, CdkDragHandle} from '@angular/cdk/drag-drop';
 import {CommonModule} from '@angular/common';
@@ -34,7 +35,6 @@ import {NamedElement} from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
 import {fromEvent} from 'rxjs';
 import {debounceTime, filter, map, switchMap, tap} from 'rxjs/operators';
-import {SidebarComponent} from '../../../../../../libs/sidebar/src/lib/sidebar/sidebar.component';
 
 const SIDEBAR_MIN_WIDTH = 480;
 const SIDEBAR_DEFAULT_DRAG_POSITION = {x: -SIDEBAR_MIN_WIDTH, y: 0};

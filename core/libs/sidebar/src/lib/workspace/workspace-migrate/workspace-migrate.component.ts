@@ -29,7 +29,7 @@ import {MigrationDialogComponent} from './migration-dialog';
 })
 export class WorkspaceMigrateComponent {
   private dialog = inject(MatDialog);
-  private destroRef = inject(DestroyRef);
+  private destroyRef = inject(DestroyRef);
   private migratorApiService = inject(MigratorApiService);
   private sidebarService = inject(SidebarStateService);
 
@@ -37,7 +37,7 @@ export class WorkspaceMigrateComponent {
     return this.migratorApiService
       .hasFilesToMigrate()
       .pipe(
-        takeUntilDestroyed(this.destroRef),
+        takeUntilDestroyed(this.destroyRef),
         switchMap(hasFiles =>
           hasFiles
             ? this.dialog

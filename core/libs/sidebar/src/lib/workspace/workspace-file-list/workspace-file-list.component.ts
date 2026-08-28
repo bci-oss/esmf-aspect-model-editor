@@ -13,12 +13,11 @@
 
 import {ModelApiService} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
-import {ConfirmDialogService, FileHandlingService, ModelSaverService} from '@ame/editor';
+import {ConfirmDialogEnum, ConfirmDialogService, FileHandlingService, ModelSaverService} from '@ame/editor';
 import {ElectronSignals, ElectronSignalsService, NotificationsService} from '@ame/shared';
-import {FileStatus, SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
 import {KeyValuePipe} from '@angular/common';
-import {ChangeDetectorRef, Component, effect, inject, NgZone, signal} from '@angular/core';
+import {Component, DestroyRef, effect, inject, signal} from '@angular/core';
 import {MatMiniFabButton} from '@angular/material/button';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
@@ -27,7 +26,7 @@ import {MatMenu, MatMenuItem, MatMenuTrigger} from '@angular/material/menu';
 import {MatTooltip} from '@angular/material/tooltip';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {filter, finalize, switchMap} from 'rxjs';
-import {ConfirmDialogEnum} from '../../../../../editor/src/lib/models/confirm-dialog.enum';
+import {FileStatus, SidebarStateService} from '../../sidebar-state.service';
 import {WorkspaceMigrateComponent} from '../workspace-migrate/workspace-migrate.component';
 
 @Component({
@@ -55,10 +54,9 @@ export class WorkspaceFileListComponent {
   private confirmDialogService = inject(ConfirmDialogService);
   private modelApiService = inject(ModelApiService);
   private fileHandlingService = inject(FileHandlingService);
-  private changeDetector = inject(ChangeDetectorRef);
   private translate = inject(LanguageTranslationService);
   private loadedFiles = inject(LoadedFilesService);
-  private ngZone = inject(NgZone);
+  private destroyRef = inject(DestroyRef);
 
   public sidebarService = inject(SidebarStateService);
 
@@ -76,9 +74,15 @@ export class WorkspaceFileListComponent {
     return this.sidebarService.selection;
   }
 
-  private searchThrottle: NodeJS.Timeout;
+  private searchThrottle: NodeJS.Timeout | null = null;
 
   constructor() {
+    this.destroyRef.onDestroy(() => {
+      if (this.searchThrottle) {
+        clearTimeout(this.searchThrottle);
+      }
+    });
+
     effect(() => {
       const namespaces = this.sidebarService.namespacesState.namespaces();
       const currentFolded = this.foldedStatus();
@@ -116,7 +120,7 @@ export class WorkspaceFileListComponent {
     this.searchString.set(newSearchString);
 
     if (this.searchThrottle) {
-      clearInterval(this.searchThrottle);
+      clearTimeout(this.searchThrottle);
     }
 
     this.searchThrottle = setTimeout(() => {
@@ -156,7 +160,6 @@ export class WorkspaceFileListComponent {
     }
 
     this.sidebarService.selection.select(namespace, file);
-    this.changeDetector.detectChanges();
   }
 
   public isOpenable() {

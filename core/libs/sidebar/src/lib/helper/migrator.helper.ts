@@ -11,10 +11,19 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 export class ExporterHelper {
-  public static isVersionOutdated(fileVersion: string, currentSammVersion: string) {
-    const [b1, b2, b3] = currentSammVersion.split('.').map(x => Number(x));
-    const [f1, f2, f3] = fileVersion.split('.').map(x => Number(x));
+  public static isVersionOutdated(fileVersion?: string, currentSammVersion?: string): boolean {
+    if (!fileVersion || !currentSammVersion) {
+      return false;
+    }
+    const [b1 = 0, b2 = 0, b3 = 0] = currentSammVersion.split('.').map(x => Number(x) || 0);
+    const [f1 = 0, f2 = 0, f3 = 0] = fileVersion.split('.').map(x => Number(x) || 0);
 
-    return b1 > f1 || b2 > f2 || b3 > f3;
+    if (b1 !== f1) {
+      return b1 > f1;
+    }
+    if (b2 !== f2) {
+      return b2 > f2;
+    }
+    return b3 > f3;
   }
 }

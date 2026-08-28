@@ -14,12 +14,12 @@
 import {LoadedFilesService} from '@ame/cache';
 import {MaxGraphService} from '@ame/max-graph';
 import {ElementIconComponent, ElementType, sammElements} from '@ame/shared';
-import {SidebarStateService} from '@ame/sidebar';
 import {Component, computed, inject} from '@angular/core';
 import {MatMiniFabButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {DraggableElementComponent} from '../draggable-element/draggable-element.component';
+import {SidebarStateService} from '../sidebar-state.service';
 
 @Component({
   selector: 'ame-sidebar-samm-elements',

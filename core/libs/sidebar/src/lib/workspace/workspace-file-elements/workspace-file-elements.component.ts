@@ -16,8 +16,7 @@ import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {ModelLoaderService} from '@ame/editor';
 import {MaxGraphService} from '@ame/max-graph';
 import {ElementIconComponent, ElementType, sammElements} from '@ame/shared';
-import {SidebarStateService} from '@ame/sidebar';
-import {Component, effect, inject, signal} from '@angular/core';
+import {Component, DestroyRef, effect, inject, signal} from '@angular/core';
 import {MatMiniFabButton} from '@angular/material/button';
 import {MatCheckbox} from '@angular/material/checkbox';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -30,6 +29,7 @@ import {NamedElement} from '@esmf/aspect-model-loader';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {first, switchMap} from 'rxjs';
 import {DraggableElementComponent} from '../../draggable-element/draggable-element.component';
+import {SidebarStateService} from '../../sidebar-state.service';
 
 @Component({
   selector: 'ame-workspace-file-elements',
@@ -55,6 +55,7 @@ export class WorkspaceFileElementsComponent {
   private modelApiService = inject(ModelApiService);
   private modelLoaderService = inject(ModelLoaderService);
   private loadedFilesService = inject(LoadedFilesService);
+  private destroyRef = inject(DestroyRef);
 
   public sidebarService = inject(SidebarStateService);
 
@@ -76,9 +77,15 @@ export class WorkspaceFileElementsComponent {
     'value',
   ];
 
-  private searchThrottle: NodeJS.Timeout;
+  private searchThrottle: NodeJS.Timeout | null = null;
 
   constructor() {
+    this.destroyRef.onDestroy(() => {
+      if (this.searchThrottle) {
+        clearTimeout(this.searchThrottle);
+      }
+    });
+
     effect(() => {
       const selection = this.sidebarService.selection.selection();
       if (selection) {
@@ -119,19 +126,21 @@ export class WorkspaceFileElementsComponent {
   public toggleFilter(event: MouseEvent, key: string) {
     event.stopPropagation();
     const currentElements = this.elements();
-    this.elements.set({
-      ...currentElements,
-      [key]: {
-        ...currentElements[key],
-        displayed: !currentElements[key].displayed,
-      },
-    });
+    if (currentElements[key]) {
+      this.elements.set({
+        ...currentElements,
+        [key]: {
+          ...currentElements[key],
+          displayed: !currentElements[key].displayed,
+        },
+      });
+    }
   }
 
   public search(event: KeyboardEvent) {
     const target = event.target as HTMLInputElement;
     if (this.searchThrottle) {
-      clearInterval(this.searchThrottle);
+      clearTimeout(this.searchThrottle);
     }
 
     this.searchThrottle = setTimeout(() => {
@@ -144,7 +153,7 @@ export class WorkspaceFileElementsComponent {
           ? currentElements[key].elements.filter((element: NamedElement) => {
               // @TODO Search for the language the application is set on
               return (
-                element.name.toLowerCase().includes(searchString) || element.getDescription('en')?.toLowerCase()?.includes(searchString)
+                element.name?.toLowerCase().includes(searchString) || element.getDescription?.('en')?.toLowerCase()?.includes(searchString)
               );
             })
           : currentElements[key].elements;

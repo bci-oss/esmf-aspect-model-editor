@@ -30,8 +30,14 @@ export class DraggableElementComponent implements AfterViewInit {
   public editorService = inject(EditorService);
 
   ngAfterViewInit(): void {
-    this.elementRef.nativeElement.dataset.type = this.type();
-    this.elementRef.nativeElement.dataset.urn = this.urn();
+    const type = this.type();
+    if (type) {
+      this.elementRef.nativeElement.dataset.type = type;
+    }
+    const urn = this.urn();
+    if (urn) {
+      this.elementRef.nativeElement.dataset.urn = urn;
+    }
 
     this.editorService.makeDraggable(this.elementRef.nativeElement, this.createShadowElement());
   }
@@ -39,7 +45,9 @@ export class DraggableElementComponent implements AfterViewInit {
   private createShadowElement() {
     const dragElement = this.renderer.createElement('div');
     const type = this.type();
-    dragElement.classList.add(type);
+    if (type) {
+      dragElement.classList.add(type);
+    }
     dragElement.style.display = 'block';
     dragElement.style.height = (type === 'trait' ? circleShapeGeometry.expandedHeight : basicShapeGeometry.expandedHeight) + 'px';
     dragElement.style.width = (type === 'trait' ? circleShapeGeometry.expandedWith : basicShapeGeometry.expandedWith) + 'px';

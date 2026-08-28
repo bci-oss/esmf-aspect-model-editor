@@ -10,7 +10,8 @@
       "outputs": ["{workspaceRoot}/coverage/libs/translation"],
       "options": {
         "tsConfig": "libs/translation/tsconfig.spec.json",
-        "buildTarget": "translation:build"
+        "buildTarget": "translation:build",
+        "watch": false
       }
     },
     "lint": {

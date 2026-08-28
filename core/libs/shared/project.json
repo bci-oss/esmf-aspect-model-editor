@@ -10,7 +10,8 @@
       "outputs": ["{workspaceRoot}/coverage/libs/shared"],
       "options": {
         "tsConfig": "libs/shared/tsconfig.spec.json",
-        "buildTarget": "shared:build"
+        "buildTarget": "shared:build",
+        "watch": false
       }
     },
     "lint": {

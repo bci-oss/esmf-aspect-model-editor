@@ -10,7 +10,8 @@
       "outputs": ["{workspaceRoot}/coverage/libs/editor"],
       "options": {
         "tsConfig": "libs/editor/tsconfig.spec.json",
-        "buildTarget": "editor:build"
+        "buildTarget": "editor:build",
+        "watch": false
       }
     },
     "lint": {

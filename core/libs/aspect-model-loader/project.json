@@ -11,7 +11,8 @@
       "outputs": ["{workspaceRoot}/coverage/libs/aspect-model-loader"],
       "options": {
         "tsConfig": "libs/aspect-model-loader/tsconfig.spec.json",
-        "buildTarget": "aspect-model-loader:build"
+        "buildTarget": "aspect-model-loader:build",
+        "watch": false
       }
     },
     "lint": {

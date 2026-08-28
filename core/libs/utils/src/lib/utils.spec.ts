@@ -107,7 +107,11 @@ describe('utils', () => {
 
   describe('setUniqueElementName', () => {
     it('should set unique name for DefaultAspect with counter if collision occurs', () => {
-      const aspect = new DefaultAspect();
+      const aspect = new DefaultAspect({
+        name: 'Aspect',
+        aspectModelUrn: 'urn:samm:org.eclipse.examples:1.0.0#Aspect',
+        metaModelVersion: '2.0.0',
+      });
       const rdfModel = {
         getAspectModelUrn: () => 'urn:samm:org.eclipse.examples:1.0.0#',
       } as RdfModel;
@@ -123,7 +127,11 @@ describe('utils', () => {
     });
 
     it('should lowercase the first letter for DefaultProperty', () => {
-      const prop = new DefaultProperty();
+      const prop = new DefaultProperty({
+        name: 'prop',
+        aspectModelUrn: 'urn:samm:org.eclipse.examples:1.0.0#prop',
+        metaModelVersion: '2.0.0',
+      });
       const rdfModel = {
         getAspectModelUrn: () => 'urn:samm:org.eclipse.examples:1.0.0#',
       } as RdfModel;
@@ -151,7 +159,11 @@ describe('utils', () => {
 
   describe('getPreferredNamesLocales & getDescriptionsLocales', () => {
     it('should return locales from preferredNames and descriptions', () => {
-      const aspect = new DefaultAspect();
+      const aspect = new DefaultAspect({
+        name: 'Aspect',
+        aspectModelUrn: 'urn:samm:org.eclipse.examples:1.0.0#Aspect',
+        metaModelVersion: '2.0.0',
+      });
       aspect.preferredNames.set('en', 'Name EN');
       aspect.preferredNames.set('de', 'Name DE');
       aspect.descriptions.set('en', 'Desc EN');
@@ -167,16 +179,34 @@ describe('utils', () => {
     });
 
     it('should return dataType of DefaultCharacteristic', () => {
-      const char = new DefaultCharacteristic();
-      const scalar = new DefaultScalar();
+      const char = new DefaultCharacteristic({
+        name: 'Char',
+        aspectModelUrn: 'urn:char',
+        metaModelVersion: '2.0.0',
+      });
+      const scalar = new DefaultScalar({
+        urn: 'http://www.w3.org/2001/XMLSchema#string',
+        metaModelVersion: '2.0.0',
+      });
       char.dataType = scalar;
       expect(getDeepLookupDataType(char)).toBe(scalar);
     });
 
     it('should return baseCharacteristic dataType for DefaultTrait', () => {
-      const trait = new DefaultTrait();
-      const char = new DefaultCharacteristic();
-      const scalar = new DefaultScalar();
+      const trait = new DefaultTrait({
+        name: 'Trait',
+        aspectModelUrn: 'urn:trait',
+        metaModelVersion: '2.0.0',
+      });
+      const char = new DefaultCharacteristic({
+        name: 'Char',
+        aspectModelUrn: 'urn:char',
+        metaModelVersion: '2.0.0',
+      });
+      const scalar = new DefaultScalar({
+        urn: 'http://www.w3.org/2001/XMLSchema#string',
+        metaModelVersion: '2.0.0',
+      });
       char.dataType = scalar;
       trait.baseCharacteristic = char;
 

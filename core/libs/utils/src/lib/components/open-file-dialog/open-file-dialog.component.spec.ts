@@ -18,7 +18,7 @@ import {MatDialogModule} from '@angular/material/dialog';
 import {TranslocoService} from '@jsverse/transloco';
 import {MockProvider} from 'ng-mocks';
 import {BehaviorSubject, of, Subject} from 'rxjs';
-import {describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {OpenFileDialogComponent} from './open-file-dialog.component';
 
 describe('OpenFileDialogComponent', () => {

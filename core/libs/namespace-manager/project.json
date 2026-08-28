@@ -10,7 +10,8 @@
       "outputs": ["{workspaceRoot}/coverage/libs/namespace-manager"],
       "options": {
         "tsConfig": "libs/namespace-manager/tsconfig.spec.json",
-        "buildTarget": "namespace-manager:build"
+        "buildTarget": "namespace-manager:build",
+        "watch": false
       }
     },
     "lint": {

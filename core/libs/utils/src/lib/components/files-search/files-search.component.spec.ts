@@ -29,10 +29,10 @@ import {FileStatus, SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
 import {provideHttpClient, withXhr} from '@angular/common/http';
 import {provideHttpClientTesting} from '@angular/common/http/testing';
-import {signal} from '@angular/core';
-import {ComponentFixture, fakeAsync, TestBed, tick} from '@angular/core/testing';
+import {provideZonelessChangeDetection, signal} from '@angular/core';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {FormsModule} from '@angular/forms';
-import {MatDialog, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
+import {MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {By} from '@angular/platform-browser';
@@ -81,8 +81,9 @@ describe('Files search', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FilesSearchComponent, FormsModule, MatFormFieldModule, MatInputModule, MatDialogModule, BrowserAnimationsModule],
+      imports: [FilesSearchComponent, FormsModule, MatFormFieldModule, MatInputModule, BrowserAnimationsModule],
       providers: [
+        provideZonelessChangeDetection(),
         provideHttpClient(withXhr()),
         provideHttpClientTesting(),
         MockProvider(MatDialogRef),
@@ -111,9 +112,12 @@ describe('Files search', () => {
           } as any,
           updateWorkspace: vi.fn(() => of({})) as any,
         }),
-        MockProvider(MatDialog, {
-          open: vi.fn(),
-        }),
+        {
+          provide: MatDialog,
+          useValue: {
+            open: vi.fn(),
+          },
+        },
         MockProvider(ModelSavingTrackerService, {
           isSaved$: of(true),
         }),
@@ -216,14 +220,12 @@ describe('Files search', () => {
   });
 
   it('should open dialog and open window when dialog returns "open-out"', () => {
-    const mockFileStatus = new FileStatus({
-      name: 'SharedModel.ttl',
-      loaded: false,
-      outdated: false,
-      errored: false,
-      sammVersion: '2.1.0',
-      aspectModelUrn: 'urn:samm:org.eclipse.examples:1.0.0#SharedModel',
-    });
+    const mockFileStatus = new FileStatus('SharedModel.ttl');
+    mockFileStatus.loaded = false;
+    mockFileStatus.outdated = false;
+    mockFileStatus.errored = false;
+    mockFileStatus.sammVersion = '2.1.0';
+    mockFileStatus.aspectModelUrn = 'urn:samm:org.eclipse.examples:1.0.0#SharedModel';
     vi.spyOn(sidebarStateService.namespacesState, 'getFile').mockReturnValue(mockFileStatus);
 
     const dialogRefMock = {
@@ -246,14 +248,12 @@ describe('Files search', () => {
   });
 
   it('should warn if file is already loaded or errored when attempting to open window', () => {
-    const mockFileStatus = new FileStatus({
-      name: 'SharedModel.ttl',
-      loaded: true,
-      outdated: false,
-      errored: false,
-      sammVersion: '2.1.0',
-      aspectModelUrn: 'urn:samm:org.eclipse.examples:1.0.0#SharedModel',
-    });
+    const mockFileStatus = new FileStatus('SharedModel.ttl');
+    mockFileStatus.loaded = true;
+    mockFileStatus.outdated = false;
+    mockFileStatus.errored = false;
+    mockFileStatus.sammVersion = '2.1.0';
+    mockFileStatus.aspectModelUrn = 'urn:samm:org.eclipse.examples:1.0.0#SharedModel';
     vi.spyOn(sidebarStateService.namespacesState, 'getFile').mockReturnValue(mockFileStatus);
 
     const dialogRefMock = {
@@ -287,18 +287,20 @@ describe('Files search', () => {
     expect(saveModelDialog.openDialog).toHaveBeenCalled();
   });
 
-  it('should filter files when searchQuery changes', fakeAsync(() => {
+  it('should filter files when searchQuery changes', async () => {
     const mockSearchResults = [{file: 'AspectDefault.ttl', namespace: 'org.eclipse.examples:1.0.0', aspectModelUrn: ''}];
     vi.spyOn(searchService, 'search').mockReturnValue(mockSearchResults as any);
 
+    await new Promise(resolve => setTimeout(resolve, 200));
     component.searchQuery.set('Aspect');
-    tick(200);
+    TestBed.flushEffects();
 
     expect(searchService.search).toHaveBeenCalled();
     expect(component.searchableFiles()).toEqual(mockSearchResults);
 
+    await new Promise(resolve => setTimeout(resolve, 200));
     component.searchQuery.set('');
-    tick(200);
+    TestBed.flushEffects();
     expect(component.searchableFiles().length).toBe(2);
-  }));
+  });
 });

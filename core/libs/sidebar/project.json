@@ -10,7 +10,8 @@
       "outputs": ["{workspaceRoot}/coverage/libs/sidebar"],
       "options": {
         "tsConfig": "libs/sidebar/tsconfig.spec.json",
-        "buildTarget": "sidebar:build"
+        "buildTarget": "sidebar:build",
+        "watch": false
       }
     },
     "lint": {

@@ -10,7 +10,8 @@
       "outputs": ["{workspaceRoot}/coverage/libs/connection"],
       "options": {
         "tsConfig": "libs/connection/tsconfig.spec.json",
-        "buildTarget": "connection:build"
+        "buildTarget": "connection:build",
+        "watch": false
       }
     },
     "lint": {

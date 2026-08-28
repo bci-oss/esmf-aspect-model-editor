@@ -10,7 +10,8 @@
       "outputs": ["{workspaceRoot}/coverage/apps/ame"],
       "options": {
         "tsConfig": "apps/ame/tsconfig.spec.json",
-        "buildTarget": "ame:build:development"
+        "buildTarget": "ame:build:development",
+        "watch": false
       }
     },
     "build": {

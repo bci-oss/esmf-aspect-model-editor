@@ -16,7 +16,8 @@ import {ConfirmDialogEnum, ConfirmDialogService, ShapeSettingsService} from '@am
 import {MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {ElectronSignalsService, SearchService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
-import {ComponentFixture, fakeAsync, TestBed, tick} from '@angular/core/testing';
+import {provideZonelessChangeDetection} from '@angular/core';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {FormsModule} from '@angular/forms';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -54,6 +55,7 @@ describe('ElementsSearchComponent', () => {
         BrowserAnimationsModule,
       ],
       providers: [
+        provideZonelessChangeDetection(),
         MockProvider(LoadedFilesService, {
           isElementExtern: vi.fn(() => false),
           getFileFromElement: vi.fn(() => 'TestFile.ttl'),
@@ -123,13 +125,17 @@ describe('ElementsSearchComponent', () => {
   });
 
   it('should transform elements and provide symbols', () => {
-    const aspect = new DefaultAspect();
-    aspect.name = 'TestAspect';
-    aspect.aspectModelUrn = 'urn:samm:org.eclipse.examples:1.0.0#TestAspect';
+    const aspect = new DefaultAspect({
+      name: 'TestAspect',
+      aspectModelUrn: 'urn:samm:org.eclipse.examples:1.0.0#TestAspect',
+      metaModelVersion: '2.0.0',
+    });
 
-    const property = new DefaultProperty();
-    property.name = 'testProp';
-    property.aspectModelUrn = 'urn:samm:org.eclipse.examples:1.0.0#testProp';
+    const property = new DefaultProperty({
+      name: 'testProp',
+      aspectModelUrn: 'urn:samm:org.eclipse.examples:1.0.0#testProp',
+      metaModelVersion: '2.0.0',
+    });
 
     component.elements.set([aspect, property]);
 
@@ -138,26 +144,33 @@ describe('ElementsSearchComponent', () => {
     expect(transformed[0].element).toBe(aspect);
     expect(transformed[0].type).toBe('aspect');
     expect(transformed[1].element).toBe(property);
-    expect(transformed[1].type).toBe('property');
+    expect(transformed[1].type).toBe('abstract-property');
   });
 
-  it('should filter elements when search query changes', fakeAsync(() => {
+  it('should filter elements when search query changes', async () => {
     const mockCell = {} as any;
-    const aspect = new DefaultAspect();
+    const aspect = new DefaultAspect({
+      name: 'TestAspect',
+      aspectModelUrn: 'urn:samm:org.eclipse.examples:1.0.0#TestAspect',
+      metaModelVersion: '2.0.0',
+    });
     vi.spyOn(MaxGraphHelper, 'getModelElement').mockReturnValue(aspect);
     vi.spyOn(searchService, 'search').mockReturnValue([mockCell]);
 
+    await new Promise(resolve => setTimeout(resolve, 200));
     component.searchQuery.set('Test');
-    tick(200);
+    TestBed.flushEffects();
 
     expect(searchService.search).toHaveBeenCalled();
     expect(component.elements()).toEqual([aspect]);
-  }));
+  });
 
   it('should navigate to local element and edit model', () => {
-    const aspect = new DefaultAspect();
-    aspect.name = 'TestAspect';
-    aspect.aspectModelUrn = 'urn:samm:org.eclipse.examples:1.0.0#TestAspect';
+    const aspect = new DefaultAspect({
+      name: 'TestAspect',
+      aspectModelUrn: 'urn:samm:org.eclipse.examples:1.0.0#TestAspect',
+      metaModelVersion: '2.0.0',
+    });
     vi.spyOn(loadedFiles, 'isElementExtern').mockReturnValue(false);
 
     vi.stubGlobal('requestAnimationFrame', (cb: () => void) => {
@@ -176,9 +189,11 @@ describe('ElementsSearchComponent', () => {
   });
 
   it('should open confirmation dialog and open window for external element', () => {
-    const aspect = new DefaultAspect();
-    aspect.name = 'ExternalAspect';
-    aspect.aspectModelUrn = 'urn:samm:org.eclipse.examples:1.0.0#ExternalAspect';
+    const aspect = new DefaultAspect({
+      name: 'ExternalAspect',
+      aspectModelUrn: 'urn:samm:org.eclipse.examples:1.0.0#ExternalAspect',
+      metaModelVersion: '2.0.0',
+    });
     aspect.isPredefined = false;
 
     vi.spyOn(loadedFiles, 'isElementExtern').mockReturnValue(true);
@@ -198,9 +213,11 @@ describe('ElementsSearchComponent', () => {
   });
 
   it('should not open window if user cancels confirm dialog for external element', () => {
-    const aspect = new DefaultAspect();
-    aspect.name = 'ExternalAspect';
-    aspect.aspectModelUrn = 'urn:samm:org.eclipse.examples:1.0.0#ExternalAspect';
+    const aspect = new DefaultAspect({
+      name: 'ExternalAspect',
+      aspectModelUrn: 'urn:samm:org.eclipse.examples:1.0.0#ExternalAspect',
+      metaModelVersion: '2.0.0',
+    });
     aspect.isPredefined = false;
 
     vi.spyOn(loadedFiles, 'isElementExtern').mockReturnValue(true);

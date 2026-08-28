@@ -10,7 +10,8 @@
       "outputs": ["{workspaceRoot}/coverage/libs/rdf"],
       "options": {
         "tsConfig": "libs/rdf/tsconfig.spec.json",
-        "buildTarget": "rdf:build"
+        "buildTarget": "rdf:build",
+        "watch": false
       }
     },
     "lint": {

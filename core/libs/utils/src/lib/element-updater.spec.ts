@@ -33,12 +33,39 @@ import {describe, expect, it} from 'vitest';
 import {useUpdater} from './element-updater';
 
 describe('element-updater', () => {
+  const createScalar = () => new DefaultScalar({urn: 'http://www.w3.org/2001/XMLSchema#string', metaModelVersion: '2.0.0'});
+  const createChar = (name = 'Char', urn = 'urn:char') => new DefaultCharacteristic({name, aspectModelUrn: urn, metaModelVersion: '2.0.0'});
+  const createProp = (name = 'Prop', urn = 'urn:prop') => new DefaultProperty({name, aspectModelUrn: urn, metaModelVersion: '2.0.0'});
+  const createEntity = (name = 'Entity', urn = 'urn:entity', isAbstract = false) =>
+    new DefaultEntity({name, aspectModelUrn: urn, isAbstract, metaModelVersion: '2.0.0'});
+  const createAspect = (name = 'Aspect', urn = 'urn:aspect') => new DefaultAspect({name, aspectModelUrn: urn, metaModelVersion: '2.0.0'});
+  const createCollection = (name = 'Collection', urn = 'urn:col') =>
+    new DefaultCollection({name, aspectModelUrn: urn, metaModelVersion: '2.0.0'});
+  const createEither = (name = 'Either', urn = 'urn:either', left: any = null, right: any = null) =>
+    new DefaultEither({name, aspectModelUrn: urn, left, right, metaModelVersion: '2.0.0'});
+  const createEnumeration = (name = 'Enum', urn = 'urn:enum') =>
+    new DefaultEnumeration({name, aspectModelUrn: urn, values: [], metaModelVersion: '2.0.0'});
+  const createValue = (name = 'Value', urn = 'urn:val', value = 'val') =>
+    new DefaultValue({name, aspectModelUrn: urn, value, metaModelVersion: '2.0.0'});
+  const createEvent = (name = 'Event', urn = 'urn:event') => new DefaultEvent({name, aspectModelUrn: urn, metaModelVersion: '2.0.0'});
+  const createOperation = (name = 'Op', urn = 'urn:op') =>
+    new DefaultOperation({name, aspectModelUrn: urn, input: [], metaModelVersion: '2.0.0'});
+  const createQuantifiable = (name = 'Quant', urn = 'urn:quant') =>
+    new DefaultQuantifiable({name, aspectModelUrn: urn, metaModelVersion: '2.0.0'});
+  const createUnit = (name = 'Unit', urn = 'urn:unit') =>
+    new DefaultUnit({name, aspectModelUrn: urn, quantityKinds: [], metaModelVersion: '2.0.0'});
+  const createStructuredValue = (name = 'SV', urn = 'urn:sv') =>
+    new DefaultStructuredValue({name, aspectModelUrn: urn, deconstructionRule: '', elements: [], metaModelVersion: '2.0.0'});
+  const createTrait = (name = 'Trait', urn = 'urn:trait') => new DefaultTrait({name, aspectModelUrn: urn, metaModelVersion: '2.0.0'});
+  const createConstraint = (name = 'Constraint', urn = 'urn:constraint') =>
+    new DefaultConstraint({name, aspectModelUrn: urn, metaModelVersion: '2.0.0'});
+
   describe('DefaultCharacteristic', () => {
     it('should update and delete dataType for characteristic', () => {
-      const char = new DefaultCharacteristic();
+      const char = createChar();
       char.isPredefined = false;
       const updater = useUpdater(char);
-      const scalar = new DefaultScalar();
+      const scalar = createScalar();
 
       updater.update(scalar);
       expect(char.dataType).toBe(scalar);
@@ -50,13 +77,11 @@ describe('element-updater', () => {
 
   describe('DefaultEntity', () => {
     it('should remove property and extends from entity', () => {
-      const entity = new DefaultEntity();
-      const prop = new DefaultProperty();
-      prop.aspectModelUrn = 'urn:prop1';
+      const entity = createEntity();
+      const prop = createProp('prop1', 'urn:prop1');
       entity.properties = [prop];
 
-      const parentEntity = new DefaultEntity();
-      parentEntity.aspectModelUrn = 'urn:parent';
+      const parentEntity = createEntity('parent', 'urn:parent');
       entity.extends_ = parentEntity;
 
       const updater = useUpdater(entity);
@@ -69,15 +94,11 @@ describe('element-updater', () => {
     });
 
     it('should remove property and abstract extends from abstract entity', () => {
-      const absEntity = new DefaultEntity();
-      absEntity.isAbstract = true;
-      const prop = new DefaultProperty();
-      prop.aspectModelUrn = 'urn:prop1';
+      const absEntity = createEntity('absEntity', 'urn:abs', true);
+      const prop = createProp('prop1', 'urn:prop1');
       absEntity.properties = [prop];
 
-      const parentEntity = new DefaultEntity();
-      parentEntity.isAbstract = true;
-      parentEntity.aspectModelUrn = 'urn:parent';
+      const parentEntity = createEntity('parent', 'urn:parent', true);
       absEntity.extends_ = parentEntity;
 
       const updater = useUpdater(absEntity);
@@ -92,11 +113,10 @@ describe('element-updater', () => {
 
   describe('DefaultAspect', () => {
     it('should delete property, operation, and event from aspect', () => {
-      const aspect = new DefaultAspect();
-      const prop = new DefaultProperty();
-      prop.aspectModelUrn = 'urn:prop1';
-      const op = new DefaultOperation();
-      const event = new DefaultEvent();
+      const aspect = createAspect();
+      const prop = createProp('prop1', 'urn:prop1');
+      const op = createOperation();
+      const event = createEvent();
 
       aspect.properties = [prop];
       aspect.operations = [op];
@@ -117,10 +137,9 @@ describe('element-updater', () => {
 
   describe('DefaultCollection', () => {
     it('should update and delete elementCharacteristic and dataType', () => {
-      const col = new DefaultCollection();
-      const elementChar = new DefaultCharacteristic();
-      elementChar.aspectModelUrn = 'urn:elemChar';
-      const scalar = new DefaultScalar();
+      const col = createCollection();
+      const elementChar = createChar('elemChar', 'urn:elemChar');
+      const scalar = createScalar();
 
       const updater = useUpdater(col);
 
@@ -140,14 +159,9 @@ describe('element-updater', () => {
 
   describe('DefaultEither', () => {
     it('should delete left or right branch', () => {
-      const either = new DefaultEither();
-      const leftChar = new DefaultCharacteristic();
-      leftChar.aspectModelUrn = 'urn:left';
-      const rightChar = new DefaultCharacteristic();
-      rightChar.aspectModelUrn = 'urn:right';
-
-      either.left = leftChar;
-      either.right = rightChar;
+      const leftChar = createChar('left', 'urn:left');
+      const rightChar = createChar('right', 'urn:right');
+      const either = createEither('Either', 'urn:either', leftChar, rightChar);
 
       const updater = useUpdater(either);
 
@@ -162,12 +176,10 @@ describe('element-updater', () => {
 
   describe('DefaultEnumeration', () => {
     it('should delete entity dataType or values', () => {
-      const enumeration = new DefaultEnumeration();
-      const entity = new DefaultEntity();
-      const val1 = new DefaultValue();
-      val1.aspectModelUrn = 'urn:val1';
-      const val2 = new DefaultValue();
-      val2.aspectModelUrn = 'urn:val2';
+      const enumeration = createEnumeration();
+      const entity = createEntity();
+      const val1 = createValue('val1', 'urn:val1');
+      const val2 = createValue('val2', 'urn:val2');
 
       enumeration.dataType = entity;
       enumeration.values = [val1, val2];
@@ -185,9 +197,8 @@ describe('element-updater', () => {
 
   describe('DefaultEvent & DefaultOperation', () => {
     it('should delete property from event', () => {
-      const event = new DefaultEvent();
-      const prop = new DefaultProperty();
-      prop.aspectModelUrn = 'urn:prop';
+      const event = createEvent();
+      const prop = createProp();
       event.properties = [prop];
 
       const updater = useUpdater(event);
@@ -196,11 +207,9 @@ describe('element-updater', () => {
     });
 
     it('should delete input property and output from operation', () => {
-      const op = new DefaultOperation();
-      const inProp = new DefaultProperty();
-      inProp.aspectModelUrn = 'urn:in';
-      const outProp = new DefaultProperty();
-      outProp.aspectModelUrn = 'urn:out';
+      const op = createOperation();
+      const inProp = createProp('in', 'urn:in');
+      const outProp = createProp('out', 'urn:out');
 
       op.input = [inProp];
       op.output = outProp;
@@ -216,10 +225,9 @@ describe('element-updater', () => {
 
   describe('DefaultProperty', () => {
     it('should update characteristic and scalar dataType', () => {
-      const prop = new DefaultProperty();
-      const char = new DefaultCharacteristic();
-      char.aspectModelUrn = 'urn:char';
-      const scalar = new DefaultScalar();
+      const prop = createProp();
+      const char = createChar();
+      const scalar = createScalar();
 
       const updater = useUpdater(prop);
       updater.update(char);
@@ -228,7 +236,7 @@ describe('element-updater', () => {
       updater.update(scalar);
       expect(prop.characteristic.dataType).toBe(scalar);
 
-      const val = new DefaultValue();
+      const val = createValue();
       prop.exampleValue = val;
       updater.delete(val);
       expect(prop.exampleValue).toBeNull();
@@ -240,10 +248,9 @@ describe('element-updater', () => {
 
   describe('DefaultQuantifiable', () => {
     it('should update and delete unit and dataType', () => {
-      const quantifiable = new DefaultQuantifiable();
-      const unit = new DefaultUnit();
-      unit.aspectModelUrn = 'urn:unit';
-      const scalar = new DefaultScalar();
+      const quantifiable = createQuantifiable();
+      const unit = createUnit();
+      const scalar = createScalar();
 
       const updater = useUpdater(quantifiable);
       updater.update(unit);
@@ -259,11 +266,9 @@ describe('element-updater', () => {
 
   describe('DefaultStructuredValue', () => {
     it('should remove elements', () => {
-      const sv = new DefaultStructuredValue();
-      const prop1 = new DefaultProperty();
-      prop1.aspectModelUrn = 'urn:p1';
-      const prop2 = new DefaultProperty();
-      prop2.aspectModelUrn = 'urn:p2';
+      const sv = createStructuredValue();
+      const prop1 = createProp('p1', 'urn:p1');
+      const prop2 = createProp('p2', 'urn:p2');
 
       sv.elements = [prop1, prop2, 'delimiter' as any];
 
@@ -275,11 +280,9 @@ describe('element-updater', () => {
 
   describe('DefaultTrait', () => {
     it('should update and delete baseCharacteristic and constraints', () => {
-      const trait = new DefaultTrait();
-      const char = new DefaultCharacteristic();
-      char.aspectModelUrn = 'urn:baseChar';
-      const constraint = new DefaultConstraint();
-      constraint.aspectModelUrn = 'urn:constraint';
+      const trait = createTrait();
+      const char = createChar('baseChar', 'urn:baseChar');
+      const constraint = createConstraint();
 
       trait.constraints = [];
 
@@ -303,8 +306,8 @@ describe('element-updater', () => {
       const updater = useUpdater({} as any);
       expect(typeof updater.update).toBe('function');
       expect(typeof updater.delete).toBe('function');
-      expect(() => updater.update(new DefaultProperty())).not.toThrow();
-      expect(() => updater.delete(new DefaultProperty())).not.toThrow();
+      expect(() => updater.update(createProp())).not.toThrow();
+      expect(() => updater.delete(createProp())).not.toThrow();
     });
   });
 });

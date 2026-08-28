@@ -10,7 +10,8 @@
       "outputs": ["{workspaceRoot}/coverage/libs/meta-model"],
       "options": {
         "tsConfig": "libs/meta-model/tsconfig.spec.json",
-        "buildTarget": "meta-model:build"
+        "buildTarget": "meta-model:build",
+        "watch": false
       }
     },
     "lint": {

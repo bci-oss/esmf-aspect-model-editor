@@ -23,6 +23,7 @@ export default defineConfig({
     include: ['electron/**/*.spec.ts', 'main.spec.ts'],
     reporters: ['default'],
     setupFiles: ['electron/vitest-setup.ts'],
+    watch: false,
     coverage: {
       provider: 'v8',
       reportsDirectory: 'coverage/electron',

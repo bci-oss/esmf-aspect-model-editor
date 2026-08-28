@@ -10,7 +10,8 @@
       "outputs": ["{workspaceRoot}/coverage/libs/max-graph"],
       "options": {
         "tsConfig": "libs/max-graph/tsconfig.spec.json",
-        "buildTarget": "max-graph:build"
+        "buildTarget": "max-graph:build",
+        "watch": false
       }
     },
     "lint": {

@@ -25,7 +25,7 @@ import {LanguageTranslationService} from '@ame/translation';
 import {Component, inject, signal} from '@angular/core';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
-import {MatDialog, MatDialogModule} from '@angular/material/dialog';
+import {MatDialog} from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
@@ -38,7 +38,7 @@ import {OpenFileDialogComponent} from '../open-file-dialog/open-file-dialog.comp
   selector: 'ame-files-search',
   templateUrl: './files-search.component.html',
   styleUrls: ['./files-search.component.scss'],
-  imports: [MatInputModule, MatAutocompleteModule, MatFormFieldModule, MatIconModule, MatDialogModule, TranslocoDirective],
+  imports: [MatInputModule, MatAutocompleteModule, MatFormFieldModule, MatIconModule, TranslocoDirective],
 })
 export class FilesSearchComponent {
   private electronSignalsService: ElectronSignals = inject(ElectronSignalsService);

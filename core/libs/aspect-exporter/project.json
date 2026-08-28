@@ -10,7 +10,8 @@
       "outputs": ["{workspaceRoot}/coverage/libs/aspect-exporter"],
       "options": {
         "tsConfig": "libs/aspect-exporter/tsconfig.spec.json",
-        "buildTarget": "aspect-exporter:build"
+        "buildTarget": "aspect-exporter:build",
+        "watch": false
       }
     },
     "lint": {

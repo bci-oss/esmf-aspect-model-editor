@@ -10,7 +10,8 @@
       "outputs": ["{workspaceRoot}/coverage/libs/loader-filters"],
       "options": {
         "tsConfig": "libs/loader-filters/tsconfig.spec.json",
-        "buildTarget": "loader-filters:build"
+        "buildTarget": "loader-filters:build",
+        "watch": false
       }
     },
     "lint": {

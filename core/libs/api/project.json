@@ -10,7 +10,8 @@
       "outputs": ["{workspaceRoot}/coverage/libs/api"],
       "options": {
         "tsConfig": "libs/api/tsconfig.spec.json",
-        "buildTarget": "api:build"
+        "buildTarget": "api:build",
+        "watch": false
       }
     },
     "lint": {

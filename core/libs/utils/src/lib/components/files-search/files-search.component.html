@@ -27,7 +27,7 @@
     <mat-icon [class.rotate]="loading()" matSuffix>{{ loading() ? 'refresh' : 'description' }}</mat-icon>
 
     <mat-autocomplete class="search-autocomplete" #auto="matAutocomplete">
-      @for (entry of searchableFiles(); track entry) {
+      @for (entry of searchableFiles(); track entry.aspectModelUrn || entry.file + entry.namespace) {
         <mat-option class="list-option" (click)="openFile(entry)">
           <mat-icon>description</mat-icon>
           <div class="file-element">

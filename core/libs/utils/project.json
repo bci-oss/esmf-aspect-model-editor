@@ -10,7 +10,8 @@
       "outputs": ["{workspaceRoot}/coverage/libs/utils"],
       "options": {
         "tsConfig": "libs/utils/tsconfig.spec.json",
-        "buildTarget": "utils:build"
+        "buildTarget": "utils:build",
+        "watch": false
       }
     },
     "lint": {

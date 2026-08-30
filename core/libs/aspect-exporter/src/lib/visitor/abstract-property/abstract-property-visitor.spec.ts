@@ -11,6 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {beforeEach, describe, expect, it, Mocked, vi} from 'vitest';
+
+vi.mock('@ame/editor', () => ({
+  ModelElementEditorComponent: class {},
+}));
+
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {MaxGraphService} from '@ame/max-graph';
 import {ModelService} from '@ame/rdf/services';
@@ -18,14 +24,9 @@ import {TestBed} from '@angular/core/testing';
 import {DefaultProperty, ModelElementCache, RdfModel, Samm} from '@esmf/aspect-model-loader';
 import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
-import {beforeEach, describe, expect, it, Mocked, vi} from 'vitest';
 import {RdfListService} from '../../rdf-list';
 import {RdfNodeService} from '../../rdf-node/rdf-node.service';
 import {AbstractPropertyVisitor} from './abstract-property-visitor';
-
-vi.mock('@ame/editor', () => ({
-  ModelElementEditorComponent: class {},
-}));
 
 describe('Property Visitor', () => {
   let service: AbstractPropertyVisitor;

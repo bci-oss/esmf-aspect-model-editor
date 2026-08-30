@@ -11,13 +11,11 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {vi} from 'vitest';
+import {describe, expect, test, vi} from 'vitest';
 
 vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},
 }));
-
-import {describe, expect, test} from 'vitest';
 
 import {ModelInfo} from '@ame/max-graph';
 import {

@@ -11,15 +11,17 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {describe, expect, it, vi} from 'vitest';
+import {vi} from 'vitest';
 
 vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},
 }));
 
 import {LoadedFilesService} from '@ame/cache';
-import {DefaultAspect, DefaultCharacteristic, DefaultProperty, DefaultScalar, DefaultTrait, RdfModel} from '@esmf/aspect-model-loader';
+import {createTestAspect, createTestCharacteristic, createTestProperty, createTestScalar, createTestTrait} from '@ame/test-helpers';
+import {RdfModel} from '@esmf/aspect-model-loader';
 import {lastValueFrom} from 'rxjs';
+import {describe, expect, it} from 'vitest';
 import {
   createFile,
   decodeText,
@@ -107,11 +109,7 @@ describe('utils', () => {
 
   describe('setUniqueElementName', () => {
     it('should set unique name for DefaultAspect with counter if collision occurs', () => {
-      const aspect = new DefaultAspect({
-        name: 'Aspect',
-        aspectModelUrn: 'urn:samm:org.eclipse.examples:1.0.0#Aspect',
-        metaModelVersion: '2.0.0',
-      });
+      const aspect = createTestAspect('Aspect', 'urn:samm:org.eclipse.examples:1.0.0#Aspect');
       const rdfModel = {
         getAspectModelUrn: () => 'urn:samm:org.eclipse.examples:1.0.0#',
       } as RdfModel;
@@ -127,11 +125,7 @@ describe('utils', () => {
     });
 
     it('should lowercase the first letter for DefaultProperty', () => {
-      const prop = new DefaultProperty({
-        name: 'prop',
-        aspectModelUrn: 'urn:samm:org.eclipse.examples:1.0.0#prop',
-        metaModelVersion: '2.0.0',
-      });
+      const prop = createTestProperty('prop', 'urn:samm:org.eclipse.examples:1.0.0#prop');
       const rdfModel = {
         getAspectModelUrn: () => 'urn:samm:org.eclipse.examples:1.0.0#',
       } as RdfModel;
@@ -159,11 +153,7 @@ describe('utils', () => {
 
   describe('getPreferredNamesLocales & getDescriptionsLocales', () => {
     it('should return locales from preferredNames and descriptions', () => {
-      const aspect = new DefaultAspect({
-        name: 'Aspect',
-        aspectModelUrn: 'urn:samm:org.eclipse.examples:1.0.0#Aspect',
-        metaModelVersion: '2.0.0',
-      });
+      const aspect = createTestAspect('Aspect', 'urn:samm:org.eclipse.examples:1.0.0#Aspect');
       aspect.preferredNames.set('en', 'Name EN');
       aspect.preferredNames.set('de', 'Name DE');
       aspect.descriptions.set('en', 'Desc EN');
@@ -179,34 +169,16 @@ describe('utils', () => {
     });
 
     it('should return dataType of DefaultCharacteristic', () => {
-      const char = new DefaultCharacteristic({
-        name: 'Char',
-        aspectModelUrn: 'urn:char',
-        metaModelVersion: '2.0.0',
-      });
-      const scalar = new DefaultScalar({
-        urn: 'http://www.w3.org/2001/XMLSchema#string',
-        metaModelVersion: '2.0.0',
-      });
+      const char = createTestCharacteristic('Char', 'urn:char');
+      const scalar = createTestScalar();
       char.dataType = scalar;
       expect(getDeepLookupDataType(char)).toBe(scalar);
     });
 
     it('should return baseCharacteristic dataType for DefaultTrait', () => {
-      const trait = new DefaultTrait({
-        name: 'Trait',
-        aspectModelUrn: 'urn:trait',
-        metaModelVersion: '2.0.0',
-      });
-      const char = new DefaultCharacteristic({
-        name: 'Char',
-        aspectModelUrn: 'urn:char',
-        metaModelVersion: '2.0.0',
-      });
-      const scalar = new DefaultScalar({
-        urn: 'http://www.w3.org/2001/XMLSchema#string',
-        metaModelVersion: '2.0.0',
-      });
+      const trait = createTestTrait('Trait', 'urn:trait');
+      const char = createTestCharacteristic('Char', 'urn:char');
+      const scalar = createTestScalar();
       char.dataType = scalar;
       trait.baseCharacteristic = char;
 

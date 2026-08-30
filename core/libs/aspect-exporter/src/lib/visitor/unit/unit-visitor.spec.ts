@@ -11,18 +11,19 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {beforeEach, describe, expect, it, vi} from 'vitest';
+
+vi.mock('@ame/editor', () => ({
+  ModelElementEditorComponent: class {},
+}));
+
 import {RdfNodeService} from '@ame/aspect-exporter';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {TestBed} from '@angular/core/testing';
 import {DefaultUnit, ModelElementCache, RdfModel, Samm} from '@esmf/aspect-model-loader';
 import {DataFactory, Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {UnitVisitor} from './unit-visitor';
-
-vi.mock('@ame/editor', () => ({
-  ModelElementEditorComponent: class {},
-}));
 
 describe('Unit Visitor', () => {
   let service: UnitVisitor;

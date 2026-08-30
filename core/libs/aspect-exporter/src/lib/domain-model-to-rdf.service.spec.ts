@@ -11,11 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {TestBed} from '@angular/core/testing';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
-
-import {DomainModelToRdfService} from '@ame/aspect-exporter';
-import {provideMockObject} from '../../../../test-helpers';
+import {vi} from 'vitest';
 
 vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},
@@ -54,6 +50,11 @@ vi.mock('@esmf/aspect-model-loader', () => {
 
   return {DefaultValue, ModelElementCache};
 });
+
+import {DomainModelToRdfService} from '@ame/aspect-exporter';
+import {provideMockObject} from '@ame/test-helpers';
+import {TestBed} from '@angular/core/testing';
+import {beforeEach, describe, expect, it} from 'vitest';
 
 describe('DomainModelToRdfService', () => {
   let service: DomainModelToRdfService;

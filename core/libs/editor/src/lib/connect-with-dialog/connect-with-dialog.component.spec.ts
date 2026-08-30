@@ -14,12 +14,12 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {MaxGraphService} from '@ame/max-graph';
+import {provideMockObject} from '@ame/test-helpers';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {DefaultAspect, DefaultCharacteristic, DefaultEntity, DefaultProperty} from '@esmf/aspect-model-loader';
-import {provideMockObject} from '../../../../../test-helpers';
 import {ModelElementParserPipe} from '../editor-dialog';
 import {ConnectWithDialogComponent} from './connect-with-dialog.component';
 

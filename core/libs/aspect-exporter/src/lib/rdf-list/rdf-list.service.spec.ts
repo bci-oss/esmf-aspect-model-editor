@@ -13,6 +13,10 @@
 
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
+vi.mock('@ame/editor', () => ({
+  ModelElementEditorComponent: class {},
+}));
+
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {simpleDataTypes} from '@ame/shared';
 import {TestBed} from '@angular/core/testing';
@@ -71,10 +75,6 @@ class MockRDFModel {
   samm = new MockSamm();
   sammC = new MockSammC();
 }
-
-vi.mock('@ame/editor', () => ({
-  ModelElementEditorComponent: class {},
-}));
 
 describe('RDF Helper', () => {
   // A fresh model/store is created for every test so that quads created by one test

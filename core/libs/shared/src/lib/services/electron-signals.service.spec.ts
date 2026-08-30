@@ -51,7 +51,7 @@ describe('ElectronSignalsService', () => {
     service.removeListener('updateWindowInfo');
 
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const result = service.call('updateWindowInfo');
+    const result = service.call('updateWindowInfo', {namespace: '', file: ''});
 
     expect(result).toBeNull();
     consoleSpy.mockRestore();

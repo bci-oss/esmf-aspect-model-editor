@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {provideMockObject} from '@ame/test-helpers';
 import {LanguageTranslationService} from '@ame/translation';
 import {CommonModule} from '@angular/common';
 import {NO_ERRORS_SCHEMA} from '@angular/core';
@@ -20,7 +21,6 @@ import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {provideMockObject} from '../../../../../../test-helpers';
 import {LoadingScreenOptions} from '../../services/loading-screen.service';
 import {LoadingScreenComponent} from './loading-screen.component';
 

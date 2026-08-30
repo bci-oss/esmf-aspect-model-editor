@@ -11,17 +11,19 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {vi} from 'vitest';
+
+vi.mock('@ame/editor', () => ({
+  ModelElementEditorComponent: class {},
+}));
+
 import {LoadedFilesService} from '@ame/cache';
 import {Injectable} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {NamedElement} from '@esmf/aspect-model-loader';
 import {DataFactory, Store} from 'n3';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it} from 'vitest';
 import {BaseVisitor} from './base-visitor';
-
-vi.mock('@ame/editor', () => ({
-  ModelElementEditorComponent: class {},
-}));
 
 @Injectable()
 class TestVisitor extends BaseVisitor<void> {

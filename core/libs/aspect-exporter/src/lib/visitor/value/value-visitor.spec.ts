@@ -13,6 +13,10 @@
 
 import {beforeEach, describe, expect, it, Mock, vi} from 'vitest';
 
+vi.mock('@ame/editor', () => ({
+  ModelElementEditorComponent: class {},
+}));
+
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {TestBed} from '@angular/core/testing';
 import {DefaultValue, ModelElementCache, RdfModel, Samm} from '@esmf/aspect-model-loader';
@@ -20,10 +24,6 @@ import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {RdfNodeService} from '../../rdf-node';
 import {ValueVisitor} from './value-visitor';
-
-vi.mock('@ame/editor', () => ({
-  ModelElementEditorComponent: class {},
-}));
 
 describe('ValueVisitor', () => {
   let service: ValueVisitor;

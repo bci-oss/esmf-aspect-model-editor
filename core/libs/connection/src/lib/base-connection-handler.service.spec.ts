@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 vi.mock('@ame/loader-filters', () => ({
   FiltersService: class {
@@ -20,8 +20,6 @@ vi.mock('@ame/loader-filters', () => ({
     }
   },
 }));
-
-import {beforeEach, describe, expect, it} from 'vitest';
 
 import {FiltersService} from '@ame/loader-filters';
 import {MaxGraphAttributeService, MaxGraphService, MaxGraphShapeOverlayService} from '@ame/max-graph';

@@ -11,13 +11,18 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {beforeEach, describe, expect, it, vi} from 'vitest';
+
+vi.mock('@ame/editor', () => ({
+  ModelElementEditorComponent: class {},
+}));
+
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {TestBed} from '@angular/core/testing';
 import {ModelElementCache, RdfModel, Samm, SammC, SammU} from '@esmf/aspect-model-loader';
 import {DataFactory, Quad, Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {RdfNodeService} from './rdf-node.service';
 
 class MockRDFModel {
@@ -26,10 +31,6 @@ class MockRDFModel {
   sammC = new SammC(this.samm);
   sammU = new SammU(this.samm);
 }
-
-vi.mock('@ame/editor', () => ({
-  ModelElementEditorComponent: class {},
-}));
 
 describe('RdfNodeService', () => {
   let service: RdfNodeService;

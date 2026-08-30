@@ -12,54 +12,27 @@
  */
 
 import {
-  DefaultAspect,
-  DefaultCharacteristic,
-  DefaultCollection,
-  DefaultConstraint,
-  DefaultEither,
-  DefaultEntity,
-  DefaultEnumeration,
-  DefaultEvent,
-  DefaultOperation,
-  DefaultProperty,
-  DefaultQuantifiable,
-  DefaultScalar,
-  DefaultStructuredValue,
-  DefaultTrait,
-  DefaultUnit,
-  DefaultValue,
-} from '@esmf/aspect-model-loader';
+  createTestAspect as createAspect,
+  createTestCharacteristic as createChar,
+  createTestCollection as createCollection,
+  createTestConstraint as createConstraint,
+  createTestEither as createEither,
+  createTestEntity as createEntity,
+  createTestEnumeration as createEnumeration,
+  createTestEvent as createEvent,
+  createTestOperation as createOperation,
+  createTestProperty as createProp,
+  createTestQuantifiable as createQuantifiable,
+  createTestScalar as createScalar,
+  createTestStructuredValue as createStructuredValue,
+  createTestTrait as createTrait,
+  createTestUnit as createUnit,
+  createTestValue as createValue,
+} from '@ame/test-helpers';
 import {describe, expect, it} from 'vitest';
 import {useUpdater} from './element-updater';
 
 describe('element-updater', () => {
-  const createScalar = () => new DefaultScalar({urn: 'http://www.w3.org/2001/XMLSchema#string', metaModelVersion: '2.0.0'});
-  const createChar = (name = 'Char', urn = 'urn:char') => new DefaultCharacteristic({name, aspectModelUrn: urn, metaModelVersion: '2.0.0'});
-  const createProp = (name = 'Prop', urn = 'urn:prop') => new DefaultProperty({name, aspectModelUrn: urn, metaModelVersion: '2.0.0'});
-  const createEntity = (name = 'Entity', urn = 'urn:entity', isAbstract = false) =>
-    new DefaultEntity({name, aspectModelUrn: urn, isAbstract, metaModelVersion: '2.0.0'});
-  const createAspect = (name = 'Aspect', urn = 'urn:aspect') => new DefaultAspect({name, aspectModelUrn: urn, metaModelVersion: '2.0.0'});
-  const createCollection = (name = 'Collection', urn = 'urn:col') =>
-    new DefaultCollection({name, aspectModelUrn: urn, metaModelVersion: '2.0.0'});
-  const createEither = (name = 'Either', urn = 'urn:either', left: any = null, right: any = null) =>
-    new DefaultEither({name, aspectModelUrn: urn, left, right, metaModelVersion: '2.0.0'});
-  const createEnumeration = (name = 'Enum', urn = 'urn:enum') =>
-    new DefaultEnumeration({name, aspectModelUrn: urn, values: [], metaModelVersion: '2.0.0'});
-  const createValue = (name = 'Value', urn = 'urn:val', value = 'val') =>
-    new DefaultValue({name, aspectModelUrn: urn, value, metaModelVersion: '2.0.0'});
-  const createEvent = (name = 'Event', urn = 'urn:event') => new DefaultEvent({name, aspectModelUrn: urn, metaModelVersion: '2.0.0'});
-  const createOperation = (name = 'Op', urn = 'urn:op') =>
-    new DefaultOperation({name, aspectModelUrn: urn, input: [], metaModelVersion: '2.0.0'});
-  const createQuantifiable = (name = 'Quant', urn = 'urn:quant') =>
-    new DefaultQuantifiable({name, aspectModelUrn: urn, metaModelVersion: '2.0.0'});
-  const createUnit = (name = 'Unit', urn = 'urn:unit') =>
-    new DefaultUnit({name, aspectModelUrn: urn, quantityKinds: [], metaModelVersion: '2.0.0'});
-  const createStructuredValue = (name = 'SV', urn = 'urn:sv') =>
-    new DefaultStructuredValue({name, aspectModelUrn: urn, deconstructionRule: '', elements: [], metaModelVersion: '2.0.0'});
-  const createTrait = (name = 'Trait', urn = 'urn:trait') => new DefaultTrait({name, aspectModelUrn: urn, metaModelVersion: '2.0.0'});
-  const createConstraint = (name = 'Constraint', urn = 'urn:constraint') =>
-    new DefaultConstraint({name, aspectModelUrn: urn, metaModelVersion: '2.0.0'});
-
   describe('DefaultCharacteristic', () => {
     it('should update and delete dataType for characteristic', () => {
       const char = createChar();

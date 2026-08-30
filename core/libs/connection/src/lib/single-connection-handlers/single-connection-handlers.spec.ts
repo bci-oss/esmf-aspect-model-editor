@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 vi.mock('@ame/loader-filters', () => ({
   ModelFilter: {
@@ -30,8 +30,6 @@ vi.mock('@ame/editor', () => ({
     onNewProperty = vi.fn();
   },
 }));
-
-import {beforeEach, describe, expect, it} from 'vitest';
 
 import {LoadedFilesService} from '@ame/cache';
 import {EntityInstanceService} from '@ame/editor';

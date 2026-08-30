@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {vi} from 'vitest';
+import {beforeEach, describe, expect, Mocked, test, vi} from 'vitest';
 
 vi.mock('@ame/loader-filters', () => ({
   ModelFilter: {
@@ -22,8 +22,6 @@ vi.mock('@ame/loader-filters', () => ({
 vi.mock('@ame/editor', () => ({
   ModelElementEditorComponent: class {},
 }));
-
-import {beforeEach, describe, expect, Mocked, test} from 'vitest';
 
 import {
   AbstractEntityAbstractEntityConnectionHandler,
@@ -67,6 +65,7 @@ import {
 } from '@ame/connection';
 import {MaxGraphAttributeService, MaxGraphService, MaxGraphShapeOverlayService} from '@ame/max-graph';
 import {NotificationsService} from '@ame/shared';
+import {provideMockObject} from '@ame/test-helpers';
 import {provideHttpClient, withXhr} from '@angular/common/http';
 import {provideHttpClientTesting} from '@angular/common/http/testing';
 import {TestBed} from '@angular/core/testing';
@@ -80,7 +79,6 @@ import {
   DefaultTrait,
 } from '@esmf/aspect-model-loader';
 import {TranslocoTestingModule} from '@jsverse/transloco';
-import {provideMockObject} from '../../../../test-helpers/utils';
 
 describe('Test Shape connector service', () => {
   let service: ShapeConnectorService;

@@ -25,7 +25,7 @@ import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {NotificationsService, TitleService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {useUpdater} from '@ame/utils';
-import {inject, Injectable, Injector, NgZone} from '@angular/core';
+import {inject, Injectable, Injector} from '@angular/core';
 import {
   DefaultAspect,
   DefaultEntity,
@@ -53,7 +53,6 @@ export class ElementModelService {
   private readonly notificationService = inject(NotificationsService);
   private readonly translate = inject(LanguageTranslationService);
   private readonly loadedFilesService = inject(LoadedFilesService);
-  private readonly zone = inject(NgZone);
 
   get currentCachedFile() {
     return this.loadedFilesService.currentLoadedFile.cachedFile;
@@ -169,20 +168,18 @@ export class ElementModelService {
     if (!(modelElement instanceof DefaultAspect)) {
       return false;
     }
-    this.zone.run(() => {
-      this.renameModelService.open().subscribe(data => {
-        if (!data?.name) {
-          return;
-        }
+    this.renameModelService.open().subscribe(data => {
+      if (!data?.name) {
+        return;
+      }
 
-        const loadedFile = this.loadedFilesService.currentLoadedFile;
-        const oldAbsoluteName = loadedFile.absoluteName;
-        this.modelService.removeAspect();
-        this.removeElementData(cell);
+      const loadedFile = this.loadedFilesService.currentLoadedFile;
+      const oldAbsoluteName = loadedFile.absoluteName;
+      this.modelService.removeAspect();
+      this.removeElementData(cell);
 
-        this.loadedFilesService.updateAbsoluteName(oldAbsoluteName, `${loadedFile.namespace}:${data.name}`);
-        this.titleService.updateTitle(loadedFile.absoluteName);
-      });
+      this.loadedFilesService.updateAbsoluteName(oldAbsoluteName, `${loadedFile.namespace}:${data.name}`);
+      this.titleService.updateTitle(loadedFile.absoluteName);
     });
 
     return true;

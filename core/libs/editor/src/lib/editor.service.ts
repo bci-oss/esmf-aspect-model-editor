@@ -38,7 +38,7 @@ import {
 } from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {useUpdater} from '@ame/utils';
-import {inject, Injectable, Injector, NgZone} from '@angular/core';
+import {inject, Injectable, Injector} from '@angular/core';
 import {DefaultAspect, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
 import {Cell, EventObject, FitPlugin, gestureUtils, Graph, GraphDataModel, InternalEvent} from '@maxgraph/core';
 import {environment} from 'environments/environment';
@@ -72,7 +72,6 @@ export class EditorService {
   private loadingScreenService = inject(LoadingScreenService);
   private translate = inject(LanguageTranslationService);
   private injector = inject(Injector);
-  private ngZone = inject(NgZone);
   private loadedFilesService = inject(LoadedFilesService);
   private elementCreator = inject(ElementCreatorService);
 
@@ -109,13 +108,11 @@ export class EditorService {
     const onWheel = (evt: WheelEvent) => {
       if (!evt.defaultPrevented && evt.altKey) {
         evt.preventDefault();
-        this.ngZone.run(() => {
-          if (evt.deltaY < 0) {
-            this.maxgraphAttributeService.graph.zoomIn();
-          } else {
-            this.maxgraphAttributeService.graph.zoomOut();
-          }
-        });
+        if (evt.deltaY < 0) {
+          this.maxgraphAttributeService.graph.zoomIn();
+        } else {
+          this.maxgraphAttributeService.graph.zoomOut();
+        }
       }
     };
 
@@ -123,27 +120,25 @@ export class EditorService {
 
     // Enforce parent domain object will be updated if a cell e.g. unit will be deleted
     this.maxgraphAttributeService.graph.addListener(InternalEvent.CELLS_REMOVED, (_source: Graph, event: EventObject) => {
-      this.ngZone.run(() => {
-        if (this.filterAttributes.isFiltering) {
+      if (this.filterAttributes.isFiltering) {
+        return;
+      }
+
+      const changedCells: Array<Cell> = event.getProperty('cells');
+      changedCells.forEach(cell => {
+        if (!MaxGraphHelper.getModelElement(cell)) {
           return;
         }
 
-        const changedCells: Array<Cell> = event.getProperty('cells');
-        changedCells.forEach(cell => {
-          if (!MaxGraphHelper.getModelElement(cell)) {
-            return;
-          }
+        const edgeParent = changedCells.find(edge => edge.isEdge() && edge.target && edge.target.id === cell.id);
+        if (!edgeParent) {
+          return;
+        }
 
-          const edgeParent = changedCells.find(edge => edge.isEdge() && edge.target && edge.target.id === cell.id);
-          if (!edgeParent) {
-            return;
-          }
-
-          const sourceElement = MaxGraphHelper.getModelElement<NamedElement>(edgeParent.source);
-          if (sourceElement && this.loadedFilesService.isElementInCurrentFile(sourceElement)) {
-            useUpdater(sourceElement).delete(MaxGraphHelper.getModelElement(cell));
-          }
-        });
+        const sourceElement = MaxGraphHelper.getModelElement<NamedElement>(edgeParent.source);
+        if (sourceElement && this.loadedFilesService.isElementInCurrentFile(sourceElement)) {
+          useUpdater(sourceElement).delete(MaxGraphHelper.getModelElement(cell));
+        }
       });
     });
 
@@ -191,7 +186,7 @@ export class EditorService {
       (_graph, _evt, _cell, x, y) => {
         const elementType: string = element.dataset.type;
         const urn: string = element.dataset.urn;
-        this.ngZone.run(() => this.createElement(x, y, elementType, urn));
+        this.createElement(x, y, elementType, urn);
       },
       dragElement,
     );

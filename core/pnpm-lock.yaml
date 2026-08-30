@@ -92,9 +92,6 @@ importers:
       util:
         specifier: ^0.12.5
         version: 0.12.5
-      zone.js:
-        specifier: 0.15.1
-        version: 0.15.1
     devDependencies:
       '@angular-devkit/architect':
         specifier: ^0.2201.5
@@ -28727,4 +28724,5 @@ snapshots:
 
   zod@4.4.3: {}
 
-  zone.js@0.15.1: {}
+  zone.js@0.15.1:
+    optional: true

@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, inject, NgZone, signal} from '@angular/core';
+import {Component, inject, signal} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {TranslocoDirective} from '@jsverse/transloco';
@@ -25,7 +25,6 @@ import {ModelSaverService} from '../model-saver.service';
 export class SaveModelDialogComponent {
   private modelSaverService = inject(ModelSaverService);
   private matDialogRef: MatDialogRef<SaveModelDialogComponent> = inject(MatDialogRef);
-  private zone: NgZone = inject(NgZone);
 
   public disabledButton = signal(false);
 
@@ -35,11 +34,9 @@ export class SaveModelDialogComponent {
 
   saveModel() {
     this.disabledButton.set(true);
-    this.zone.run(() => {
-      this.modelSaverService.saveModel().subscribe(() => {
-        this.disabledButton.set(false);
-        this.matDialogRef.close(true);
-      });
+    this.modelSaverService.saveModel().subscribe(() => {
+      this.disabledButton.set(false);
+      this.matDialogRef.close(true);
     });
   }
 }

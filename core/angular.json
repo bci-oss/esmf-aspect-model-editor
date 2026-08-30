@@ -18,7 +18,7 @@
             },
             "index": "apps/ame/src/index.html",
             "browser": "apps/ame/src/main.ts",
-            "polyfills": ["zone.js", "apps/ame/src/polyfills.ts"],
+            "polyfills": ["apps/ame/src/polyfills.ts"],
             "tsConfig": "apps/ame/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": ["apps/ame/src/assets"],

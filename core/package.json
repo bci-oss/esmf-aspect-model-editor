@@ -298,8 +298,7 @@
     "tslib": "^2.6.3",
     "typescript-mix": "^3.1.3",
     "urn-lib": "^2.0.0",
-    "util": "^0.12.5",
-    "zone.js": "0.15.1"
+    "util": "^0.12.5"
   },
   "devDependencies": {
     "@angular-devkit/architect": "^0.2201.5",

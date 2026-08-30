@@ -15,7 +15,7 @@ import {CacheUtils, LoadedFilesService} from '@ame/cache';
 import {FILTER_ATTRIBUTES, ModelTree} from '@ame/loader-filters';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {NotificationsService, overlayGeometry} from '@ame/shared';
-import {computed, inject, Injectable, NgZone, signal} from '@angular/core';
+import {computed, inject, Injectable, signal} from '@angular/core';
 import {DefaultCharacteristic, DefaultEntityInstance, DefaultEnumeration, NamedElement} from '@esmf/aspect-model-loader';
 import {Cell, CellStyle, Graph, InternalEvent} from '@maxgraph/core';
 import {environment} from 'environments/environment';
@@ -44,7 +44,6 @@ export class MaxGraphService {
   private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
   private readonly notificationsService = inject(NotificationsService);
   private readonly themeService = inject(ThemeService);
-  private readonly ngZone = inject(NgZone);
   public readonly maxgraphShapeSelectorService = inject(MaxGraphShapeSelectorService);
 
   private nextCellCoordinates: {x: number; y: number} = null;
@@ -90,8 +89,8 @@ export class MaxGraphService {
   private initCellsCountListener(): void {
     const updateCount = () => this.cellsCountSignal.set(this.getAllCells()?.length ?? 0);
     updateCount();
-    this.graph.addListener(InternalEvent.CELLS_ADDED, () => this.ngZone.run(updateCount));
-    this.graph.addListener(InternalEvent.CELLS_REMOVED, () => this.ngZone.run(updateCount));
+    this.graph.addListener(InternalEvent.CELLS_ADDED, updateCount);
+    this.graph.addListener(InternalEvent.CELLS_REMOVED, updateCount);
   }
 
   setCoordinatesForNextCellRender(x: number, y: number) {

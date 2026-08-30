@@ -1,12 +1,7 @@
-# Browserslist for Angular projects (2026)
-# See: https://github.com/browserslist/browserslist#queries
-#      https://angular.io/guide/browser-support
-
-# Recommended default for most apps:
-> 0.5%
-last 2 versions
-Firefox ESR
+# Browserslist for Angular projects
+# Supported modern browsers and Electron environment
+last 2 Chrome versions
+last 2 Firefox versions
+last 2 Safari versions
+last 2 Edge versions
 not dead
-
-# Explicitly drop legacy IE
-not IE 11

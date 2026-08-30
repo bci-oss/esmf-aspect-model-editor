@@ -4,6 +4,7 @@
     "outDir": "../../dist/out-tsc",
     "types": ["node"]
   },
+  "files": ["src/polyfills.ts"],
   "include": ["**/*.spec.ts", "**/*.d.ts"],
   "angularCompilerOptions": {
     "extendedDiagnostics": {

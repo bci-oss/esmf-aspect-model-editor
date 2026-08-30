@@ -16,7 +16,7 @@ import {APP_ROUTES} from '@ame/app/app.routes';
 import {APP_CONFIG, config} from '@ame/shared';
 import {TranslocoHttpLoader} from '@ame/translation';
 import {provideHttpClient, withInterceptorsFromDi, withXhr} from '@angular/common/http';
-import {enableProdMode, importProvidersFrom} from '@angular/core';
+import {enableProdMode, importProvidersFrom, provideZonelessChangeDetection} from '@angular/core';
 import {bootstrapApplication} from '@angular/platform-browser';
 import {provideAnimations} from '@angular/platform-browser/animations';
 import {PreloadAllModules, provideRouter, withPreloading} from '@angular/router';
@@ -34,6 +34,7 @@ if (environment.production) {
 const bootstrap = () =>
   bootstrapApplication(AppComponent, {
     providers: [
+      provideZonelessChangeDetection(),
       provideRouter(APP_ROUTES, withPreloading(PreloadAllModules)),
       provideHttpClient(withXhr(), withInterceptorsFromDi()),
       provideAnimations(),

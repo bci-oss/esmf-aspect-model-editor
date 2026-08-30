@@ -13,7 +13,7 @@
 import {ModelApiService} from '@ame/api';
 import {ElectronSignals, ElectronSignalsService, ElectronTunnelService, NotificationsService} from '@ame/shared';
 import {NgOptimizedImage} from '@angular/common';
-import {Component, DestroyRef, NgZone, OnInit, inject, signal} from '@angular/core';
+import {Component, DestroyRef, OnInit, inject, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {Router} from '@angular/router';
 import {Observable, catchError, forkJoin, of, switchMap, take} from 'rxjs';
@@ -30,7 +30,6 @@ export class LoadingComponent implements OnInit {
   private readonly electronTunnel = inject(ElectronTunnelService);
   private readonly modelApiService = inject(ModelApiService);
   private readonly notificationsService = inject(NotificationsService);
-  private readonly ngZone = inject(NgZone);
   private readonly electronSignalsService: ElectronSignals = inject(ElectronSignalsService);
 
   /** Whether startup data could not be loaded, used by the template to show an error state instead of the spinner. */
@@ -61,11 +60,8 @@ export class LoadingComponent implements OnInit {
         const [isFirstWindow, model] = result;
         this.electronTunnel.startUpData$.next({isFirstWindow, model});
 
-        // Because this callback is triggered from an electron IPC response,
-        // it runs outside Angular's zone, so router.navigate needs to be
-        // called inside ngZone.run to trigger change detection.
         const queryParams = Object.fromEntries(new URLSearchParams(window.location.search));
-        this.ngZone.run(() => this.router.navigate(['/editor'], {queryParams}));
+        this.router.navigate(['/editor'], {queryParams});
       });
   }
 

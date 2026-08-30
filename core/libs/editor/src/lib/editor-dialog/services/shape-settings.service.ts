@@ -14,7 +14,7 @@
 import {LoadedFilesService} from '@ame/cache';
 import {MaxGraphAttributeService, MaxGraphHelper, MaxGraphService, MaxGraphShapeSelectorService} from '@ame/max-graph';
 import {BindingsService} from '@ame/shared';
-import {inject, Injectable, NgZone} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {NamedElement} from '@esmf/aspect-model-loader';
 import {InternalEvent} from '@maxgraph/core';
 import {BehaviorSubject} from 'rxjs';
@@ -24,7 +24,6 @@ import {ShapeSettingsStateService} from './shape-settings-state.service';
 
 @Injectable({providedIn: 'root'})
 export class ShapeSettingsService {
-  private ngZone = inject(NgZone);
   private maxgraphAttributeService = inject(MaxGraphAttributeService);
   private maxgraphService = inject(MaxGraphService);
   private maxgraphShapeSelectorService = inject(MaxGraphShapeSelectorService);
@@ -68,20 +67,20 @@ export class ShapeSettingsService {
       const graph = this.maxgraphAttributeService.graph;
       const vertexCount = Object.values(graph.getDataModel().cells).filter(cell => cell.isVertex()).length > 0;
 
-      this.ngZone.run(() => this.hasCellsSubject.next(vertexCount));
+      this.hasCellsSubject.next(vertexCount);
     });
   }
 
   setSelectCellListener() {
     this.maxgraphAttributeService.graph
       .getSelectionModel()
-      .addListener(InternalEvent.CHANGE, selectionModel => this.ngZone.run(() => this.selectedCellsSubject.next(selectionModel.cells)));
+      .addListener(InternalEvent.CHANGE, selectionModel => this.selectedCellsSubject.next(selectionModel.cells));
   }
 
   setMoveCellsListener() {
-    this.maxgraphAttributeService.graph.addListener(InternalEvent.MOVE_CELLS, () =>
-      this.ngZone.run(() => (this.maxgraphAttributeService.graph.resetEdgesOnMove = true)),
-    );
+    this.maxgraphAttributeService.graph.addListener(InternalEvent.MOVE_CELLS, () => {
+      this.maxgraphAttributeService.graph.resetEdgesOnMove = true;
+    });
   }
 
   setFoldListener() {
@@ -89,7 +88,7 @@ export class ShapeSettingsService {
   }
 
   setDblClickListener() {
-    this.maxgraphAttributeService.graph.addListener(InternalEvent.DOUBLE_CLICK, () => this.ngZone.run(() => this.editSelectedCell()));
+    this.maxgraphAttributeService.graph.addListener(InternalEvent.DOUBLE_CLICK, () => this.editSelectedCell());
   }
 
   unselectShapeForUpdate() {

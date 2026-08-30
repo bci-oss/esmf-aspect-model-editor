@@ -15,7 +15,7 @@ import {LoadedFilesService} from '@ame/cache';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {AssetsPath, BindingsService, BrowserService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
-import {inject, Injectable, NgZone} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {DefaultEntityInstance, DefaultTrait} from '@esmf/aspect-model-loader';
 import {
   Cell,
@@ -52,7 +52,6 @@ export class MaxGraphSetupService {
   private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
   private readonly translate = inject(LanguageTranslationService);
   private readonly loadedFiles = inject(LoadedFilesService);
-  private readonly ngZone = inject(NgZone);
 
   private scrollTileSize: Rectangle;
   private graph: Graph;
@@ -65,69 +64,67 @@ export class MaxGraphSetupService {
   };
 
   setUp() {
-    this.ngZone.runOutsideAngular(() => {
-      registerDefaultEdgeMarkers();
-      registerDefaultEdgeStyles();
-      registerDefaultPerimeters();
-      registerDefaultShapes();
+    registerDefaultEdgeMarkers();
+    registerDefaultEdgeStyles();
+    registerDefaultPerimeters();
+    registerDefaultShapes();
 
-      const container = document.getElementById('graph') as HTMLElement;
-      InternalEvent.disableContextMenu(container);
+    const container = document.getElementById('graph') as HTMLElement;
+    InternalEvent.disableContextMenu(container);
 
-      this.graph = new Graph(container);
-      GraphStylesRegistry.setupStyles(this.graph);
+    this.graph = new Graph(container);
+    GraphStylesRegistry.setupStyles(this.graph);
 
-      this.maxgraphAttributeService.graph = this.graph;
+    this.maxgraphAttributeService.graph = this.graph;
 
-      this.scrollTileSize = new Rectangle(0, 0, this.graph.container.clientWidth, this.graph.container.clientHeight);
-      this.graphSizeDidChange = this.graph.sizeDidChange;
-      this.graphCellRedraw = this.graph.cellRenderer.redraw;
+    this.scrollTileSize = new Rectangle(0, 0, this.graph.container.clientWidth, this.graph.container.clientHeight);
+    this.graphSizeDidChange = this.graph.sizeDidChange;
+    this.graphCellRedraw = this.graph.cellRenderer.redraw;
 
-      this.graph.setPanning(true);
-      this.graph.setCellsEditable(false);
-      this.graph.setCellsResizable(false);
-      this.graph.setAllowDanglingEdges(false);
-      this.graph.setCellsDisconnectable(false);
-      this.graph.setHtmlLabels(true);
-      this.graph.sizeDidChange = () => this.sizeDidChange();
-      this.graph.view.getBackgroundPageBounds = () => this.getBackgroundPageBounds();
-      this.graph.getPreferredPageSize = () => this.getPreferredPageSize();
-      this.graph.convertValueToString = (cell: Cell) => this.convertValueToString(cell);
-      this.graph.cellRenderer.redraw = (state: CellState, force: boolean, rendering: boolean) => this.redraw(state, force, rendering);
-      this.graph.getTooltipForCell = (cell: Cell) => this.getTooltipForCell(cell);
+    this.graph.setPanning(true);
+    this.graph.setCellsEditable(false);
+    this.graph.setCellsResizable(false);
+    this.graph.setAllowDanglingEdges(false);
+    this.graph.setCellsDisconnectable(false);
+    this.graph.setHtmlLabels(true);
+    this.graph.sizeDidChange = () => this.sizeDidChange();
+    this.graph.view.getBackgroundPageBounds = () => this.getBackgroundPageBounds();
+    this.graph.getPreferredPageSize = () => this.getPreferredPageSize();
+    this.graph.convertValueToString = (cell: Cell) => this.convertValueToString(cell);
+    this.graph.cellRenderer.redraw = (state: CellState, force: boolean, rendering: boolean) => this.redraw(state, force, rendering);
+    this.graph.getTooltipForCell = (cell: Cell) => this.getTooltipForCell(cell);
 
-      const popupMenuHandler = this.graph.getPlugin<PopupMenuHandler>('PopupMenuHandler');
-      const selectionHandler = this.graph.getPlugin<SelectionHandler>('SelectionHandler');
+    const popupMenuHandler = this.graph.getPlugin<PopupMenuHandler>('PopupMenuHandler');
+    const selectionHandler = this.graph.getPlugin<SelectionHandler>('SelectionHandler');
 
-      if (popupMenuHandler) {
-        popupMenuHandler.factoryMethod = (menu: MaxPopupMenu, cell: Cell | null): void => this.getPopupFactoryMethod(menu, cell);
-      } else {
-        console.warn('No popup menu handler found.');
+    if (popupMenuHandler) {
+      popupMenuHandler.factoryMethod = (menu: MaxPopupMenu, cell: Cell | null): void => this.getPopupFactoryMethod(menu, cell);
+    } else {
+      console.warn('No popup menu handler found.');
+    }
+
+    if (selectionHandler) {
+      selectionHandler.setRemoveCellsFromParent(false);
+    } else {
+      console.warn('No selection handler found.');
+    }
+
+    this.initializeGraphConstants();
+    this.initLayout();
+
+    this.graph.getLabel = (cell): any => {
+      if (!cell.value && this.configurationService.getSettings().showConnectionLabels) {
+        // label for edges
+        return MaxGraphHelper.createEdgeLabel(cell, this.graph);
       }
 
-      if (selectionHandler) {
-        selectionHandler.setRemoveCellsFromParent(false);
-      } else {
-        console.warn('No selection handler found.');
+      if (!cell.connectable) {
+        // label for sub cells
+        return;
       }
 
-      this.initializeGraphConstants();
-      this.initLayout();
-
-      this.graph.getLabel = (cell): any => {
-        if (!cell.value && this.configurationService.getSettings().showConnectionLabels) {
-          // label for edges
-          return MaxGraphHelper.createEdgeLabel(cell, this.graph);
-        }
-
-        if (!cell.connectable) {
-          // label for sub cells
-          return;
-        }
-
-        return MaxGraphHelper.createPropertiesLabel(cell);
-      };
-    });
+      return MaxGraphHelper.createPropertiesLabel(cell);
+    };
   }
 
   // construct the path for the asset

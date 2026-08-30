@@ -16,7 +16,7 @@ import {MaxGraphService} from '@ame/max-graph';
 import {ElectronSignalsService, ElectronTunnelService, LoadingScreenService, ModelSavingTrackerService, StartupPayload} from '@ame/shared';
 import {SidebarStateService} from '@ame/sidebar';
 import {LanguageTranslationService} from '@ame/translation';
-import {inject, Injectable, NgZone} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {NavigationEnd, Router} from '@angular/router';
 import {from, Observable, sample, switchMap, tap} from 'rxjs';
 import {filter} from 'rxjs/operators';
@@ -33,7 +33,6 @@ export class StartupService {
   private sidebarStateService = inject(SidebarStateService);
   private translate = inject(LanguageTranslationService);
   private router = inject(Router);
-  private ngZone = inject(NgZone);
 
   listenForLoading() {
     return this.router.events.pipe(
@@ -53,29 +52,25 @@ export class StartupService {
 
   private loadModel(model: string): Observable<any> {
     let options: StartupPayload;
-    this.ngZone.run(() =>
-      this.loadingScreenService.open({
-        title: this.translate.language.loadingScreenDialog.modelLoading,
-        content: this.translate.language.loadingScreenDialog.modelLoadingWait,
-      }),
-    );
+    this.loadingScreenService.open({
+      title: this.translate.language.loadingScreenDialog.modelLoading,
+      content: this.translate.language.loadingScreenDialog.modelLoadingWait,
+    });
 
     return this.electronSignalsService.call('requestWindowData').pipe(
       tap(data => {
         options = data.options;
       }),
       switchMap(() =>
-        this.ngZone.run(() =>
-          model
-            ? this.modelLoaderService.renderModel({
-                aspectModelUri: '',
-                rdfAspectModel: model,
-                namespaceFileName: options ? `${options.namespace}:${options.file}` : '',
-                fromWorkspace: options?.fromWorkspace,
-                editElementUrn: options?.editElement,
-              })
-            : this.fileHandlingService.loadEmptyModel(),
-        ),
+        model
+          ? this.modelLoaderService.renderModel({
+              aspectModelUri: '',
+              rdfAspectModel: model,
+              namespaceFileName: options ? `${options.namespace}:${options.file}` : '',
+              fromWorkspace: options?.fromWorkspace,
+              editElementUrn: options?.editElement,
+            })
+          : this.fileHandlingService.loadEmptyModel(),
       ),
       tap(() => {
         this.modelSaveTrackerService.updateSavedModel();

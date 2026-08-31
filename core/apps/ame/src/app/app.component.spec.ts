@@ -18,6 +18,7 @@ import {ConfigurationService} from '@ame/settings-dialog';
 import {BrowserService, ElectronTunnelService, IPC_RENDERER, TitleService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {SearchesStateService} from '@ame/utils';
+import {provideZonelessChangeDetection} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {provideRouter} from '@angular/router';
 import {BehaviorSubject, of} from 'rxjs';
@@ -80,6 +81,7 @@ describe('AppComponent', () => {
     TestBed.configureTestingModule({
       imports: [AppComponent],
       providers: [
+        provideZonelessChangeDetection(),
         provideRouter([]),
         {provide: IPC_RENDERER, useValue: ipcRenderer},
         {provide: TitleService, useValue: titleService},

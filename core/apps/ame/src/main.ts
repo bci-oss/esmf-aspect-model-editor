@@ -24,6 +24,8 @@ import {provideTransloco} from '@jsverse/transloco';
 import {environment} from 'environments/environment';
 import {ToastrModule} from 'ngx-toastr';
 
+(window as any)['global'] = window;
+
 if (environment.production) {
   enableProdMode();
   console.groupCollapsed = () => {};

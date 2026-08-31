@@ -268,7 +268,10 @@ export class RdfNodeService {
         DataFactory.triple(
           DataFactory.namedNode(metaModelElement.aspectModelUrn),
           DataFactory.namedNode(aspectModelUrn),
-          DataFactory.literal(`${value}`, RdfModelUtil.resolveAccurateType(metaModelElement, aspectModelUrn, rdfModel, characteristicType)),
+          DataFactory.literal(
+            `${value}`,
+            RdfModelUtil.resolveAccurateType(metaModelElement, aspectModelUrn, rdfModel, characteristicType) || undefined,
+          ),
         ),
       );
     }

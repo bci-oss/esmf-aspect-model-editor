@@ -48,8 +48,8 @@ importers:
         specifier: ^1.3.1
         version: 1.3.1
       n3:
-        specifier: ~1.26.0
-        version: 1.26.0
+        specifier: ~2.6.4
+        version: 2.6.4
       ngx-toastr:
         specifier: ^20.0.5
         version: 20.0.5(@angular/common@22.1.3(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.16.2))(rxjs@7.8.1))(@angular/core@22.1.3(@angular/compiler@22.1.3)(rxjs@7.8.1)(zone.js@0.16.2))(rxjs@7.8.1)
@@ -154,8 +154,8 @@ importers:
         specifier: ^30.0.0
         version: 30.0.0
       '@types/n3':
-        specifier: ^1.4.4
-        version: 1.26.1
+        specifier: ^1.26.3
+        version: 1.26.3
       '@types/node':
         specifier: ^24.5.2
         version: 24.12.0
@@ -249,6 +249,9 @@ importers:
       vitest:
         specifier: ^4.1.11
         version: 4.1.11(@types/node@24.12.0)(@vitest/coverage-v8@4.1.11)(jsdom@30.0.1)(vite@8.1.5(@types/node@24.12.0)(esbuild@0.27.3)(jiti@2.6.1)(less@4.6.7)(sass-embedded@1.97.3)(sass@1.97.3)(terser@5.49.0)(yaml@2.9.0))
+      zone.js:
+        specifier: ~0.16.2
+        version: 0.16.2
     optionalDependencies:
       '@nx/nx-darwin-arm64':
         specifier: 23.1.1
@@ -4870,8 +4873,8 @@ packages:
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
-  '@types/n3@1.26.1':
-    resolution: {integrity: sha512-TilYHzpU6ecXVJAbV+6o17Z8ZkWLWx6ZJD3IluaU4RiGHxqjU2or9fopxFHS6iXS6qcl5Mg1K3wSx9L8xxJaJQ==}
+  '@types/n3@1.26.3':
+    resolution: {integrity: sha512-uKEIHcOArBNmzCKDSrSgkEAC/v1h0yZWwldHI5kRnn0mMhvVHAgEpQMovowy03hV6iPpWPnq7BU6S+zg/ssXSw==}
 
   '@types/node-forge@1.3.14':
     resolution: {integrity: sha512-mhVF2BnD4BO+jtOp7z1CdzaK4mbuK0LLQYAvdOLqHTavxFNq4zA1EmYkpnFjP8HOUzedfQkRnp0E2ulSAYSzAw==}
@@ -8860,8 +8863,8 @@ packages:
     resolution: {integrity: sha512-dkEJPVvun4FryqBmZ5KhDo0K9iDXAwn08tMLDinNdRBNPcYEDiWYysLcc6k3mjTMlbP9KyylvRpd4wFtwrT9rw==}
     engines: {node: ^20.17.0 || >=22.9.0}
 
-  n3@1.26.0:
-    resolution: {integrity: sha512-SQknS0ua90rN+3RHuk8BeIqeYyqIH/+ecViZxX08jR4j6MugqWRjtONl3uANG/crWXnOM2WIqBJtjIhVYFha+w==}
+  n3@2.6.4:
+    resolution: {integrity: sha512-CsZsQz2x16SkRbAp9eTg9d26fmq30B2ewW7lYDfRFAOjVoE+PwT+eBlUZQqJlgpCe97xSS1X2CZ8hmomIjnTHg==}
     engines: {node: '>=12.0'}
 
   nanoid@3.3.11:
@@ -17602,7 +17605,7 @@ snapshots:
 
   '@types/ms@2.1.0': {}
 
-  '@types/n3@1.26.1':
+  '@types/n3@1.26.3':
     dependencies:
       '@rdfjs/types': 2.0.1
       '@types/node': 24.12.0
@@ -22764,7 +22767,7 @@ snapshots:
 
   mute-stream@3.0.0: {}
 
-  n3@1.26.0:
+  n3@2.6.4:
     dependencies:
       buffer: 6.0.3
       readable-stream: 4.7.0
@@ -26159,5 +26162,4 @@ snapshots:
 
   zod@4.4.3: {}
 
-  zone.js@0.16.2:
-    optional: true
+  zone.js@0.16.2: {}

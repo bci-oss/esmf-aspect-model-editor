@@ -139,4 +139,82 @@ describe('RdfSerializerService', () => {
     const serialized = service.serializeModel(rdfModel);
     expect(typeof serialized).toBe('string');
   });
+
+  it('should only include used prefixes in the serialized output', () => {
+    const store = new Store();
+    const rdfModel = new RdfModel(store, '2.2.0', 'urn:samm:org.eclipse.esmf:test:1.0.0');
+
+    store.addQuad(
+      DataFactory.quad(
+        DataFactory.namedNode('urn:samm:org.eclipse.esmf:test:1.0.0#TestProperty'),
+        rdfModel.samm.RdfType(),
+        rdfModel.samm.Property(),
+      ),
+    );
+
+    const serialized = service.serializeModel(rdfModel);
+    expect(serialized).toContain('@prefix samm:');
+    expect(serialized).toContain('@prefix :');
+    // xsd, rdf, rdfs and unit are not used in this store, so they should not appear in prefix header
+    expect(serialized).not.toContain('@prefix xsd:');
+    expect(serialized).not.toContain('@prefix rdf:');
+    expect(serialized).not.toContain('@prefix rdfs:');
+    expect(serialized).not.toContain('@prefix unit:');
+  });
+
+  it('should include rdf prefix when an explicit rdf term is used', () => {
+    const store = new Store();
+    const rdfModel = new RdfModel(store, '2.2.0', 'urn:samm:org.eclipse.esmf:test:1.0.0');
+
+    store.addQuad(
+      DataFactory.quad(
+        DataFactory.namedNode('urn:samm:org.eclipse.esmf:test:1.0.0#TestProperty'),
+        DataFactory.namedNode('urn:samm:org.eclipse.esmf.samm:meta-model:2.2.0#dataType'),
+        DataFactory.namedNode(`${Samm.RDF_URI}#langString`),
+      ),
+    );
+
+    const serialized = service.serializeModel(rdfModel);
+    expect(serialized).toContain('@prefix rdf:');
+  });
+
+  it('should not include rdf prefix for language-tagged literals or empty lists', () => {
+    const store = new Store();
+    const rdfModel = new RdfModel(store, '2.2.0', 'urn:samm:org.eclipse.esmf:test:1.0.0');
+
+    store.addQuad(
+      DataFactory.quad(
+        DataFactory.namedNode('urn:samm:org.eclipse.esmf:test:1.0.0#TestProperty'),
+        DataFactory.namedNode('urn:samm:org.eclipse.esmf.samm:meta-model:2.2.0#description'),
+        DataFactory.literal('Description in English', 'en'),
+      ),
+    );
+    store.addQuad(
+      DataFactory.quad(
+        DataFactory.namedNode('urn:samm:org.eclipse.esmf:test:1.0.0#TestOperation'),
+        rdfModel.samm.InputProperty(),
+        rdfModel.samm.RdfNil(),
+      ),
+    );
+
+    const serialized = service.serializeModel(rdfModel);
+    expect(serialized).toContain('"Description in English"@en');
+    expect(serialized).not.toContain('@prefix rdf:');
+  });
+
+  it('should include rdfs prefix when an rdfs term is used', () => {
+    const store = new Store();
+    const rdfModel = new RdfModel(store, '2.2.0', 'urn:samm:org.eclipse.esmf:test:1.0.0');
+
+    store.addQuad(
+      DataFactory.quad(
+        DataFactory.namedNode('urn:samm:org.eclipse.esmf:test:1.0.0#TestProperty'),
+        DataFactory.namedNode(`${Samm.RDFS_URI}#seeAlso`),
+        DataFactory.namedNode('http://example.com/ref'),
+      ),
+    );
+
+    const serialized = service.serializeModel(rdfModel);
+    expect(serialized).toContain('@prefix rdfs:');
+  });
 });

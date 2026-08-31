@@ -40,14 +40,15 @@ export class RdfLoader {
           // content is parsed at that point. push rdf to parsed array
           if (!rdfModel) {
             rdfModel = new RdfModel(store);
-            rdfModel.setPrefixes(prefixes);
+            rdfModel.setPrefixes(prefixes as Record<string, string>);
             rdfModel.setSourceLocation(payload.sourceLocation);
           }
 
           for (const [key, value] of Object.entries(prefixes)) {
             // Because the original model should be always first, we take as the main urn the first one
             if (key === '' && rdfModel.getPrefixes()[key]) continue;
-            rdfModel.addPrefix(key, value);
+            const prefixValue = typeof value === 'string' ? value : ((value as any)?.value ?? String(value));
+            rdfModel.addPrefix(key, prefixValue);
           }
           parsedRdf.push(payload.rdfAspectModel);
         }

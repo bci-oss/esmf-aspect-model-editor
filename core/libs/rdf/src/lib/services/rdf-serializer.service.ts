@@ -17,6 +17,14 @@ import {DataFactory, Quad, Util, Writer} from 'n3';
 
 @Injectable({providedIn: 'root'})
 export class RdfSerializerService {
+  private static readonly NATIVE_XSD_DATATYPES = new Set([
+    `${Samm.XSD_URI}#string`,
+    `${Samm.XSD_URI}#boolean`,
+    `${Samm.XSD_URI}#integer`,
+    `${Samm.XSD_URI}#decimal`,
+    `${Samm.XSD_URI}#double`,
+  ]);
+
   private readonly translation = inject(LanguageTranslationService, {optional: true});
 
   private readonly _namedNode = DataFactory.namedNode;
@@ -48,33 +56,103 @@ export class RdfSerializerService {
 
   private initializeWriter(rdfModel: RdfModel): Writer | null {
     try {
-      const defaultPrefixes: Record<string, string> = {
-        xsd: rdfModel?.samm?.getXSDNameSpace?.() ?? `${Samm.XSD_URI}#`,
-      };
-      if (rdfModel?.samm?.getAlias?.() && rdfModel?.samm?.getNamespace?.()) {
-        defaultPrefixes[rdfModel.samm.getAlias()] = rdfModel.samm.getNamespace();
-      }
-      if (rdfModel?.sammU?.getAlias?.() && rdfModel?.sammU?.getNamespace?.()) {
-        defaultPrefixes[rdfModel.sammU.getAlias()] = rdfModel.sammU.getNamespace();
-      }
-      if (rdfModel?.sammC?.getAlias?.() && rdfModel?.sammC?.getNamespace?.()) {
-        defaultPrefixes[rdfModel.sammC.getAlias()] = rdfModel.sammC.getNamespace();
-      }
-      if (rdfModel?.sammE?.getAlias?.() && rdfModel?.sammE?.getNamespace?.()) {
-        defaultPrefixes[rdfModel.sammE.getAlias()] = rdfModel.sammE.getNamespace();
-      }
-
       return new Writer({
         contentType: 'text/turtle',
-        prefixes: {
-          ...defaultPrefixes,
-          ...rdfModel?.getPrefixes?.(),
-        },
+        prefixes: this.getUsedPrefixes(rdfModel),
         end: false,
       });
     } catch {
       return null;
     }
+  }
+
+  private getUsedPrefixes(rdfModel: RdfModel): Record<string, string> {
+    const allPrefixes: Record<string, string> = {
+      xsd: rdfModel?.samm?.getXSDNameSpace?.() ?? `${Samm.XSD_URI}#`,
+      rdf: rdfModel?.samm?.getRdfSyntaxNameSpace?.() ?? `${Samm.RDF_URI}#`,
+      rdfs: `${Samm.RDFS_URI}#`,
+      ...(rdfModel?.getPrefixes?.() ?? {}),
+    };
+    if (rdfModel?.samm?.getAlias?.() && rdfModel?.samm?.getNamespace?.()) {
+      allPrefixes[rdfModel.samm.getAlias()] = rdfModel.samm.getNamespace();
+    }
+    if (rdfModel?.sammU?.getAlias?.() && rdfModel?.sammU?.getNamespace?.()) {
+      allPrefixes[rdfModel.sammU.getAlias()] = rdfModel.sammU.getNamespace();
+    }
+    if (rdfModel?.sammC?.getAlias?.() && rdfModel?.sammC?.getNamespace?.()) {
+      allPrefixes[rdfModel.sammC.getAlias()] = rdfModel.sammC.getNamespace();
+    }
+    if (rdfModel?.sammE?.getAlias?.() && rdfModel?.sammE?.getNamespace?.()) {
+      allPrefixes[rdfModel.sammE.getAlias()] = rdfModel.sammE.getNamespace();
+    }
+
+    const usedPrefixes: Record<string, string> = {};
+
+    if (allPrefixes[''] !== undefined) {
+      usedPrefixes[''] = allPrefixes[''];
+    }
+    if (rdfModel?.samm?.getAlias?.() && rdfModel?.samm?.getNamespace?.()) {
+      usedPrefixes[rdfModel.samm.getAlias()] = rdfModel.samm.getNamespace();
+    }
+
+    const prefixEntries = Object.entries(allPrefixes).filter(([alias]) => alias !== '');
+
+    rdfModel?.store?.forEach(
+      quad => {
+        for (const [alias, uri] of prefixEntries) {
+          if (usedPrefixes[alias]) continue;
+
+          if (this.isPrefixReferencedInQuad(alias, uri, quad)) {
+            usedPrefixes[alias] = uri;
+          }
+        }
+      },
+      null,
+      null,
+      null,
+      null,
+    );
+
+    return usedPrefixes;
+  }
+
+  private isPrefixReferencedInQuad(alias: string, uri: string, quad: Quad): boolean {
+    if (quad.subject?.value?.startsWith(uri)) {
+      return true;
+    }
+
+    if (quad.predicate?.value?.startsWith(uri)) {
+      if (alias === 'rdf') {
+        const isSyntheticRdfPredicate =
+          quad.predicate.value === `${Samm.RDF_URI}#type` ||
+          quad.predicate.value === `${Samm.RDF_URI}#first` ||
+          quad.predicate.value === `${Samm.RDF_URI}#rest`;
+        if (isSyntheticRdfPredicate) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    if (quad.object?.termType === 'NamedNode') {
+      if (alias === 'rdf' && quad.object.value === `${Samm.RDF_URI}#nil`) {
+        return false;
+      }
+      return quad.object.value.startsWith(uri);
+    }
+
+    if (quad.object?.termType === 'Literal') {
+      if (alias === 'rdf') {
+        return !quad.object.language && Boolean(quad.object.datatype?.value?.startsWith(uri));
+      }
+      if (alias === 'xsd') {
+        const datatypeValue = quad.object.datatype?.value;
+        return Boolean(datatypeValue?.startsWith(uri) && !RdfSerializerService.NATIVE_XSD_DATATYPES.has(datatypeValue));
+      }
+      return Boolean(quad.object.datatype?.value?.startsWith(uri));
+    }
+
+    return false;
   }
 
   private shouldSkipQuad(quad: Quad, processedQuads: Set<Quad>): boolean {

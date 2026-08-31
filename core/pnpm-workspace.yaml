@@ -12,6 +12,8 @@ allowBuilds:
   msgpackr-extract: true
   nx: true
   unrs-resolver: true
+minimumReleaseAgeExclude:
+  - electron@44.1.0
 onlyBuiltDependencies:
   - '@compodoc/compodoc'
   - '@parcel/watcher'

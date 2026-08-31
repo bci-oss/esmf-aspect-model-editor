@@ -16,7 +16,7 @@ import {MaxGraphService} from '@ame/max-graph';
 import {SearchService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {DefaultProperty, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
+import {DefaultCharacteristic, DefaultProperty, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {of} from 'rxjs';
@@ -92,6 +92,19 @@ describe('DescriptionInputFieldComponent', () => {
 
     component.field('en')().value.set('Base description');
     expect(component.isInherited('en')).toBe(true);
+  });
+
+  it('should return predefined description when metaModelElement is a predefined characteristic', () => {
+    const predefinedChar = new DefaultCharacteristic({
+      aspectModelUrn: 'urn:test:1.0.0#Timestamp',
+      name: 'Timestamp',
+      metaModelVersion: '2.0.0',
+      isPredefined: true,
+    });
+    predefinedChar.descriptions.set('en', 'Predefined timestamp description');
+    component.metaModelElement = predefinedChar;
+
+    expect(component.getCurrentValue('descriptionen', 'en')).toBe('Predefined timestamp description');
   });
 
   it('should unregister all fields on destroy', () => {

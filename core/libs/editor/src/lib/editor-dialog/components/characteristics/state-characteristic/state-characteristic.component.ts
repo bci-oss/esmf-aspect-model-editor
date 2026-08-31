@@ -10,8 +10,10 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {Component, input} from '@angular/core';
+import {Component, DestroyRef, inject, input, OnInit} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {DefaultEntity, DefaultState} from '@esmf/aspect-model-loader';
+import {EditorModelService} from '../../../editor-model.service';
 import {EditorSignalFormContext} from '../../../forms/editor-signal-form-context';
 import {PreviousFormDataSnapshot} from '../../../interfaces';
 import {DefaultValueEntityInputFieldComponent, DefaultValueInputFieldComponent, ValuesInputFieldComponent} from '../../fields';
@@ -21,12 +23,30 @@ import {DefaultValueEntityInputFieldComponent, DefaultValueInputFieldComponent, 
   templateUrl: './state-characteristic.component.html',
   imports: [ValuesInputFieldComponent, DefaultValueEntityInputFieldComponent, DefaultValueInputFieldComponent],
 })
-export class StateCharacteristicComponent {
+export class StateCharacteristicComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
+  private metaModelDialogService = inject(EditorModelService, {optional: true});
+
   readonly previousData = input<PreviousFormDataSnapshot>({});
   readonly signalForm = input.required<EditorSignalFormContext>();
   public metaModelElement: DefaultState;
 
   get hasEntityType(): boolean {
+    const formEntity = this.signalForm()?.value().dataTypeEntity;
+    if (formEntity !== undefined && formEntity !== null) {
+      return formEntity instanceof DefaultEntity;
+    }
     return this.metaModelElement?.dataType instanceof DefaultEntity;
+  }
+
+  ngOnInit(): void {
+    this.metaModelDialogService
+      ?.getMetaModelElement()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(element => {
+        if (element instanceof DefaultState) {
+          this.metaModelElement = element;
+        }
+      });
   }
 }

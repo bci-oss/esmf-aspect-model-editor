@@ -56,7 +56,7 @@ export class DescriptionInputFieldComponent extends InputFieldComponent<NamedEle
 
   getCurrentValue(key: string, locale: string) {
     if (this.metaModelElement instanceof DefaultCharacteristic && this.metaModelElement.isPredefined) {
-      return this.metaModelElement?.[key] || '';
+      return this.metaModelElement?.getDescription(locale) || '';
     }
 
     if (this.metaModelElement['extends_']) {

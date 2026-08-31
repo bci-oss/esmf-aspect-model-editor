@@ -60,9 +60,16 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
     return this.metaModelElement as any as HasExtends;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getCurrentValue(key: string, _locale?: string) {
+  getCurrentValue(key: string, locale?: string) {
     if (this.metaModelElement?.isPredefined) {
+      if (this.metaModelElement instanceof DefaultCharacteristic && locale) {
+        if (this.fieldName === 'description') {
+          return this.metaModelElement.getDescription(locale) || '';
+        }
+        if (this.fieldName === 'preferredName') {
+          return this.metaModelElement.getPreferredName(locale) || '';
+        }
+      }
       return this.metaModelElement?.[key] || '';
     }
 
@@ -82,7 +89,7 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
 
     for (const key in this.previousData()) {
       if (key.startsWith(this.fieldName) && multiLanguageFields.includes(this.fieldName)) {
-        const locale = key.substr(0, this.fieldName.length);
+        const locale = key.slice(this.fieldName.length);
         this.signalForm().set(key, this.getCurrentValue(key, locale));
       }
 

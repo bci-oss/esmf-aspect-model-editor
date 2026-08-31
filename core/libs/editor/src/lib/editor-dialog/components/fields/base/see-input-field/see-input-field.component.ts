@@ -120,6 +120,10 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
   }
 
   getCurrentValue() {
+    if (this.metaModelElement?.isPredefined) {
+      return this.metaModelElement?.see?.join(',') || '';
+    }
+
     return (
       this.previousData()?.[this.fieldName] ||
       this.metaModelElement?.see?.join(',') ||

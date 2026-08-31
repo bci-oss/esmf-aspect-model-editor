@@ -147,11 +147,15 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
     super.ngOnDestroy();
   }
 
-  getCurrentValue() {
+  getCurrentValue(): Type | null {
     const previousData = this.previousData();
-    return !this.metaModelElement.isPredefined
-      ? (previousData?.['dataType'] ?? previousData?.['newDataType'] ?? previousData?.[this.fieldName] ?? this.metaModelElement?.dataType)
-      : this.metaModelElement?.dataType;
+    return !this.metaModelElement?.isPredefined
+      ? (previousData?.['newDataType'] ??
+          previousData?.[this.fieldName] ??
+          (typeof previousData?.['dataType'] === 'object' ? previousData?.['dataType'] : null) ??
+          this.metaModelElement?.dataType ??
+          null)
+      : (this.metaModelElement?.dataType ?? null);
   }
 
   setDataTypeControl() {

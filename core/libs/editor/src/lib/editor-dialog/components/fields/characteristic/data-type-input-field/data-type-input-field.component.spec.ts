@@ -163,6 +163,37 @@ describe('DataTypeInputFieldComponent', () => {
     expect(signalForm.value()).not.toHaveProperty('newDataType');
   });
 
+  it('should restore data type object from previousData snapshot without treating string as Type', () => {
+    const entity = createEntity('PreviousEntity');
+    fixture.componentRef.setInput('previousData', {
+      dataType: 'PreviousEntity',
+      dataTypeEntity: entity,
+      newDataType: null,
+    });
+
+    component.setDataTypeControl();
+
+    expect(component.getCurrentValue()).toBe(entity);
+    expect(signalForm.value().dataTypeEntity).toBe(entity);
+    expect(signalForm.value().dataType).toBe(entity.getUrn());
+    expect(component.displayValue()).toBe(entity.getUrn());
+  });
+
+  it('should prioritize newDataType from previousData snapshot if newly created', () => {
+    const newEntity = createEntity('NewCreatedEntity');
+    fixture.componentRef.setInput('previousData', {
+      dataType: 'NewCreatedEntity',
+      dataTypeEntity: null,
+      newDataType: newEntity,
+    });
+
+    component.setDataTypeControl();
+
+    expect(component.getCurrentValue()).toBe(newEntity);
+    expect(signalForm.value().dataTypeEntity).toBe(newEntity);
+    expect(signalForm.value().newDataType).toBe(newEntity);
+  });
+
   function createCharacteristic(): DefaultCharacteristic {
     return new DefaultCharacteristic({
       aspectModelUrn: 'urn:test:1.0.0#Characteristic',

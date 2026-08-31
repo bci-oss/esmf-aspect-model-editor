@@ -115,6 +115,24 @@ describe('InputFieldComponent', () => {
     expect(component.getCurrentValue('name')).toBe('predefinedProp');
   });
 
+  it('should return predefined localized description and preferred name for predefined characteristics', () => {
+    const predefinedChar = new DefaultCharacteristic({
+      aspectModelUrn: 'urn:test:1.0.0#Timestamp',
+      name: 'Timestamp',
+      metaModelVersion: '2.0.0',
+      isPredefined: true,
+    });
+    predefinedChar.descriptions.set('en', 'Timestamp description');
+    predefinedChar.preferredNames.set('en', 'Timestamp');
+    (component as any).metaModelElement = predefinedChar;
+
+    (component as any).fieldName = 'description';
+    expect(component.getCurrentValue('descriptionen', 'en')).toBe('Timestamp description');
+
+    (component as any).fieldName = 'preferredName';
+    expect(component.getCurrentValue('preferredNameen', 'en')).toBe('Timestamp');
+  });
+
   it('should get, set and remove field values in signalForm', () => {
     component.setFieldValue('customField', 'customVal');
     expect(signalForm.value().customField).toBe('customVal');

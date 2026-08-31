@@ -58,7 +58,7 @@ export class EditorToolbarComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     this.bindingsService.registerAction('connectElements', () => this.onConnect());
     this.bindingsService.registerAction('format', () => this.onFormat());
-    this.bindingsService.registerAction('copy-to-clipboard', () => this.fileHandlingService.copyToClipboard());
+    this.bindingsService.registerAction('copy-to-clipboard', () => this.fileHandlingService.onCopyToClipboard());
     this.bindingsService.registerAction('connect-with', () => this.openConnectWithDialog());
     this.bindingsService.registerAction('select-tree', () => this.maxgraphShapeSelectorService.selectTree());
   }

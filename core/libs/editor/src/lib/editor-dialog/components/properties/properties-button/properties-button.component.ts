@@ -48,7 +48,11 @@ export class PropertiesButtonComponent {
     this.metaModelDialogService.getMetaModelElement().pipe(
       filter((element): element is DefaultEntity | DefaultAspect => element instanceof DefaultEntity || element instanceof DefaultAspect),
       tap(metaModelElement => {
-        this.propertiesPayload = structuredClone(metaModelElement.propertiesPayload);
+        try {
+          this.propertiesPayload = metaModelElement.propertiesPayload ? JSON.parse(JSON.stringify(metaModelElement.propertiesPayload)) : {};
+        } catch {
+          this.propertiesPayload = {};
+        }
       }),
     ),
   );

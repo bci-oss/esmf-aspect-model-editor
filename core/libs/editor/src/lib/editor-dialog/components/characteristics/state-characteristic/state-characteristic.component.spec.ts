@@ -77,7 +77,6 @@ describe('StateCharacteristicComponent', () => {
 
     fixture = TestBed.createComponent(StateCharacteristicComponent);
     component = fixture.componentInstance;
-    component.metaModelElement = state;
     fixture.componentRef.setInput(
       'signalForm',
       TestBed.runInInjectionContext(() => EditorSignalFormContext.create()),

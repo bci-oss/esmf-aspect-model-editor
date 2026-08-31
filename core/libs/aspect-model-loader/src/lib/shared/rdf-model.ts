@@ -137,7 +137,14 @@ export class RdfModel {
   }
 
   public setPrefixes(prefixes: Record<string, string>) {
-    this.prefixes = prefixes;
+    this.prefixes = {
+      xsd: this.samm.getXSDNameSpace(),
+      [this.samm.getAlias()]: this.samm.getNamespace(),
+      [this.sammU.getAlias()]: this.sammU.getNamespace(),
+      [this.sammC.getAlias()]: this.sammC.getNamespace(),
+      [this.sammE.getAlias()]: this.sammE.getNamespace(),
+      ...prefixes,
+    };
   }
 
   public setSourceLocation(sourceLocation: string) {

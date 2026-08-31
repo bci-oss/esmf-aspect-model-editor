@@ -14,7 +14,7 @@
 import {LoadedFilesService} from '@ame/cache';
 import {MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {mxCellSearchOption, SearchService} from '@ame/shared';
-import {DestroyRef, Directive, inject, input, OnChanges, OnDestroy, SimpleChanges} from '@angular/core';
+import {DestroyRef, Directive, effect, inject, input, OnDestroy} from '@angular/core';
 import {
   DefaultCharacteristic,
   DefaultConstraint,
@@ -38,7 +38,7 @@ export interface FilteredType {
 }
 
 @Directive()
-export abstract class InputFieldComponent<T extends NamedElement> implements OnDestroy, OnChanges {
+export abstract class InputFieldComponent<T extends NamedElement> implements OnDestroy {
   public readonly signalForm = input.required<EditorSignalFormContext>();
   readonly previousData = input<PreviousFormDataSnapshot>({});
 
@@ -51,6 +51,31 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
   public metaModelElement: T;
   protected resetFormOnDestroy = true;
   protected fieldName: string = null;
+
+  constructor() {
+    effect(() => {
+      const prevData = this.previousData();
+      if (
+        !this.fieldName ||
+        !(this.metaModelElement instanceof DefaultCharacteristic || this.metaModelElement instanceof DefaultConstraint)
+      ) {
+        return;
+      }
+
+      const multiLanguageFields = ['description', 'preferredName'];
+
+      for (const key in prevData) {
+        if (key.startsWith(this.fieldName) && multiLanguageFields.includes(this.fieldName)) {
+          const locale = key.slice(this.fieldName.length);
+          this.signalForm().set(key, this.getCurrentValue(key, locale));
+        }
+
+        if (key === this.fieldName) {
+          this.signalForm().set(key, this.getCurrentValue(key));
+        }
+      }
+    });
+  }
 
   get currentCachedFile() {
     return this.loadedFiles.currentLoadedFile.cachedFile;
@@ -74,29 +99,6 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
     }
 
     return this.previousData()?.[key] || this.metaModelElement?.[key] || '';
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  ngOnChanges(_changes: SimpleChanges) {
-    if (
-      !this.fieldName ||
-      !(this.metaModelElement instanceof DefaultCharacteristic || this.metaModelElement instanceof DefaultConstraint)
-    ) {
-      return;
-    }
-
-    const multiLanguageFields = ['description', 'preferredName'];
-
-    for (const key in this.previousData()) {
-      if (key.startsWith(this.fieldName) && multiLanguageFields.includes(this.fieldName)) {
-        const locale = key.slice(this.fieldName.length);
-        this.signalForm().set(key, this.getCurrentValue(key, locale));
-      }
-
-      if (key === this.fieldName) {
-        this.signalForm().set(key, this.getCurrentValue(key));
-      }
-    }
   }
 
   ngOnDestroy() {

@@ -15,7 +15,7 @@ import {MaxGraphService} from '@ame/max-graph';
 import {ElementIconComponent, sammElements} from '@ame/shared';
 import {CounterPipe} from '@ame/shared/pipes';
 import {NgClass} from '@angular/common';
-import {Component, inject, input, OnInit, signal} from '@angular/core';
+import {Component, computed, inject, input} from '@angular/core';
 import {MatIconButton} from '@angular/material/button';
 import {MatAccordion, MatExpansionPanel, MatExpansionPanelHeader, MatExpansionPanelTitle} from '@angular/material/expansion';
 import {MatIconModule} from '@angular/material/icon';
@@ -45,27 +45,25 @@ import {ModelElementParserPipe} from './element-list.pipe';
     TranslocoDirective,
   ],
 })
-export class ElementListComponent implements OnInit {
+export class ElementListComponent {
   public readonly label = input('');
   public readonly iconRotation = input<'rotate0' | 'rotate90' | 'rotate270'>('rotate90');
   public readonly isAspect = input<boolean>(false);
   public readonly elements = input<NamedElement[]>([]);
 
-  public filteredElements = signal<NamedElement[]>([]);
+  public filteredElements = computed(() => {
+    const list = Array.from(this.elements() || []).filter(e => e instanceof NamedElement);
+    if (list.length > 1) {
+      return list.sort(this.compareByName);
+    }
+    return list;
+  });
 
   private maxgraphService = inject(MaxGraphService);
   private shapeSettingsService = inject(ShapeSettingsService);
   private shapeSettingsStateService = inject(ShapeSettingsStateService);
   private openReferencedElementService = inject(OpenReferencedElementService);
   public loadedFilesService = inject(LoadedFilesService);
-
-  ngOnInit() {
-    this.filteredElements.set(Array.from(this.elements()).filter(e => e instanceof NamedElement));
-    if (this.filteredElements().length > 1) {
-      const sortedElements = this.filteredElements().sort(this.compareByName);
-      this.filteredElements.set(sortedElements);
-    }
-  }
 
   openElementModel(elementModel: NamedElement) {
     const cell = this.maxgraphService.resolveCellByModelElement(elementModel);

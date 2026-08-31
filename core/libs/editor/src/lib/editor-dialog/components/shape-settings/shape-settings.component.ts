@@ -13,7 +13,7 @@
 
 import {LoadedFilesService} from '@ame/cache';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
-import {ChangeDetectorRef, Component, DestroyRef, inject, input, OnChanges, OnInit, output, signal} from '@angular/core';
+import {ChangeDetectorRef, Component, DestroyRef, effect, inject, input, OnInit, output, signal, untracked} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
@@ -65,7 +65,7 @@ import {SharedSettingsTitleComponent} from './shared-settings-title/shared-setti
     EventComponent,
   ],
 })
-export class ShapeSettingsComponent implements OnInit, OnChanges {
+export class ShapeSettingsComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private languageSettings = inject(SammLanguageSettingsService);
   private changeDetector = inject(ChangeDetectorRef);
@@ -86,19 +86,21 @@ export class ShapeSettingsComponent implements OnInit, OnChanges {
   readonly save = output<EditorFormModel>();
   readonly afterClose = output();
 
+  constructor() {
+    effect(() => {
+      const modelElement = this.modelElement();
+      if (!modelElement) {
+        return;
+      }
+
+      untracked(() => this.onEdit(modelElement));
+    });
+  }
+
   saveOnKeyControlEnterEvent() {
     if (this.isOpened()) {
       this.onSave();
     }
-  }
-
-  ngOnChanges(): void {
-    const modelElement = this.modelElement();
-    if (!modelElement) {
-      return;
-    }
-
-    this.onEdit(modelElement);
   }
 
   ngOnInit() {

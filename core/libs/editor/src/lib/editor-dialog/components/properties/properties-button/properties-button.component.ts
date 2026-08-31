@@ -12,13 +12,14 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {Component, DestroyRef, inject, OnInit, output} from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {Component, DestroyRef, inject, output} from '@angular/core';
+import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
 import {MatButton} from '@angular/material/button';
 import {MatDialog} from '@angular/material/dialog';
 import {MatIconModule} from '@angular/material/icon';
-import {DefaultAspect, DefaultEntity, NamedElement, PropertyPayload} from '@esmf/aspect-model-loader';
+import {DefaultAspect, DefaultEntity, PropertyPayload} from '@esmf/aspect-model-loader';
 import {TranslocoDirective} from '@jsverse/transloco';
+import {filter, tap} from 'rxjs';
 import {first} from 'rxjs/operators';
 import {EditorModelService} from '../../../editor-model.service';
 import {PropertiesDialogData, PropertiesModalComponent} from '../properties-modal/properties-modal.component';
@@ -33,7 +34,7 @@ export interface UpdatedProperties {
   styleUrls: ['./properties-button.component.scss'],
   imports: [MatIconModule, TranslocoDirective, MatButton],
 })
-export class PropertiesButtonComponent implements OnInit {
+export class PropertiesButtonComponent {
   private destroyRef = inject(DestroyRef);
   private matDialog = inject(MatDialog);
   private metaModelDialogService = inject(EditorModelService);
@@ -41,23 +42,19 @@ export class PropertiesButtonComponent implements OnInit {
 
   public readonly overwrite = output<UpdatedProperties>();
 
-  private propertiesPayload: typeof this.metaModelElement.propertiesPayload = {};
+  private propertiesPayload: Record<string, PropertyPayload> = {};
 
-  public metaModelElement: DefaultEntity | DefaultAspect;
+  public metaModelElement = toSignal(
+    this.metaModelDialogService.getMetaModelElement().pipe(
+      filter((element): element is DefaultEntity | DefaultAspect => element instanceof DefaultEntity || element instanceof DefaultAspect),
+      tap(metaModelElement => {
+        this.propertiesPayload = structuredClone(metaModelElement.propertiesPayload);
+      }),
+    ),
+  );
+
   public get isPredefined(): boolean {
-    return this.metaModelElement?.isPredefined;
-  }
-
-  ngOnInit(): void {
-    this.metaModelDialogService
-      .getMetaModelElement()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((metaModelElement: NamedElement) => {
-        if (metaModelElement instanceof DefaultEntity || metaModelElement instanceof DefaultAspect) {
-          this.metaModelElement = metaModelElement;
-          this.propertiesPayload = structuredClone(metaModelElement.propertiesPayload);
-        }
-      });
+    return this.metaModelElement()?.isPredefined;
   }
 
   openPropertiesTable() {
@@ -65,8 +62,8 @@ export class PropertiesButtonComponent implements OnInit {
       .open(PropertiesModalComponent, {
         data: {
           propertiesPayload: this.propertiesPayload,
-          isExternalRef: this.loadedFiles.isElementExtern(this.metaModelElement),
-          metaModelElement: this.metaModelElement,
+          isExternalRef: this.loadedFiles.isElementExtern(this.metaModelElement()),
+          metaModelElement: this.metaModelElement(),
           isPredefined: this.isPredefined,
         } as PropertiesDialogData,
         autoFocus: false,
@@ -78,7 +75,7 @@ export class PropertiesButtonComponent implements OnInit {
           return;
         }
 
-        const properties = this.metaModelElement.properties;
+        const properties = this.metaModelElement()?.properties || [];
         for (const property of properties) {
           if (!data[property.aspectModelUrn]) {
             continue;

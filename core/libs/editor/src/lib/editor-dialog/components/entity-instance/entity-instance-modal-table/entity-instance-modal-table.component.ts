@@ -14,7 +14,7 @@
 import {LoadedFilesService} from '@ame/cache';
 import {extractNamespace} from '@ame/utils';
 import {NgClass} from '@angular/common';
-import {Component, inject, input, OnChanges, signal, SimpleChanges, viewChildren} from '@angular/core';
+import {Component, computed, effect, inject, input, signal, viewChildren} from '@angular/core';
 import {form, FormField, validate} from '@angular/forms/signals';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOptgroup, MatOption} from '@angular/material/autocomplete';
 import {MatIconButton, MatMiniFabButton} from '@angular/material/button';
@@ -69,7 +69,7 @@ import {EntityInstanceUtil} from '../utils/EntityInstanceUtil';
     FormField,
   ],
 })
-export class EntityInstanceModalTableComponent implements OnChanges {
+export class EntityInstanceModalTableComponent {
   readonly autocompleteTriggers = viewChildren(MatAutocompleteTrigger);
 
   readonly entity = input<DefaultEntity>();
@@ -81,7 +81,16 @@ export class EntityInstanceModalTableComponent implements OnChanges {
   protected readonly formFieldHelper = FormFieldHelper;
   protected readonly dataType = DataType;
 
-  readonly sources = signal<EntityInstanceProperty<DefaultProperty>[]>([]);
+  readonly sources = computed<EntityInstanceProperty<DefaultProperty>[]>(() => {
+    const entity = this.entity();
+    if (!entity) return [];
+    return entity.properties
+      .filter(property => !property.isAbstract)
+      .map(property => [
+        property,
+        new Value('', property.characteristic?.dataType, EntityInstanceUtil.isDefaultPropertyWithLangString(property) ? '' : undefined),
+      ]);
+  });
   readonly propertiesModel = signal<EntityInstancePropertiesModel>({});
   readonly locks = signal<EntityInstancePropertyLocks>({});
   readonly newEntityValues = signal<DefaultEntityInstance[]>([]);
@@ -98,17 +107,11 @@ export class EntityInstanceModalTableComponent implements OnChanges {
     return this.loadedFiles.currentLoadedFile.cachedFile;
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    const entity = this.entity();
-    if (('entity' in changes || 'entityValue' in changes) && entity) {
-      this.sources.set(
-        entity.properties
-          .filter(property => !property.isAbstract)
-          .map(property => [
-            property,
-            new Value('', property.characteristic?.dataType, EntityInstanceUtil.isDefaultPropertyWithLangString(property) ? '' : undefined),
-          ]),
-      );
+  constructor() {
+    effect(() => {
+      const entity = this.entity();
+      if (!entity) return;
+
       const entityValue = this.entityValue();
       if (entityValue) {
         const initial = entityInstanceProperties(entityValue, urn => this.loadedFiles.getElement<DefaultProperty>(urn));
@@ -123,7 +126,7 @@ export class EntityInstanceModalTableComponent implements OnChanges {
         );
       }
       this.newEntityValues.set([]);
-    }
+    });
   }
 
   getPropertyPayload(propertyUrn: string): PropertyPayload {

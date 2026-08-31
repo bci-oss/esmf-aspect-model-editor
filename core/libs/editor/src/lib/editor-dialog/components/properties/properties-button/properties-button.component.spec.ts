@@ -64,7 +64,7 @@ describe('PropertiesButtonComponent', () => {
 
   it('should create and receive metaModelElement', () => {
     expect(component).toBeTruthy();
-    expect(component.metaModelElement).toBe(aspect);
+    expect(component.metaModelElement()).toBe(aspect);
   });
 
   it('should open properties dialog', () => {

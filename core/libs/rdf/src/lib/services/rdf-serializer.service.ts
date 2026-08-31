@@ -48,9 +48,28 @@ export class RdfSerializerService {
 
   private initializeWriter(rdfModel: RdfModel): Writer | null {
     try {
+      const defaultPrefixes: Record<string, string> = {
+        xsd: rdfModel?.samm?.getXSDNameSpace?.() ?? `${Samm.XSD_URI}#`,
+      };
+      if (rdfModel?.samm?.getAlias?.() && rdfModel?.samm?.getNamespace?.()) {
+        defaultPrefixes[rdfModel.samm.getAlias()] = rdfModel.samm.getNamespace();
+      }
+      if (rdfModel?.sammU?.getAlias?.() && rdfModel?.sammU?.getNamespace?.()) {
+        defaultPrefixes[rdfModel.sammU.getAlias()] = rdfModel.sammU.getNamespace();
+      }
+      if (rdfModel?.sammC?.getAlias?.() && rdfModel?.sammC?.getNamespace?.()) {
+        defaultPrefixes[rdfModel.sammC.getAlias()] = rdfModel.sammC.getNamespace();
+      }
+      if (rdfModel?.sammE?.getAlias?.() && rdfModel?.sammE?.getNamespace?.()) {
+        defaultPrefixes[rdfModel.sammE.getAlias()] = rdfModel.sammE.getNamespace();
+      }
+
       return new Writer({
         contentType: 'text/turtle',
-        prefixes: {...rdfModel?.getPrefixes?.()},
+        prefixes: {
+          ...defaultPrefixes,
+          ...rdfModel?.getPrefixes?.(),
+        },
         end: false,
       });
     } catch {

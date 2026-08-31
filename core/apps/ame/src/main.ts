@@ -18,7 +18,7 @@ import {TranslocoHttpLoader} from '@ame/translation';
 import {provideHttpClient, withInterceptorsFromDi, withXhr} from '@angular/common/http';
 import {enableProdMode, importProvidersFrom, provideZonelessChangeDetection} from '@angular/core';
 import {bootstrapApplication} from '@angular/platform-browser';
-import {provideAnimations} from '@angular/platform-browser/animations';
+import {provideAnimationsAsync} from '@angular/platform-browser/animations/async';
 import {PreloadAllModules, provideRouter, withPreloading} from '@angular/router';
 import {provideTransloco} from '@jsverse/transloco';
 import {environment} from 'environments/environment';
@@ -37,7 +37,7 @@ const bootstrap = () =>
       provideZonelessChangeDetection(),
       provideRouter(APP_ROUTES, withPreloading(PreloadAllModules)),
       provideHttpClient(withXhr(), withInterceptorsFromDi()),
-      provideAnimations(),
+      provideAnimationsAsync(),
       importProvidersFrom(ToastrModule.forRoot()),
       provideTransloco({
         config: {

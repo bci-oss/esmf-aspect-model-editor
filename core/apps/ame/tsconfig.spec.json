@@ -2,7 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",
-    "types": ["node"]
+    "types": ["node"],
+    "target": "ES2022"
   },
   "files": ["src/polyfills.ts"],
   "include": ["**/*.spec.ts", "**/*.d.ts"],

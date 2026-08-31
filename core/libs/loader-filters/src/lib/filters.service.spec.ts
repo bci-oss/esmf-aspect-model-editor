@@ -104,7 +104,7 @@ describe('FiltersService', () => {
         MockProvider(MaxGraphShapeOverlayService),
         MockProvider(SammLanguageSettingsService),
         MockProvider(MaxGraphAttributeService, {inCollapsedMode: false}),
-        MockProvider(ShapeSettingsStateService, {isShapeSettingOpened: false, closeShapeSettings: vi.fn()}),
+        MockProvider(ShapeSettingsStateService, {isShapeSettingOpened: vi.fn(() => false) as any, closeShapeSettings: vi.fn()}),
       ],
     });
 

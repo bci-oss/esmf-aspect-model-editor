@@ -17,7 +17,7 @@ import {MaxGraphService, MaxGraphShapeSelectorService} from '@ame/max-graph';
 import {BarItemComponent, BindingsService, NotificationsService} from '@ame/shared';
 import {CommonModule} from '@angular/common';
 import {AfterViewInit, Component, DestroyRef, inject, OnDestroy} from '@angular/core';
-import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatDialog} from '@angular/material/dialog';
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
@@ -48,9 +48,7 @@ export class EditorToolbarComponent implements AfterViewInit, OnDestroy {
   public notificationsService = inject(NotificationsService);
 
   public filtersService = inject(FiltersService);
-  public isAllShapesExpanded = toSignal(this.editorService.isAllShapesExpanded$, {
-    initialValue: true,
-  });
+  public isAllShapesExpanded = this.editorService.isAllShapesExpanded;
 
   protected isModelEmpty = this.maxgraphService.isModelEmpty;
   protected selectedCells = this.maxgraphShapeSelectorService.selectedCells;

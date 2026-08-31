@@ -36,19 +36,23 @@ describe('ShapeSettingsStateService', () => {
   });
 
   it('openShapeSettings should set isShapeSettingOpened to true and emit', () => {
-    let opened = false;
-    service.onSettingsOpened$.subscribe(val => (opened = val));
-
     service.openShapeSettings();
-    expect(service.isShapeSettingOpened).toBe(true);
-    expect(opened).toBe(true);
+    expect(service.isShapeSettingOpened()).toBe(true);
   });
 
   it('closeShapeSettings should set isShapeSettingOpened to false, emit and clear element', () => {
     service.openShapeSettings();
     service.closeShapeSettings();
 
-    expect(service.isShapeSettingOpened).toBe(false);
+    expect(service.isShapeSettingOpened()).toBe(false);
     expect(editorModelService.updateMetaModelElement).toHaveBeenCalledWith(null);
+  });
+
+  it('setSelectedShapeForUpdate should update selectedShapeForUpdate signal', () => {
+    const dummyCell = {} as any;
+    service.setSelectedShapeForUpdate(dummyCell);
+    expect(service.selectedShapeForUpdate()).toBe(dummyCell);
+    service.setSelectedShapeForUpdate(null);
+    expect(service.selectedShapeForUpdate()).toBeNull();
   });
 });

@@ -11,13 +11,14 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Injectable} from '@angular/core';
+import {Injectable, signal} from '@angular/core';
 import {Graph} from '@maxgraph/core';
 import {environment} from 'environments/environment';
 
 @Injectable({providedIn: 'root'})
 export class MaxGraphAttributeService {
-  private _inCollapsedMode = false;
+  private readonly _inCollapsedMode = signal(false);
+  public readonly inCollapsedModeSignal = this._inCollapsedMode.asReadonly();
   private _graph: Graph;
 
   constructor() {
@@ -27,11 +28,13 @@ export class MaxGraphAttributeService {
   }
 
   public get inCollapsedMode(): boolean {
-    return this._inCollapsedMode;
+    return this._inCollapsedMode ? this._inCollapsedMode() : false;
   }
 
   public set inCollapsedMode(inCollapsedMode: boolean) {
-    this._inCollapsedMode = inCollapsedMode;
+    if (this._inCollapsedMode) {
+      this._inCollapsedMode.set(inCollapsedMode);
+    }
   }
 
   public get graph(): Graph {

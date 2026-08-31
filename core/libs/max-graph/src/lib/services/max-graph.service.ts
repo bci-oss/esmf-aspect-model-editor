@@ -16,10 +16,11 @@ import {FILTER_ATTRIBUTES, ModelTree} from '@ame/loader-filters';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {NotificationsService, overlayGeometry} from '@ame/shared';
 import {computed, inject, Injectable, signal} from '@angular/core';
+import {toObservable} from '@angular/core/rxjs-interop';
 import {DefaultCharacteristic, DefaultEntityInstance, DefaultEnumeration, NamedElement} from '@esmf/aspect-model-loader';
 import {Cell, CellStyle, Graph, InternalEvent} from '@maxgraph/core';
 import {environment} from 'environments/environment';
-import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {MaxGraphGeometryProviderService, MaxGraphSetupService} from '.';
 import {MaxGraphCharacteristicHelper, MaxGraphHelper} from '../helpers';
 import {ShapeConfiguration} from '../models';
@@ -48,18 +49,21 @@ export class MaxGraphService {
 
   private nextCellCoordinates: {x: number; y: number} = null;
 
-  public firstTimeFold = true;
+  public readonly firstTimeFold = signal(true);
   public graph: Graph;
-  public scrollPosition: Coordinates = {
+  private readonly _scrollPosition = signal<Coordinates>({
     x: 0,
     y: 0,
-  };
+  });
+  public readonly scrollPosition = this._scrollPosition.asReadonly();
 
-  public graphInitialized$ = new BehaviorSubject(false);
+  private readonly _isGraphInitialized = signal(false);
+  public readonly isGraphInitialized = this._isGraphInitialized.asReadonly();
+  public readonly graphInitialized$ = toObservable(this._isGraphInitialized);
 
-  private cellsCountSignal = signal(0);
-
-  readonly isModelEmpty = computed(() => this.cellsCountSignal() === 0);
+  private readonly cellsCountSignal = signal(0);
+  public readonly cellsCount = this.cellsCountSignal.asReadonly();
+  public readonly isModelEmpty = computed(() => this.cellsCountSignal() === 0);
 
   get currentCachedFile() {
     return this.loadedFiles.currentLoadedFile.cachedFile;
@@ -76,7 +80,7 @@ export class MaxGraphService {
     this.graph = this.maxgraphAttributeService.graph;
     this.graph.keepEdgesInBackground = true;
     this.themeService.setGraph(this.graph);
-    this.graphInitialized$.next(true);
+    this._isGraphInitialized.set(true);
 
     this.initCellsCountListener();
     this.maxgraphShapeSelectorService.initSelectionListener();
@@ -104,10 +108,10 @@ export class MaxGraphService {
    */
   setScrollPosition(event: Event): void {
     const {scrollLeft, scrollTop} = event.target as HTMLElement;
-    this.scrollPosition = {
+    this._scrollPosition.set({
       x: scrollLeft,
       y: scrollTop,
-    };
+    });
   }
 
   /**
@@ -321,8 +325,8 @@ export class MaxGraphService {
         this.navigateToCell(selectedCell, true);
       }
 
-      if (this.firstTimeFold) {
-        this.firstTimeFold = false;
+      if (this.firstTimeFold()) {
+        this.firstTimeFold.set(false);
         this.formatShapes(true);
         this.graph.refresh();
       }
@@ -359,9 +363,9 @@ export class MaxGraphService {
       if (selectedCell) {
         this.navigateToCell(selectedCell, true);
       }
-      if (this.firstTimeFold) {
+      if (this.firstTimeFold()) {
         this.formatShapes(true);
-        this.firstTimeFold = false;
+        this.firstTimeFold.set(false);
         this.graph.refresh();
       }
     });
@@ -607,7 +611,7 @@ export class MaxGraphService {
     const visibleCells: Cell[] = [];
 
     Object.values(cells).forEach(cell => {
-      const isCellVisible = this.isCellVisible(cell, graph, this.scrollPosition);
+      const isCellVisible = this.isCellVisible(cell, graph, this.scrollPosition());
 
       if (isCellVisible) {
         visibleCells.push(cell);

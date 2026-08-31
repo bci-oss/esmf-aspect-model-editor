@@ -81,20 +81,18 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
     initialValue: this.configurationService.getSettings()?.toolbarVisibility ?? true,
   });
 
-  public readonly isShapeSettingsOpened = toSignal(this.shapeSettingsStateService.onSettingsOpened$, {
-    initialValue: this.shapeSettingsStateService.isShapeSettingOpened,
-  });
+  public readonly isShapeSettingsOpened = this.shapeSettingsStateService.isShapeSettingOpened;
 
   public readonly isElementsSearchOpened = toSignal(this.searchesStateService.elementsSearch.opened$, {initialValue: false});
   public readonly isFilesSearchOpened = toSignal(this.searchesStateService.filesSearch.opened$, {initialValue: false});
   public readonly isModelEmpty = this.maxgraphService.isModelEmpty;
 
   get selectedShapeForUpdate(): Cell | null {
-    return this.shapeSettingsStateService.selectedShapeForUpdate;
+    return this.shapeSettingsStateService.selectedShapeForUpdate();
   }
 
   get modelElement(): NamedElement {
-    return this.shapeSettingsService.modelElement;
+    return this.shapeSettingsService.modelElement();
   }
 
   ngOnInit() {

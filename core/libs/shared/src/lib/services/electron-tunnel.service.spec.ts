@@ -23,7 +23,7 @@ import {LanguageTranslationService} from '@ame/translation';
 import {SearchesStateService} from '@ame/utils';
 import {TestBed} from '@angular/core/testing';
 import {MatDialog} from '@angular/material/dialog';
-import {BehaviorSubject, Subject, of} from 'rxjs';
+import {BehaviorSubject, of} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {IPC_RENDERER} from '../electron-ipc.provider';
 import {ELECTRON_EVENTS} from '../enums';
@@ -60,7 +60,6 @@ describe('ElectronTunnelService', () => {
     shapeSettingsServiceMock = {
       selectedCells$: new BehaviorSubject([]),
       hasCellsSubject$: new BehaviorSubject(false),
-      hasCellsSubject: new Subject(),
       editModel: vi.fn(),
     };
 

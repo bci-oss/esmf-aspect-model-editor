@@ -14,6 +14,7 @@
 import {LoadedFilesService} from '@ame/cache';
 import {MaxGraphAttributeService, MaxGraphService, MaxGraphShapeSelectorService} from '@ame/max-graph';
 import {BindingsService} from '@ame/shared';
+import {signal} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {DefaultEntity} from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
@@ -32,19 +33,27 @@ describe('ShapeSettingsService', () => {
   let loadedFilesService: LoadedFilesService;
 
   beforeEach(() => {
+    const selectedShapeSignal = signal<Cell | null>(null);
+
     TestBed.configureTestingModule({
       providers: [
         ShapeSettingsService,
         MockProvider(MaxGraphAttributeService),
-        MockProvider(MaxGraphService),
-        MockProvider(MaxGraphShapeSelectorService),
+        MockProvider(MaxGraphService, {
+          isModelEmpty: signal(false),
+        }),
+        MockProvider(MaxGraphShapeSelectorService, {
+          selectedCells: signal([]),
+          getSelectedShape: vi.fn(),
+        }),
         MockProvider(BindingsService, {
           registerAction: vi.fn(),
         }),
         MockProvider(EditorService),
         MockProvider(ShapeSettingsStateService, {
           openShapeSettings: vi.fn(),
-          selectedShapeForUpdate: null,
+          selectedShapeForUpdate: selectedShapeSignal,
+          setSelectedShapeForUpdate: vi.fn(cell => selectedShapeSignal.set(cell)),
         }),
         MockProvider(OpenReferencedElementService, {
           openReferencedElement: vi.fn(),
@@ -63,9 +72,8 @@ describe('ShapeSettingsService', () => {
   });
 
   it('unselectShapeForUpdate should clear selectedShapeForUpdate', () => {
-    shapeSettingsStateService.selectedShapeForUpdate = {} as Cell;
     service.unselectShapeForUpdate();
-    expect(shapeSettingsStateService.selectedShapeForUpdate).toBeNull();
+    expect(shapeSettingsStateService.setSelectedShapeForUpdate).toHaveBeenCalledWith(null);
   });
 
   it('editModel should open shape settings and set modelElement', () => {
@@ -73,7 +81,7 @@ describe('ShapeSettingsService', () => {
     service.editModel(entity);
 
     expect(shapeSettingsStateService.openShapeSettings).toHaveBeenCalled();
-    expect(service.modelElement).toBe(entity);
+    expect(service.modelElement()).toBe(entity);
   });
 
   it('editSelectedCell should do nothing if selected shape is edge or null', () => {

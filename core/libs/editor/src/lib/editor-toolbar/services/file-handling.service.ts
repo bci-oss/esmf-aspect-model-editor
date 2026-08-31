@@ -182,7 +182,7 @@ export class FileHandlingService {
         }),
         finalize(() => {
           this.loadingScreenService.close();
-          if (this.shapeSettingsStateService.isShapeSettingOpened) {
+          if (this.shapeSettingsStateService.isShapeSettingOpened()) {
             this.shapeSettingsStateService.closeShapeSettings();
           }
         }),

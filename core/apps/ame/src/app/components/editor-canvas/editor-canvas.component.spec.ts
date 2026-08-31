@@ -22,7 +22,7 @@ import {TestBed} from '@angular/core/testing';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Cell} from '@maxgraph/core';
 import {MockProvider} from 'ng-mocks';
-import {BehaviorSubject, of} from 'rxjs';
+import {of} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {EditorCanvasComponent} from './editor-canvas.component';
 
@@ -38,12 +38,14 @@ describe('EditorCanvasComponent Signal Forms save contract', () => {
       providers: [
         MockProvider(ShapeSettingsService, {
           unselectShapeForUpdate: vi.fn(),
+          modelElement: signal(null),
         }),
         {
           provide: ShapeSettingsStateService,
           useValue: {
-            onSettingsOpened$: new BehaviorSubject(true),
-            isShapeSettingOpened: true,
+            onSettingsOpened$: of(true),
+            isShapeSettingOpened: signal(true),
+            selectedShapeForUpdate: signal<Cell | null>(null),
             closeShapeSettings: vi.fn(),
           } as unknown as ShapeSettingsStateService,
         },
@@ -79,7 +81,7 @@ describe('EditorCanvasComponent Signal Forms save contract', () => {
   it('forwards the emitted Signal Forms value object to the selected shape', () => {
     const selectedShape = {} as Cell;
     const formValue: EditorFormModel = {changedMetaModel: null, name: 'Updated'};
-    Object.defineProperty(state, 'selectedShapeForUpdate', {value: selectedShape, configurable: true});
+    Object.defineProperty(state, 'selectedShapeForUpdate', {value: signal(selectedShape), configurable: true});
 
     component.onShapeSettingsSave(formValue);
 
@@ -89,7 +91,7 @@ describe('EditorCanvasComponent Signal Forms save contract', () => {
   });
 
   it('does not update an element when no shape is selected', () => {
-    Object.defineProperty(state, 'selectedShapeForUpdate', {value: null, configurable: true});
+    Object.defineProperty(state, 'selectedShapeForUpdate', {value: signal(null), configurable: true});
 
     component.onShapeSettingsSave({changedMetaModel: null});
 

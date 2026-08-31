@@ -12,7 +12,7 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {inject, Injectable, signal} from '@angular/core';
+import {computed, inject, Injectable, signal} from '@angular/core';
 import {DefaultConstraint, DefaultTrait} from '@esmf/aspect-model-loader';
 import {Cell, InternalEvent} from '@maxgraph/core';
 import {MaxGraphAttributeService} from '.';
@@ -26,6 +26,11 @@ export class MaxGraphShapeSelectorService {
   private selectedCellsSignal = signal<Cell[]>([]);
 
   readonly selectedCells = this.selectedCellsSignal.asReadonly();
+  readonly selectedShape = computed<Cell | null>(() => {
+    const selected = this.selectedCellsSignal();
+    const selectedCell = selected?.[0];
+    return selectedCell ? (selectedCell.isEdge() ? null : selectedCell) : null;
+  });
 
   public initSelectionListener(): void {
     this.maxgraphAttributeService.graph.getSelectionModel().addListener(InternalEvent.CHANGE, () => {
@@ -71,9 +76,8 @@ export class MaxGraphShapeSelectorService {
     return [...new Set(withExternalSelectedElementCells)];
   }
 
-  public getSelectedShape(): Cell {
-    const selectedCell = this.getSelectedCells()?.[0];
-    return selectedCell ? (selectedCell.isEdge() ? null : selectedCell) : null;
+  public getSelectedShape(): Cell | null {
+    return this.selectedShape();
   }
 
   /**

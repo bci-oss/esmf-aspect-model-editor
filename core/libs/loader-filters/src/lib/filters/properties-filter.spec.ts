@@ -38,7 +38,7 @@ describe('PropertiesFilterLoader', () => {
 
   beforeEach(() => {
     shapeSettingsStateMock = {
-      isShapeSettingOpened: false,
+      isShapeSettingOpened: vi.fn(() => false) as any,
       closeShapeSettings: vi.fn(),
     };
 
@@ -59,7 +59,7 @@ describe('PropertiesFilterLoader', () => {
 
   describe('filter', () => {
     it('should close shape settings if currently opened', () => {
-      (shapeSettingsStateMock as any).isShapeSettingOpened = true;
+      (shapeSettingsStateMock as any).isShapeSettingOpened = vi.fn(() => true);
 
       filter.filter([]);
 

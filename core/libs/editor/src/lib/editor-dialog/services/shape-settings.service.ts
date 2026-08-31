@@ -14,10 +14,10 @@
 import {LoadedFilesService} from '@ame/cache';
 import {MaxGraphAttributeService, MaxGraphHelper, MaxGraphService, MaxGraphShapeSelectorService} from '@ame/max-graph';
 import {BindingsService} from '@ame/shared';
-import {inject, Injectable} from '@angular/core';
+import {computed, inject, Injectable, signal} from '@angular/core';
+import {toObservable} from '@angular/core/rxjs-interop';
 import {NamedElement} from '@esmf/aspect-model-loader';
 import {InternalEvent} from '@maxgraph/core';
-import {BehaviorSubject} from 'rxjs';
 import {EditorService} from '../../editor.service';
 import {OpenReferencedElementService} from '../../open-element-window/open-element-window.service';
 import {ShapeSettingsStateService} from './shape-settings-state.service';
@@ -33,16 +33,13 @@ export class ShapeSettingsService {
   private openReferencedElementService = inject(OpenReferencedElementService);
   private loadedFiles = inject(LoadedFilesService);
 
-  private selectedCellsSubject = new BehaviorSubject([]);
+  private readonly _modelElement = signal<NamedElement | null>(null);
+  public readonly modelElement = this._modelElement.asReadonly();
 
-  public modelElement: NamedElement = null;
-  public hasCellsSubject = new BehaviorSubject(false);
-  public selectedCells$ = this.selectedCellsSubject.asObservable();
-  public hasCellsSubject$ = this.hasCellsSubject.asObservable();
+  public readonly selectedCells$ = toObservable(this.maxgraphShapeSelectorService.selectedCells);
+  public readonly hasCellsSubject$ = toObservable(computed(() => !this.maxgraphService.isModelEmpty()));
 
   setGraphListeners() {
-    this.setCellAddedListener();
-    this.setSelectCellListener();
     this.setMoveCellsListener();
     this.setFoldListener();
     this.setDblClickListener();
@@ -61,22 +58,6 @@ export class ShapeSettingsService {
     });
   }
 
-  setCellAddedListener(): void {
-    const graph = this.maxgraphAttributeService.graph;
-    graph.addListener(InternalEvent.CELLS_ADDED, () => {
-      const graph = this.maxgraphAttributeService.graph;
-      const vertexCount = Object.values(graph.getDataModel().cells).filter(cell => cell.isVertex()).length > 0;
-
-      this.hasCellsSubject.next(vertexCount);
-    });
-  }
-
-  setSelectCellListener() {
-    this.maxgraphAttributeService.graph
-      .getSelectionModel()
-      .addListener(InternalEvent.CHANGE, selectionModel => this.selectedCellsSubject.next(selectionModel.cells));
-  }
-
   setMoveCellsListener() {
     this.maxgraphAttributeService.graph.addListener(InternalEvent.MOVE_CELLS, () => {
       this.maxgraphAttributeService.graph.resetEdgesOnMove = true;
@@ -92,21 +73,22 @@ export class ShapeSettingsService {
   }
 
   unselectShapeForUpdate() {
-    this.shapeSettingsStateService.selectedShapeForUpdate = null;
+    this.shapeSettingsStateService.setSelectedShapeForUpdate(null);
   }
 
   editSelectedCell() {
-    this.shapeSettingsStateService.selectedShapeForUpdate = this.maxgraphShapeSelectorService.getSelectedShape();
-    const selectedElement = this.shapeSettingsStateService.selectedShapeForUpdate;
+    this.shapeSettingsStateService.setSelectedShapeForUpdate(this.maxgraphShapeSelectorService.getSelectedShape());
+    const selectedElement = this.shapeSettingsStateService.selectedShapeForUpdate();
 
     if (!selectedElement || selectedElement?.isEdge()) {
-      this.shapeSettingsStateService.selectedShapeForUpdate = null;
+      this.shapeSettingsStateService.setSelectedShapeForUpdate(null);
       return;
     }
 
-    this.modelElement = MaxGraphHelper.getModelElement(selectedElement);
-    if (this.loadedFiles.isElementExtern(this.modelElement) && !this.modelElement.isPredefined) {
-      this.openReferencedElementService.openReferencedElement(this.modelElement);
+    const modelElem = MaxGraphHelper.getModelElement(selectedElement);
+    this._modelElement.set(modelElem);
+    if (this.loadedFiles.isElementExtern(modelElem) && !modelElem.isPredefined) {
+      this.openReferencedElementService.openReferencedElement(modelElem);
       return;
     }
 
@@ -115,6 +97,6 @@ export class ShapeSettingsService {
 
   editModel(elementModel: NamedElement) {
     this.shapeSettingsStateService.openShapeSettings();
-    this.modelElement = elementModel;
+    this._modelElement.set(elementModel);
   }
 }

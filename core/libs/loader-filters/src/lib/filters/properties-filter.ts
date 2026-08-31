@@ -44,7 +44,7 @@ export class PropertiesFilterLoader implements FilterLoader {
 
   filter(rootElements: NamedElement[]): ModelTree<NamedElement>[] {
     const shapeSettingsStateService = this.injector.get(ShapeSettingsStateService, null, {optional: true});
-    if (shapeSettingsStateService?.isShapeSettingOpened) {
+    if (shapeSettingsStateService?.isShapeSettingOpened()) {
       shapeSettingsStateService.closeShapeSettings();
     }
 

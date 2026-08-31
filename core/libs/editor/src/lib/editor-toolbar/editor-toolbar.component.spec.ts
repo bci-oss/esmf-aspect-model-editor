@@ -47,6 +47,7 @@ describe('EditorToolbarComponent', () => {
           copyToClipboard: vi.fn(() => of(null as any)),
         }),
         MockProvider(EditorService, {
+          isAllShapesExpanded: signal(true),
           isAllShapesExpanded$: of(true),
           deleteSelectedElements: vi.fn(),
           toggleExpand: vi.fn(),

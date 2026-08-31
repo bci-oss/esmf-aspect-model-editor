@@ -90,7 +90,7 @@ export class ModelRendererService {
 
   private graphUpdateWorkflow(maxgraphRenderer: MaxGraphRenderer, elements: NamedElement[]): Observable<boolean> {
     return this.maxgraphService.updateGraph(() => {
-      this.maxgraphService.firstTimeFold = true;
+      this.maxgraphService.firstTimeFold.set(true);
       MaxGraphHelper.filterMode = this.filtersService.currentFilter.filterType;
       const rootElements = elements.filter(e => !e.parents.length);
       const filtered = this.filtersService.filter(rootElements.length ? rootElements : elements);

@@ -198,7 +198,6 @@ export class ElectronTunnelService {
           switchMap(isSaved => (isSaved ? of(true) : this.saveModelDialogService.openDialog())),
           filter(result => result),
           switchMap(() => this.fileHandlingService.loadEmptyModel()),
-          tap(() => this.shapeSettingsService.hasCellsSubject.next(false)),
         )
         .subscribe();
     });

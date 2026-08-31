@@ -38,11 +38,12 @@ import {
 } from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {useUpdater} from '@ame/utils';
-import {inject, Injectable, Injector} from '@angular/core';
+import {inject, Injectable, Injector, signal} from '@angular/core';
+import {toObservable} from '@angular/core/rxjs-interop';
 import {DefaultAspect, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
 import {Cell, EventObject, FitPlugin, gestureUtils, Graph, GraphDataModel, InternalEvent} from '@maxgraph/core';
 import {environment} from 'environments/environment';
-import {BehaviorSubject, catchError, delayWhen, first, Observable, of, retry, Subscription, switchMap, tap, throwError, timer} from 'rxjs';
+import {catchError, delayWhen, first, Observable, of, retry, Subscription, switchMap, tap, throwError, timer} from 'rxjs';
 import {ConfirmDialogService} from './confirm-dialog/confirm-dialog.service';
 import {ShapeSettingsService, ShapeSettingsStateService} from './editor-dialog';
 import {AsyncApi, OpenApi, ViolationError} from './editor-toolbar';
@@ -76,9 +77,8 @@ export class EditorService {
   private elementCreator = inject(ElementCreatorService);
 
   private validateModelSubscription$: Subscription;
-  private isAllShapesExpandedSubject = new BehaviorSubject<boolean>(true);
-
-  public isAllShapesExpanded$ = this.isAllShapesExpandedSubject.asObservable();
+  public readonly isAllShapesExpanded = signal<boolean>(true);
+  public readonly isAllShapesExpanded$ = toObservable(this.isAllShapesExpanded);
 
   private get settings() {
     return this.configurationService.getSettings();
@@ -333,7 +333,7 @@ export class EditorService {
   }
 
   private deleteElements(cells: Cell[]): void {
-    if (this.shapeSettingsStateService.isShapeSettingOpened && cells.includes(this.shapeSettingsStateService.selectedShapeForUpdate)) {
+    if (this.shapeSettingsStateService.isShapeSettingOpened() && cells.includes(this.shapeSettingsStateService.selectedShapeForUpdate())) {
       this.shapeSettingsStateService.closeShapeSettings();
     }
 
@@ -400,7 +400,7 @@ export class EditorService {
   }
 
   toggleExpand() {
-    const isExpanded = this.isAllShapesExpandedSubject.getValue();
+    const isExpanded = this.isAllShapesExpanded();
     this.loadingScreenService
       .open({
         title: isExpanded ? this.translate.language.loadingScreenDialog.folding : this.translate.language.loadingScreenDialog.expanding,
@@ -409,7 +409,7 @@ export class EditorService {
       .afterOpened()
       .pipe(switchMap(() => (isExpanded ? this.maxgraphService.foldCells() : this.maxgraphService.expandCells())))
       .subscribe(() => {
-        this.isAllShapesExpandedSubject.next(!isExpanded);
+        this.isAllShapesExpanded.set(!isExpanded);
         this.maxgraphService.formatShapes(true);
         this.loadingScreenService.close();
       });

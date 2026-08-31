@@ -72,7 +72,7 @@ export class ElementListComponent implements OnInit {
     this.shapeSettingsService.editModel(elementModel);
     if (cell) {
       this.maxgraphService.navigateToCell(cell, true);
-      this.shapeSettingsStateService.selectedShapeForUpdate = cell;
+      this.shapeSettingsStateService.setSelectedShapeForUpdate(cell);
     }
   }
 

@@ -1,6 +1,5 @@
 import {ModelApiService} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
-import {EditorService} from '@ame/editor';
 import {FiltersService} from '@ame/loader-filters';
 import {
   ConstraintRenderService,
@@ -69,7 +68,6 @@ describe('ConstraintModelService', () => {
         {provide: LoadedFilesService, useValue: mockLoadedFilesService},
         {provide: RdfService, useValue: {}},
         {provide: ModelService, useValue: {}},
-        {provide: EditorService, useValue: {}},
         {provide: ModelApiService, useValue: {}},
       ],
     });

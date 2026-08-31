@@ -11,7 +11,6 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelLoaderService} from '@ame/editor';
 import {APP_CONFIG, AppConfig, BrowserService, IPC_RENDERER} from '@ame/shared';
 import {provideHttpClient} from '@angular/common/http';
 import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
@@ -19,6 +18,7 @@ import {TestBed} from '@angular/core/testing';
 import {of} from 'rxjs';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {MigratorApiService} from './migrator-api.service';
+import {ModelApiService} from './model-api.service';
 
 const config: AppConfig = {
   environment: 'dev',
@@ -42,7 +42,7 @@ describe('MigratorApiService', () => {
   let service: MigratorApiService;
   let httpMock: HttpTestingController;
   let browserService: {isStartedAsElectronApp: ReturnType<typeof vi.fn>};
-  let modelLoader: {getRdfModelsFromWorkspace: ReturnType<typeof vi.fn>};
+  let modelApiService: {fetchAllNamespaceFilesContent: ReturnType<typeof vi.fn>};
   let ipcRenderer: {getBackendPort: ReturnType<typeof vi.fn>};
 
   const configureTestBed = () => {
@@ -53,7 +53,7 @@ describe('MigratorApiService', () => {
         provideHttpClientTesting(),
         {provide: APP_CONFIG, useValue: config},
         {provide: BrowserService, useValue: browserService},
-        {provide: ModelLoaderService, useValue: modelLoader},
+        {provide: ModelApiService, useValue: modelApiService},
         {provide: IPC_RENDERER, useValue: ipcRenderer},
       ],
     });
@@ -64,7 +64,7 @@ describe('MigratorApiService', () => {
 
   beforeEach(() => {
     browserService = {isStartedAsElectronApp: vi.fn(() => false)};
-    modelLoader = {getRdfModelsFromWorkspace: vi.fn()};
+    modelApiService = {fetchAllNamespaceFilesContent: vi.fn()};
     ipcRenderer = {getBackendPort: vi.fn(() => Promise.resolve('4000'))};
   });
 
@@ -109,10 +109,10 @@ describe('MigratorApiService', () => {
     beforeEach(() => configureTestBed());
 
     it('should return false and clear the signal when there is nothing to migrate', () => {
-      modelLoader.getRdfModelsFromWorkspace.mockReturnValue(
+      vi.spyOn(service, 'getRdfModelsFromWorkspace').mockReturnValue(
         of([
-          {name: 'a', version: '2.2.0', rdfModel: {id: 'a'}},
-          {name: 'b', version: '2.3.0', rdfModel: {id: 'b'}},
+          {name: 'a', version: '2.2.0', rdfModel: {id: 'a'} as any},
+          {name: 'b', version: '2.3.0', rdfModel: {id: 'b'} as any},
         ]),
       );
 
@@ -124,9 +124,9 @@ describe('MigratorApiService', () => {
     });
 
     it('should return true and populate the signal with the outdated rdf models', () => {
-      const outdatedRdfModel = {id: 'outdated'};
-      const upToDateRdfModel = {id: 'up-to-date'};
-      modelLoader.getRdfModelsFromWorkspace.mockReturnValue(
+      const outdatedRdfModel = {id: 'outdated'} as any;
+      const upToDateRdfModel = {id: 'up-to-date'} as any;
+      vi.spyOn(service, 'getRdfModelsFromWorkspace').mockReturnValue(
         of([
           {name: 'outdated-file', version: '1.0.0', rdfModel: outdatedRdfModel},
           {name: 'up-to-date-file', version: '2.2.0', rdfModel: upToDateRdfModel},
@@ -141,13 +141,12 @@ describe('MigratorApiService', () => {
     });
 
     it('should reset the signal before recomputing it on every call', () => {
-      modelLoader.getRdfModelsFromWorkspace.mockReturnValue(of([{name: 'outdated-file', version: '1.0.0', rdfModel: {id: 'outdated'}}]));
+      const spy = vi.spyOn(service, 'getRdfModelsFromWorkspace');
+      spy.mockReturnValue(of([{name: 'outdated-file', version: '1.0.0', rdfModel: {id: 'outdated'} as any}]));
       service.hasFilesToMigrate().subscribe();
       expect(service.rdfModelsToMigrate()).toEqual([{id: 'outdated'}]);
 
-      modelLoader.getRdfModelsFromWorkspace.mockReturnValue(
-        of([{name: 'up-to-date-file', version: '2.2.0', rdfModel: {id: 'up-to-date'}}]),
-      );
+      spy.mockReturnValue(of([{name: 'up-to-date-file', version: '2.2.0', rdfModel: {id: 'up-to-date'} as any}]));
       service.hasFilesToMigrate().subscribe();
       expect(service.rdfModelsToMigrate()).toEqual([]);
     });

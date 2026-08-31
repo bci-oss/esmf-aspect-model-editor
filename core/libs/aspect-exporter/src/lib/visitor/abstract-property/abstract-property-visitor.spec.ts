@@ -13,12 +13,7 @@
 
 import {beforeEach, describe, expect, it, Mocked, vi} from 'vitest';
 
-vi.mock('@ame/editor', () => ({
-  ModelElementEditorComponent: class {},
-}));
-
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
-import {MaxGraphService} from '@ame/max-graph';
 import {ModelService} from '@ame/rdf/services';
 import {TestBed} from '@angular/core/testing';
 import {DefaultProperty, ModelElementCache, RdfModel, Samm} from '@esmf/aspect-model-loader';
@@ -46,7 +41,6 @@ describe('Property Visitor', () => {
     TestBed.configureTestingModule({
       providers: [
         AbstractPropertyVisitor,
-        MockProvider(MaxGraphService),
         MockProvider(RdfListService, {
           push: vi.fn(),
         }),

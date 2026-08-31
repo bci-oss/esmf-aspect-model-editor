@@ -11,16 +11,16 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelApiService, ModelData, WorkspaceStructure} from '@ame/api';
+import {FileEntry, FileInformation, ModelApiService, ModelData, WorkspaceStructure} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {config} from '@ame/shared';
-import {ExporterHelper, FileStatus, SidebarStateService} from '@ame/sidebar';
+import {FileStatus, SidebarStateService} from '@ame/sidebar';
+import {isVersionOutdated} from '@ame/utils';
 import {DestroyRef, Injectable, inject} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {RdfModel, Samm} from '@esmf/aspect-model-loader';
 import {Observable, Subject, forkJoin, map, of, switchMap} from 'rxjs';
-import {FileEntry, FileInformation} from './editor-toolbar';
 import {ModelLoaderService} from './model-loader.service';
 
 @Injectable({providedIn: 'root'})
@@ -116,7 +116,7 @@ export class ModelCheckerService {
     status.dependencies = dependencies;
     status.missingDependencies = missingDependencies;
     status.sammVersion = modelVersion || 'unknown';
-    status.outdated = ExporterHelper.isVersionOutdated(modelVersion, config.currentSammVersion);
+    status.outdated = isVersionOutdated(modelVersion, config.currentSammVersion);
     status.loaded = currentFile?.absoluteName === absoluteName;
     status.errored = status.sammVersion === 'unknown' || missingDependencies.length > 0;
     status.aspectModelUrn = aspectModelUrn;

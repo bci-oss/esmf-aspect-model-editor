@@ -13,7 +13,6 @@
 
 import {ModelApiService} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
-import {EditorService} from '@ame/editor';
 import {MaxGraphHelper} from '@ame/max-graph';
 import {ModelService, RdfService} from '@ame/rdf/services';
 import {useUpdater} from '@ame/utils';
@@ -24,7 +23,6 @@ import {Cell} from '@maxgraph/core';
 export abstract class BaseModelService {
   protected readonly rdfService: RdfService = inject(RdfService);
   protected readonly modelService: ModelService = inject(ModelService);
-  protected readonly editorService: EditorService = inject(EditorService);
   protected readonly modelApiService: ModelApiService = inject(ModelApiService);
   protected readonly loadedFilesService: LoadedFilesService = inject(LoadedFilesService);
 

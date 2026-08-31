@@ -21,7 +21,6 @@ import {TestBed} from '@angular/core/testing';
 
 import {RdfNodeService} from '@ame/aspect-exporter';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
-import {MaxGraphService} from '@ame/max-graph';
 import {BoundDefinition} from '@ame/meta-model';
 import {
   DefaultConstraint,
@@ -37,7 +36,7 @@ import {
   Samm,
 } from '@esmf/aspect-model-loader';
 import {Store} from 'n3';
-import {MockProvider, MockProviders} from 'ng-mocks';
+import {MockProvider} from 'ng-mocks';
 import {RdfListService} from '../../rdf-list';
 import {ConstraintVisitor} from './constraint-visitor';
 
@@ -104,9 +103,6 @@ describe('Constraint Visitor', () => {
     TestBed.configureTestingModule({
       providers: [
         ConstraintVisitor,
-        MockProviders(MaxGraphService),
-        MockProviders(MaxGraphService),
-        MockProvider(MaxGraphService),
         MockProvider(RdfListService, {
           push: vi.fn(),
           createEmpty: vi.fn(),

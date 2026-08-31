@@ -11,7 +11,6 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {AsyncApi, FileEntry, FileInformation, OpenApi, ViolationError} from '@ame/editor';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {APP_CONFIG, AppConfig, BrowserService, FileContentModel, HttpHeaderBuilder, IPC_RENDERER} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
@@ -20,7 +19,7 @@ import {Injectable, inject} from '@angular/core';
 import {Observable, forkJoin, of, throwError} from 'rxjs';
 import {catchError, map, mergeMap, retry, tap, timeout} from 'rxjs/operators';
 import {ModelValidatorService} from './model-validator.service';
-import {ModelData, WorkspaceStructure} from './models';
+import {AsyncApi, FileEntry, FileInformation, ModelData, OpenApi, ViolationError, WorkspaceStructure} from './models';
 
 @Injectable({providedIn: 'root'})
 export class ModelApiService {

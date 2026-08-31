@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelApiService} from '@ame/api';
+import {AsyncApi, ModelApiService, OpenApi, ViolationError} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
 import {FILTER_ATTRIBUTES, FilterAttributesService, FiltersService} from '@ame/loader-filters';
 import {
@@ -46,7 +46,6 @@ import {environment} from 'environments/environment';
 import {catchError, delayWhen, first, Observable, of, retry, Subscription, switchMap, tap, throwError, timer} from 'rxjs';
 import {ConfirmDialogService} from './confirm-dialog/confirm-dialog.service';
 import {ShapeSettingsService, ShapeSettingsStateService} from './editor-dialog';
-import {AsyncApi, OpenApi, ViolationError} from './editor-toolbar';
 import {ModelSaverService} from './model-saver.service';
 import {ConfirmDialogEnum} from './models/confirm-dialog.enum';
 

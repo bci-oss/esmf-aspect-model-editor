@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {OpenApi, OpenApiModel} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {NotificationsService} from '@ame/shared';
@@ -37,37 +38,7 @@ import {map} from 'rxjs';
 import {finalize, first} from 'rxjs/operators';
 import {EditorService} from '../../../editor.service';
 
-export interface OpenApi {
-  language: string;
-  output: string;
-  baseUrl: string;
-  includeQueryApi: boolean;
-  useSemanticVersion: boolean;
-  paging: string;
-  resourcePath: string;
-  ymlProperties: string;
-  jsonProperties: string;
-  includePost: boolean;
-  includePut: boolean;
-  includePatch: boolean;
-}
-
-export interface OpenApiModel {
-  baseUrl: string;
-  language: string;
-  includeQueryApi: boolean;
-  useSemanticVersion: boolean;
-  activateResourcePath: boolean;
-  output: string;
-  paging: string;
-  resourcePath: string;
-  file: File | null;
-  ymlProperties: string | null;
-  jsonProperties: string | null;
-  includePost: boolean;
-  includePut: boolean;
-  includePatch: boolean;
-}
+export type {OpenApi, OpenApiModel};
 
 @Component({
   host: {

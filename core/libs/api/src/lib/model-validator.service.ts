@@ -11,10 +11,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ViolationError} from '@ame/editor';
 import {MaxGraphService} from '@ame/max-graph';
 import {NotificationsService} from '@ame/shared';
 import {inject, Injectable} from '@angular/core';
+import {ViolationError} from './models';
 
 @Injectable({providedIn: 'root'})
 export class ModelValidatorService {

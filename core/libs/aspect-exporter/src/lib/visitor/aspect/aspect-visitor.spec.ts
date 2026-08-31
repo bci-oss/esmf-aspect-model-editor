@@ -13,16 +13,11 @@
 
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-vi.mock('@ame/editor', () => ({
-  ModelElementEditorComponent: class {},
-}));
-
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
-import {MaxGraphService} from '@ame/max-graph';
 import {TestBed} from '@angular/core/testing';
 import {DefaultAspect, DefaultProperty, ModelElementCache, RdfModel, Samm} from '@esmf/aspect-model-loader';
 import {Store} from 'n3';
-import {MockProvider, MockProviders} from 'ng-mocks';
+import {MockProvider} from 'ng-mocks';
 import {ListProperties, RdfListService} from '../../rdf-list';
 import {RdfNodeService} from '../../rdf-node/rdf-node.service';
 import {AspectVisitor} from './aspect-visitor';
@@ -43,8 +38,6 @@ describe('Aspect Visitor', () => {
     TestBed.configureTestingModule({
       providers: [
         AspectVisitor,
-        MockProviders(MaxGraphService),
-        MockProvider(MaxGraphService),
         MockProvider(RdfListService, {
           push: vi.fn(),
           createEmpty: vi.fn(),

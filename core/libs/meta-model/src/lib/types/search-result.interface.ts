@@ -12,10 +12,9 @@
  */
 
 import {DefaultEntityInstance} from '@esmf/aspect-model-loader';
-import {Cell} from '@maxgraph/core';
 
-export interface SearchResult {
-  cell?: Cell;
+export interface SearchResult<T = any> {
+  cell?: T;
   entityValue?: DefaultEntityInstance;
   namespacePrefix?: string;
 }

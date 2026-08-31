@@ -11,7 +11,6 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {AsyncApi, FileEntry, OpenApi} from '@ame/editor';
 import {APP_CONFIG, AppConfig, BrowserService, FileContentModel, IPC_RENDERER} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {provideHttpClient} from '@angular/common/http';
@@ -20,6 +19,7 @@ import {TestBed} from '@angular/core/testing';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {ModelApiService} from './model-api.service';
 import {ModelValidatorService} from './model-validator.service';
+import {AsyncApi, FileEntry, OpenApi} from './models';
 
 const config: AppConfig = {
   environment: 'dev',

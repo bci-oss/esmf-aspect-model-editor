@@ -11,9 +11,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-export * from './api-specs';
-export * from './file-information';
-export * from './migration-status';
-export * from './named-rdf-model';
-export * from './violation-error';
-export * from './workspace-structure';
+import {RdfModel} from '@esmf/aspect-model-loader';
+
+export interface NamedRdfModel {
+  name: string;
+  version: string;
+  rdfModel: RdfModel;
+}

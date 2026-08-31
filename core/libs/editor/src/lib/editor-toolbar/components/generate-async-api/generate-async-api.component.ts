@@ -27,6 +27,7 @@ import {finalize, map} from 'rxjs';
 import {first} from 'rxjs/operators';
 import {EditorService} from '../../../editor.service';
 
+import {AsyncApi} from '@ame/api';
 import {LoadedFilesService} from '@ame/cache';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatCheckboxModule} from '@angular/material/checkbox';
@@ -34,14 +35,7 @@ import {MatIcon} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 import {MatTooltipModule} from '@angular/material/tooltip';
 
-export interface AsyncApi {
-  language: string;
-  output: string;
-  applicationId: string;
-  channelAddress: string;
-  useSemanticVersion: boolean;
-  writeSeparateFiles: boolean;
-}
+export type {AsyncApi};
 
 @Component({
   selector: 'ame-generate-async-api',

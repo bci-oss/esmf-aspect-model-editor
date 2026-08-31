@@ -11,12 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ViolationError} from '@ame/editor';
 import {MaxGraphService} from '@ame/max-graph';
 import {NotificationsService} from '@ame/shared';
 import {TestBed} from '@angular/core/testing';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {ModelValidatorService} from './model-validator.service';
+import {ViolationError} from './models';
 
 describe('ModelValidatorService', () => {
   let service: ModelValidatorService;

@@ -11,23 +11,21 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelApiService} from '@ame/api';
+import {FileEntry, FileInformation, ModelApiService, NamedRdfModel} from '@ame/api';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {InstantiatorService} from '@ame/instantiator';
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {ConfigurationService} from '@ame/settings-dialog';
 import {BrowserService, config, ElectronSignalsService, ModelSavingTrackerService, NotificationsService, TitleService} from '@ame/shared';
-import {ExporterHelper} from '@ame/sidebar';
+import {isVersionOutdated} from '@ame/utils';
 import {DestroyRef, inject, Injectable} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {DefaultAspect, loadAspectModel, ModelElementCache, NamedElement, RdfLoader, RdfModel} from '@esmf/aspect-model-loader';
 import {NamedNode} from 'n3';
 import {catchError, concatMap, first, forkJoin, from, map, Observable, of, switchMap, tap, throwError} from 'rxjs';
-import {FileEntry, FileInformation} from './editor-toolbar';
 import {ModelRendererService} from './model-renderer.service';
 import {LoadModelPayload} from './models/load-model-payload.interface';
 import {LoadingCodeErrors} from './models/loading-errors';
-import {NamedRdfModel} from './models/named-rdf-mode';
 
 interface TmpLoadedFiles {
   files: LoadedFilesService['files'];
@@ -102,7 +100,7 @@ export class ModelLoaderService {
     const migrate$ = this.parseRdfModel([{rdfAspectModel: payload.rdfAspectModel, sourceLocation: payload.aspectModelUri}]).pipe(
       takeUntilDestroyed(this.destroyRef),
       switchMap((rdfModel: RdfModel) =>
-        ExporterHelper.isVersionOutdated(rdfModel.samm.version, config.currentSammVersion)
+        isVersionOutdated(rdfModel.samm.version, config.currentSammVersion)
           ? this.migrateAspectModel(rdfModel.samm.version, payload.rdfAspectModel)
           : of(payload.rdfAspectModel),
       ),

@@ -13,13 +13,8 @@
 
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-vi.mock('@ame/editor', () => ({
-  ModelElementEditorComponent: class {},
-}));
-
 import {EntityInstanceVisitor, RdfListService, RdfNodeService} from '@ame/aspect-exporter';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
-import {MaxGraphService} from '@ame/max-graph';
 import {TestBed} from '@angular/core/testing';
 import {
   DefaultCharacteristic,
@@ -33,7 +28,7 @@ import {
   Value,
 } from '@esmf/aspect-model-loader';
 import {Quad, Store} from 'n3';
-import {MockProvider, MockProviders} from 'ng-mocks';
+import {MockProvider} from 'ng-mocks';
 
 describe('Entity instance visitor', () => {
   let service: EntityInstanceVisitor;
@@ -100,8 +95,6 @@ describe('Entity instance visitor', () => {
     TestBed.configureTestingModule({
       providers: [
         EntityInstanceVisitor,
-        MockProviders(MaxGraphService),
-        MockProvider(MaxGraphService),
         MockProvider(RdfListService, {
           push: vi.fn(),
           createEmpty: vi.fn(),

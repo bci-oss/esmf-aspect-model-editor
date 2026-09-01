@@ -70,6 +70,7 @@ export class ConstraintNameDropdownFieldComponent extends DropdownFieldComponent
 
     const oldMetaModelElement = this.metaModelElement;
     this.metaModelElement = newConstraintType;
+    this.metaModelElement.anonymous = oldMetaModelElement.anonymous;
 
     this.metaModelElement.name = oldMetaModelElement.name;
     this.metaModelElement.aspectModelUrn = oldMetaModelElement.aspectModelUrn;
@@ -92,6 +93,9 @@ export class ConstraintNameDropdownFieldComponent extends DropdownFieldComponent
   }
 
   private setMetaModelElementAspectUrn(modelElement: Constraint) {
+    if (this.metaModelElement?.isAnonymous?.()) {
+      return;
+    }
     this.metaModelElement.aspectModelUrn = `${this.loadedFilesService.currentLoadedFile?.rdfModel?.getAspectModelUrn()}${modelElement.name}`;
   }
 

@@ -319,6 +319,7 @@ export class SammC {
       this.samm.Constraint().value,
       this.samm.Entity().value,
       this.samm.EventsProperty().value,
+      this.samm.Value().value,
       this.LanguageConstraint().value,
       this.LocaleConstraint().value,
       this.RangeConstraint().value,

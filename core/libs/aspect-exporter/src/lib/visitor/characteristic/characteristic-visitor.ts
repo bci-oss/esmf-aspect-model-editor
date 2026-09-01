@@ -33,6 +33,7 @@ import {
   DefaultStructuredValue,
   DefaultTimeSeries,
   DefaultTrait,
+  DefaultValue,
   NamedElement,
   Samm,
   SammC,
@@ -155,12 +156,12 @@ export class CharacteristicVisitor extends BaseVisitor<DefaultCharacteristic> {
 
   private updateEnumeration(characteristic: DefaultEnumeration, _customSubject?: Quad_Subject) {
     this.rdfListService.push(characteristic, ...characteristic.values);
-    if (!(characteristic.dataType instanceof DefaultEntity)) {
-      return;
-    }
-
     for (const value of characteristic.values) {
-      if (value instanceof DefaultEntityInstance) {
+      if (value instanceof DefaultValue) {
+        if (!value.isAnonymous?.()) {
+          this.setPrefix(value.aspectModelUrn);
+        }
+      } else if (value instanceof DefaultEntityInstance) {
         this.setPrefix(value.aspectModelUrn);
       }
     }

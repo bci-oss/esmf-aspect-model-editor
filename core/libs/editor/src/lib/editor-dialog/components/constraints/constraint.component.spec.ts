@@ -86,6 +86,18 @@ describe('ConstraintComponent', () => {
     expect(component.selectedConstraint()).toBe('EncodingConstraint');
   });
 
+  it('should toggle anonymous state and update name', () => {
+    component.onAnonymousToggleChange(true);
+    expect(component.isAnonymous()).toBe(true);
+    expect(constraint.isAnonymous()).toBe(true);
+    expect(constraint.name).toBe('[Constraint]');
+
+    component.onAnonymousToggleChange(false);
+    expect(component.isAnonymous()).toBe(false);
+    expect(constraint.isAnonymous()).toBe(false);
+    expect(constraint.name).toBe('Constraint');
+  });
+
   it('should handle previous data change', () => {
     component.onPreviousDataChange({name: 'Updated'});
     expect(component.previousData()).toEqual({name: 'Updated'});

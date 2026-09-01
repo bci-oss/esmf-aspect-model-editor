@@ -20,7 +20,7 @@ vi.mock('@ame/editor', () => ({
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {TestBed} from '@angular/core/testing';
 import {DefaultValue, ModelElementCache, RdfModel, Samm} from '@esmf/aspect-model-loader';
-import {Store} from 'n3';
+import {DataFactory, Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {RdfNodeService} from '../../rdf-node';
 import {ValueVisitor} from './value-visitor';
@@ -78,5 +78,52 @@ describe('ValueVisitor', () => {
       description: [{language: 'en', value: 'Description EN'}],
       see: [],
     });
+    expect(addQuadSpy).toHaveBeenCalledWith(
+      DataFactory.namedNode('samm#value1'),
+      rdfModel.samm.ValueProperty(),
+      DataFactory.literal('http://example.com/value_test'),
+    );
+  });
+
+  it('should skip export when value is anonymous and no customSubject is provided', () => {
+    const anonValue = new DefaultValue({
+      metaModelVersion: '1',
+      aspectModelUrn: 'samm#[Value]_1234',
+      name: '[Value]',
+      value: '42',
+      isAnonymous: true,
+    } as any);
+
+    const result = service.visit(anonValue);
+
+    expect(result).toBe(anonValue);
+    expect(rdfNodeServiceUpdate).not.toHaveBeenCalled();
+    expect(addQuadSpy).not.toHaveBeenCalled();
+  });
+
+  it('should export with customSubject when value is anonymous', () => {
+    const anonValue = new DefaultValue({
+      metaModelVersion: '1',
+      aspectModelUrn: 'samm#[Value]_1234',
+      name: '[Value]',
+      value: '42',
+      isAnonymous: true,
+      preferredNames: new Map([['en', 'The Answer']]),
+    } as any);
+
+    const blankNode = DataFactory.blankNode();
+    const result = service.visit(anonValue, blankNode);
+
+    expect(result).toBe(anonValue);
+    expect(rdfNodeServiceUpdate).toHaveBeenCalledWith(
+      anonValue,
+      {
+        preferredName: [{language: 'en', value: 'The Answer'}],
+        description: [],
+        see: [],
+      },
+      blankNode,
+    );
+    expect(addQuadSpy).toHaveBeenCalledWith(blankNode, rdfModel.samm.ValueProperty(), DataFactory.literal('42'));
   });
 });

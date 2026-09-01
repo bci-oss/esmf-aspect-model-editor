@@ -11,6 +11,14 @@
   ~
   ~ SPDX-License-Identifier: MPL-2.0
   -->
+  @if (canBeAnonymous()) {
+    <div style="margin: 12px 0 16px 0">
+      <mat-slide-toggle [checked]="isAnonymous()" (change)="onAnonymousToggleChange($event.checked)">
+        {{ t('editorCanvas.shapeSetting.anonymous') }}
+      </mat-slide-toggle>
+    </div>
+  }
+
   <ame-base-input [signalForm]="signalForm()"></ame-base-input>
   <ame-value-input-field [signalForm]="signalForm()"></ame-value-input-field>
   <ame-element-list

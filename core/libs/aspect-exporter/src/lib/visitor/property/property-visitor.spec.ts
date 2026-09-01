@@ -16,16 +16,18 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {RdfNodeService} from '@ame/aspect-exporter';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {TestBed} from '@angular/core/testing';
-import {DefaultCharacteristic, DefaultProperty, ModelElementCache, RdfModel, Samm} from '@esmf/aspect-model-loader';
-import {Store} from 'n3';
+import {DefaultCharacteristic, DefaultProperty, DefaultValue, ModelElementCache, RdfModel, Samm} from '@esmf/aspect-model-loader';
+import {DataFactory, Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {RdfListService} from '../../rdf-list';
 import {CharacteristicVisitor} from '../characteristic/characteristic-visitor';
+import {ValueVisitor} from '../value/value-visitor';
 import {PropertyVisitor} from './property-visitor';
 
 describe('Property Visitor', () => {
   let service: PropertyVisitor;
   let characteristicVisitor: CharacteristicVisitor;
+  let valueVisitor: ValueVisitor;
 
   const rdfModel: RdfModel = {
     store: new Store(),
@@ -43,6 +45,8 @@ describe('Property Visitor', () => {
   });
 
   beforeEach(() => {
+    rdfModel.store.removeQuads(rdfModel.store.getQuads(null, null, null, null));
+
     TestBed.configureTestingModule({
       providers: [
         PropertyVisitor,
@@ -56,6 +60,9 @@ describe('Property Visitor', () => {
         MockProvider(CharacteristicVisitor, {
           visit: vi.fn(),
         }),
+        MockProvider(ValueVisitor, {
+          visit: vi.fn(),
+        }),
         MockProvider(LoadedFilesService, {
           currentLoadedFile: new NamespaceFile(rdfModel, new ModelElementCache(), null),
           externalFiles: [],
@@ -65,6 +72,7 @@ describe('Property Visitor', () => {
 
     service = TestBed.inject(PropertyVisitor);
     characteristicVisitor = TestBed.inject(CharacteristicVisitor);
+    valueVisitor = TestBed.inject(ValueVisitor);
   });
 
   it('should update store width default properties', () => {
@@ -97,5 +105,52 @@ describe('Property Visitor', () => {
     const quads = rdfModel.store.getQuads(null, rdfModel.samm.CharacteristicProperty(), null, null);
     expect(quads).toHaveLength(1);
     expect(quads[0].object.termType).toBe('BlankNode');
+  });
+
+  it('should export named DefaultValue exampleValue as named node', () => {
+    const namedVal = new DefaultValue({
+      metaModelVersion: '1',
+      aspectModelUrn: 'samm#myVal',
+      name: 'myVal',
+      value: '42',
+      isAnonymous: false,
+    } as any);
+    const prop = new DefaultProperty({
+      metaModelVersion: '1',
+      aspectModelUrn: 'samm#property1',
+      name: 'property1',
+      exampleValue: namedVal,
+    });
+
+    service.visit(prop);
+
+    const quads = rdfModel.store.getQuads(DataFactory.namedNode('samm#property1'), rdfModel.samm.ExampleValueProperty(), null, null);
+    expect(quads).toHaveLength(1);
+    expect(quads[0].object.termType).toBe('NamedNode');
+    expect(quads[0].object.value).toBe('samm#myVal');
+    expect(valueVisitor.visit).not.toHaveBeenCalled();
+  });
+
+  it('should export anonymous DefaultValue exampleValue using blank node and valueVisitor', () => {
+    const anonVal = new DefaultValue({
+      metaModelVersion: '1',
+      aspectModelUrn: 'samm#[Value]_1234',
+      name: '[Value]',
+      value: '42',
+      isAnonymous: true,
+    } as any);
+    const prop = new DefaultProperty({
+      metaModelVersion: '1',
+      aspectModelUrn: 'samm#property1',
+      name: 'property1',
+      exampleValue: anonVal,
+    });
+
+    service.visit(prop);
+
+    const quads = rdfModel.store.getQuads(DataFactory.namedNode('samm#property1'), rdfModel.samm.ExampleValueProperty(), null, null);
+    expect(quads).toHaveLength(1);
+    expect(quads[0].object.termType).toBe('BlankNode');
+    expect(valueVisitor.visit).toHaveBeenCalledWith(anonVal, quads[0].object);
   });
 });

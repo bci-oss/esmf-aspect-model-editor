@@ -75,4 +75,16 @@ describe('TraitCharacteristicComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should toggle anonymous state and update name', () => {
+    component.onAnonymousToggleChange(true);
+    expect(component.isAnonymous()).toBe(true);
+    expect(trait.isAnonymous()).toBe(true);
+    expect(trait.name).toBe('[Trait]');
+
+    component.onAnonymousToggleChange(false);
+    expect(component.isAnonymous()).toBe(false);
+    expect(trait.isAnonymous()).toBe(false);
+    expect(trait.name).toBe('Trait');
+  });
 });

@@ -32,6 +32,7 @@ import {
   DefaultStructuredValue,
   DefaultTrait,
   DefaultUnit,
+  DefaultValue,
   ModelElementCache,
   RdfModel,
   Samm,
@@ -224,6 +225,34 @@ describe('Characteristic Visitor', () => {
       service.visit(characteristic);
 
       expect(service.rdfListService.push).toHaveBeenCalledWith(characteristic, 'a', 'b');
+    });
+
+    it('should set prefix for named DefaultValues in enumeration', () => {
+      const namedVal = new DefaultValue({
+        metaModelVersion: '1',
+        aspectModelUrn: 'samm#Green',
+        name: 'Green',
+        value: 'green',
+        isAnonymous: false,
+      } as any);
+      const anonVal = new DefaultValue({
+        metaModelVersion: '1',
+        aspectModelUrn: 'samm#[Value]_1',
+        name: '[Value]',
+        value: 'red',
+        isAnonymous: true,
+      } as any);
+      const characteristic = new DefaultEnumeration({
+        metaModelVersion: '1',
+        aspectModelUrn: 'samm#e1',
+        name: 'e1',
+        values: [namedVal, anonVal],
+      });
+
+      service.visit(characteristic);
+
+      expect(service.rdfListService.push).toHaveBeenCalledWith(characteristic, namedVal, anonVal);
+      expect(rdfModel.hasDependency).toHaveBeenCalledWith('samm#');
     });
   });
 

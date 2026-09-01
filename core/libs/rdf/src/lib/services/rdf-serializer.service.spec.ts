@@ -245,4 +245,87 @@ describe('RdfSerializerService', () => {
     expect(serialized).toContain('samm:dataType xsd:string');
     expect(serialized).not.toContain('_:b0');
   });
+
+  it('should serialize anonymous inline samm:Value in samm:exampleValue as blank node correctly', () => {
+    const store = new Store();
+    const rdfModel = new RdfModel(store, '2.2.0', 'urn:samm:com.example:1.0.0');
+    const blankValue = DataFactory.blankNode('b0');
+
+    store.addQuad(
+      DataFactory.quad(DataFactory.namedNode('urn:samm:com.example:1.0.0#myProperty'), rdfModel.samm.RdfType(), rdfModel.samm.Property()),
+    );
+    store.addQuad(
+      DataFactory.quad(DataFactory.namedNode('urn:samm:com.example:1.0.0#myProperty'), rdfModel.samm.ExampleValueProperty(), blankValue),
+    );
+    store.addQuad(DataFactory.quad(blankValue, rdfModel.samm.RdfType(), rdfModel.samm.Value()));
+    store.addQuad(DataFactory.quad(blankValue, rdfModel.samm.ValueProperty(), DataFactory.literal('42')));
+    store.addQuad(DataFactory.quad(blankValue, rdfModel.samm.DescriptionProperty(), DataFactory.literal('The answer to everything', 'en')));
+
+    const serialized = service.serializeModel(rdfModel);
+    expect(serialized).toContain(':myProperty a samm:Property;');
+    expect(serialized).toContain('samm:exampleValue [');
+    expect(serialized).toContain('a samm:Value;');
+    expect(serialized).toContain('samm:value "42"');
+    expect(serialized).toContain('samm:description "The answer to everything"@en');
+    expect(serialized).not.toContain('_:b0');
+  });
+
+  it('should serialize anonymous samm:Value in list correctly', () => {
+    const store = new Store();
+    const rdfModel = new RdfModel(store, '2.2.0', 'urn:samm:com.example:1.0.0');
+    const listHead = DataFactory.blankNode('b_list');
+    const blankValue = DataFactory.blankNode('b_val');
+
+    store.addQuad(
+      DataFactory.quad(
+        DataFactory.namedNode('urn:samm:com.example:1.0.0#TrafficLight'),
+        rdfModel.samm.RdfType(),
+        rdfModel.sammC.EnumerationCharacteristic(),
+      ),
+    );
+    store.addQuad(
+      DataFactory.quad(DataFactory.namedNode('urn:samm:com.example:1.0.0#TrafficLight'), rdfModel.sammC.ValuesProperty(), listHead),
+    );
+    store.addQuad(DataFactory.quad(listHead, rdfModel.samm.RdfFirst(), blankValue));
+    store.addQuad(DataFactory.quad(listHead, rdfModel.samm.RdfRest(), rdfModel.samm.RdfNil()));
+
+    store.addQuad(DataFactory.quad(blankValue, rdfModel.samm.RdfType(), rdfModel.samm.Value()));
+    store.addQuad(DataFactory.quad(blankValue, rdfModel.samm.ValueProperty(), DataFactory.literal('red')));
+    store.addQuad(DataFactory.quad(blankValue, rdfModel.samm.PreferredNameProperty(), DataFactory.literal('Critical Warning', 'en')));
+
+    const serialized = service.serializeModel(rdfModel);
+    expect(serialized).toContain(':TrafficLight a samm-c:Enumeration;');
+    expect(serialized).toContain('samm-c:values ([');
+    expect(serialized).toContain('a samm:Value;');
+    expect(serialized).toContain('samm:value "red"');
+    expect(serialized).toContain('samm:preferredName "Critical Warning"@en');
+    expect(serialized).not.toContain('_:b_val');
+  });
+
+  it('should serialize empty lists as () instead of []', () => {
+    const store = new Store();
+    const rdfModel = new RdfModel(store, '2.2.0', 'urn:samm:com.example:1.0.0');
+    const emptyOpsList = DataFactory.blankNode('b_ops');
+    const emptyEventsList = DataFactory.blankNode('b_events');
+
+    store.addQuad(
+      DataFactory.quad(DataFactory.namedNode('urn:samm:com.example:1.0.0#AspectDefault'), rdfModel.samm.RdfType(), rdfModel.samm.Aspect()),
+    );
+    store.addQuad(
+      DataFactory.quad(DataFactory.namedNode('urn:samm:com.example:1.0.0#AspectDefault'), rdfModel.samm.OperationsProperty(), emptyOpsList),
+    );
+    store.addQuad(DataFactory.quad(emptyOpsList, rdfModel.samm.RdfRest(), rdfModel.samm.RdfNil()));
+
+    store.addQuad(
+      DataFactory.quad(DataFactory.namedNode('urn:samm:com.example:1.0.0#AspectDefault'), rdfModel.samm.EventsProperty(), emptyEventsList),
+    );
+    store.addQuad(DataFactory.quad(emptyEventsList, rdfModel.samm.RdfRest(), rdfModel.samm.RdfNil()));
+
+    const serialized = service.serializeModel(rdfModel);
+    expect(serialized).toContain(':AspectDefault a samm:Aspect;');
+    expect(serialized).toContain('samm:operations ()');
+    expect(serialized).toContain('samm:events ()');
+    expect(serialized).not.toContain('samm:operations []');
+    expect(serialized).not.toContain('samm:events []');
+  });
 });

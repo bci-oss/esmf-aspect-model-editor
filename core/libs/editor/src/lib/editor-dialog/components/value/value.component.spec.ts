@@ -78,4 +78,16 @@ describe('ValueComponent', () => {
   it('should expose the value through the native Signal Form context', () => {
     expect(component.signalForm().value().value).toBe(value.value);
   });
+
+  it('should toggle anonymous state and update name', () => {
+    component.onAnonymousToggleChange(true);
+    expect(component.isAnonymous()).toBe(true);
+    expect(value.isAnonymous()).toBe(true);
+    expect(value.name).toBe('[Value]');
+
+    component.onAnonymousToggleChange(false);
+    expect(component.isAnonymous()).toBe(false);
+    expect(value.isAnonymous()).toBe(false);
+    expect(value.name).toBe('Value');
+  });
 });

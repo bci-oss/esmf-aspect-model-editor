@@ -477,7 +477,7 @@ export class MaxGraphService {
     const childNode = MaxGraphHelper.getElementNode(child);
 
     if (
-      (parent?.edges || []).some(edge => MaxGraphHelper.getModelElement(edge.target).aspectModelUrn === childNode.element.aspectModelUrn)
+      (parent?.edges || []).some(edge => MaxGraphHelper.getModelElement(edge.target)?.aspectModelUrn === childNode.element.aspectModelUrn)
     ) {
       return;
     }

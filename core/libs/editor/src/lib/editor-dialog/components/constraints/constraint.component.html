@@ -18,6 +18,15 @@
     (selectedConstraint)="onClassChange($event)"
     (previousData)="onPreviousDataChange($event)"
   ></ame-constraint-name-dropdown-field>
+
+  @if (canBeAnonymous()) {
+    <div style="margin: 12px 0 16px 0">
+      <mat-slide-toggle [checked]="isAnonymous()" (change)="onAnonymousToggleChange($event.checked)">
+        {{ t('editorCanvas.shapeSetting.anonymous') }}
+      </mat-slide-toggle>
+    </div>
+  }
+
   <ame-base-input [previousData]="previousData()" [signalForm]="signalForm()"></ame-base-input>
 
   @switch (selectedConstraint()) {

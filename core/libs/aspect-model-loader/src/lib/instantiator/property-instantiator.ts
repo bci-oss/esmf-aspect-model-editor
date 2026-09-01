@@ -150,7 +150,9 @@ export function propertyFactory(initProps: BaseInitProps) {
       });
     }
 
-    const valueQuads = rdfModel.store.getQuads(quad.object.value, null, null, null);
+    const valueQuads = Util.isBlankNode(quad.object)
+      ? rdfModel.resolveBlankNodes(quad.object.value)
+      : rdfModel.store.getQuads(quad.object.value, null, null, null);
     const rawValue = valueFactory(initProps)(valueQuads, dataType as any);
     if (!rawValue) return undefined;
     const valueElement = modelElementCache.resolveInstance(rawValue) as unknown as ScalarValue | ValueElement;

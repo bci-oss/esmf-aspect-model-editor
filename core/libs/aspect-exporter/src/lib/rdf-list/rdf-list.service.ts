@@ -14,10 +14,11 @@
 import {LoadedFilesService} from '@ame/cache';
 import {simpleDataTypes} from '@ame/shared';
 import {inject, Injectable} from '@angular/core';
-import {RdfModel, Samm} from '@esmf/aspect-model-loader';
+import {DefaultProperty, DefaultValue, RdfModel, Samm} from '@esmf/aspect-model-loader';
 import {environment} from 'environments/environment';
 import {BlankNode, DataFactory, NamedNode, Quad, Quad_Object, Store, Triple, Util} from 'n3';
 import {RdfNodeService} from '../rdf-node';
+import {ValueVisitor} from '../visitor/value/value-visitor';
 import {RdfListHelper} from './rdf-list-helper';
 import {RdfListConstants} from './rdf-list.constants';
 import {
@@ -34,6 +35,7 @@ import {
 @Injectable({providedIn: 'root'})
 export class RdfListService implements CreateEmptyRdfList, EmptyRdfList {
   public rdfNodeService = inject(RdfNodeService);
+  public valueVisitor = inject(ValueVisitor);
   public loadedFilesService = inject(LoadedFilesService);
 
   private get rdfModel(): RdfModel {
@@ -173,9 +175,14 @@ export class RdfListService implements CreateEmptyRdfList, EmptyRdfList {
   private createPropertyList(elements: PropertyListElement[]) {
     for (const element of elements) {
       const {metaModelElement: model, propertyPayload} = element;
-      if (model?.extends_) {
+      if (model instanceof DefaultValue && model.isAnonymous?.()) {
+        this.valueVisitor.visit(model, element.blankNode);
+        continue;
+      }
+
+      if (model instanceof DefaultProperty && model.extends_) {
         this.rdfNodeService.updateBlankNode(element.blankNode, model, {
-          extends: model?.extends_?.aspectModelUrn,
+          extends: model.extends_?.aspectModelUrn,
           characteristic: model.characteristic?.aspectModelUrn,
         });
         continue;
@@ -223,7 +230,11 @@ export class RdfListService implements CreateEmptyRdfList, EmptyRdfList {
         const resolvedQuad = this.rdfModel
           .resolveBlankNodes(quad.object.value)
           .filter(quad => this.samm.property().equals(DataFactory.namedNode(quad.predicate.value)))[0];
-        listElement.push({node: resolvedQuad.object});
+        if (resolvedQuad) {
+          listElement.push({node: resolvedQuad.object});
+        } else {
+          listElement.push({node: quad.object});
+        }
       }
 
       if (this.samm.isRdfRest(quad?.predicate.value) && !this.samm.isRdfNill(quad?.object.value)) {

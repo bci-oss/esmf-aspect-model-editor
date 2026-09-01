@@ -15,7 +15,7 @@ import {LoadedFilesService} from '@ame/cache';
 import {getDescriptionsLocales, getPreferredNamesLocales} from '@ame/utils';
 import {inject, Injectable} from '@angular/core';
 import {DefaultValue, Samm} from '@esmf/aspect-model-loader';
-import {DataFactory, Store} from 'n3';
+import {DataFactory, Quad_Subject, Store} from 'n3';
 import {RdfNodeService} from '../../rdf-node';
 import {BaseVisitor} from '../base-visitor';
 
@@ -27,21 +27,27 @@ export class ValueVisitor extends BaseVisitor<DefaultValue> {
   private store: Store;
   private samm: Samm;
 
-  visit(value: DefaultValue): DefaultValue {
+  visit(value: DefaultValue, customSubject?: Quad_Subject): DefaultValue {
+    if (!customSubject && value.isAnonymous?.()) {
+      return value;
+    }
+
     this.store = this.loadedFilesService.currentLoadedFile.rdfModel.store;
     this.samm = this.loadedFilesService.currentLoadedFile.rdfModel.samm;
 
-    this.setPrefix(value.aspectModelUrn);
-    const newAspectModelUrn = `${value.aspectModelUrn.split('#')[0]}#${value.name}`;
-    value.aspectModelUrn = newAspectModelUrn;
-    this.updateProperties(value);
-    this.addValueProperty(value);
+    if (!customSubject) {
+      this.setPrefix(value.aspectModelUrn);
+      const newAspectModelUrn = `${value.aspectModelUrn.split('#')[0]}#${value.name}`;
+      value.aspectModelUrn = newAspectModelUrn;
+    }
+    this.updateProperties(value, customSubject);
+    this.addValueProperty(value, customSubject);
 
     return value;
   }
 
-  private updateProperties(value: DefaultValue) {
-    this.rdfNodeService.update(value, {
+  private updateProperties(value: DefaultValue, subject?: Quad_Subject) {
+    const props = {
       preferredName: getPreferredNamesLocales(value)?.map(language => ({
         language,
         value: value.getPreferredName(language),
@@ -51,11 +57,17 @@ export class ValueVisitor extends BaseVisitor<DefaultValue> {
         value: value.getDescription(language),
       })),
       see: value.getSee() || [],
-    });
+    };
+    if (subject) {
+      this.rdfNodeService.update(value, props, subject);
+    } else {
+      this.rdfNodeService.update(value, props);
+    }
   }
 
-  private addValueProperty(value: DefaultValue) {
-    if (!value.getValue()) return;
-    this.store.addQuad(DataFactory.namedNode(value.aspectModelUrn), this.samm.ValueProperty(), DataFactory.literal(value.getValue()));
+  private addValueProperty(value: DefaultValue, subject?: Quad_Subject) {
+    if (value.getValue() === undefined || value.getValue() === null) return;
+    const subjectNode = subject || DataFactory.namedNode(value.aspectModelUrn);
+    this.store.addQuad(subjectNode, this.samm.ValueProperty(), DataFactory.literal(value.getValue()));
   }
 }

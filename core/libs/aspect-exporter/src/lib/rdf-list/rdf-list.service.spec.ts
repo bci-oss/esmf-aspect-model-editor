@@ -27,12 +27,14 @@ import {
   DefaultOperation,
   DefaultProperty,
   DefaultStructuredValue,
+  DefaultValue,
   ModelElementCache,
   RdfModel,
 } from '@esmf/aspect-model-loader';
 import {DataFactory, NamedNode, Quad_Object, Store, Util} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {RdfNodeService} from '../rdf-node';
+import {ValueVisitor} from '../visitor/value/value-visitor';
 import {RdfListService} from './rdf-list.service';
 import {ListProperties} from './rdf-list.types';
 
@@ -93,6 +95,9 @@ describe('RDF Helper', () => {
       providers: [
         RdfListService,
         MockProvider(RdfNodeService),
+        MockProvider(ValueVisitor, {
+          visit: vi.fn(),
+        }),
         MockProvider(LoadedFilesService, {
           currentLoadedFile: new NamespaceFile(rdfModel as RdfModel, new ModelElementCache(), null),
         }),
@@ -462,6 +467,36 @@ describe('RDF Helper', () => {
         const elements = ['example', 1, true, {random: 'object'}, {random: 'object'}];
         service.push(aspect, ...elements);
         shouldBeListAndHave({first: 3, rest: 3, list: getList()});
+      });
+
+      it('should add named and anonymous DefaultValue to enumeration list', () => {
+        createEmptyList();
+        const namedVal = new DefaultValue({
+          metaModelVersion: '1',
+          aspectModelUrn: urn('GreenLight'),
+          name: 'GreenLight',
+          value: 'green',
+          isAnonymous: false,
+        } as any);
+        const anonVal = new DefaultValue({
+          metaModelVersion: '1',
+          aspectModelUrn: urn('[Value]_1234'),
+          name: '[Value]',
+          value: 'red',
+          isAnonymous: true,
+        } as any);
+        const enumeration = new DefaultEnumeration({
+          metaModelVersion: '1',
+          name: subjectName,
+          aspectModelUrn: subjectUrn,
+          values: [namedVal, anonVal],
+          dataType: stringDataType,
+        });
+
+        service.push(enumeration, namedVal, anonVal);
+
+        shouldBeListAndHave({first: 2, rest: 2, list: getList()});
+        expect(service.valueVisitor.visit).toHaveBeenCalledWith(anonVal, expect.anything());
       });
     });
 

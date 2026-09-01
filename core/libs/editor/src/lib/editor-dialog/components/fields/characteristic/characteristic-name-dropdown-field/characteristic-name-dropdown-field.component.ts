@@ -89,6 +89,7 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
 
     const oldMetaModelElement = this.metaModelElement;
     this.metaModelElement = newCharacteristicType;
+    this.metaModelElement.anonymous = oldMetaModelElement.anonymous;
 
     if (newCharacteristicType?.isPredefined) {
       this.metaModelElement.name = newCharacteristicType.name;
@@ -205,6 +206,9 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
   }
 
   private setMetaModelElementAspectUrn(modelElement: NamedElement) {
+    if (this.metaModelElement?.isAnonymous?.()) {
+      return;
+    }
     const currentRdfModel = this.loadedFilesService.currentLoadedFile.rdfModel;
     const {getSupportedCharacteristicNames} = useLoader({
       rdfModel: currentRdfModel,

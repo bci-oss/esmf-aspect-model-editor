@@ -13,7 +13,8 @@
 
 import {Injectable} from '@angular/core';
 import {Cell, CellStyle, Graph} from '@maxgraph/core';
-import {ThemeColors} from '../models';
+import {MaxGraphHelper} from '../helpers';
+import {ModelStyleResolver, ThemeColors} from '../models';
 import {lightColors} from './light-theme';
 
 @Injectable({providedIn: 'root'})
@@ -62,7 +63,14 @@ export class ThemeService {
   applyTheme(theme: string) {
     this.setCssVars(theme);
     this.graph.getChildVertices(this.graph.getDefaultParent()).forEach((cell: Cell) => {
-      this.graph.setCellStyle(this.generateThemeStyle(cell.id), [cell]);
+      const modelElement = MaxGraphHelper.getModelElement(cell);
+      const styleName = (cell.style?.baseStyleNames?.[0] as string) || (modelElement ? ModelStyleResolver.resolve(modelElement) : '');
+      const style = this.generateThemeStyle(styleName);
+      if (modelElement?.isAnonymous?.()) {
+        style.dashed = true;
+        style.dashPattern = '4 4';
+      }
+      this.graph.setCellStyle(style, [cell]);
     });
   }
 

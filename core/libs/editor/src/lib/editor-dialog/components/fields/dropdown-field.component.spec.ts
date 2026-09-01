@@ -92,6 +92,30 @@ describe('DropdownFieldComponent', () => {
     expect(component.metaModelClassName).toBe('Characteristic');
   });
 
+  it('should set metaModelClassName for anonymous characteristics without split hash issues', () => {
+    const anonChar = new DefaultCharacteristic({
+      aspectModelUrn: '_:n3-29',
+      name: '[Characteristic]',
+      metaModelVersion: '2.0.0',
+      isAnonymous: true,
+    });
+    component.selectedMetaModelElement = anonChar;
+    component.setMetaModelClassName();
+    expect(component.metaModelClassName).toBe('Characteristic');
+  });
+
+  it('should set metaModelClassName for predefined characteristics', () => {
+    const predefined = new DefaultCharacteristic({
+      aspectModelUrn: 'urn:samm:org.eclipse.esmf.samm:characteristic:2.2.0#Text',
+      name: 'Text',
+      metaModelVersion: '2.2.0',
+      isPredefined: true,
+    });
+    component.selectedMetaModelElement = predefined;
+    component.setMetaModelClassName();
+    expect(component.metaModelClassName).toBe('Text');
+  });
+
   it('should add language settings keys if missing', () => {
     component.addLanguageSettings(characteristic);
     expect(characteristic.descriptions.has('en')).toBe(true);

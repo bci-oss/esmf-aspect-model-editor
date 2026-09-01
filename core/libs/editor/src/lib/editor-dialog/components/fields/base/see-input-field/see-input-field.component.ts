@@ -155,6 +155,9 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
   }
 
   private setSeeControl() {
+    if (!this.metaModelElement) {
+      return;
+    }
     this.disabledState.set(
       this.metaModelDialogService.isReadOnly() || this.loadedFiles.isElementExtern(this.metaModelElement) || this.isDisabled(),
     );

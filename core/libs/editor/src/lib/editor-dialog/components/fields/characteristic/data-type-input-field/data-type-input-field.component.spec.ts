@@ -121,7 +121,7 @@ describe('DataTypeInputFieldComponent', () => {
     expect(component.displayField().disabled()).toBe(true);
 
     component.unlockDataType();
-    expect(component.dataTypeField().touched()).toBe(true);
+    expect(component.displayField().touched()).toBe(true);
     expect(signalForm.value()).toMatchObject({dataType: '', dataTypeEntity: null, newDataType: null});
   });
 

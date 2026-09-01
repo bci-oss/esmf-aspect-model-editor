@@ -48,14 +48,16 @@ export class NameInputFieldComponent extends InputFieldComponent<NamedElement> i
     rxResource({
       params: () => name(),
       stream: ({params}) =>
-        this.metaModelElement ? this.editorDialogValidators.duplicateNameValue(params, this.metaModelElement) : of(null),
+        this.metaModelElement && !this.metaModelElement?.isAnonymous?.()
+          ? this.editorDialogValidators.duplicateNameValue(params, this.metaModelElement)
+          : of(null),
     });
 
   readonly field = form(this.model, path => {
     required(path);
     validate(path, ({value}) => {
       const name = value();
-      if (!name || this.isDisabled() || this.metaModelElement instanceof DefaultUnit) return null;
+      if (!name || this.isDisabled() || this.metaModelElement instanceof DefaultUnit || this.metaModelElement?.isAnonymous?.()) return null;
       if ([DefaultEntityInstance, DefaultValue].some(type => this.metaModelElement instanceof type)) {
         return name.includes(' ') ? {kind: 'whitespace', message: 'Name must not contain whitespace'} : null;
       }
@@ -99,10 +101,16 @@ export class NameInputFieldComponent extends InputFieldComponent<NamedElement> i
   }
 
   private isDisabled() {
-    return this.metaModelElement instanceof DefaultProperty && !!this.metaModelElement?.getExtends();
+    return (
+      (this.metaModelElement instanceof DefaultProperty && !!this.metaModelElement?.getExtends()) ||
+      Boolean(this.metaModelElement?.isAnonymous?.())
+    );
   }
 
   private setNameControl() {
+    if (!this.metaModelElement) {
+      return;
+    }
     this.disabledState.set(
       this.metaModelDialogService.isReadOnly() || this.loadedFiles.isElementExtern(this.metaModelElement) || this.isDisabled(),
     );

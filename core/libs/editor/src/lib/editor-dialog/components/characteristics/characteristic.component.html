@@ -19,6 +19,14 @@
       (previousData)="onPreviousDataChange($event)"
     />
 
+    @if (canBeAnonymous()) {
+      <div style="margin: 12px 0 16px 0">
+        <mat-slide-toggle [checked]="isAnonymous()" (change)="onAnonymousToggleChange($event.checked)">
+          {{ t('editorCanvas.shapeSetting.anonymous') }}
+        </mat-slide-toggle>
+      </div>
+    }
+
     <ame-base-input [previousData]="previousData()" [signalForm]="signalForm()" />
     @if (selectedCharacteristic() !== characteristicClassType().Either) {
       <ame-data-type-input-field [previousData]="previousData()" [signalForm]="signalForm()" />

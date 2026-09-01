@@ -161,7 +161,7 @@ export class RdfSerializerService {
 
   private processQuad(quad: Quad, rdfModel: RdfModel, writer: Writer, processedQuads: Set<Quad>): void {
     if (Util.isBlankNode(quad.object)) {
-      this.writeBlankNodes(quad, rdfModel, writer, rdfModel.sammC?.getMetaModelNames?.(false) ?? []);
+      this.writeBlankNodes(quad, rdfModel, writer, rdfModel.sammC?.getMetaModelNames?.(false) ?? [], processedQuads);
     } else if (Util.isBlankNode(quad.subject)) {
       const resolvedQuads = (rdfModel.resolveBlankNodes?.(quad.subject.value) ?? []).map(resolvedQuad => {
         processedQuads.add(resolvedQuad);
@@ -201,8 +201,8 @@ export class RdfSerializerService {
     );
   }
 
-  private writeBlankNodes(quad: Quad, rdfModel: RdfModel, writer: Writer, metaModelNames: string[]): void {
-    const blankNodes = RdfModelUtil.resolveRecursiveBlankNodes(rdfModel, quad.object.value, writer);
+  private writeBlankNodes(quad: Quad, rdfModel: RdfModel, writer: Writer, metaModelNames: string[], processedQuads?: Set<Quad>): void {
+    const blankNodes = RdfModelUtil.resolveRecursiveBlankNodes(rdfModel, quad.object.value, writer, processedQuads);
     const isBlankNode = blankNodes.some(({object}) => metaModelNames.includes(object.value));
 
     if (isBlankNode) {

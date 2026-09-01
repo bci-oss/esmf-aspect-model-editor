@@ -47,10 +47,10 @@ export class EntityInstanceTableComponent {
       if (!table || !context || !(this.entityValue() instanceof DefaultEntityInstance)) return;
 
       const unregisterProperties = context.register('entityValueProperties', table.propertiesForm);
-      const unregisterNewValues = context.register('newEntityValues', table.newEntityValuesForm);
+      context.set('newEntityValues', table.newEntityValues());
       onCleanup(() => {
         unregisterProperties();
-        unregisterNewValues();
+        context.remove('newEntityValues');
       });
     });
   }

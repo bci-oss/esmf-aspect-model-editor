@@ -112,4 +112,10 @@ describe('DescriptionInputFieldComponent', () => {
     expect(signalForm.value()).not.toHaveProperty('descriptionen');
     expect(signalForm.value()).not.toHaveProperty('descriptionde');
   });
+
+  it('should safely return empty locales when metaModelElement is null', () => {
+    component.metaModelElement = null;
+    expect(component.getDescriptionsLocales()).toEqual([]);
+    expect(component.getPreferredNamesLocales()).toEqual([]);
+  });
 });

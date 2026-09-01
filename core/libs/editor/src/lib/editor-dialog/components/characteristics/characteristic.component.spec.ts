@@ -94,4 +94,16 @@ describe('CharacteristicComponent', () => {
     component.onClassChange(component.characteristicClassType().Duration);
     expect(component.isUnitAllowed()).toBe(true);
   });
+
+  it('should handle anonymous toggle change', () => {
+    expect(component.canBeAnonymous()).toBe(true);
+    component.onAnonymousToggleChange(true);
+    expect(component.isAnonymous()).toBe(true);
+    expect(component.signalForm().value()['isAnonymous']).toBe(true);
+    expect(component.signalForm().value()['name']).toBe('[Characteristic]');
+
+    component.onAnonymousToggleChange(false);
+    expect(component.isAnonymous()).toBe(false);
+    expect(component.signalForm().value()['isAnonymous']).toBe(false);
+  });
 });

@@ -117,6 +117,24 @@ describe('BaseModelService', () => {
     expect(mockLoadedFilesService.currentLoadedFile.cachedFile.removeElement).toHaveBeenCalledWith('urn:test#prop');
   });
 
+  it('should update element when toggled to anonymous', () => {
+    const prop = new DefaultProperty({
+      name: 'oldName',
+      aspectModelUrn: 'urn:samm:org.eclipse.esmf.test:1.0.0#oldName',
+      metaModelVersion: '2.2.0',
+    });
+    cachedElements.set(prop.aspectModelUrn, prop);
+
+    const cell = new Cell();
+    MaxGraphHelper.setElementNode(cell, {element: prop} as any);
+
+    service.update(cell, {name: 'oldName', isAnonymous: true});
+
+    expect(prop.isAnonymous()).toBe(true);
+    expect(prop.name).toBe('[Property]');
+    expect(prop.aspectModelUrn).toContain('[Property]');
+  });
+
   it('should add and delete entity values with relationships', () => {
     const entity = new DefaultEntity({name: 'Entity', aspectModelUrn: 'urn:test#Entity', metaModelVersion: '2.2.0'});
     const ev = new DefaultEntityInstance({name: 'EV1', aspectModelUrn: 'urn:test#EV1', type: entity, metaModelVersion: '2.2.0'});

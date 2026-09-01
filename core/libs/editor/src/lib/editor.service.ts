@@ -336,14 +336,21 @@ export class EditorService {
       this.shapeSettingsStateService.closeShapeSettings();
     }
 
-    cells.forEach((cell: Cell) => {
-      this.maxgraphAttributeService.graph.setCellStyles(
-        'strokeColor',
-        'black',
-        this.maxgraphService.graph.getOutgoingEdges(cell, null).map(edge => edge.target),
-      );
-      this.elementModelService.deleteElement(cell);
-    });
+    const vertexCells = cells.filter(cell => !cell?.isEdge?.());
+    const edgeCells = cells.filter(cell => cell?.isEdge?.());
+
+    if (vertexCells.length > 0) {
+      vertexCells.forEach((cell: Cell) => {
+        this.maxgraphAttributeService.graph.setCellStyles(
+          'strokeColor',
+          'black',
+          this.maxgraphService.graph.getOutgoingEdges(cell, null).map(edge => edge.target),
+        );
+        this.elementModelService.deleteElement(cell);
+      });
+    } else if (edgeCells.length > 0) {
+      this.elementModelService.deleteElement(edgeCells[0]);
+    }
   }
 
   zoomIn() {

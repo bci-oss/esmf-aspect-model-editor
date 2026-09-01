@@ -17,7 +17,8 @@ import {inject} from '@angular/core';
 import {DefaultAspect, DefaultEntity, DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
 import {Cell, Graph} from '@maxgraph/core';
 import {MaxGraphHelper, MaxGraphVisitorHelper} from '../../helpers';
-import {RendererUpdatePayload} from '../../models';
+import {ModelStyleResolver, RendererUpdatePayload} from '../../models';
+import {ThemeService} from '../../themes';
 import {MaxGraphAttributeService} from '../max-graph-attribute.service';
 import {MaxGraphService} from '../max-graph.service';
 
@@ -26,6 +27,7 @@ export abstract class BaseRenderService {
   protected readonly sammLangService = inject(SammLanguageSettingsService);
   protected readonly loadedFilesService = inject(LoadedFilesService);
   protected readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
+  protected readonly themeService = inject(ThemeService);
 
   get graph(): Graph {
     return this.maxgraphService.graph;
@@ -36,8 +38,25 @@ export abstract class BaseRenderService {
   public update({cell, callback}: RendererUpdatePayload) {
     const modelElement = MaxGraphHelper.getModelElement(cell);
 
-    cell.setId(modelElement.name);
+    const cellId = modelElement.isAnonymous?.() ? modelElement.aspectModelUrn : modelElement.name;
+    cell.setId(cellId);
     cell.setAttribute('name', modelElement.name);
+
+    const styleName = (cell.style?.baseStyleNames?.[0] as string) || (modelElement ? ModelStyleResolver.resolve(modelElement) : '');
+    const style = this.themeService.generateThemeStyle(styleName);
+    if (this.loadedFilesService.isElementExtern(modelElement)) {
+      style.fillOpacity = 80;
+    }
+    if (modelElement?.isAnonymous?.()) {
+      style.dashed = true;
+      style.dashPattern = '4 4';
+    }
+    this.graph.setCellStyle(style, [cell]);
+
+    const node = MaxGraphHelper.getElementNode(cell);
+    if (node?.shape) {
+      node.shape.maxgraphStyle = style;
+    }
 
     cell['configuration'].fields = MaxGraphVisitorHelper.getElementProperties(modelElement, this.sammLangService);
     cell['configuration'].baseProperties = MaxGraphVisitorHelper.getModelInfo(modelElement, this.loadedFilesService.currentLoadedFile);

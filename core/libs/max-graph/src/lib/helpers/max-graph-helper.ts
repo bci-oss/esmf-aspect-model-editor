@@ -337,14 +337,22 @@ export class MaxGraphHelper {
     if (!cell.collapsed) {
       title.style.width = cell.geometry.width + 'px';
     }
-    title.title = isSmallShape ? '' : modelElement.name;
 
-    title.innerText = modelElement.name?.length > 24 ? modelElement.name?.substring(0, 21) + '...' : modelElement.name;
-    if (cell.collapsed && modelElement instanceof DefaultEntityInstance) {
-      title.innerText = this.formatSmallName(modelElement.name);
-    }
+    const displayName = modelElement?.isAnonymous?.()
+      ? modelElement.name?.startsWith('[')
+        ? modelElement.name
+        : `[${modelElement.className?.replace('Default', '') || 'Characteristic'}]`
+      : modelElement?.name || '';
+
+    title.title = isSmallShape ? '' : displayName;
+
+    const formattedName = displayName?.length > 24 ? displayName?.substring(0, 21) + '...' : displayName;
+    title.textContent = cell.collapsed && modelElement instanceof DefaultEntityInstance ? this.formatSmallName(displayName) : formattedName;
 
     title.classList.add('element-name');
+    if (modelElement?.isAnonymous?.()) {
+      title.classList.add('anonymous-node');
+    }
     return title;
   }
 

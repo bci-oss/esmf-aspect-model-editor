@@ -37,7 +37,7 @@ export class StateCharacteristicComponent {
   );
 
   get hasEntityType(): boolean {
-    const formEntity = this.signalForm()?.value().dataTypeEntity;
+    const formEntity = this.signalForm()?.get('dataTypeEntity');
     if (formEntity !== undefined && formEntity !== null) {
       return formEntity instanceof DefaultEntity;
     }

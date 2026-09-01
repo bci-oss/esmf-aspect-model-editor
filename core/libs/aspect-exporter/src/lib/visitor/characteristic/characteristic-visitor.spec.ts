@@ -244,6 +244,27 @@ describe('Characteristic Visitor', () => {
       expect(quads[0].object.value).toBe('samm#elem');
     });
 
+    it('should reference the element characteristic as blank node when anonymous', () => {
+      const elementCharacteristic = new DefaultQuantifiable({
+        metaModelVersion: '1',
+        aspectModelUrn: 'samm#elem',
+        name: '[Quantifiable]',
+        isAnonymous: true,
+      });
+      const characteristic = new DefaultCollection({
+        metaModelVersion: '1',
+        aspectModelUrn: 'samm#col1',
+        name: 'col1',
+        elementCharacteristic,
+      });
+
+      service.visit(characteristic);
+
+      const quads = rdfModel.store.getQuads(DataFactory.namedNode('samm#col1'), rdfModel.sammC.ElementCharacteristicProperty(), null, null);
+      expect(quads).toHaveLength(1);
+      expect(quads[0].object.termType).toBe('BlankNode');
+    });
+
     it('should not reference an element characteristic when none is set', () => {
       const characteristic = new DefaultCollection({metaModelVersion: '1', aspectModelUrn: 'samm#col1', name: 'col1'});
 
@@ -266,6 +287,35 @@ describe('Characteristic Visitor', () => {
       const rightQuads = rdfModel.store.getQuads(DataFactory.namedNode('samm#either1'), rdfModel.sammC.EitherRightProperty(), null, null);
       expect(leftQuads[0].object.value).toBe('samm#left');
       expect(rightQuads[0].object.value).toBe('samm#right');
+    });
+
+    it('should reference left and right as blank nodes when anonymous', () => {
+      const left = new DefaultQuantifiable({
+        metaModelVersion: '1',
+        aspectModelUrn: 'samm#left',
+        name: '[Quantifiable]',
+        isAnonymous: true,
+      });
+      const right = new DefaultQuantifiable({
+        metaModelVersion: '1',
+        aspectModelUrn: 'samm#right',
+        name: '[Quantifiable]',
+        isAnonymous: true,
+      });
+      const characteristic = new DefaultEither({
+        metaModelVersion: '1',
+        aspectModelUrn: 'samm#either1',
+        name: 'either1',
+        left,
+        right,
+      });
+
+      service.visit(characteristic);
+
+      const leftQuads = rdfModel.store.getQuads(DataFactory.namedNode('samm#either1'), rdfModel.sammC.EitherLeftProperty(), null, null);
+      const rightQuads = rdfModel.store.getQuads(DataFactory.namedNode('samm#either1'), rdfModel.sammC.EitherRightProperty(), null, null);
+      expect(leftQuads[0].object.termType).toBe('BlankNode');
+      expect(rightQuads[0].object.termType).toBe('BlankNode');
     });
   });
 

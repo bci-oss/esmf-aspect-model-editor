@@ -10,6 +10,7 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
+import {LoadedFilesService} from '@ame/cache';
 import {
   BaseInputComponent,
   CharacteristicClassType,
@@ -22,8 +23,9 @@ import {
   UnitInputFieldComponent,
   ValuesInputFieldComponent,
 } from '@ame/editor';
-import {ChangeDetectorRef, Component, DestroyRef, inject, input, OnInit, signal} from '@angular/core';
+import {Component, computed, DestroyRef, inject, input, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
+import {MatSlideToggle} from '@angular/material/slide-toggle';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {StateCharacteristicComponent} from '../../components/characteristics/state-characteristic/state-characteristic.component';
 import {StructuredValueComponent} from '../../components/characteristics/structured-value/structured-value.component';
@@ -47,13 +49,14 @@ import {PreviousFormDataSnapshot} from '../../interfaces';
     RightInputFieldComponent,
     ElementListComponent,
     TranslocoDirective,
+    MatSlideToggle,
   ],
 })
 export class CharacteristicComponent implements OnInit {
   readonly signalForm = input.required<EditorSignalFormContext>();
 
   private destroyRef = inject(DestroyRef);
-  private changeDetector = inject(ChangeDetectorRef);
+  private loadedFilesService = inject(LoadedFilesService);
 
   public metaModelDialogService = inject(EditorModelService);
 
@@ -61,6 +64,12 @@ export class CharacteristicComponent implements OnInit {
   public selectedCharacteristic = signal<CharacteristicClassType>(undefined);
   public previousData = signal<PreviousFormDataSnapshot>({});
   public element = toSignal(this.metaModelDialogService.getMetaModelElement());
+
+  public isAnonymous = signal(false);
+  public canBeAnonymous = computed(() => {
+    const el = this.element();
+    return Boolean(el && !el.isPredefined && !this.loadedFilesService.isElementExtern(el));
+  });
 
   public characteristicClassType = signal(CharacteristicClassType);
   allowedClassesForElementCharacteristic = signal<CharacteristicClassType[]>([
@@ -80,21 +89,51 @@ export class CharacteristicComponent implements OnInit {
     this.metaModelDialogService
       .getMetaModelElement()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        requestAnimationFrame(() => this.property.set(true));
-        this.changeDetector.detectChanges();
+      .subscribe(el => {
+        if (el) {
+          this.isAnonymous.set(Boolean(el.isAnonymous?.()));
+          this.property.set(true);
+        }
       });
   }
 
+  onAnonymousToggleChange(checked: boolean) {
+    this.isAnonymous.set(checked);
+    const elem = this.element();
+    if (elem) {
+      elem.anonymous = checked;
+      const typeName = elem.className ? elem.className.replace('Default', '') : 'Characteristic';
+      if (checked) {
+        elem.name = `[${typeName}]`;
+        this.signalForm().set('name', `[${typeName}]`);
+        this.signalForm().set('isAnonymous', true);
+      } else {
+        elem.name = typeName;
+        this.signalForm().set('name', typeName);
+        this.signalForm().set('isAnonymous', false);
+      }
+      this.metaModelDialogService.updateMetaModelElement(elem);
+    }
+  }
+
   onPreviousDataChange(previousData: PreviousFormDataSnapshot) {
-    requestAnimationFrame(() => {
-      this.previousData.set(previousData);
-      this.changeDetector.detectChanges();
-    });
+    this.previousData.set(previousData);
   }
 
   onClassChange(characteristic: CharacteristicClassType) {
+    if (this.selectedCharacteristic() === characteristic) {
+      return;
+    }
     this.selectedCharacteristic.set(characteristic);
+    if (this.isAnonymous()) {
+      const elem = this.element();
+      if (elem) {
+        const typeName = characteristic || (elem.className ? elem.className.replace('Default', '') : 'Characteristic');
+        elem.name = `[${typeName}]`;
+        this.signalForm().set('name', `[${typeName}]`);
+        this.signalForm().set('isAnonymous', true);
+      }
+    }
   }
 
   isElementCharacteristicAllowed(): boolean {

@@ -47,6 +47,8 @@
     }
   },
   "notificationService": {
+    "cannotDeleteEdgeTitle": "Cannot remove connection",
+    "cannotDeleteEdgeMessage": "It is not possible to remove connections directly. Please remove or reconnect the elements accordingly.",
     "onlyTwoElementsConnection": "Please select only two elements to connect them",
     "referneceConnectionError": "Cannot connect reference",
     "recursiveElements": "Recursive elements",
@@ -427,6 +429,7 @@
       "cancel": "Cancel",
       "edit": "Edit {{value}}",
       "locateElement": "Locate element",
+      "anonymous": "Anonymous (Inline Blank Node)",
       "propertiesConfiguration": "Properties Configuration",
       "configure": "Configure",
       "propertiesModal": {

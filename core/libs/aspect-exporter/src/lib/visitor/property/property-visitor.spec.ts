@@ -16,14 +16,16 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {RdfNodeService} from '@ame/aspect-exporter';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {TestBed} from '@angular/core/testing';
-import {DefaultProperty, ModelElementCache, RdfModel, Samm} from '@esmf/aspect-model-loader';
+import {DefaultCharacteristic, DefaultProperty, ModelElementCache, RdfModel, Samm} from '@esmf/aspect-model-loader';
 import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {RdfListService} from '../../rdf-list';
+import {CharacteristicVisitor} from '../characteristic/characteristic-visitor';
 import {PropertyVisitor} from './property-visitor';
 
 describe('Property Visitor', () => {
   let service: PropertyVisitor;
+  let characteristicVisitor: CharacteristicVisitor;
 
   const rdfModel: RdfModel = {
     store: new Store(),
@@ -51,6 +53,9 @@ describe('Property Visitor', () => {
         MockProvider(RdfNodeService, {
           update: vi.fn(),
         }),
+        MockProvider(CharacteristicVisitor, {
+          visit: vi.fn(),
+        }),
         MockProvider(LoadedFilesService, {
           currentLoadedFile: new NamespaceFile(rdfModel, new ModelElementCache(), null),
           externalFiles: [],
@@ -59,6 +64,7 @@ describe('Property Visitor', () => {
     });
 
     service = TestBed.inject(PropertyVisitor);
+    characteristicVisitor = TestBed.inject(CharacteristicVisitor);
   });
 
   it('should update store width default properties', () => {
@@ -69,5 +75,27 @@ describe('Property Visitor', () => {
       description: [],
       see: [],
     });
+  });
+
+  it('should export anonymous characteristic using blank node and characteristicVisitor', () => {
+    const anonChar = new DefaultCharacteristic({
+      metaModelVersion: '1',
+      aspectModelUrn: 'samm#_b0',
+      name: '[Characteristic]',
+      isAnonymous: true,
+    });
+    const propWithAnon = new DefaultProperty({
+      metaModelVersion: '1',
+      aspectModelUrn: 'samm#property1',
+      name: 'property1',
+      characteristic: anonChar,
+    });
+
+    service.visit(propWithAnon);
+
+    expect(characteristicVisitor.visit).toHaveBeenCalled();
+    const quads = rdfModel.store.getQuads(null, rdfModel.samm.CharacteristicProperty(), null, null);
+    expect(quads).toHaveLength(1);
+    expect(quads[0].object.termType).toBe('BlankNode');
   });
 });

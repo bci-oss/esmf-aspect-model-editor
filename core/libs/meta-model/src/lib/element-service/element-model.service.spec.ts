@@ -1,12 +1,11 @@
 import {LoadedFilesService} from '@ame/cache';
-import {EntityInstanceService, RenameModelDialogService} from '@ame/editor';
-import {MaxGraphHelper, MaxGraphService, MaxGraphShapeOverlayService} from '@ame/max-graph';
+import {RenameModelDialogService} from '@ame/editor';
+import {MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {ModelService} from '@ame/rdf/services';
-import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {NotificationsService, TitleService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {TestBed} from '@angular/core/testing';
-import {DefaultCharacteristic, DefaultEntity, DefaultProperty} from '@esmf/aspect-model-loader';
+import {DefaultCharacteristic, DefaultProperty} from '@esmf/aspect-model-loader';
 import {Cell, Graph} from '@maxgraph/core';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {CharacteristicModelService} from './characteristic-model.service';
@@ -65,18 +64,22 @@ describe('ElementModelService', () => {
         {provide: ModelRootService, useValue: mockModelRootService},
         {provide: NotificationsService, useValue: mockNotificationService},
         {provide: LoadedFilesService, useValue: mockLoadedFilesService},
-        {
-          provide: MaxGraphShapeOverlayService,
-          useValue: {removeComplexTypeShapeOverlays: vi.fn(), addBottomShapeOverlay: vi.fn(), checkAndAddShapeActionIcon: vi.fn()},
-        },
         {provide: TitleService, useValue: {updateTitle: vi.fn()}},
-        {provide: EntityInstanceService, useValue: {onPropertyRemove: vi.fn((_, cb) => cb()), onEntityDisconnect: vi.fn()}},
-        {provide: SammLanguageSettingsService, useValue: {}},
         {provide: ModelService, useValue: {removeAspect: vi.fn()}},
         {provide: RenameModelDialogService, useValue: {open: vi.fn()}},
         {
           provide: LanguageTranslationService,
-          useValue: {language: {notificationService: {modelEmptyMessage: 'Empty', modelMinimumElementRequirement: 'Min 1'}}},
+          useValue: {
+            language: {
+              notificationService: {
+                modelEmptyMessage: 'Empty',
+                modelMinimumElementRequirement: 'Min 1',
+                cannotDeleteEdgeTitle: 'Cannot remove connection',
+                cannotDeleteEdgeMessage:
+                  'It is not possible to remove connections directly. Please remove or reconnect the elements accordingly.',
+              },
+            },
+          },
         },
         {provide: CharacteristicModelService, useValue: mockElementModelService},
       ],
@@ -110,25 +113,16 @@ describe('ElementModelService', () => {
     expect(mockLoadedFilesService.currentLoadedFile.cachedFile.removeElement).toHaveBeenCalledWith('urn:test#p');
   });
 
-  it('should decouple elements on edge delete', () => {
-    const parent = new DefaultEntity({name: 'Entity', aspectModelUrn: 'urn:test#Entity', metaModelVersion: '2.2.0'});
-    const child = new DefaultProperty({name: 'Property', aspectModelUrn: 'urn:test#Property', metaModelVersion: '2.2.0'});
-
-    parent.children.push(child);
-    child.parents.push(parent);
-
-    const sourceCell = new Cell();
-    MaxGraphHelper.setElementNode(sourceCell, {element: parent} as any);
-
-    const targetCell = new Cell();
-    MaxGraphHelper.setElementNode(targetCell, {element: child} as any);
-
+  it('should prevent edge delete and show warning notification instead', () => {
     const edge = new Cell();
     edge.edge = true;
-    edge.source = sourceCell;
-    edge.target = targetCell;
 
-    service.decoupleElements(edge);
-    expect(mockMaxgraphService.removeCells).toHaveBeenCalledWith([edge]);
+    service.deleteElement(edge);
+    expect(mockNotificationService.warning).toHaveBeenCalledWith({
+      title: 'Cannot remove connection',
+      message: 'It is not possible to remove connections directly. Please remove or reconnect the elements accordingly.',
+      timeout: 5000,
+    });
+    expect(mockMaxgraphService.removeCells).not.toHaveBeenCalled();
   });
 });

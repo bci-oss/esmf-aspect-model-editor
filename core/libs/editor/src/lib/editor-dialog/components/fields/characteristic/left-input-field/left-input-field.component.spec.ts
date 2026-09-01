@@ -80,7 +80,7 @@ describe('LeftInputFieldComponent', () => {
     expect(signalForm.valid()).toBe(true);
 
     component.unlockLeft();
-    expect(component.characteristicField().touched()).toBe(true);
+    expect(component.displayField().touched()).toBe(true);
     expect(signalForm.value()).toMatchObject({left: '', leftCharacteristic: null});
   });
 

@@ -73,7 +73,7 @@ export class EntityVisitor extends BaseVisitor<DefaultEntity> {
 
   private updateParents(entity: DefaultEntity) {
     for (const parent of entity.parents || []) {
-      if (parent instanceof DefaultCharacteristic) {
+      if (parent instanceof DefaultCharacteristic && !parent.isAnonymous?.()) {
         this.rdfNodeService.update(parent, {dataType: entity.aspectModelUrn});
       }
     }

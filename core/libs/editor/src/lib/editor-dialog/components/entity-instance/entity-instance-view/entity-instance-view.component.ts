@@ -14,7 +14,6 @@
 import {LoadedFilesService} from '@ame/cache';
 import {SelectionModel} from '@angular/cdk/collections';
 import {Component, effect, inject, input, OnDestroy, OnInit, output, signal} from '@angular/core';
-import {form} from '@angular/forms/signals';
 import {MatDialog} from '@angular/material/dialog';
 import {MatExpansionPanel, MatExpansionPanelActionRow, MatExpansionPanelHeader, MatExpansionPanelTitle} from '@angular/material/expansion';
 import {MatIconModule} from '@angular/material/icon';
@@ -90,11 +89,7 @@ export class EntityInstanceViewComponent implements OnInit, OnDestroy {
 
   readonly newEntityValues = signal<DefaultEntityInstance[]>([]);
   readonly deletedEntityValues = signal<DefaultEntityInstance[]>([]);
-  readonly newEntityValuesField = form(this.newEntityValues);
-  readonly deletedEntityValuesField = form(this.deletedEntityValues);
   private createdEntityValueUrns = signal(new Set<string>());
-  private unregisterNewEntityValues = () => undefined;
-  private unregisterDeletedEntityValues = () => undefined;
 
   public complexValues = input([], {
     transform: (values: DefaultEntityInstance[]) =>
@@ -124,13 +119,13 @@ export class EntityInstanceViewComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.displayedValues.set(this.complexValues());
-    this.unregisterDeletedEntityValues = this.signalForm().register('deletedEntityValues', this.deletedEntityValuesField);
-    this.unregisterNewEntityValues = this.signalForm().register('newEntityValues', this.newEntityValuesField);
+    this.signalForm().set('deletedEntityValues', this.deletedEntityValues());
+    this.signalForm().set('newEntityValues', this.newEntityValues());
   }
 
   ngOnDestroy() {
-    this.unregisterDeletedEntityValues();
-    this.unregisterNewEntityValues();
+    this.signalForm().remove('deletedEntityValues');
+    this.signalForm().remove('newEntityValues');
   }
 
   trackProperty(_index: number, {property}: MappedAssertion): string {
@@ -145,7 +140,7 @@ export class EntityInstanceViewComponent implements OnInit, OnDestroy {
     const config = {
       data: {
         metaModel: this.enumeration(),
-        dataType: this.signalForm().value().newDataType || this.signalForm().value().dataTypeEntity || this.enumeration().dataType,
+        dataType: this.signalForm().get('newDataType') || this.signalForm().get('dataTypeEntity') || this.enumeration().dataType,
         complexValues: this.displayedValues(),
       },
       minWidth: '700px',
@@ -162,6 +157,7 @@ export class EntityInstanceViewComponent implements OnInit, OnDestroy {
         this.createdEntityValueUrns.update(urns => new Set(urns).add(entityValueConfig.entityValue.aspectModelUrn));
         this.complexValueChange.emit(this.displayedValues());
         this.newEntityValues.update(values => [...values, ...entityValueConfig.newEntityValues]);
+        this.signalForm().set('newEntityValues', this.newEntityValues());
       });
   }
 
@@ -179,6 +175,7 @@ export class EntityInstanceViewComponent implements OnInit, OnDestroy {
     } else {
       // existing value
       this.deletedEntityValues.update(values => [...values, item]);
+      this.signalForm().set('deletedEntityValues', this.deletedEntityValues());
     }
     this.complexValueChange.emit([...this.displayedValues()]);
   }

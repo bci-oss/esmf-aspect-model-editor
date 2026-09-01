@@ -71,11 +71,11 @@ export class PreferredNameInputFieldComponent extends InputFieldComponent<NamedE
   }
 
   getPreferredNamesLocales(): string[] {
-    return Array.from(this.metaModelElement?.preferredNames?.keys());
+    return Array.from(this.metaModelElement?.preferredNames?.keys() ?? []);
   }
 
   getDescriptionsLocales(): string[] {
-    return Array.from(this.metaModelElement?.preferredNames?.keys());
+    return Array.from(this.metaModelElement?.preferredNames?.keys() ?? []);
   }
 
   private isDisabled() {
@@ -83,14 +83,21 @@ export class PreferredNameInputFieldComponent extends InputFieldComponent<NamedE
   }
 
   private setPreferredNameNameControls() {
-    const allLocalesPreferredNames = Array.from(this.metaModelElement?.preferredNames?.keys());
+    this.unregisterFields.forEach(unregister => unregister());
+    this.unregisterFields.length = 0;
 
-    if (!allLocalesPreferredNames.length) {
+    if (!this.metaModelElement) {
+      return;
+    }
+
+    const allLocalesPreferredNames = Array.from(this.metaModelElement?.preferredNames?.keys() ?? []);
+
+    if (!allLocalesPreferredNames.length && this.metaModelElement?.preferredNames) {
       this.metaModelElement.preferredNames.set('en', '');
     }
 
     const fields: Record<string, FieldTree<string>> = {};
-    Array.from(this.metaModelElement?.preferredNames?.keys())?.forEach(locale => {
+    Array.from(this.metaModelElement?.preferredNames?.keys() ?? []).forEach(locale => {
       const key = `preferredName${locale}`;
       const model = signal<string>(String(this.getCurrentValue(key, locale) ?? ''));
       const field = runInInjectionContext(this.injector, () =>

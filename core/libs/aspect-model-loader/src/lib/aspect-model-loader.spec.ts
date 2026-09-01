@@ -13,6 +13,7 @@
 
 import {firstValueFrom} from 'rxjs';
 import {describe, expect, it} from 'vitest';
+import {DefaultTrait} from './aspect-meta-model/characteristic/default-trait';
 import {AspectModelLoader, loadAspectModel} from './aspect-model-loader';
 
 const sampleAspectTtl = `
@@ -69,5 +70,48 @@ describe('AspectModelLoader', () => {
     expect(result.store).toBeDefined();
     expect(result.cachedElements).toBeDefined();
     expect(result.cachedElements.get('urn:samm:org.eclipse.esmf.samm:test:1.0.0#TestAspect')).toBe(result.aspect);
+  });
+
+  it('should load model with anonymous characteristics and traits', async () => {
+    const anonymousAspectTtl = `
+@prefix samm: <urn:samm:org.eclipse.esmf.samm:meta-model:2.2.0#> .
+@prefix samm-c: <urn:samm:org.eclipse.esmf.samm:characteristic:2.2.0#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix : <urn:samm:org.eclipse:1.0.0#> .
+
+:AspectDefault a samm:Aspect ;
+    samm:properties (:property1 :property2) ;
+    samm:operations () .
+
+:property1 a samm:Property ;
+    samm:characteristic [ a samm:Characteristic; samm:dataType xsd:string ] .
+
+:property2 a samm:Property ;
+    samm:characteristic [
+        a samm-c:Trait ;
+        samm-c:baseCharacteristic [ a samm:Characteristic; samm:dataType xsd:string ] ;
+        samm-c:constraint [ a samm:Constraint ]
+    ] .
+`;
+    const loader = new AspectModelLoader();
+    const result = await firstValueFrom(loader.loadSelfContainedModel(anonymousAspectTtl));
+
+    expect(result.aspect).toBeDefined();
+    expect(result.aspect.properties.length).toBe(2);
+
+    const prop1 = result.aspect.properties[0];
+    expect(prop1.name).toBe('property1');
+    expect(prop1.characteristic.isAnonymous()).toBe(true);
+    expect(prop1.characteristic.name).toBe('[Characteristic]');
+
+    const prop2 = result.aspect.properties[1];
+    expect(prop2.name).toBe('property2');
+    expect(prop2.characteristic.isAnonymous()).toBe(true);
+    expect(prop2.characteristic.name).toBe('[Trait]');
+    const trait = prop2.characteristic as DefaultTrait;
+    expect(trait.baseCharacteristic.isAnonymous()).toBe(true);
+    expect(trait.baseCharacteristic.name).toBe('[Characteristic]');
+    expect(trait.constraints[0].isAnonymous()).toBe(true);
+    expect(trait.constraints[0].name).toBe('[Constraint]');
   });
 });

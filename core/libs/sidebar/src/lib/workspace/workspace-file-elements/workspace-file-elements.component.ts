@@ -169,7 +169,7 @@ export class WorkspaceFileElementsComponent {
     const sections = Object.values(currentElements);
 
     for (const element of cachedFile.getAllElements()) {
-      sections.find(e => element instanceof e.class && !element.isAnonymous())?.elements?.push?.(element);
+      sections.find(e => element instanceof e.class && !element.isAnonymous?.())?.elements?.push?.(element);
     }
   }
 

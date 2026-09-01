@@ -13,11 +13,10 @@
 
 import {LoadedFilesService} from '@ame/cache';
 import {ModelService} from '@ame/rdf/services';
-import {RdfModelUtil} from '@ame/rdf/utils';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {Directive, inject, input, output} from '@angular/core';
 import {DefaultCharacteristic, DefaultConstraint, NamedElement} from '@esmf/aspect-model-loader';
-import {tap} from 'rxjs/operators';
+import {filter, tap} from 'rxjs/operators';
 import {EditorModelService} from '../../editor-model.service';
 import {EditorSignalFormContext} from '../../forms/editor-signal-form-context';
 import {PreviousFormDataSnapshot} from '../../interfaces';
@@ -75,6 +74,7 @@ export abstract class DropdownFieldComponent<T extends DefaultCharacteristic | D
 
   public getMetaModelData() {
     return this.editorModelService.getMetaModelElement().pipe(
+      filter((metaModelElement): metaModelElement is T => Boolean(metaModelElement)),
       tap(metaModelElement => {
         this.metaModelElement = <T>metaModelElement;
       }),
@@ -82,15 +82,16 @@ export abstract class DropdownFieldComponent<T extends DefaultCharacteristic | D
   }
 
   public setMetaModelClassName(): void {
-    if (
-      RdfModelUtil.isCharacteristicInstance(
-        this.selectedMetaModelElement.aspectModelUrn,
-        this.loadedFilesService.currentLoadedFile.rdfModel.sammC,
-      )
-    ) {
-      this.metaModelClassName = this.selectedMetaModelElement.aspectModelUrn.split('#')[1].replace('Default', '');
+    if (!this.selectedMetaModelElement) {
+      this.metaModelClassName = '';
+      return;
+    }
+
+    if ((this.selectedMetaModelElement as DefaultCharacteristic).isPredefined) {
+      this.metaModelClassName =
+        this.selectedMetaModelElement.name || this.selectedMetaModelElement.aspectModelUrn?.split('#')?.[1]?.replace('Default', '') || '';
     } else {
-      this.metaModelClassName = this.selectedMetaModelElement.className.replace('Default', '');
+      this.metaModelClassName = this.selectedMetaModelElement.className?.replace('Default', '') || '';
     }
   }
 

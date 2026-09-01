@@ -63,6 +63,9 @@ describe('EditorService', () => {
         MockProvider(MaxGraphService, {
           initGraph: vi.fn(),
           resetValidationErrorOnAllShapes: vi.fn(),
+          graph: {
+            getOutgoingEdges: vi.fn(() => []),
+          } as any,
         }),
         MockProvider(MaxGraphShapeOverlayService),
         MockProvider(MaxGraphShapeSelectorService, {
@@ -76,6 +79,7 @@ describe('EditorService', () => {
             view: {setTranslate: vi.fn()},
             zoomIn: vi.fn(),
             zoomOut: vi.fn(),
+            setCellStyles: vi.fn(),
           } as any,
         }),
         MockProvider(NotificationsService),
@@ -95,9 +99,16 @@ describe('EditorService', () => {
         }),
         MockProvider(SammLanguageSettingsService),
         MockProvider(ConfirmDialogService),
-        MockProvider(ElementModelService),
+        MockProvider(ElementModelService, {
+          deleteElement: vi.fn(),
+          updateElement: vi.fn(),
+        }),
         MockProvider(TitleService),
-        MockProvider(ShapeSettingsStateService),
+        MockProvider(ShapeSettingsStateService, {
+          isShapeSettingOpened: vi.fn(() => false) as any,
+          selectedShapeForUpdate: vi.fn(() => null) as any,
+          closeShapeSettings: vi.fn(),
+        }),
         MockProvider(LoadingScreenService, {
           open: vi.fn(() => ({afterOpened: () => of(null)}) as any),
           close: vi.fn(),
@@ -144,5 +155,31 @@ describe('EditorService', () => {
     await new Promise(resolve => service.validate().subscribe(resolve));
 
     expect(modelApiService.validate).toHaveBeenCalled();
+  });
+
+  it('deleteSelectedElements should delegate edge deletion to elementModelService when only edge is selected', () => {
+    const elementModelService = TestBed.inject(ElementModelService);
+    const shapeSelectorService = TestBed.inject(MaxGraphShapeSelectorService);
+    const edge = {isEdge: () => true, isVertex: () => false} as any;
+    vi.spyOn(shapeSelectorService, 'getSelectedCells').mockReturnValue([edge]);
+
+    service.deleteSelectedElements();
+
+    expect(elementModelService.deleteElement).toHaveBeenCalledWith(edge);
+  });
+
+  it('deleteSelectedElements should delete vertex cells only when both vertex and edge are selected', () => {
+    const elementModelService = TestBed.inject(ElementModelService);
+    const shapeSelectorService = TestBed.inject(MaxGraphShapeSelectorService);
+    const maxgraphService = TestBed.inject(MaxGraphService);
+    (maxgraphService as any).graph = {getOutgoingEdges: vi.fn(() => [])};
+    const vertex = {isEdge: () => false, isVertex: () => true} as any;
+    const edge = {isEdge: () => true, isVertex: () => false} as any;
+    vi.spyOn(shapeSelectorService, 'getSelectedCells').mockReturnValue([vertex, edge]);
+
+    service.deleteSelectedElements();
+
+    expect(elementModelService.deleteElement).toHaveBeenCalledWith(vertex);
+    expect(elementModelService.deleteElement).not.toHaveBeenCalledWith(edge);
   });
 });

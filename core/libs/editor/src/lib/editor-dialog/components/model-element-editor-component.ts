@@ -13,7 +13,7 @@
 import {RdfModelUtil} from '@ame/rdf/utils';
 import {Directive, inject} from '@angular/core';
 import {NamedElement} from '@esmf/aspect-model-loader';
-import {tap} from 'rxjs/operators';
+import {filter, tap} from 'rxjs/operators';
 import {EditorModelService} from '../editor-model.service';
 
 @Directive()
@@ -27,6 +27,7 @@ export abstract class ModelElementEditorComponent<T extends NamedElement> {
 
   getMetaModelData() {
     return this.metaModelDialogService.getMetaModelElement().pipe(
+      filter((metaModelElement): metaModelElement is T => Boolean(metaModelElement)),
       tap(metaModelElement => {
         this.metaModelElement = <T>metaModelElement;
       }),

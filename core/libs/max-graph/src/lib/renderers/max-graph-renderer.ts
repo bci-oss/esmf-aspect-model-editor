@@ -325,7 +325,10 @@ export class MaxGraphRenderer implements ModelRenderer<Cell, Cell> {
   }
 
   private getOrCreateCell(node: ModelTree<any>, {shapeAttributes, geometry}: ShapeConfiguration): Cell {
-    const shape = this.shapes.get(node.element.name) || this.maxgraphService.resolveCellByModelElement(node.element);
+    const shape =
+      this.shapes.get(node.element.aspectModelUrn) ||
+      this.shapes.get(node.element.name) ||
+      this.maxgraphService.resolveCellByModelElement(node.element);
 
     if (shape) {
       return shape;

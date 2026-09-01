@@ -65,6 +65,11 @@
       padding-bottom: 6px;
       border-bottom: 2px solid var(--ame-font);
     }
+
+    &.anonymous-node {
+      font-style: italic;
+      letter-spacing: 0.5px;
+    }
   }
 
   .element-info {

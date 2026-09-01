@@ -217,4 +217,32 @@ describe('RdfSerializerService', () => {
     const serialized = service.serializeModel(rdfModel);
     expect(serialized).toContain('@prefix rdfs:');
   });
+
+  it('should serialize anonymous inline characteristic blank node correctly', () => {
+    const store = new Store();
+    const rdfModel = new RdfModel(store, '2.2.0', 'urn:samm:com.example:1.0.0');
+    const blankChar = DataFactory.blankNode('b0');
+
+    store.addQuad(
+      DataFactory.quad(DataFactory.namedNode('urn:samm:com.example:1.0.0#property1'), rdfModel.samm.RdfType(), rdfModel.samm.Property()),
+    );
+    store.addQuad(
+      DataFactory.quad(DataFactory.namedNode('urn:samm:com.example:1.0.0#property1'), rdfModel.samm.CharacteristicProperty(), blankChar),
+    );
+    store.addQuad(DataFactory.quad(blankChar, rdfModel.samm.RdfType(), rdfModel.samm.Characteristic()));
+    store.addQuad(
+      DataFactory.quad(
+        blankChar,
+        DataFactory.namedNode('urn:samm:org.eclipse.esmf.samm:meta-model:2.2.0#dataType'),
+        DataFactory.namedNode(`${Samm.XSD_URI}#string`),
+      ),
+    );
+
+    const serialized = service.serializeModel(rdfModel);
+    expect(serialized).toContain(':property1 a samm:Property;');
+    expect(serialized).toContain('samm:characteristic [');
+    expect(serialized).toContain('a samm:Characteristic;');
+    expect(serialized).toContain('samm:dataType xsd:string');
+    expect(serialized).not.toContain('_:b0');
+  });
 });

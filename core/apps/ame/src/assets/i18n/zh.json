@@ -44,6 +44,8 @@
     }
   },
   "notificationService": {
+    "cannotDeleteEdgeTitle": "无法删除连接",
+    "cannotDeleteEdgeMessage": "无法直接删除连接。请删除相应的元素或重新连接它们。",
     "onlyTwoElementsConnection": "请只选择两个元素来连接它们",
     "referneceConnectionError": "无法连接引用",
     "recursiveElements": "递归的elements",

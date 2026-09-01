@@ -99,7 +99,6 @@ describe('EntityExtendsFieldComponent', () => {
   it('should register both stored values in the shared Signal Forms context', () => {
     expect(signalForm.value()).toMatchObject({extendsValue: '', extends: null});
     expect(signalForm.field('extendsValue')).toBe(component.displayField);
-    expect(signalForm.field('extends')).toBe(component.extendsField);
   });
 
   it('should initialize and lock an existing relation without losing its save value', () => {
@@ -120,7 +119,7 @@ describe('EntityExtendsFieldComponent', () => {
     component.unlockExtends();
 
     expect(component.displayField().disabled()).toBe(false);
-    expect(component.extendsField().touched()).toBe(true);
+    expect(component.displayField().touched()).toBe(true);
     expect(signalForm.value()).toMatchObject({extendsValue: '', extends: null});
   });
 
@@ -218,7 +217,7 @@ describe('EntityExtendsFieldComponent', () => {
     expect(signalForm.valid()).toBe(true);
   });
 
-  it('should keep externally owned values in save output while disabling both fields', () => {
+  it('should keep externally owned values in save output while disabling display field', () => {
     const baseEntity = createEntity('BaseEntity');
     currentEntity.extends_ = baseEntity;
     vi.mocked(loadedFilesService.isElementExtern).mockReturnValue(true);
@@ -226,7 +225,6 @@ describe('EntityExtendsFieldComponent', () => {
     component.setExtendsControl();
 
     expect(component.displayField().disabled()).toBe(true);
-    expect(component.extendsField().disabled()).toBe(true);
     expect(signalForm.value()).toMatchObject({extendsValue: 'BaseEntity', extends: baseEntity});
   });
 

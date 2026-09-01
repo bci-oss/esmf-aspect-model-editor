@@ -187,6 +187,11 @@ export class MaxGraphService {
       cellStyle.fillOpacity = 80;
     }
 
+    if (node.element?.isAnonymous?.()) {
+      cellStyle.dashed = true;
+      cellStyle.dashPattern = '4 4';
+    }
+
     node.shape.maxgraphStyle = cellStyle;
     const modelShape = this.maxgraphShapeOverlayService.createShape(node, geometry, configuration?.shapeAttributes || []);
     MaxGraphHelper.setElementNode(modelShape, node);

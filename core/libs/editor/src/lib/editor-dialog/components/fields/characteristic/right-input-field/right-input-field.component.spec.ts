@@ -80,7 +80,7 @@ describe('RightInputFieldComponent', () => {
     expect(signalForm.valid()).toBe(true);
 
     component.unlockRight();
-    expect(component.characteristicField().touched()).toBe(true);
+    expect(component.displayField().touched()).toBe(true);
     expect(signalForm.value()).toMatchObject({right: '', rightCharacteristic: null});
   });
 

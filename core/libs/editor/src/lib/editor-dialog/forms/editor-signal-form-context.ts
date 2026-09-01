@@ -12,7 +12,7 @@
  */
 
 import {computed, signal, WritableSignal} from '@angular/core';
-import {FieldTree, form, SchemaOrSchemaFn} from '@angular/forms/signals';
+import {FieldTree} from '@angular/forms/signals';
 
 export type EditorFormModel = Record<string, unknown>;
 
@@ -20,8 +20,7 @@ export type EditorFormModel = Record<string, unknown>;
  * Shared native Signal Forms context for the polymorphic editor dialog.
  *
  * Editor fields are registered dynamically because the available fields depend on the
- * selected SAMM element type and configured languages. The FieldTree remains stable while
- * updates are written to the model signal.
+ * selected SAMM element type and configured languages.
  */
 export class EditorSignalFormContext<TModel extends EditorFormModel = EditorFormModel> {
   static create(): EditorSignalFormContext {
@@ -29,14 +28,20 @@ export class EditorSignalFormContext<TModel extends EditorFormModel = EditorForm
   }
 
   private readonly registeredFields = signal(new Map<string, FieldTree<unknown>>());
+  private readonly rawValues: WritableSignal<EditorFormModel>;
 
-  readonly model: WritableSignal<TModel>;
-  readonly fieldTree: FieldTree<TModel>;
-  readonly valid = computed(() => this.fieldTree().valid() && [...this.registeredFields().values()].every(field => field().valid()));
+  readonly valid = computed(() => [...this.registeredFields().values()].every(field => field().valid()));
 
-  constructor(initialValue: TModel, schema?: SchemaOrSchemaFn<TModel>) {
-    this.model = signal({...initialValue});
-    this.fieldTree = schema ? form(this.model, schema) : form(this.model);
+  constructor(initialValue: TModel) {
+    this.rawValues = signal({...initialValue});
+  }
+
+  get<TValue = unknown>(key: string): TValue | undefined {
+    const registeredField = this.registeredFields().get(key);
+    if (registeredField) {
+      return (registeredField as any)().value() as TValue;
+    }
+    return this.rawValues()[key] as TValue;
   }
 
   value(): TModel {
@@ -44,15 +49,11 @@ export class EditorSignalFormContext<TModel extends EditorFormModel = EditorForm
       values[key] = field().value();
       return values;
     }, {});
-    return {...this.model(), ...registeredValues};
+    return {...this.rawValues(), ...registeredValues} as TModel;
   }
 
-  field<TValue>(key: string): FieldTree<TValue> {
-    const registeredField = this.registeredFields().get(key);
-    if (registeredField) {
-      return registeredField as unknown as FieldTree<TValue>;
-    }
-    return this.fieldTree[key] as unknown as FieldTree<TValue>;
+  field<TValue>(key: string): FieldTree<TValue> | undefined {
+    return this.registeredFields().get(key) as unknown as FieldTree<TValue> | undefined;
   }
 
   register<TValue>(key: string, field: FieldTree<TValue>): () => void {
@@ -66,11 +67,13 @@ export class EditorSignalFormContext<TModel extends EditorFormModel = EditorForm
       field().value.set(value);
       return;
     }
-    this.model.update(model => ({...model, [key]: value}));
+    this.rawValues.update(values => ({...values, [key]: value}));
   }
 
   patch(value: Partial<TModel>): void {
-    this.model.update(model => ({...model, ...value}));
+    for (const [key, val] of Object.entries(value)) {
+      this.set(key, val);
+    }
   }
 
   remove(key: string): void {
@@ -79,15 +82,20 @@ export class EditorSignalFormContext<TModel extends EditorFormModel = EditorForm
       updatedFields.delete(key);
       return updatedFields;
     });
-    this.model.update(model => {
-      const updated = {...model};
+    this.rawValues.update(values => {
+      const updated = {...values};
       delete updated[key];
       return updated;
     });
   }
 
   reset(value: TModel): void {
-    this.model.set({...value});
-    this.fieldTree().reset();
+    this.rawValues.set({...value});
+    for (const [key, field] of this.registeredFields().entries()) {
+      field().reset();
+      if (key in value) {
+        field().value.set((value as any)[key]);
+      }
+    }
   }
 }

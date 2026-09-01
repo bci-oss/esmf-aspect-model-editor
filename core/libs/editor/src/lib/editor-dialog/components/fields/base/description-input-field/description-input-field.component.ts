@@ -90,11 +90,11 @@ export class DescriptionInputFieldComponent extends InputFieldComponent<NamedEle
   }
 
   getPreferredNamesLocales(): string[] {
-    return Array.from(this.metaModelElement?.preferredNames?.keys());
+    return Array.from(this.metaModelElement?.preferredNames?.keys() ?? []);
   }
 
   getDescriptionsLocales(): string[] {
-    return Array.from(this.metaModelElement?.descriptions?.keys());
+    return Array.from(this.metaModelElement?.descriptions?.keys() ?? []);
   }
 
   private isDisabled() {
@@ -102,14 +102,21 @@ export class DescriptionInputFieldComponent extends InputFieldComponent<NamedEle
   }
 
   private setDescriptionControls() {
-    const allLocalesDescriptions = [...this.metaModelElement.descriptions.keys()];
+    this.unregisterFields.forEach(unregister => unregister());
+    this.unregisterFields.length = 0;
 
-    if (!allLocalesDescriptions.length) {
+    if (!this.metaModelElement) {
+      return;
+    }
+
+    const allLocalesDescriptions = Array.from(this.metaModelElement?.descriptions?.keys() ?? []);
+
+    if (!allLocalesDescriptions.length && this.metaModelElement?.descriptions) {
       this.metaModelElement.descriptions.set('en', '');
     }
 
     const fields: Record<string, FieldTree<string>> = {};
-    [...this.metaModelElement.descriptions.keys()].forEach(locale => {
+    Array.from(this.metaModelElement?.descriptions?.keys() ?? []).forEach(locale => {
       const key = `description${locale}`;
       const model = signal<string>(String(this.getCurrentValue(key, locale) || this.metaModelElement?.getDescription(locale) || ''));
       const field = runInInjectionContext(this.injector, () =>

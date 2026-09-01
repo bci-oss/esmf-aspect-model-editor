@@ -11,7 +11,7 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-<mat-form-field [floatLabel]="characteristicField().disabled() ? 'always' : 'auto'" appearance="fill" subscriptSizing="dynamic">
+<mat-form-field [floatLabel]="displayField().disabled() ? 'always' : 'auto'" appearance="fill" subscriptSizing="dynamic">
   <mat-label>elementCharacteristic</mat-label>
   <input #elementCharacteristic [matAutocomplete]="auto" [formField]="displayField" matInput data-cy="elementCharacteristic" />
   @if (displayField().disabled()) {

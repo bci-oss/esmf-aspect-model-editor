@@ -64,10 +64,11 @@ export function characteristicFactory(initProps: BaseInitProps) {
 
   function generateCharacteristicName(characteristic: Characteristic) {
     const initialUrn: string = characteristic.aspectModelUrn;
+    const typeName = characteristic.className ? characteristic.className.replace('Default', '') : 'Characteristic';
 
-    // assign a unique random name
-    characteristic.name = characteristic.name ? characteristic.name : 'Characteristic' + String(Math.floor(Math.random() * 900) + 100);
-    characteristic.aspectModelUrn = `${rdfModel.getAspectModelUrn()}${characteristic.name}`;
+    characteristic.name = characteristic.name ? characteristic.name : `[${typeName}]`;
+    characteristic.aspectModelUrn =
+      initialUrn || `${rdfModel.getAspectModelUrn()}${characteristic.name}_${Math.floor(Math.random() * 9000) + 1000}`;
     characteristic.syntheticName = true;
     cache.addElement(initialUrn, characteristic);
   }

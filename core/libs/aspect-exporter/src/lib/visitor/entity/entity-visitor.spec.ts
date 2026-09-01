@@ -16,7 +16,7 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {RdfNodeService} from '@ame/aspect-exporter';
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {TestBed} from '@angular/core/testing';
-import {DefaultEntity, DefaultProperty, ModelElementCache, RdfModel, Samm} from '@esmf/aspect-model-loader';
+import {DefaultCharacteristic, DefaultEntity, DefaultProperty, ModelElementCache, RdfModel, Samm} from '@esmf/aspect-model-loader';
 import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {RdfListService} from '../../rdf-list';
@@ -66,5 +66,44 @@ describe('Entity Visitor', () => {
       see: [],
     });
     expect(service.rdfListService.push).toHaveBeenCalledWith(entity, property);
+  });
+
+  it('should update parent named characteristic with entity dataType', () => {
+    const namedChar = new DefaultCharacteristic({
+      metaModelVersion: '1',
+      aspectModelUrn: 'samm#char1',
+      name: 'char1',
+    });
+    const entityWithParent = new DefaultEntity({
+      metaModelVersion: '1',
+      aspectModelUrn: 'samm#entity1',
+      name: 'entity1',
+      properties: [],
+    });
+    entityWithParent.addParent(namedChar);
+
+    service.visit(entityWithParent);
+
+    expect(service.rdfNodeService.update).toHaveBeenCalledWith(namedChar, {dataType: 'samm#entity1'});
+  });
+
+  it('should not update parent anonymous characteristic as named node', () => {
+    const anonChar = new DefaultCharacteristic({
+      metaModelVersion: '1',
+      aspectModelUrn: 'samm#[Characteristic]_1234',
+      name: '[Characteristic]',
+      isAnonymous: true,
+    });
+    const entityWithAnonParent = new DefaultEntity({
+      metaModelVersion: '1',
+      aspectModelUrn: 'samm#entity1',
+      name: 'entity1',
+      properties: [],
+    });
+    entityWithAnonParent.addParent(anonChar);
+
+    service.visit(entityWithAnonParent);
+
+    expect(service.rdfNodeService.update).not.toHaveBeenCalledWith(anonChar, expect.anything());
   });
 });

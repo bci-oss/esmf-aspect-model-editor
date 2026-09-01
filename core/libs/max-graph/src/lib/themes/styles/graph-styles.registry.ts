@@ -48,6 +48,7 @@ export class GraphStylesRegistry {
       shape: 'connector',
       strokeColor: COLORS.text,
       fontColor: COLORS.text,
+      pointerEvents: false,
     };
   }
 

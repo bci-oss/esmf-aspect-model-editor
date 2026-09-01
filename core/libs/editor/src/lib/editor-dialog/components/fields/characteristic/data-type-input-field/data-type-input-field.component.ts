@@ -77,10 +77,8 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
   private readonly newDataTypeModel = signal<Entity | null>(null);
   private readonly locked = signal(false);
   private readonly blocked = signal(false);
-  readonly frozen = computed(() => !!this.signalForm().value().elementCharacteristic);
+  readonly frozen = computed(() => !!this.signalForm()?.get('elementCharacteristic'));
   private unregisterDisplay = () => undefined;
-  private unregisterDataType = () => undefined;
-  private unregisterNewDataType = () => undefined;
 
   private readonly createDuplicateNameResource = (name: Signal<string>) =>
     rxResource({
@@ -102,11 +100,9 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
       onError: () => ({kind: 'duplicateNameValidation', message: 'Data type name could not be validated'}),
     });
     disabled(path, {
-      when: () => this.locked() || this.blocked() || !!this.signalForm()?.value().elementCharacteristic,
+      when: () => this.locked() || this.blocked() || !!this.signalForm()?.get('elementCharacteristic'),
     });
   });
-  readonly dataTypeField = form(this.dataTypeModel, path => disabled(path, {when: this.blocked}));
-  readonly newDataTypeField = form(this.newDataTypeModel, path => disabled(path, {when: this.blocked}));
   readonly displayValue = this.displayModel.asReadonly();
   readonly filteredDataTypes = computed<DefaultScalar[]>(() => {
     const value = this.displayModel();
@@ -142,8 +138,8 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
 
   ngOnDestroy() {
     this.unregisterDisplay();
-    this.unregisterDataType();
-    this.unregisterNewDataType();
+    this.signalForm().remove('dataTypeEntity');
+    this.signalForm().remove('newDataType');
     super.ngOnDestroy();
   }
 
@@ -170,11 +166,12 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
     this.locked.set(!!value);
     this.displayModel.set(value || '');
     this.dataTypeModel.set(dataType || null);
-    this.newDataTypeModel.set((this.previousData()?.['newDataType'] as Entity) || null);
+    const newDataType = (this.previousData()?.['newDataType'] as Entity) || null;
+    this.newDataTypeModel.set(newDataType);
     this.displayField().markAsTouched();
     this.unregisterDisplay = this.signalForm().register('dataType', this.displayField);
-    this.unregisterDataType = this.signalForm().register('dataTypeEntity', this.dataTypeField);
-    this.unregisterNewDataType = this.signalForm().register('newDataType', this.newDataTypeField);
+    this.signalForm().set('dataTypeEntity', dataType || null);
+    this.signalForm().set('newDataType', newDataType);
   }
 
   onSelectionChange(fieldPath: string, newValue: Type, event: MatOptionSelectionChange) {
@@ -194,6 +191,8 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
 
     this.dataTypeModel.set(resolvedValue);
     this.newDataTypeModel.set(null);
+    this.signalForm().set('dataTypeEntity', resolvedValue);
+    this.signalForm().set('newDataType', null);
     this.displayModel.set(newValue.name);
     this.locked.set(true);
   }
@@ -208,6 +207,8 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
 
     this.newDataTypeModel.set(newEntity);
     this.dataTypeModel.set(newEntity);
+    this.signalForm().set('newDataType', newEntity);
+    this.signalForm().set('dataTypeEntity', newEntity);
     this.displayModel.set(entityName);
     this.locked.set(true);
   }
@@ -217,7 +218,9 @@ export class DataTypeInputFieldComponent extends InputFieldComponent<DefaultChar
     this.displayModel.set('');
     this.dataTypeModel.set(null);
     this.newDataTypeModel.set(null);
-    this.dataTypeField().markAsTouched();
+    this.signalForm().set('dataTypeEntity', null);
+    this.signalForm().set('newDataType', null);
+    this.displayField().markAsTouched();
   }
 
   hasError(kind: string): boolean {

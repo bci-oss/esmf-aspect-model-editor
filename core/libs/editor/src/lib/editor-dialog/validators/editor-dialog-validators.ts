@@ -45,8 +45,11 @@ export class EditorDialogValidators {
       return of(null);
     }
 
-    const [primaryNamespace] = metaModelElement.aspectModelUrn.split('#');
-    const aspectModelUrn = `${primaryNamespace}#${value}`;
+    const baseNamespace =
+      metaModelElement.aspectModelUrn?.includes('#') && !metaModelElement.isAnonymous?.()
+        ? metaModelElement.aspectModelUrn.split('#')[0]
+        : this.loadedFileService.currentLoadedFile.rdfModel.getAspectModelUrn().replace(/#$/, '');
+    const aspectModelUrn = `${baseNamespace}#${value}`;
     const fileName = this.loadedFileService.currentLoadedFile.name;
 
     return this.modelApiService

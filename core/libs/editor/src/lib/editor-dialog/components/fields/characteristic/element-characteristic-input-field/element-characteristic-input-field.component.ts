@@ -63,9 +63,8 @@ export class ElementCharacteristicInputFieldComponent extends InputFieldComponen
   private readonly characteristicModel = signal<Characteristic | null>(null);
   private readonly locked = signal(false);
   private readonly blocked = signal(false);
-  readonly frozen = computed(() => !!this.signalForm().value().dataTypeEntity);
+  readonly frozen = computed(() => !!this.signalForm()?.get('dataTypeEntity'));
   private unregisterDisplay = () => undefined;
-  private unregisterCharacteristic = () => undefined;
 
   private readonly createDuplicateNameResource = (name: Signal<string>) =>
     rxResource({
@@ -87,12 +86,9 @@ export class ElementCharacteristicInputFieldComponent extends InputFieldComponen
       onError: () => ({kind: 'duplicateNameValidation', message: 'Characteristic name could not be validated'}),
     });
     disabled(path, {
-      when: () => this.locked() || this.blocked() || !!this.signalForm()?.value().dataTypeEntity,
+      when: () => this.locked() || this.blocked() || !!this.signalForm()?.get('dataTypeEntity'),
     });
   });
-  readonly characteristicField = form(this.characteristicModel, path =>
-    disabled(path, {when: () => this.blocked() || !!this.signalForm()?.value().dataTypeEntity}),
-  );
   readonly displayValue = this.displayModel.asReadonly();
   readonly filteredCharacteristicTypes = computed<ElementCharacteristicOption[]>(() => {
     const value = this.displayModel();
@@ -121,7 +117,7 @@ export class ElementCharacteristicInputFieldComponent extends InputFieldComponen
 
   ngOnDestroy() {
     this.unregisterDisplay();
-    this.unregisterCharacteristic();
+    this.signalForm().remove('elementCharacteristic');
     super.ngOnDestroy();
   }
 
@@ -139,7 +135,7 @@ export class ElementCharacteristicInputFieldComponent extends InputFieldComponen
     this.characteristicModel.set(elementCharacteristic);
     this.displayField().markAsTouched();
     this.unregisterDisplay = this.signalForm().register('elementCharacteristicDisplay', this.displayField);
-    this.unregisterCharacteristic = this.signalForm().register('elementCharacteristic', this.characteristicField);
+    this.signalForm().set('elementCharacteristic', elementCharacteristic);
   }
 
   onSelectionChange(fieldPath: string, newValue: ElementCharacteristicOption | null) {
@@ -187,7 +183,8 @@ export class ElementCharacteristicInputFieldComponent extends InputFieldComponen
     this.locked.set(false);
     this.displayModel.set('');
     this.characteristicModel.set(null);
-    this.characteristicField().markAsTouched();
+    this.signalForm().set('elementCharacteristic', null);
+    this.displayField().markAsTouched();
   }
 
   hasError(kind: string): boolean {
@@ -199,6 +196,7 @@ export class ElementCharacteristicInputFieldComponent extends InputFieldComponen
   private selectCharacteristic(characteristic: Characteristic, name: string): void {
     this.displayModel.set(name);
     this.characteristicModel.set(characteristic);
+    this.signalForm().set('elementCharacteristic', characteristic);
     this.locked.set(true);
   }
 }

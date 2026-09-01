@@ -19,12 +19,14 @@ import {DataFactory, Literal, NamedNode, Store} from 'n3';
 import {RdfListService} from '../../rdf-list';
 import {RdfNodeService} from '../../rdf-node';
 import {BaseVisitor} from '../base-visitor';
+import {CharacteristicVisitor} from '../characteristic/characteristic-visitor';
 
 @Injectable({providedIn: 'root'})
 export class PropertyVisitor extends BaseVisitor<DefaultProperty> {
   public rdfNodeService = inject(RdfNodeService);
   public rdfListService = inject(RdfListService);
   public loadedFilesService = inject(LoadedFilesService);
+  public characteristicVisitor = inject(CharacteristicVisitor);
 
   private get store(): Store {
     return this.loadedFilesService.currentLoadedFile?.rdfModel?.store;
@@ -86,6 +88,13 @@ export class PropertyVisitor extends BaseVisitor<DefaultProperty> {
 
   private addCharacteristic(property: DefaultProperty) {
     if (!property.characteristic) {
+      return;
+    }
+
+    if (property.characteristic.isAnonymous?.()) {
+      const blankNode = DataFactory.blankNode();
+      this.store.addQuad(DataFactory.namedNode(property.aspectModelUrn), this.samm.CharacteristicProperty(), blankNode);
+      this.characteristicVisitor.visit(property.characteristic, blankNode);
       return;
     }
 

@@ -326,6 +326,7 @@ export class SammC {
       this.LengthConstraint().value,
       this.RegularExpressionConstraint().value,
       this.FixedPointConstraint().value,
+      this.TraitCharacteristic().value,
       this.StateCharacteristic().value,
       this.EitherCharacteristic().value,
       this.CodeCharacteristic().value,

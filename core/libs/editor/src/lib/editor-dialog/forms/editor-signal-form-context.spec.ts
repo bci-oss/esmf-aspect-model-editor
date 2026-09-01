@@ -24,18 +24,20 @@ describe('EditorSignalFormContext', () => {
     return TestBed.runInInjectionContext(() => new EditorSignalFormContext(initialValue));
   }
 
-  it('should keep a stable FieldTree while registering dynamic fields', () => {
+  it('should store and retrieve dynamic fields and values', () => {
     const context = createContext({changedMetaModel: null});
-    const fieldTree = context.fieldTree;
 
     context.set('name', 'Aspect');
 
-    expect(context.fieldTree).toBe(fieldTree);
-    expect(context.field<string>('name')().value()).toBe('Aspect');
+    expect(context.get('name')).toBe('Aspect');
+    expect(context.value().name).toBe('Aspect');
   });
 
-  it('should write FieldTree updates back to the model signal', () => {
-    const context = createContext({name: 'Aspect'});
+  it('should write registered FieldTree updates back to context value', () => {
+    const context = createContext({});
+    const nameModel = signal('Aspect');
+    const nameField = TestBed.runInInjectionContext(() => form(nameModel));
+    context.register('name', nameField);
 
     context.field<string>('name')().value.set('RenamedAspect');
 
@@ -55,8 +57,10 @@ describe('EditorSignalFormContext', () => {
   });
 
   it('should reset values plus dirty and touched state', () => {
-    const context = createContext({name: 'Aspect'});
-    const nameField = context.field<string>('name');
+    const context = createContext({});
+    const nameModel = signal('Aspect');
+    const nameField = TestBed.runInInjectionContext(() => form(nameModel));
+    context.register('name', nameField);
     nameField().value.set('Changed');
     nameField().markAsDirty();
     nameField().markAsTouched();

@@ -115,7 +115,7 @@ describe('UnitInputFieldComponent', () => {
     expect(component.displayField().disabled()).toBe(true);
 
     component.unlockUnit();
-    expect(component.unitField().touched()).toBe(true);
+    expect(component.displayField().touched()).toBe(true);
     expect(signalForm.value()).toMatchObject({unitDisplay: '', unit: null, changedUnit: null});
   });
 
@@ -129,7 +129,7 @@ describe('UnitInputFieldComponent', () => {
     expect(component.filteredPredefinedUnits().map(unit => unit.name)).toEqual(['metre']);
   });
 
-  it('should retain externally owned save values while disabling fields', () => {
+  it('should retain externally owned save values while disabling display field', () => {
     const unit = createUnit('externalUnit');
     quantifiable.unit = unit;
     vi.mocked(loadedFilesService.isElementExtern).mockReturnValue(true);
@@ -137,7 +137,6 @@ describe('UnitInputFieldComponent', () => {
     component.initUnitFormControl();
 
     expect(component.displayField().disabled()).toBe(true);
-    expect(component.unitField().disabled()).toBe(true);
     expect(signalForm.value().unit).toBe(unit);
   });
 

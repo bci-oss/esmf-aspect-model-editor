@@ -378,9 +378,11 @@ export class MaxGraphShapeOverlayService {
     element.setAttribute('parent', 'yes');
     element.setAttribute('name', node.element.name);
 
+    const cellId = node.element.isAnonymous?.() ? node.element.aspectModelUrn : node.element.name;
+
     const modelElementCell = graph.insertVertex(
       graph.getDefaultParent(),
-      node.element.name,
+      cellId,
       element,
       geometry.x,
       geometry.y,
@@ -389,7 +391,7 @@ export class MaxGraphShapeOverlayService {
       node.shape.maxgraphStyle,
     );
 
-    modelElementCell.setId(node.element.name);
+    modelElementCell.setId(cellId);
     modelElementCell['configuration'] = {
       baseProperties: MaxGraphVisitorHelper.getModelInfo(node.element, this.loadedFilesService.currentLoadedFile),
       fields: cellConfiguration,

@@ -61,7 +61,6 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
   private readonly locked = signal(false);
   private readonly blocked = signal(false);
   private unregisterDisplay = () => undefined;
-  private unregisterExtends = () => undefined;
 
   private readonly createDuplicateNameResource = (name: Signal<string>) =>
     rxResource({
@@ -84,7 +83,6 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
     });
     disabled(path, {when: () => this.locked() || this.blocked()});
   });
-  readonly extendsField = form(this.extendsModel, path => disabled(path, {when: this.blocked}));
   readonly displayValue = this.displayModel.asReadonly();
   readonly filteredEntities = computed<EntityExtendsOption[]>(() => this.filterEntities(false));
   readonly filteredAbstractEntities = computed<EntityExtendsOption[]>(() => {
@@ -134,7 +132,7 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
 
   ngOnDestroy() {
     this.unregisterDisplay();
-    this.unregisterExtends();
+    this.signalForm().remove('extends');
     super.ngOnDestroy();
   }
 
@@ -151,7 +149,7 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
     this.displayModel.set(value);
     this.extendsModel.set(extendsElement);
     this.unregisterDisplay = this.signalForm().register('extendsValue', this.displayField);
-    this.unregisterExtends = this.signalForm().register('extends', this.extendsField);
+    this.signalForm().set('extends', extendsElement);
   }
 
   onSelectionChange(newValue: {urn: string; name: string; entity?: Entity} | null) {
@@ -179,7 +177,7 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
 
     const urn = `${this.metaModelElement.aspectModelUrn.split('#')?.[0]}#${entityName}`;
 
-    if (this.metaModelElement.aspectModelUrn === urn || this.signalForm().value().name === entityName) {
+    if (this.metaModelElement.aspectModelUrn === urn || this.signalForm().get('name') === entityName) {
       this.notificationsService.error({title: 'Element left cannot link itself'});
       this.displayModel.set('');
       return;
@@ -201,7 +199,7 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
 
     const urn = `${this.metaModelElement.aspectModelUrn.split('#')?.[0]}#${entityName}`;
 
-    if (this.metaModelElement.aspectModelUrn === urn || this.signalForm().value().name === entityName) {
+    if (this.metaModelElement.aspectModelUrn === urn || this.signalForm().get('name') === entityName) {
       this.notificationsService.error({title: 'Element left cannot link itself'});
       this.displayModel.set('');
       return;
@@ -219,7 +217,8 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
     this.locked.set(false);
     this.displayModel.set('');
     this.extendsModel.set(null);
-    this.extendsField().markAsTouched();
+    this.signalForm().set('extends', null);
+    this.displayField().markAsTouched();
   }
 
   hasError(kind: string): boolean {
@@ -231,6 +230,7 @@ export class EntityExtendsFieldComponent extends InputFieldComponent<DefaultEnti
   private selectEntity(entity: Entity, name: string): void {
     this.displayModel.set(name);
     this.extendsModel.set(entity);
+    this.signalForm().set('extends', entity);
     this.locked.set(true);
   }
 

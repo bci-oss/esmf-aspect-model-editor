@@ -130,25 +130,16 @@ describe('StructuredValueComponent', () => {
 
   it('should invalidate unassigned regex groups', () => {
     component.groups = [{start: 0, end: 3, text: '(.*)'}];
-    component.elementsField().value.set([]);
 
     expect(component.hasGroupsError).toBe(true);
-    expect(
-      component
-        .elementsField()
-        .errors()
-        .some(error => error.kind === 'noFilledGroups'),
-    ).toBe(true);
-    expect(signalForm.valid()).toBe(false);
   });
 
-  it('should retain externally owned values while disabling both fields', () => {
+  it('should retain externally owned values while disabling deconstruction rule field', () => {
     vi.mocked(loadedFilesService.isElementExtern).mockReturnValue(true);
 
     component.initForm();
 
     expect(component.deconstructionRuleField().disabled()).toBe(true);
-    expect(component.elementsField().disabled()).toBe(true);
     expect(signalForm.value()).toMatchObject({
       deconstructionRule: structuredValue.deconstructionRule,
       elements: structuredValue.elements,

@@ -106,8 +106,6 @@ export class MaxGraphShapeSelectorService {
       }
 
       cell.edges?.forEach(edge => {
-        cellsToSelect.push(edge);
-
         if (!cellsToSelect.includes(edge.target)) {
           cellsToSelect.push(edge.target);
           stack.push(edge.target);

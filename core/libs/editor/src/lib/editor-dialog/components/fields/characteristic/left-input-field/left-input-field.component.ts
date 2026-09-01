@@ -63,7 +63,6 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
   private readonly locked = signal(false);
   private readonly blocked = signal(false);
   private unregisterDisplay = () => undefined;
-  private unregisterCharacteristic = () => undefined;
 
   private readonly createDuplicateNameResource = (name: Signal<string>) =>
     rxResource({
@@ -75,6 +74,7 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
     });
 
   readonly displayField = form(this.displayModel, path => {
+    required(path);
     validateAsync(path, {
       params: ({value}) => value(),
       factory: this.createDuplicateNameResource,
@@ -86,14 +86,10 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
     });
     disabled(path, {when: () => this.locked() || this.blocked()});
   });
-  readonly characteristicField = form(this.characteristicModel, path => {
-    required(path);
-    disabled(path, {when: this.blocked});
-  });
   readonly displayValue = this.displayModel.asReadonly();
   readonly filteredCharacteristicTypes = computed<LeftCharacteristicOption[]>(() => {
     const value = this.displayModel();
-    const rightUrn = (this.signalForm()?.value().rightCharacteristic as Characteristic)?.aspectModelUrn;
+    const rightUrn = (this.signalForm()?.get('rightCharacteristic') as Characteristic)?.aspectModelUrn;
     const local = CacheUtils.getCachedElements(this.currentCachedFile, DefaultCharacteristic)
       .filter(characteristic => characteristic.aspectModelUrn !== this.metaModelElement?.aspectModelUrn)
       .map(characteristic => ({
@@ -117,7 +113,7 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
 
   ngOnDestroy() {
     this.unregisterDisplay();
-    this.unregisterCharacteristic();
+    this.signalForm().remove('leftCharacteristic');
     super.ngOnDestroy();
   }
 
@@ -134,7 +130,7 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
     this.displayModel.set(value);
     this.characteristicModel.set(eitherLeft);
     this.unregisterDisplay = this.signalForm().register('left', this.displayField);
-    this.unregisterCharacteristic = this.signalForm().register('leftCharacteristic', this.characteristicField);
+    this.signalForm().set('leftCharacteristic', eitherLeft);
   }
 
   onSelectionChange(fieldPath: string, newValue: LeftCharacteristicOption | null) {
@@ -164,13 +160,13 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
 
     const urn = `${this.metaModelElement.aspectModelUrn.split('#')?.[0]}#${characteristicName}`;
 
-    if (this.metaModelElement.aspectModelUrn === urn || this.signalForm().value().name === characteristicName) {
+    if (this.metaModelElement.aspectModelUrn === urn || this.signalForm().get('name') === characteristicName) {
       this.notificationsService.error({title: 'Element left cannot link itself'});
       this.displayModel.set('');
       return;
     }
 
-    if (characteristicName === (this.signalForm().value().rightCharacteristic as Characteristic)?.name) {
+    if (characteristicName === (this.signalForm().get('rightCharacteristic') as Characteristic)?.name) {
       this.notificationsService.error({title: 'Element left cannot point to the same characteristic as the right element.'});
       this.displayModel.set('');
       return;
@@ -190,16 +186,20 @@ export class LeftInputFieldComponent extends InputFieldComponent<DefaultEither> 
     this.locked.set(false);
     this.displayModel.set('');
     this.characteristicModel.set(null);
-    this.characteristicField().markAsTouched();
+    this.signalForm().set('leftCharacteristic', null);
+    this.displayField().markAsTouched();
   }
 
   hasError(kind: string): boolean {
-    return [...this.displayField().errors(), ...this.characteristicField().errors()].some(error => error.kind === kind);
+    return this.displayField()
+      .errors()
+      .some(error => error.kind === kind);
   }
 
   private selectCharacteristic(characteristic: Characteristic, name: string): void {
     this.displayModel.set(name);
     this.characteristicModel.set(characteristic);
+    this.signalForm().set('leftCharacteristic', characteristic);
     this.locked.set(true);
   }
 }

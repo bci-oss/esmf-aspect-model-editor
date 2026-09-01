@@ -66,7 +66,6 @@ export class ExampleValueInputFieldComponent extends InputFieldComponent<Default
 
   public hasComplexDataType = signal(false);
   readonly displayField = form(this.displayModel, path => disabled(path, {when: () => this.locked() || this.blocked()}));
-  readonly exampleValueField = form(this.exampleValueModel, path => disabled(path, {when: this.blocked}));
   readonly displayValue = this.displayModel.asReadonly();
 
   public get isDataTypeBoolean(): boolean {
@@ -94,10 +93,12 @@ export class ExampleValueInputFieldComponent extends InputFieldComponent<Default
         this.metaModelElement.isPredefined ||
         this.isExtending(),
     );
-    this.exampleValueModel.set(value || new ScalarValue({value: '', type: this.dataType || null}));
+    const initialVal = value || new ScalarValue({value: '', type: this.dataType || null});
+    this.exampleValueModel.set(initialVal);
     this.displayModel.set(this.stringifyValue(value));
     this.locked.set(!!this.displayModel());
-    this.unregisterField = this.signalForm().register('exampleValue', this.exampleValueField);
+    this.unregisterField = this.signalForm().register('exampleValueDisplay', this.displayField);
+    this.signalForm().set('exampleValue', initialVal);
   }
 
   selectExampleValue(value: DefaultValue | ScalarValue | string, isLiteral = true) {
@@ -113,6 +114,7 @@ export class ExampleValueInputFieldComponent extends InputFieldComponent<Default
     }
 
     this.exampleValueModel.set(value);
+    this.signalForm().set('exampleValue', value);
     this.displayModel.set(this.stringifyValue(value));
     if (!this.isDataTypeBoolean) {
       this.locked.set(true);
@@ -122,13 +124,17 @@ export class ExampleValueInputFieldComponent extends InputFieldComponent<Default
   unlockExampleValue(autocomplete: MatAutocomplete) {
     this.locked.set(false);
     this.displayModel.set('');
-    this.exampleValueModel.set(new ScalarValue({value: '', type: this.dataType || null}));
+    const emptyVal = new ScalarValue({value: '', type: this.dataType || null});
+    this.exampleValueModel.set(emptyVal);
+    this.signalForm().set('exampleValue', emptyVal);
+    this.displayField().markAsTouched();
 
     autocomplete.options.forEach(option => option.deselect());
   }
 
   ngOnDestroy(): void {
     this.unregisterField();
+    this.signalForm().remove('exampleValue');
     super.ngOnDestroy();
   }
 

@@ -51,7 +51,6 @@ export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperat
   private readonly locked = signal(false);
   private readonly external = signal(false);
   private unregisterDisplay = () => undefined;
-  private unregisterOutput = () => undefined;
 
   private readonly createDuplicateNameResource = (name: Signal<string>) =>
     rxResource({
@@ -74,7 +73,6 @@ export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperat
     });
     disabled(path, {when: () => this.locked() || this.external()});
   });
-  readonly outputField = form(this.outputModel, path => disabled(path, {when: this.external}));
   readonly displayValue = this.displayModel.asReadonly();
   readonly filteredPropertyTypes = computed(() => {
     const value = this.displayModel();
@@ -97,7 +95,7 @@ export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperat
 
   ngOnDestroy() {
     this.unregisterDisplay();
-    this.unregisterOutput();
+    this.signalForm().remove('outputValue');
     super.ngOnDestroy();
   }
 
@@ -110,7 +108,7 @@ export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperat
     this.displayModel.set(value);
     this.outputModel.set(property || null);
     this.unregisterDisplay = this.signalForm().register('output', this.displayField);
-    this.unregisterOutput = this.signalForm().register('outputValue', this.outputField);
+    this.signalForm().set('outputValue', property || null);
     this.displayField().markAsTouched();
   }
 
@@ -133,6 +131,7 @@ export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperat
 
     this.displayModel.set(newValue.name);
     this.outputModel.set(property);
+    this.signalForm().set('outputValue', property);
     this.locked.set(true);
   }
 
@@ -149,6 +148,7 @@ export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperat
     });
     this.displayModel.set(propertyName);
     this.outputModel.set(newProperty);
+    this.signalForm().set('outputValue', newProperty);
     this.locked.set(true);
   }
 
@@ -156,7 +156,8 @@ export class OutputInputFieldComponent extends InputFieldComponent<DefaultOperat
     this.locked.set(false);
     this.displayModel.set('');
     this.outputModel.set(null);
-    this.outputField().markAsTouched();
+    this.signalForm().set('outputValue', null);
+    this.displayField().markAsTouched();
   }
 
   hasError(kind: string): boolean {

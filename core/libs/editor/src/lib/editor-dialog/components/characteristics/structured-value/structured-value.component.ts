@@ -21,7 +21,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatError, MatInput, MatLabel} from '@angular/material/input';
 import {MatOption, MatSelect} from '@angular/material/select';
 import {DefaultProperty, DefaultStructuredValue} from '@esmf/aspect-model-loader';
-import {debounceTime, take} from 'rxjs';
+import {debounceTime, Subscription, take} from 'rxjs';
 import {InputFieldComponent} from '../../fields';
 import {StructuredValueVanillaGroups} from './elements-input-field/model';
 import {StructuredValuePropertiesComponent} from './elements-input-field/structured-value-properties/structured-value-properties.component';
@@ -52,8 +52,8 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
   private readonly ruleLocked = signal(false);
   private readonly blocked = signal(false);
   private readonly ruleChanges = toObservable(this.deconstructionRuleModel);
+  private ruleSubscription: Subscription;
   private unregisterRule = () => undefined;
-  private unregisterElements = () => undefined;
 
   readonly deconstructionRuleField = form(this.deconstructionRuleModel, path => {
     required(path);
@@ -67,12 +67,6 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
     });
     disabled(path, {when: () => this.ruleLocked() || this.blocked()});
   });
-  readonly elementsField = form(this.elementsModel, path => {
-    validate(path, () =>
-      this.groups.some(group => !group.property) ? {kind: 'noFilledGroups', message: 'Please assign Properties to your elements'} : null,
-    );
-    disabled(path, {when: this.blocked});
-  });
 
   get hasGroupsError() {
     return this.groups.length > 0 && this.groups.some(group => !group.property);
@@ -80,6 +74,7 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
 
   constructor() {
     super();
+    this.resetFormOnDestroy = false;
     this.predefinedRules.set(
       Object.entries(this.predefinedRulesService.rules).map(([key, value]) => ({
         regex: key,
@@ -98,8 +93,9 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
   }
 
   ngOnDestroy() {
+    this.ruleSubscription?.unsubscribe();
     this.unregisterRule();
-    this.unregisterElements();
+    this.signalForm().remove('elements');
     super.ngOnDestroy();
   }
 
@@ -115,7 +111,7 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
     this.elementsModel.set([...this.elements]);
     this.deconstructionRuleField().markAsTouched();
     this.unregisterRule = this.signalForm().register('deconstructionRule', this.deconstructionRuleField);
-    this.unregisterElements = this.signalForm().register('elements', this.elementsField);
+    this.signalForm().set('elements', [...this.elements]);
 
     this.rebuildElements();
   }
@@ -131,6 +127,7 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
     this.deconstructionRuleModel.set(selectedRule.regex);
     this.ruleLocked.set(true);
     this.elementsModel.set([...predefinedRule.elements]);
+    this.signalForm().set('elements', [...predefinedRule.elements]);
   }
 
   openModal() {
@@ -160,14 +157,11 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
   }
 
   private subscribeToRuleChanging() {
-    this.ruleChanges
-      .pipe(debounceTime(500))
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((value: string) => {
-        this.selectedRule.set(this.predefinedRulesService.rules[value] ? value : customRule);
-        this.elements = this.elementsModel() || this.elements;
-        this.rebuildElements();
-      });
+    this.ruleSubscription = this.ruleChanges.pipe(debounceTime(500)).subscribe((value: string) => {
+      this.selectedRule.set(this.predefinedRulesService.rules[value] ? value : customRule);
+      this.elements = this.elementsModel() || this.elements;
+      this.rebuildElements();
+    });
   }
 
   private rebuildElements() {
@@ -192,9 +186,9 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
       }
     }
 
-    this.elementsModel.set(
-      allGroups.map(v => (v.isSplitter ? v.text : v.property)).filter(e => (typeof e === 'string' ? !!e.length : true)),
-    );
+    const filteredPure = allGroups.map(v => (v.isSplitter ? v.text : v.property)).filter(e => (typeof e === 'string' ? !!e.length : true));
+    this.elementsModel.set(filteredPure);
+    this.signalForm().set('elements', filteredPure);
   }
 
   private handlePredefinedRegex() {
@@ -210,6 +204,7 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
 
     this.elementsModel.set([...predefinedRule.elements]);
     this.elements = predefinedRule.elements;
+    this.signalForm().set('elements', [...predefinedRule.elements]);
 
     this.fillElementsWithBlanks();
     this.serializeGroups();
@@ -286,7 +281,7 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
   }
 
   private fillElementsWithBlanks() {
-    if (this.signalForm().value().expertMode) {
+    if (this.signalForm().get('expertMode')) {
       this.elements = [...(this.metaModelElement.elements || [])];
     } else {
       this.elements = this.elements || [];
@@ -319,16 +314,9 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
       .sort((a, b) => a.start - b.start)
       .map(v => (v.isSplitter ? v.text : v.property));
 
-    this.elementsModel.set([...this.elements.filter(e => (typeof e === 'string' ? !!e.length : true))]);
-
-    if (setPropertiesFromElements) {
-      const filtered = this.elements.filter(e => typeof e !== 'string');
-      for (const index in this.groups) {
-        if (this.groups[index] && filtered[index]) {
-          this.groups[index].property = filtered[index] as DefaultProperty;
-        }
-      }
-    }
+    const filteredElements = this.elements.filter(e => (typeof e === 'string' ? !!e.length : true));
+    this.elementsModel.set([...filteredElements]);
+    this.signalForm().set('elements', [...filteredElements]);
   }
 
   hasRuleError(kind: string): boolean {

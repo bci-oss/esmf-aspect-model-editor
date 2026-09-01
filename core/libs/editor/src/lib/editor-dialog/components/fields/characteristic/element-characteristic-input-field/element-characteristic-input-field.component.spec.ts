@@ -132,11 +132,10 @@ describe('ElementCharacteristicInputFieldComponent', () => {
     expect(signalForm.value().elementCharacteristic).toBeNull();
   });
 
-  it('should disable both fields while a data type entity is selected', () => {
+  it('should disable display editing while a data type entity is selected', () => {
     signalForm.set('dataTypeEntity', {name: 'Entity'});
 
     expect(component.displayField().disabled()).toBe(true);
-    expect(component.characteristicField().disabled()).toBe(true);
 
     signalForm.set('dataTypeEntity', null);
     expect(component.displayField().disabled()).toBe(false);
@@ -160,7 +159,7 @@ describe('ElementCharacteristicInputFieldComponent', () => {
     expect(signalForm.valid()).toBe(false);
   });
 
-  it('should unlock, clear, touch, and unregister both fields', () => {
+  it('should unlock, clear, touch, and unregister fields', () => {
     const characteristic = createCharacteristic('ExistingCharacteristic');
     component.onSelectionChange('elementCharacteristicDisplay', {
       name: characteristic.name,
@@ -169,7 +168,7 @@ describe('ElementCharacteristicInputFieldComponent', () => {
     });
     component.unlockElementCharacteristic();
 
-    expect(component.characteristicField().touched()).toBe(true);
+    expect(component.displayField().touched()).toBe(true);
     expect(signalForm.value()).toMatchObject({elementCharacteristicDisplay: '', elementCharacteristic: null});
 
     fixture.destroy();

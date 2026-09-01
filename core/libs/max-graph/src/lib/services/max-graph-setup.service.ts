@@ -84,9 +84,12 @@ export class MaxGraphSetupService {
     this.graph.setPanning(true);
     this.graph.setCellsEditable(false);
     this.graph.setCellsResizable(false);
+    this.graph.setCellsBendable(false);
     this.graph.setAllowDanglingEdges(false);
     this.graph.setCellsDisconnectable(false);
     this.graph.setHtmlLabels(true);
+    this.graph.isCellSelectable = (cell: Cell) => !cell.isEdge() && this.graph.isCellsSelectable();
+    this.graph.isCellDeletable = (cell: Cell) => !cell.isEdge() && this.graph.isCellsDeletable();
     this.graph.sizeDidChange = () => this.sizeDidChange();
     this.graph.view.getBackgroundPageBounds = () => this.getBackgroundPageBounds();
     this.graph.getPreferredPageSize = () => this.getPreferredPageSize();
@@ -383,12 +386,12 @@ export class MaxGraphSetupService {
       this.bindingsService.fireAction('format');
     });
 
-    if (cell) {
+    if (cell && !cell.isEdge()) {
       menu.addSeparator();
       menu.addItem(this.translate.language.editorCanvas.graphSetup.delete, this.resolveAssetsIcon(AssetsPath.DeleteIcon), () => {
         this.bindingsService.fireAction('deleteElement');
       });
-    } else {
+    } else if (!cell) {
       menu.addItem(this.translate.language.editorCanvas.graphSetup.copyToClipboard, this.resolveAssetsIcon(AssetsPath.Copy), () => {
         this.bindingsService.fireAction('copy-to-clipboard');
       });

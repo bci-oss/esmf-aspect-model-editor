@@ -32,6 +32,9 @@ export abstract class NamedElement extends ModelElement {
 
   set name(value: string) {
     this._name = value;
+    if (this.anonymous || !this.aspectModelUrn) {
+      return;
+    }
     const [namespace] = this.aspectModelUrn.split('#');
     const newAspectModelUrn = `${namespace}#${value}`;
     if (this.aspectModelUrn && newAspectModelUrn !== this.aspectModelUrn) {
@@ -56,13 +59,13 @@ export abstract class NamedElement extends ModelElement {
   constructor(props: NamedElementProps) {
     super(props);
     this.aspectModelUrn = props.aspectModelUrn;
+    this.anonymous = Boolean(props.isAnonymous);
+    this.isPredefined = Boolean(props.isPredefined);
     this.name = props.name;
     this.syntheticName = Boolean(props.hasSyntheticName);
     this.see = props.see || [];
     this.descriptions = props.descriptions || new Map();
     this.preferredNames = props.preferredNames || new Map();
-    this.anonymous = Boolean(props.isAnonymous);
-    this.isPredefined = Boolean(props.isPredefined);
 
     this.previousAspectModelUrn = undefined;
   }

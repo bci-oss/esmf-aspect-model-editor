@@ -245,5 +245,25 @@ describe('MaxGraphHelper', () => {
       expect(label).toBeDefined();
       expect(label?.classList.contains('cell-label')).toBe(true);
     });
+
+    it('should render anonymous node label with brackets and anonymous-node class', () => {
+      const anonChar = new DefaultCharacteristic({
+        name: '[Characteristic]',
+        aspectModelUrn: 'urn:test#[Characteristic]_123',
+        metaModelVersion: '2.1.0',
+        isAnonymous: true,
+      });
+      const cell = new Cell();
+      cell.geometry = {width: 100, height: 50} as any;
+      MaxGraphHelper.setElementNode(cell, {element: anonChar, filterType: 'default'} as any);
+      cell['configuration'] = {fields: []};
+
+      const label = MaxGraphHelper.createPropertiesLabel(cell);
+      expect(label).toBeDefined();
+      const titleSpan = label.querySelector('.element-name');
+      expect(titleSpan).toBeDefined();
+      expect(titleSpan.textContent).toBe('[Characteristic]');
+      expect(titleSpan.classList.contains('anonymous-node')).toBe(true);
+    });
   });
 });

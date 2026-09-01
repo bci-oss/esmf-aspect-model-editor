@@ -24,7 +24,7 @@ import {
   NamedElement,
 } from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
-import {tap} from 'rxjs/operators';
+import {filter, tap} from 'rxjs/operators';
 import {EditorModelService} from '../../editor-model.service';
 import {EditorSignalFormContext} from '../../forms/editor-signal-form-context';
 import {PreviousFormDataSnapshot} from '../../interfaces';
@@ -119,6 +119,7 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
 
   getMetaModelData() {
     return this.metaModelDialogService.getMetaModelElement().pipe(
+      filter((metaModelElement): metaModelElement is T => Boolean(metaModelElement)),
       tap(metaModelElement => {
         this.metaModelElement = <T>metaModelElement;
       }),

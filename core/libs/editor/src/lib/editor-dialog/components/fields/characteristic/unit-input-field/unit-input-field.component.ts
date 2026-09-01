@@ -61,8 +61,6 @@ export class UnitInputFieldComponent
   private readonly locked = signal(false);
   private readonly blocked = signal(false);
   private unregisterDisplay = () => undefined;
-  private unregisterUnit = () => undefined;
-  private unregisterChangedUnit = () => undefined;
 
   private readonly createDuplicateNameResource = (name: Signal<string>) =>
     rxResource({
@@ -86,11 +84,6 @@ export class UnitInputFieldComponent
     });
     disabled(path, {when: () => this.locked() || this.blocked()});
   });
-  readonly unitField = form(this.unitModel, path => {
-    required(path, {when: () => this.unitRequired()});
-    disabled(path, {when: this.blocked});
-  });
-  readonly changedUnitField = form(this.changedUnitModel, path => disabled(path, {when: this.blocked}));
   readonly displayValue = this.displayModel.asReadonly();
   readonly filteredUnits = computed(() => {
     const value = this.displayModel();
@@ -122,8 +115,8 @@ export class UnitInputFieldComponent
 
   ngOnDestroy() {
     this.unregisterDisplay();
-    this.unregisterUnit();
-    this.unregisterChangedUnit();
+    this.signalForm().remove('unit');
+    this.signalForm().remove('changedUnit');
     super.ngOnDestroy();
   }
 
@@ -150,10 +143,11 @@ export class UnitInputFieldComponent
     this.locked.set(!!unit);
     this.displayModel.set(unitName || '');
     this.unitModel.set(unit || null);
-    this.changedUnitModel.set((unitName && this.getPredefinedUnit(unitName)) || unit || null);
+    const changedUnit = (unitName && this.getPredefinedUnit(unitName)) || unit || null;
+    this.changedUnitModel.set(changedUnit);
     this.unregisterDisplay = this.signalForm().register('unitDisplay', this.displayField);
-    this.unregisterUnit = this.signalForm().register(this.fieldName, this.unitField);
-    this.unregisterChangedUnit = this.signalForm().register('changedUnit', this.changedUnitField);
+    this.signalForm().set(this.fieldName, unit || null);
+    this.signalForm().set('changedUnit', changedUnit);
   }
 
   createNewUnit(unitName: string) {
@@ -173,7 +167,9 @@ export class UnitInputFieldComponent
     this.displayModel.set('');
     this.unitModel.set(null);
     this.changedUnitModel.set(null);
-    this.unitField().markAsTouched();
+    this.signalForm().set('unit', null);
+    this.signalForm().set('changedUnit', null);
+    this.displayField().markAsTouched();
   }
 
   getPredefinedUnit(unitName: string) {
@@ -186,12 +182,17 @@ export class UnitInputFieldComponent
   }
 
   hasError(kind: string): boolean {
-    return [...this.displayField().errors(), ...this.unitField().errors()].some(error => error.kind === kind);
+    return this.displayField()
+      .errors()
+      .some(error => error.kind === kind);
   }
 
   private selectUnit(unit: Unit): void {
     this.displayModel.set(unit.name);
     this.unitModel.set(unit);
+    this.changedUnitModel.set(unit);
+    this.signalForm().set('unit', unit);
+    this.signalForm().set('changedUnit', unit);
     this.locked.set(true);
   }
 }

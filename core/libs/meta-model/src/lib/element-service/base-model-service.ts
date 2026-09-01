@@ -45,11 +45,32 @@ export abstract class BaseModelService {
 
     // update name
     const aspectModelUrn = this.loadedFile.rdfModel.getAspectModelUrn();
+    const oldUrn = modelElement.aspectModelUrn || `${aspectModelUrn}${modelElement.name}`;
 
-    this.currentCachedFile.updateElementKey(`${aspectModelUrn}${modelElement.name}`, `${aspectModelUrn}${form.name}`);
+    if (form.isAnonymous !== undefined) {
+      modelElement.anonymous = Boolean(form.isAnonymous);
+    }
 
-    modelElement.name = form.name;
-    modelElement.aspectModelUrn = `${aspectModelUrn}${form.name}`;
+    if (modelElement.isAnonymous?.()) {
+      const typeName = modelElement.className ? modelElement.className.replace('Default', '') : 'Characteristic';
+      const anonName = `[${typeName}]`;
+      modelElement.name = anonName;
+      if (!modelElement.aspectModelUrn || !modelElement.aspectModelUrn.includes('[')) {
+        const newUrn = `${aspectModelUrn}${anonName}_${Math.floor(Math.random() * 9000) + 1000}`;
+        this.currentCachedFile.updateElementKey(oldUrn, newUrn);
+        modelElement.aspectModelUrn = newUrn;
+      }
+    } else {
+      const newName = form.name?.startsWith('[')
+        ? modelElement.className
+          ? modelElement.className.replace('Default', '')
+          : 'Characteristic'
+        : form.name;
+      const newUrn = `${aspectModelUrn}${newName}`;
+      this.currentCachedFile.updateElementKey(oldUrn, newUrn);
+      modelElement.name = newName;
+      modelElement.aspectModelUrn = newUrn;
+    }
 
     if (modelElement instanceof DefaultAspect) {
       this.loadedFilesService.currentLoadedFile.aspect = modelElement;

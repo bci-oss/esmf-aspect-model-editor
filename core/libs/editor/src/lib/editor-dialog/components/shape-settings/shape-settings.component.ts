@@ -109,7 +109,6 @@ export class ShapeSettingsComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(metaModelElement => {
         this.metaModelElement.set(metaModelElement);
-        this.changeDetector.detectChanges();
       });
   }
 

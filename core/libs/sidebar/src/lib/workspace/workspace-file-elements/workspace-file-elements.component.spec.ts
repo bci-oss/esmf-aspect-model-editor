@@ -18,7 +18,7 @@ import {MaxGraphService} from '@ame/max-graph';
 import {provideZonelessChangeDetection} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {DefaultProperty} from '@esmf/aspect-model-loader';
+import {DefaultCharacteristic, DefaultProperty} from '@esmf/aspect-model-loader';
 import {TranslocoTestingModule} from '@jsverse/transloco';
 import {of} from 'rxjs';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
@@ -184,5 +184,44 @@ describe('WorkspaceFileElementsComponent', () => {
     component.search({target: {value: 'nonexistent'}} as any);
     vi.advanceTimersByTime(150);
     expect(component.searched()['property']).toHaveLength(0);
+  });
+
+  it('should not include anonymous elements in the sidebar list', () => {
+    fixture = TestBed.createComponent(WorkspaceFileElementsComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const mockNamedProperty = new DefaultProperty({
+      name: 'namedProp',
+      aspectModelUrn: 'urn:samm:org.eclipse.esmf:1.0.0#namedProp',
+      metaModelVersion: '2.1.0',
+    });
+    const mockAnonCharacteristic = new DefaultCharacteristic({
+      name: '[Characteristic]',
+      aspectModelUrn: 'urn:samm:org.eclipse.esmf:1.0.0#anonChar',
+      metaModelVersion: '2.1.0',
+      isAnonymous: true,
+    });
+
+    const mockFileWithAnon = {
+      cachedFile: {
+        getAllElements: () => [mockNamedProperty, mockAnonCharacteristic],
+      },
+    };
+
+    loadedFilesMock.getFile.mockImplementation((key: string) => {
+      if (key === 'org.eclipse.esmf:1.0.0:WithAnon.ttl') {
+        return mockFileWithAnon;
+      }
+      return null;
+    });
+
+    const file = new FileStatus('WithAnon.ttl');
+    file.aspectModelUrn = 'urn:samm:org.eclipse.esmf:1.0.0#WithAnon';
+    sidebarService.selection.select('org.eclipse.esmf:1.0.0', file);
+    TestBed.flushEffects();
+
+    expect(component.elements()['property']?.elements?.length).toBe(1);
+    expect(component.elements()['characteristic']?.elements?.length).toBe(0);
   });
 });

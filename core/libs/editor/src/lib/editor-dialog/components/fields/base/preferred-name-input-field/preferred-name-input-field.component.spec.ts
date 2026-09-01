@@ -99,4 +99,10 @@ describe('PreferredNameInputFieldComponent', () => {
     expect(signalForm.value()).not.toHaveProperty('preferredNameen');
     expect(signalForm.value()).not.toHaveProperty('preferredNamede');
   });
+
+  it('should safely return empty locales when metaModelElement is null', () => {
+    component.metaModelElement = null;
+    expect(component.getPreferredNamesLocales()).toEqual([]);
+    expect(component.getDescriptionsLocales()).toEqual([]);
+  });
 });

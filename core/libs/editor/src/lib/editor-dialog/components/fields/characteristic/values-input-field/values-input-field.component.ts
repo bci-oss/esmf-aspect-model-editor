@@ -65,23 +65,22 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
   private readonly blocked = signal(false);
   private unregisterSearch = () => undefined;
   private unregisterChipList = () => undefined;
-  private unregisterEnumValues = () => undefined;
   private dataTypeInitialized = false;
   private previousDataType: unknown;
 
   readonly separatorKeysCodes: number[] = [ENTER];
 
   public removable = signal(true);
-  public hasComplexValues = computed(() => this.signalForm()?.value().dataTypeEntity instanceof DefaultEntity);
+  public hasComplexValues = computed(() => this.signalForm()?.get('dataTypeEntity') instanceof DefaultEntity);
   public initialValues = signal<Record<string, boolean>>({});
 
   public enumValues = signal<Array<Value | DefaultValue | DefaultEntityInstance>>([]);
+  private readonly chipListModel = signal<string[]>([]);
   readonly searchField = form(this.searchModel, path => disabled(path, {when: this.blocked}));
-  readonly chipListField = form(this.enumValues, path => {
-    validate(path, ({value}) => (value().length ? null : {kind: 'required', message: 'Please provide at least one enumeration value'}));
+  readonly chipListField = form(this.chipListModel, path => {
+    validate(path, () => (this.enumValues().length ? null : {kind: 'required', message: 'Please provide at least one enumeration value'}));
     disabled(path, {when: this.blocked});
   });
-  readonly enumValuesField = form(this.enumValues, path => disabled(path, {when: this.blocked}));
   public enumEntityValues = computed(() => this.enumValues().filter(v => v instanceof DefaultEntityInstance));
   public valuesElements = computed(() => this.enumValues().filter(v => v instanceof DefaultValue));
 
@@ -105,15 +104,21 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
 
   constructor() {
     super();
+    this.resetFormOnDestroy = false;
 
     effect(() => {
-      const formValue = this.signalForm()?.value();
-      if (!this.metaModelElement || !formValue) return;
+      const values = this.enumValues();
+      this.chipListModel.set(values.map(v => (v instanceof DefaultValue ? v.name : (v as any)?.value || (v as any)?.name || '')));
+    });
 
-      if (this.dataTypeInitialized && formValue.dataType !== this.previousDataType) {
-        this.changeValuesByDataType(String(formValue.dataType || ''));
+    effect(() => {
+      const dataType = this.signalForm()?.get('dataType');
+      if (!this.metaModelElement || dataType === undefined) return;
+
+      if (this.dataTypeInitialized && dataType !== this.previousDataType) {
+        this.changeValuesByDataType(String(dataType || ''));
       }
-      this.previousDataType = formValue.dataType;
+      this.previousDataType = dataType;
       this.dataTypeInitialized = true;
     });
   }
@@ -132,17 +137,19 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
   ngOnDestroy() {
     this.unregisterSearch();
     this.unregisterChipList();
-    this.unregisterEnumValues();
+    this.signalForm().remove('chipList');
+    this.signalForm().remove('enumValues');
     super.ngOnDestroy();
     this.enumValues.set([]);
   }
 
   getCurrentValue() {
-    return this.previousData()?.['chipList'] || this.metaModelElement.values || [];
+    return this.previousData()?.[this.fieldName] || this.metaModelElement.values || [];
   }
 
   onEnumChange() {
     this.enumValues.set([...this.enumValues()]);
+    this.syncFormValues();
   }
 
   addValue(value: ScalarValue | DefaultValue | string, isLiteral = true) {
@@ -161,6 +168,7 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
     }
 
     this.enumValues.update(values => [...values, value]);
+    this.syncFormValues();
     this.autoComplete()?.options.forEach(option => option.deselect());
   }
 
@@ -170,6 +178,7 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
     } else {
       value.value = event.value;
     }
+    this.syncFormValues();
   }
 
   paste(event: ClipboardEvent): void {
@@ -185,6 +194,7 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
           ]);
         }
       });
+    this.syncFormValues();
   }
 
   remove(value: Value | DefaultValue) {
@@ -192,11 +202,13 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
 
     if (index >= 0) {
       this.enumValues.update(values => values.filter((_, i) => i !== index));
+      this.syncFormValues();
     }
   }
 
   enumValueChange(enumValues: DefaultEntityInstance[]) {
     this.enumValues.set(enumValues);
+    this.syncFormValues();
   }
 
   initForm() {
@@ -204,11 +216,12 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
     this.blocked.set(this.loadedFiles.isElementExtern(this.metaModelElement));
     this.searchModel.set('');
     this.unregisterSearch = this.signalForm().register('values', this.searchField);
-    this.unregisterChipList = this.signalForm().register('chipList', this.chipListField);
-    this.unregisterEnumValues = this.signalForm().register('enumValues', this.enumValuesField);
+    this.unregisterChipList = this.signalForm().register('chipListValidation', this.chipListField);
 
-    if (this.signalForm().value().dataTypeEntity instanceof DefaultEntity) {
+    if (this.signalForm()?.get('dataTypeEntity') instanceof DefaultEntity) {
       this.enumValueChange((this.metaModelElement.values as DefaultEntityInstance[]) || []);
+    } else {
+      this.syncFormValues();
     }
 
     for (const value of this.enumValues()) {
@@ -219,6 +232,13 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
         [value.aspectModelUrn]: true,
       });
     }
+  }
+
+  private syncFormValues() {
+    const values = this.enumValues();
+    this.chipListModel.set(values.map(v => (v instanceof DefaultValue ? v.name : (v as any)?.value || (v as any)?.name || '')));
+    this.signalForm().set('chipList', values);
+    this.signalForm().set('enumValues', values);
   }
 
   private changeValuesByDataType(dataType: string) {

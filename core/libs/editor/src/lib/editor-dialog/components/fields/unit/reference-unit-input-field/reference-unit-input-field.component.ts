@@ -53,12 +53,6 @@ export class ReferenceUnitInputFieldComponent extends InputFieldComponent<Defaul
       when: () => this.locked() || (!!this.metaModelElement && this.loadedFiles.isElementExtern(this.metaModelElement)),
     }),
   );
-  readonly referenceUnitField = form(this.referenceUnitModel, path =>
-    disabled(path, {
-      when: () =>
-        !!this.metaModelElement && (this.metaModelDialogService.isReadOnly() || this.loadedFiles.isElementExtern(this.metaModelElement)),
-    }),
-  );
   readonly filteredPredefinedUnits = computed(() => {
     const value = this.displayModel();
     return value ? this.searchService.search<Unit>(value, this.units, unitSearchOption) : this.units;
@@ -79,6 +73,7 @@ export class ReferenceUnitInputFieldComponent extends InputFieldComponent<Defaul
 
   ngOnDestroy() {
     this.unregisterField();
+    this.signalForm().remove('referenceUnit');
     super.ngOnDestroy();
   }
 
@@ -88,14 +83,16 @@ export class ReferenceUnitInputFieldComponent extends InputFieldComponent<Defaul
     this.displayModel.set(referenceUnit?.name || '');
     this.referenceUnitModel.set(referenceUnit || null);
     this.locked.set(!!referenceUnit);
-    this.unregisterField = this.signalForm().register('referenceUnit', this.referenceUnitField);
+    this.unregisterField = this.signalForm().register('referenceUnitDisplay', this.displayField);
+    this.signalForm().set('referenceUnit', referenceUnit || null);
   }
 
   unlockUnit() {
     this.locked.set(false);
     this.displayModel.set('');
     this.referenceUnitModel.set(null);
-    this.referenceUnitField().markAsTouched();
+    this.signalForm().set('referenceUnit', null);
+    this.displayField().markAsTouched();
   }
 
   onPredefinedUnitChange(predefinedUnit: Unit, event: MatOptionSelectionChange) {

@@ -635,8 +635,8 @@ describe('Test enumeration entity instance', () => {
       .then(() => cy.get(FIELD_characteristicName).click({force: true}).get('mat-option').contains('Enumeration').click({force: true}))
       .then(() => cy.get(SELECTOR_addEntityValue).click({force: true}))
       .then(() => cy.get(FIELD_entityValueName).should('exist').type('ev1', {force: true}))
-      .then(() => cy.get('[data-cy="property2Value"]').should('exist').type('TestPropertyValue1', {force: true}))
-      .then(() => cy.get('[data-cy="property3Value"]').should('exist').type('TestPropertyValue2', {force: true}))
+      .then(() => cy.get(FIELD_propertyValueNotComplex).eq(0).should('exist').type('TestPropertyValue1', {force: true}))
+      .then(() => cy.get(FIELD_propertyValueNotComplex).eq(1).should('exist').type('TestPropertyValue2', {force: true}))
       .then(() =>
         cy
           .get(FIELD_propertyLanguageValue)
@@ -662,8 +662,8 @@ describe('Test enumeration entity instance', () => {
       .then(() => cy.get(SELECTOR_entitySaveButton).click({force: true}).wait(200))
       .then(() => cy.get(SELECTOR_addEntityValue).click({force: true}).wait(200))
       .then(() => cy.get(FIELD_entityValueName).should('exist').type('ev2', {force: true}))
-      .then(() => cy.get('[data-cy="property2Value"]').should('exist').type('TestPropertyValue3', {force: true}))
-      .then(() => cy.get('[data-cy="property3Value"]').should('exist').type('TestPropertyValue4', {force: true}))
+      .then(() => cy.get(FIELD_propertyValueNotComplex).eq(0).should('exist').type('TestPropertyValue3', {force: true}))
+      .then(() => cy.get(FIELD_propertyValueNotComplex).eq(1).should('exist').type('TestPropertyValue4', {force: true}))
       .then(() =>
         cy
           .get(FIELD_propertyLanguageValue)

@@ -12,14 +12,17 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
-import {RenameModelDialogService} from '@ame/editor';
-import {MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
+import {ConfirmDialogEnum, ConfirmDialogService, RenameModelDialogService} from '@ame/editor';
+import {MaxGraphHelper, MaxGraphService, ModelStyleResolver, ThemeService} from '@ame/max-graph';
 import {ModelService} from '@ame/rdf/services';
+import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {NotificationsService, TitleService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
+import {useUpdater} from '@ame/utils';
 import {inject, Injectable, Injector} from '@angular/core';
 import {DefaultAspect, DefaultEnumeration, NamedElement} from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
+import {ModelElementNamingService} from '../services/model-element-naming.service';
 import {CharacteristicModelService} from './characteristic-model.service';
 import {ModelRootService} from './model-root.service';
 
@@ -31,6 +34,10 @@ export class ElementModelService {
   private readonly modelRootService = inject(ModelRootService);
   private readonly modelService = inject(ModelService);
   private readonly renameModelService = inject(RenameModelDialogService);
+  private readonly confirmDialogService = inject(ConfirmDialogService, {optional: true});
+  private readonly modelElementNamingService = inject(ModelElementNamingService);
+  private readonly sammLangService = inject(SammLanguageSettingsService, {optional: true});
+  private readonly themeService = inject(ThemeService, {optional: true});
   private readonly notificationService = inject(NotificationsService);
   private readonly translate = inject(LanguageTranslationService);
   private readonly loadedFilesService = inject(LoadedFilesService);
@@ -86,7 +93,95 @@ export class ElementModelService {
       }
     }
 
+    const anonymousChildren = this.collectAnonymousChildren(elementModel);
+    if (anonymousChildren.length > 0 && this.confirmDialogService) {
+      const dialogTexts = this.translate.language?.confirmDialog?.deleteAnonymousElement;
+      const title = dialogTexts?.title || 'Delete Element with Anonymous Children';
+      const phrase1 =
+        this.translate.translateService?.translate?.('confirmDialog.deleteAnonymousElement.phrase1', {
+          elementName: elementModel.name,
+          count: anonymousChildren.length,
+        }) ||
+        `The element "${elementModel.name}" contains ${anonymousChildren.length} anonymous (inline) element(s). Deleting this element will also delete these anonymous elements.`;
+      const phrase2 = dialogTexts?.phrase2 || 'Do you want to delete them, convert them to named elements first, or cancel?';
+      const okButtonText = dialogTexts?.deleteWithAnonymousBtn || 'Delete All';
+      const actionButtonText = dialogTexts?.convertToNamedBtn || 'Convert to Named Elements';
+      const closeButtonText = dialogTexts?.cancelBtn || 'Cancel';
+
+      this.confirmDialogService
+        .open({
+          title,
+          phrases: [phrase1, phrase2],
+          okButtonText,
+          actionButtonText,
+          closeButtonText,
+        })
+        .subscribe(result => {
+          if (result === ConfirmDialogEnum.ok) {
+            for (const anon of anonymousChildren) {
+              const anonCell = this.maxgraphService.resolveCellByModelElement(anon);
+              if (anonCell) {
+                this.removeElementData(anonCell);
+              } else {
+                this.currentCachedFile.removeElement(anon.aspectModelUrn);
+              }
+            }
+            this.removeElementData(cell);
+          } else if (result === ConfirmDialogEnum.action) {
+            for (const anon of anonymousChildren) {
+              this.convertAnonymousToNamed(anon);
+            }
+            this.removeElementData(cell);
+          }
+        });
+      return;
+    }
+
     this.removeElementData(cell);
+  }
+
+  private collectAnonymousChildren(element: NamedElement, visited = new Set<NamedElement>()): NamedElement[] {
+    if (!element || visited.has(element)) {
+      return [];
+    }
+    visited.add(element);
+
+    const result: NamedElement[] = [];
+    for (const child of element.children || []) {
+      if (child instanceof NamedElement) {
+        if (child.isAnonymous?.()) {
+          result.push(child);
+          result.push(...this.collectAnonymousChildren(child, visited));
+        }
+      }
+    }
+    return Array.from(new Set(result));
+  }
+
+  private convertAnonymousToNamed(element: NamedElement): void {
+    const rawName = element.className ? element.className.replace('Default', '') : 'Characteristic';
+    element.name = rawName;
+    element.anonymous = false;
+    element.syntheticName = false;
+
+    const oldUrn = element.aspectModelUrn;
+    this.modelElementNamingService.resolveElementNaming(element);
+    const newUrn = element.aspectModelUrn;
+    this.currentCachedFile.updateElementKey(oldUrn, newUrn);
+
+    const cell = this.maxgraphService.resolveCellByModelElement(element);
+    if (cell) {
+      cell.setId(element.name);
+      cell.setAttribute('name', element.name);
+      if (this.themeService) {
+        const style = this.themeService.generateThemeStyle(ModelStyleResolver.resolve(element));
+        this.maxgraphService.graph.setCellStyle(style, [cell]);
+      }
+      if (this.sammLangService) {
+        MaxGraphHelper.updateLabel(cell, this.maxgraphService.graph, this.sammLangService);
+      }
+      this.maxgraphService.formatCell(cell);
+    }
   }
 
   private handleAspectRemoval(cell: Cell): boolean {
@@ -113,7 +208,20 @@ export class ElementModelService {
 
   private removeElementData(cell: Cell): void {
     const modelElement = MaxGraphHelper.getModelElement(cell);
+    if (!modelElement) {
+      this.maxgraphService.removeCells([cell]);
+      this.maxgraphService.formatShapes(true);
+      return;
+    }
+
     const elementModelService = this.modelRootService.getElementModelService(modelElement);
+    const parentCells = (this.maxgraphService.resolveParents(cell) || []).filter(p => p && !p.isEdge());
+
+    for (const parent of modelElement.parents || []) {
+      if (parent instanceof NamedElement && !(parent instanceof DefaultEnumeration)) {
+        useUpdater(parent).delete(modelElement);
+      }
+    }
 
     for (const parent of modelElement.parents) {
       if (!(parent instanceof NamedElement)) continue;
@@ -126,6 +234,18 @@ export class ElementModelService {
     }
 
     elementModelService?.delete(cell);
-    this.currentCachedFile.removeElement(MaxGraphHelper.getModelElement(cell).aspectModelUrn);
+    this.currentCachedFile.removeElement(modelElement.aspectModelUrn);
+
+    for (const parentCell of parentCells) {
+      const parentModel = MaxGraphHelper.getModelElement(parentCell);
+      if (parentModel) {
+        if (this.sammLangService) {
+          MaxGraphHelper.updateLabel(parentCell, this.maxgraphService.graph, this.sammLangService);
+        }
+        this.maxgraphService.formatCell(parentCell);
+      }
+    }
+
+    this.maxgraphService.formatShapes(true);
   }
 }

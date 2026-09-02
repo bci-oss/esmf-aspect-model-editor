@@ -67,16 +67,18 @@ export class MaxGraphShapeOverlayService {
    * @param cell maxgraph element
    */
   addTopShapeOverlay(cell: Cell): void {
+    if (!cell || !cell.geometry) return;
     const modelElement = MaxGraphHelper.getModelElement(cell);
+    if (!modelElement) return;
 
     if (!this.filtersService.currentFilter.hasOverlay(modelElement)) return;
     if (modelElement instanceof DefaultEither) return;
-    if (!cell.style?.baseStyleNames.includes('characteristic')) return;
+    if (!cell.style?.baseStyleNames?.includes('characteristic')) return;
 
     const overlay = this.createIconShapeOverlay('add-outline-frame', 'Add Trait');
     overlay.align = 'center';
     overlay.verticalAlign = 'top';
-    overlay.offset.x += cell.geometry.width / 8;
+    overlay.offset.x += (cell.geometry.width || 0) / 8;
     this.addShapeOverlayListener(overlay, cell, ModelInfo.IS_CHARACTERISTIC);
   }
 
@@ -162,7 +164,9 @@ export class MaxGraphShapeOverlayService {
    * @param cell maxgraph element
    */
   addBottomShapeOverlay(cell: Cell): void {
+    if (!cell || !cell.geometry) return;
     const modelElement = MaxGraphHelper.getModelElement(cell);
+    if (!modelElement) return;
 
     if (!this.filtersService.currentFilter.hasOverlay(modelElement)) return;
     if (modelElement?.isPredefined) return;
@@ -238,8 +242,13 @@ export class MaxGraphShapeOverlayService {
   }
 
   private addShapeOverlayListener(overlay: CellOverlay, cell: Cell, modelInfo: ModelInfo): void {
+    if (!cell || !overlay) return;
     overlay.addListener(InternalEvent.CLICK, (event: MouseEvent) => this.addShapeAction(cell, event, modelInfo));
-    this.maxgraphAttributeService.graph.addCellOverlay(cell, overlay);
+    try {
+      this.maxgraphAttributeService.graph.addCellOverlay(cell, overlay);
+    } catch {
+      // Cell may not have view state or is being removed
+    }
   }
 
   /**
@@ -331,10 +340,11 @@ export class MaxGraphShapeOverlayService {
    * Checks if we delete a trait and adds back the shape overlay for source characteristic
    */
   checkAndAddTopShapeActionIcon(outgoingEdges: Array<Cell>, modelElement: NamedElement): void {
-    if (!outgoingEdges.length) return;
+    if (!outgoingEdges?.length) return;
     if (!(modelElement instanceof DefaultTrait)) return;
+    if (!outgoingEdges[0]?.target) return;
 
-    const incomingEdges = this.maxgraphAttributeService.graph.getIncomingEdges(outgoingEdges[0].target, null);
+    const incomingEdges = this.maxgraphAttributeService.graph.getIncomingEdges(outgoingEdges[0].target, null) || [];
     const incomingCharacteristics = incomingEdges.filter(edge => {
       const modelElement = MaxGraphHelper.getModelElement(edge.source);
       return modelElement instanceof DefaultCharacteristic && !(modelElement instanceof DefaultEither);
@@ -346,27 +356,31 @@ export class MaxGraphShapeOverlayService {
   }
 
   checkAndAddShapeActionIcon(incomingEdges: Array<Cell>, modelElement: NamedElement): void {
-    if (!incomingEdges.length) return;
+    if (!incomingEdges?.length) return;
     if (!this.filtersService.currentFilter.hasOverlay(modelElement)) return;
 
     if (modelElement instanceof DefaultCharacteristic) {
-      return incomingEdges.forEach(edge => {
+      incomingEdges.forEach(edge => {
+        if (!edge?.source) return;
         const metaModelElement = MaxGraphHelper.getModelElement(edge.source);
         if (metaModelElement instanceof DefaultCollection) return;
         if (metaModelElement instanceof DefaultEither) return;
 
-        if (!!edge.target) {
-          this.addTopShapeOverlay(edge.target);
-        }
-
         this.addBottomShapeOverlay(edge.source);
       });
+      return;
     }
 
-    const isCharacteristicWithoutDataType = incomingEdges.some(edge => MaxGraphHelper.isCharacteristicWithoutDataType(edge.source));
+    const isCharacteristicWithoutDataType = incomingEdges.some(
+      edge => edge?.source && MaxGraphHelper.isCharacteristicWithoutDataType(edge.source),
+    );
     // This will add back the + overlay for characteristic if we remove the entity and for property if we remove the characteristic
     if (modelElement instanceof DefaultProperty || isCharacteristicWithoutDataType) {
-      incomingEdges.forEach(edge => this.addBottomShapeOverlay(edge.source));
+      incomingEdges.forEach(edge => {
+        if (edge?.source) {
+          this.addBottomShapeOverlay(edge.source);
+        }
+      });
     }
   }
 

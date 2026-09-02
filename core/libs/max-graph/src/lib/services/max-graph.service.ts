@@ -298,7 +298,7 @@ export class MaxGraphService {
 
   /** Removes all elements of the current aspect  */
   deleteAllShapes(): void {
-    this.updateGraph(() => this.graph.removeCells(this.graph.getChildVertices(this.graph.getDefaultParent())));
+    this.updateGraph(() => this.graph.removeCells(this.graph.getChildCells(this.graph.getDefaultParent())));
   }
 
   /** Expand all cells*/
@@ -519,18 +519,38 @@ export class MaxGraphService {
   }
 
   removeCells(cells: Array<Cell>, includeEdges = true): void {
+    if (!cells || cells.length === 0) return;
+
+    const allCellsToRemove: Cell[] = [];
+    for (const cell of cells) {
+      if (!cell) continue;
+      if (!allCellsToRemove.includes(cell)) {
+        allCellsToRemove.push(cell);
+      }
+      if (includeEdges && !cell.isEdge?.()) {
+        const incoming = this.graph?.getIncomingEdges?.(cell, null) || [];
+        const outgoing = this.graph?.getOutgoingEdges?.(cell, null) || [];
+        const cellEdges = cell?.edges || [];
+        for (const edge of [...incoming, ...outgoing, ...cellEdges]) {
+          if (edge && !allCellsToRemove.includes(edge)) {
+            allCellsToRemove.push(edge);
+          }
+        }
+      }
+    }
+
     for (const cell of cells) {
       if (cell?.isEdge?.()) {
         if (cell.source && cell.target) {
           const parent = MaxGraphHelper.getModelElement(cell.source);
           const child = MaxGraphHelper.getModelElement(cell.target);
-          if (this.loadedFiles.isElementInCurrentFile(parent)) MaxGraphHelper.removeRelation(parent, child);
+          if (parent && child && this.loadedFiles.isElementInCurrentFile(parent)) MaxGraphHelper.removeRelation(parent, child);
         }
         continue;
       }
 
       const modelElement = MaxGraphHelper.getModelElement(cell);
-      if (this.loadedFiles.isElementExtern(modelElement)) continue;
+      if (!modelElement || this.loadedFiles.isElementExtern(modelElement)) continue;
 
       for (const child of modelElement.children) {
         MaxGraphHelper.removeRelation(modelElement, child);
@@ -540,7 +560,8 @@ export class MaxGraphService {
         if (this.loadedFiles.isElementInCurrentFile(parent)) MaxGraphHelper.removeRelation(parent, modelElement);
       }
     }
-    this.graph.removeCells(cells, includeEdges);
+    this.graph.removeCells(allCellsToRemove, includeEdges);
+    this.graph.refresh();
   }
 
   moveCells(cells: Array<Cell>, dx: number, dy: number): void {

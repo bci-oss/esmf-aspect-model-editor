@@ -532,6 +532,14 @@
       "title": "Open element in other window?",
       "cancelButton": "Cancel",
       "okButton": "Save"
+    },
+    "deleteAnonymousElement": {
+      "title": "Delete Element with Anonymous Children",
+      "phrase1": "The element \"{{elementName}}\" contains {{count}} anonymous (inline) element(s). Deleting this element will also delete these anonymous elements.",
+      "phrase2": "Do you want to delete them, convert them to named elements first, or cancel?",
+      "deleteWithAnonymousBtn": "Delete All",
+      "convertToNamedBtn": "Convert to Named Elements",
+      "cancelBtn": "Cancel"
     }
   },
   "loadingScreenDialog": {

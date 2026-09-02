@@ -525,6 +525,14 @@
       "title": "打开其他窗口中的元素?",
       "cancelButton": "取消",
       "okButton": "保存"
+    },
+    "deleteAnonymousElement": {
+      "title": "删除包含匿名子元素的元素",
+      "phrase1": "元素 \"{{elementName}}\" 包含 {{count}} 个匿名（内联）元素。删除该元素还将删除这些匿名元素。",
+      "phrase2": "您要删除它们、先将它们转换为命名元素，还是取消？",
+      "deleteWithAnonymousBtn": "全部删除",
+      "convertToNamedBtn": "转换为命名元素",
+      "cancelBtn": "取消"
     }
   },
   "loadingScreenDialog": {

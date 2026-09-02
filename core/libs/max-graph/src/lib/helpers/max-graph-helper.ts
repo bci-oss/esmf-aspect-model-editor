@@ -327,14 +327,16 @@ export class MaxGraphHelper {
     div.dataset.cellId = cell.id;
     div.dataset.collapsed = cell.collapsed ? 'yes' : 'no';
     div.classList.add('cell-label');
-    div.style.width = cell.geometry.width + 'px';
+    if (cell.geometry?.width != null) {
+      div.style.width = cell.geometry.width + 'px';
+    }
     return div;
   }
 
   private static createTitleLabelElement(cell: Cell, isSmallShape: boolean) {
     const modelElement = MaxGraphHelper.getModelElement(cell);
     const title = document.createElement('span');
-    if (!cell.collapsed) {
+    if (!cell.collapsed && cell.geometry?.width != null) {
       title.style.width = cell.geometry.width + 'px';
     }
 
@@ -437,15 +439,17 @@ export class MaxGraphHelper {
     // calculating the height for the cell for maxGraph relative with HTML height (41 - HTML, 35 - maxgraph, result: 41/35)
     const elementsSize = (elementHeight * infoElements.length + title.clientHeight) / (41 / 35) + (infoElements.length ? 30 : 0);
 
-    if (cell.collapsed) {
-      cell.geometry.width = Math.max(50, title.clientWidth + 10);
-      cell.geometry.height = title.clientHeight + 15;
-    } else if (!isSmallShape) {
-      cell.geometry.height =
-        elementsSize < cell.geometry.height && elementsSize < basicShapeGeometry.expandedHeight
-          ? basicShapeGeometry.expandedHeight
-          : elementsSize;
-      div.style.height = cell.geometry.height + 'px';
+    if (cell.geometry) {
+      if (cell.collapsed) {
+        cell.geometry.width = Math.max(50, title.clientWidth + 10);
+        cell.geometry.height = title.clientHeight + 15;
+      } else if (!isSmallShape) {
+        cell.geometry.height =
+          elementsSize < cell.geometry.height && elementsSize < basicShapeGeometry.expandedHeight
+            ? basicShapeGeometry.expandedHeight
+            : elementsSize;
+        div.style.height = cell.geometry.height + 'px';
+      }
     }
 
     // removing the element from body since the height was got
@@ -499,8 +503,14 @@ export class MaxGraphHelper {
   }
 
   static updateLabel(cell: Cell, graph: Graph, sammLangService: SammLanguageSettingsService) {
+    if (!cell) {
+      return;
+    }
+    if (!cell['configuration']) {
+      cell['configuration'] = {};
+    }
     cell['configuration'].fields = MaxGraphVisitorHelper.getElementProperties(MaxGraphHelper.getModelElement(cell), sammLangService);
-    graph.labelChanged(cell, MaxGraphHelper.createPropertiesLabel(cell), null);
+    graph?.labelChanged?.(cell, MaxGraphHelper.createPropertiesLabel(cell), null);
   }
 
   static getNamespaceFromElement(element: NamedElement) {

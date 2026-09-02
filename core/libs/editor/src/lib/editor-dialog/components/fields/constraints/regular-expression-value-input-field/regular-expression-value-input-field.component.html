@@ -12,7 +12,7 @@
   -->
 
 <mat-form-field [floatLabel]="field().disabled() ? 'always' : 'auto'" appearance="fill" subscriptSizing="dynamic">
-  <mat-label for="value">value</mat-label>
+  <mat-label for="value">value *</mat-label>
   <input [formField]="field" matInput data-cy="value" />
   @if (hasError('required')) {
     <mat-error>Value is required</mat-error>

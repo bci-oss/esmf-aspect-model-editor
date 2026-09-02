@@ -140,22 +140,39 @@ export class ElementModelService {
     this.removeElementData(cell);
   }
 
-  private collectAnonymousChildren(element: NamedElement, visited = new Set<NamedElement>()): NamedElement[] {
-    if (!element || visited.has(element)) {
+  private collectAnonymousChildren(element: NamedElement): NamedElement[] {
+    if (!element) {
       return [];
     }
-    visited.add(element);
 
-    const result: NamedElement[] = [];
-    for (const child of element.children || []) {
-      if (child instanceof NamedElement) {
-        if (child.isAnonymous?.()) {
-          result.push(child);
-          result.push(...this.collectAnonymousChildren(child, visited));
+    const deletedSet = new Set<NamedElement>([element]);
+    const deletedUrns = new Set<string>(element.aspectModelUrn ? [element.aspectModelUrn] : []);
+    const orphanedAnonymous: NamedElement[] = [];
+
+    let addedNew = true;
+    while (addedNew) {
+      addedNew = false;
+      for (const el of Array.from(deletedSet)) {
+        for (const child of el.children || []) {
+          if (child instanceof NamedElement && child.isAnonymous?.() && !deletedSet.has(child)) {
+            const parents = Array.from(child.parents || []);
+            const remainingParents = parents.filter(
+              p => p instanceof NamedElement && !deletedSet.has(p) && (!p.aspectModelUrn || !deletedUrns.has(p.aspectModelUrn)),
+            );
+            if (remainingParents.length === 0) {
+              deletedSet.add(child);
+              if (child.aspectModelUrn) {
+                deletedUrns.add(child.aspectModelUrn);
+              }
+              orphanedAnonymous.push(child);
+              addedNew = true;
+            }
+          }
         }
       }
     }
-    return Array.from(new Set(result));
+
+    return orphanedAnonymous;
   }
 
   private convertAnonymousToNamed(element: NamedElement): void {

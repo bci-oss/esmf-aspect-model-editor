@@ -100,7 +100,7 @@ export class NameInputFieldComponent extends InputFieldComponent<NamedElement> i
       .some(error => error.kind === kind);
   }
 
-  private isDisabled() {
+  public isDisabled() {
     return (
       (this.metaModelElement instanceof DefaultProperty && !!this.metaModelElement?.getExtends()) ||
       Boolean(this.metaModelElement?.isAnonymous?.())

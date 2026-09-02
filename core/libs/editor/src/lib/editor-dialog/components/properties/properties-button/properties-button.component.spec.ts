@@ -35,6 +35,7 @@ describe('PropertiesButtonComponent', () => {
 
   const dialogMock = {
     open: vi.fn(() => ({
+      beforeClosed: () => of(null),
       afterClosed: () => of(null),
     })),
   };

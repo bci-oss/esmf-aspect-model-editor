@@ -243,4 +243,35 @@ describe('ElementModelService', () => {
     expect(mockConfirmDialogService.open).toHaveBeenCalled();
     expect(mockLoadedFilesService.currentLoadedFile.cachedFile.removeElement).not.toHaveBeenCalled();
   });
+
+  it('should not show confirmation dialog if anonymous child still has another parent remaining', () => {
+    const anonChar = new DefaultCharacteristic({
+      name: '[Characteristic]',
+      aspectModelUrn: 'anonymous:Characteristic:b0',
+      metaModelVersion: '2.2.0',
+      isAnonymous: true,
+    });
+    const prop1 = new DefaultProperty({
+      name: 'p1',
+      aspectModelUrn: 'urn:test#p1',
+      metaModelVersion: '2.2.0',
+      characteristic: anonChar,
+    });
+    const prop2 = new DefaultProperty({
+      name: 'p2',
+      aspectModelUrn: 'urn:test#p2',
+      metaModelVersion: '2.2.0',
+      characteristic: anonChar,
+    });
+    anonChar.parents = [prop1, prop2] as any;
+
+    const cell = new Cell();
+    MaxGraphHelper.setElementNode(cell, {element: prop1} as any);
+
+    service.deleteElement(cell);
+
+    expect(mockConfirmDialogService.open).not.toHaveBeenCalled();
+    expect(mockLoadedFilesService.currentLoadedFile.cachedFile.removeElement).toHaveBeenCalledWith('urn:test#p1');
+    expect(mockLoadedFilesService.currentLoadedFile.cachedFile.removeElement).not.toHaveBeenCalledWith('anonymous:Characteristic:b0');
+  });
 });

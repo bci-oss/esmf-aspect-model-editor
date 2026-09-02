@@ -87,6 +87,7 @@ describe('ValuesInputFieldComponent', () => {
 
   it('should enforce at least one enumeration value', () => {
     component.enumValues.set([]);
+    fixture.detectChanges();
     expect(
       component
         .chipListField()

@@ -63,7 +63,10 @@ describe('EntityInstanceViewComponent', () => {
   it('adds a dialog result and flattens nested new entity values', () => {
     const created = instance('Created', entity);
     const nested = instance('Nested', entity);
-    vi.mocked(dialog.open).mockReturnValue({afterClosed: () => of({entityValue: created, newEntityValues: [nested]})} as never);
+    vi.mocked(dialog.open).mockReturnValue({
+      beforeClosed: () => of({entityValue: created, newEntityValues: [nested]}),
+      afterClosed: () => of({entityValue: created, newEntityValues: [nested]}),
+    } as never);
     const emitted = vi.fn();
     component.complexValueChange.subscribe(emitted);
 
@@ -75,7 +78,10 @@ describe('EntityInstanceViewComponent', () => {
 
   it('does not report a newly created and then removed value as persisted deletion', () => {
     const created = instance('Created', entity);
-    vi.mocked(dialog.open).mockReturnValue({afterClosed: () => of({entityValue: created, newEntityValues: []})} as never);
+    vi.mocked(dialog.open).mockReturnValue({
+      beforeClosed: () => of({entityValue: created, newEntityValues: []}),
+      afterClosed: () => of({entityValue: created, newEntityValues: []}),
+    } as never);
     component.onNew();
 
     component.onDelete(created, {stopPropagation: vi.fn()} as unknown as Event);

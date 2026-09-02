@@ -154,6 +154,7 @@ describe('StructuredValueComponent', () => {
     });
     component.groups = [{start: 0, end: 3, text: '(.*)'}];
     vi.mocked(TestBed.inject(MatDialog).open).mockReturnValue({
+      beforeClosed: () => of({'[0-3] -> (.*)': property}),
       afterClosed: () => of({'[0-3] -> (.*)': property}),
     } as never);
 

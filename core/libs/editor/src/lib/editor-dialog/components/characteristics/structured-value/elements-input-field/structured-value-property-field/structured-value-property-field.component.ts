@@ -123,4 +123,10 @@ export class StructuredValuePropertyFieldComponent implements OnInit {
     this.locked.set(true);
     this.propertyChange.emit(property);
   }
+
+  hasError(kind: string): boolean {
+    return this.displayForm()
+      .errors()
+      .some(error => error.kind === kind);
+  }
 }

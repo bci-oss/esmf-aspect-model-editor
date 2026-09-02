@@ -12,7 +12,7 @@
   -->
 
 <mat-form-field>
-  <mat-label for="left">Property</mat-label>
+  <mat-label for="left">Property *</mat-label>
   <input #property [matAutocomplete]="auto" [formField]="displayForm" matInput data-cy="property-element" />
   @if (locked()) {
     <button (click)="unlock()" data-cy="clear-property-button" matSuffix type="button" mat-icon-button tabindex="-1">
@@ -46,7 +46,7 @@
       </mat-optgroup>
     }
   </mat-autocomplete>
-  @if (displayForm().errors().some(error => error.kind === 'required')) {
+  @if (hasError('required')) {
     <mat-error>Please choose or create a Property</mat-error>
   }
 </mat-form-field>

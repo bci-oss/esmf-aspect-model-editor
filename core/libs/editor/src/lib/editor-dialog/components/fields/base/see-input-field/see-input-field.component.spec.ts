@@ -94,6 +94,14 @@ describe('SeeInputFieldComponent', () => {
 
     expect(component.elements().length).toBe(0);
     expect(signalForm.value().see).toBe('');
+    expect(property.see).toEqual([]);
+  });
+
+  it('should update metaModelElement.see when adding an element', () => {
+    component.searchField().value.set('https://example.com/second');
+    component.addElementToList('SecondDoc');
+
+    expect(property.see).toEqual(['https://example.com/doc', 'https://example.com/second']);
   });
 
   it('should unregister see field on destroy', () => {

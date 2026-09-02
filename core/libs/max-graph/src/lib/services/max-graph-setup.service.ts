@@ -88,8 +88,9 @@ export class MaxGraphSetupService {
     this.graph.setAllowDanglingEdges(false);
     this.graph.setCellsDisconnectable(false);
     this.graph.setHtmlLabels(true);
+    this.graph.setTooltips(true);
     this.graph.isCellSelectable = (cell: Cell) => !cell.isEdge() && this.graph.isCellsSelectable();
-    this.graph.isCellDeletable = (_cell: Cell) => this.graph.isCellsDeletable();
+    this.graph.isCellDeletable = () => this.graph.isCellsDeletable();
     this.graph.sizeDidChange = () => this.sizeDidChange();
     this.graph.view.getBackgroundPageBounds = () => this.getBackgroundPageBounds();
     this.graph.getPreferredPageSize = () => this.getPreferredPageSize();

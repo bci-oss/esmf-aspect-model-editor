@@ -13,7 +13,7 @@
 
 import {MaxGraphHelper, MaxGraphService} from '@ame/max-graph';
 import {AsyncPipe} from '@angular/common';
-import {Component, ElementRef, inject, OnDestroy, OnInit, signal, viewChild} from '@angular/core';
+import {Component, effect, ElementRef, inject, OnDestroy, OnInit, signal, viewChild} from '@angular/core';
 import {takeUntilDestroyed, toObservable} from '@angular/core/rxjs-interop';
 import {disabled, form, FormField, validate} from '@angular/forms/signals';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from '@angular/material/autocomplete';
@@ -22,7 +22,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatError, MatInput, MatLabel} from '@angular/material/input';
 import {MatTooltipModule} from '@angular/material/tooltip';
-import {DefaultProperty, HasExtends, NamedElement} from '@esmf/aspect-model-loader';
+import {DefaultCharacteristic, DefaultConstraint, DefaultProperty, HasExtends, NamedElement} from '@esmf/aspect-model-loader';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {map, Observable} from 'rxjs';
 import {EditorDialogValidators} from '../../../../validators';
@@ -100,6 +100,27 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
     super();
     this.fieldName = 'see';
     this.maxgraphService = inject(MaxGraphService);
+
+    effect(() => {
+      this.previousData();
+      if (
+        !this.fieldName ||
+        !(this.metaModelElement instanceof DefaultCharacteristic || this.metaModelElement instanceof DefaultConstraint)
+      ) {
+        return;
+      }
+
+      const seeValue = this.getCurrentValue();
+      const decodedValue = this.decodeUriComponent(seeValue);
+      this.elements.set(
+        [...(decodedValue?.split(',') || [])]
+          .filter(Boolean)
+          .map(urn => ({
+            name: urn.includes('#') && urn.startsWith('urn:samm') ? urn.split('#')[1] : '',
+            urn,
+          })),
+      );
+    });
   }
 
   ngOnInit(): void {
@@ -161,13 +182,17 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
     this.disabledState.set(
       this.metaModelDialogService.isReadOnly() || this.loadedFiles.isElementExtern(this.metaModelElement) || this.isDisabled(),
     );
-    this.seeModel.set(this.decodeUriComponent(this.getCurrentValue()) || '');
+    const currentValue = this.getCurrentValue();
+    const decodedValue = this.decodeUriComponent(currentValue);
+    this.seeModel.set(decodedValue || '');
     this.unregisterField = this.signalForm().register(this.fieldName, this.seeField);
     this.elements.set(
-      [...(this.decodeUriComponent(this.getCurrentValue())?.split(',') || [])].map(urn => ({
-        name: urn.includes('#') && urn.startsWith('urn:samm') ? urn.split('#')[1] : '',
-        urn,
-      })),
+      [...(decodedValue?.split(',') || [])]
+        .filter(Boolean)
+        .map(urn => ({
+          name: urn.includes('#') && urn.startsWith('urn:samm') ? urn.split('#')[1] : '',
+          urn,
+        })),
     );
   }
 
@@ -177,6 +202,9 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
         .map(({urn}) => urn)
         .join(','),
     );
+    if (this.metaModelElement) {
+      this.metaModelElement.see = this.elements().map(({urn}) => urn);
+    }
   }
 
   private decodeUriComponent(seeReference: string): string {

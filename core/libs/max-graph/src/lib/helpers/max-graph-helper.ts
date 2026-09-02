@@ -323,8 +323,12 @@ export class MaxGraphHelper {
   }
 
   private static createLabelElement(cell: Cell) {
+    const modelElement = MaxGraphHelper.getModelElement(cell);
     const div = document.createElement('div');
     div.dataset.cellId = cell.id;
+    if (modelElement?.name) {
+      div.dataset.cellName = modelElement.name;
+    }
     div.dataset.collapsed = cell.collapsed ? 'yes' : 'no';
     div.classList.add('cell-label');
     if (cell.geometry?.width != null) {

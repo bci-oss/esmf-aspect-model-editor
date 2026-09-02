@@ -35,15 +35,11 @@ export class cyHelp {
    * @returns {Cypress.Chainable} Cypress chainable object.
    */
   public static closeSidebar(): Cypress.Chainable {
-    return cy
-      .get('body')
-      .find(SIDEBAR_CLOSE_BUTTON)
-      .its('length')
-      .then(length => {
-        if (length) {
-          cy.get(SIDEBAR_CLOSE_BUTTON).click({force: true});
-        }
-      });
+    return cy.get('body').then($body => {
+      if ($body.find(SIDEBAR_CLOSE_BUTTON).length > 0) {
+        cy.get(SIDEBAR_CLOSE_BUTTON).click({force: true});
+      }
+    });
   }
 
   /**
@@ -90,7 +86,14 @@ export class cyHelp {
 
     return maxgraphAttributeService.graph
       .getChildCells(maxgraphAttributeService.graph.getDefaultParent(), true, false)
-      .find(cell => cell && cell.id === name);
+      .find(
+        cell =>
+          cell &&
+          (cell.id === name ||
+            cell.getAttribute?.('name') === name ||
+            (cell.value as Element)?.getAttribute?.('name') === name ||
+            (cell as any)?.getMetaModelElement?.()?.element?.name === name),
+      );
   }
 
   /**

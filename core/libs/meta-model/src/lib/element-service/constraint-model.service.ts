@@ -49,7 +49,7 @@ export class ConstraintModelService extends BaseModelService {
     if (form.changedMetaModel) {
       this.currentCachedFile.removeElement(metaModelElement?.aspectModelUrn);
       this.currentCachedFile.resolveInstance(form.changedMetaModel);
-      cell = this.maxgraphService.resolveCellByModelElement(metaModelElement);
+      cell = this.maxgraphService.resolveCellByModelElement(metaModelElement) || cell;
 
       cell.edges?.forEach(({source}) => {
         const trait = MaxGraphHelper.getModelElement<DefaultTrait>(source);

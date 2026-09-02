@@ -300,7 +300,7 @@ Cypress.Commands.add('getMaxgraphAttributeService', () => cy.window().then(win =
 
 Cypress.Commands.add('getModelService', () => cy.window().then(win => win['angular.modelService']));
 
-Cypress.Commands.add('getHTMLCell', (name: string) => cy.get(`[data-cell-id="${name}"]`).first());
+Cypress.Commands.add('getHTMLCell', (name: string) => cy.get(`[data-cell-id="${name}"], [data-cell-name="${name}"]`).first());
 
 Cypress.Commands.add('dbClickShape', (name: string) => {
   return cy

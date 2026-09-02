@@ -53,6 +53,7 @@ export const BUTTON_renameModelConfirm = '[data-cy="file-rename-confirm"]';
 export const SELECTOR_editorSaveButton = '[data-cy="editorSaveButton"]';
 export const SELECTOR_propertiesCancelButton = '[data-cy="propertiesCancelButton"]';
 export const SELECTOR_editorCancelButton = '[data-cy="editorCancelButton"]';
+export const SELECTOR_anonymousToggle = '[data-cy="anonymousToggle"]';
 export const FIELD_name = '[data-cy="name"]';
 export const FIELD_value = '[data-cy="valueElement"]';
 export const FIELD_entityValueName = '[data-cy="entityValueName"]';

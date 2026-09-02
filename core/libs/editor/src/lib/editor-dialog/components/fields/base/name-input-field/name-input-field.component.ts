@@ -114,7 +114,9 @@ export class NameInputFieldComponent extends InputFieldComponent<NamedElement> i
     this.disabledState.set(
       this.metaModelDialogService.isReadOnly() || this.loadedFiles.isElementExtern(this.metaModelElement) || this.isDisabled(),
     );
-    this.model.set(this.getCurrentValue('name'));
+    const currentValue = this.getCurrentValue('name');
+    this.model.set(currentValue);
+    this.field().value.set(currentValue);
     this.unregisterField = this.signalForm().register('name', this.field);
     this.field().markAsTouched();
   }

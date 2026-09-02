@@ -117,7 +117,7 @@ export class CharacteristicModelService extends BaseModelService {
       metaModelElement = form.changedMetaModel;
 
       if (!metaModelElement.isPredefined) {
-        cell = this.maxgraphService.resolveCellByModelElement(metaModelElement);
+        cell = this.maxgraphService.resolveCellByModelElement(metaModelElement) || cell;
       }
 
       if (!(metaModelElement instanceof DefaultEnumeration)) {

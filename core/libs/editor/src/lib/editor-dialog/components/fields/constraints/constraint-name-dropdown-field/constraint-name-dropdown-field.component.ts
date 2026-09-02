@@ -70,14 +70,20 @@ export class ConstraintNameDropdownFieldComponent extends DropdownFieldComponent
 
     const oldMetaModelElement = this.metaModelElement;
     this.metaModelElement = newConstraintType;
-    this.metaModelElement.anonymous = oldMetaModelElement.anonymous;
+    this.metaModelElement.anonymous = Boolean(oldMetaModelElement?.isAnonymous?.());
 
-    this.metaModelElement.name = oldMetaModelElement.name;
+    this.metaModelElement.name = this.metaModelElement.isAnonymous?.() ? `[${constraint}]` : oldMetaModelElement.name;
     this.metaModelElement.aspectModelUrn = oldMetaModelElement.aspectModelUrn;
     this.migrateCommonAttributes(oldMetaModelElement);
 
     this.addLanguageSettings(this.metaModelElement);
     this.setMetaModelElementAspectUrn(newConstraintType);
+
+    if (this.metaModelElement.isAnonymous?.()) {
+      this.signalForm().set('name', this.metaModelElement.name);
+      this.signalForm().set('isAnonymous', true);
+    }
+
     this.updateFields(newConstraintType);
 
     this.selectedConstraint.emit(constraint);
@@ -129,7 +135,10 @@ export class ConstraintNameDropdownFieldComponent extends DropdownFieldComponent
 
   private migrateCommonAttributes(oldMetaModelElement: NamedElement) {
     Object.keys(oldMetaModelElement).forEach(oldKey => {
-      if (!['aspectModelUrn', 'name', 'className'].includes(oldKey) && Object.keys(this.metaModelElement).find(key => key === oldKey)) {
+      if (
+        !['aspectModelUrn', 'name', '_name', 'className'].includes(oldKey) &&
+        Object.keys(this.metaModelElement).find(key => key === oldKey)
+      ) {
         this.metaModelElement[oldKey] = oldMetaModelElement[oldKey];
       }
     });

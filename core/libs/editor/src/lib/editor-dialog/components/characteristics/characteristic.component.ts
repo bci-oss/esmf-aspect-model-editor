@@ -128,15 +128,6 @@ export class CharacteristicComponent implements OnInit {
       return;
     }
     this.selectedCharacteristic.set(characteristic);
-    if (this.isAnonymous()) {
-      const elem = this.element();
-      if (elem) {
-        const typeName = characteristic || (elem.className ? elem.className.replace('Default', '') : 'Characteristic');
-        elem.name = `[${typeName}]`;
-        this.signalForm().set('name', `[${typeName}]`);
-        this.signalForm().set('isAnonymous', true);
-      }
-    }
   }
 
   isElementCharacteristicAllowed(): boolean {

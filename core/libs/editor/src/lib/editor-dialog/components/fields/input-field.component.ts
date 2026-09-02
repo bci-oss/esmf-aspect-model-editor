@@ -98,6 +98,10 @@ export abstract class InputFieldComponent<T extends NamedElement> implements OnD
       return this.metaModelElement?.[key] || '';
     }
 
+    if (key === 'name' && this.metaModelElement?.isAnonymous?.()) {
+      return this.metaModelElement?.name || '';
+    }
+
     return this.previousData()?.[key] || this.metaModelElement?.[key] || '';
   }
 

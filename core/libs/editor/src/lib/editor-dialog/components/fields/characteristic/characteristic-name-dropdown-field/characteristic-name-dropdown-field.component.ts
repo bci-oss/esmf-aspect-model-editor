@@ -80,6 +80,7 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
   }
 
   onCharacteristicChange(characteristic: string) {
+    this.metaModelClassName = characteristic;
     this.setPreviousData();
 
     const createInstanceFunction = this.listCharacteristics.get(characteristic);
@@ -87,7 +88,7 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
 
     const oldMetaModelElement = this.metaModelElement;
     this.metaModelElement = newCharacteristicType;
-    this.metaModelElement.anonymous = oldMetaModelElement.anonymous;
+    this.metaModelElement.anonymous = Boolean(oldMetaModelElement?.isAnonymous?.());
 
     if (newCharacteristicType?.isPredefined) {
       this.metaModelElement.name = newCharacteristicType.name;
@@ -104,15 +105,21 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
           this.metaModelElement.aspectModelUrn = this.originalCharacteristic.aspectModelUrn;
         }
       } else {
-        this.metaModelElement.name = oldMetaModelElement.name;
+        this.metaModelElement.name = this.metaModelElement.isAnonymous?.() ? `[${characteristic}]` : oldMetaModelElement.name;
         this.migrateCommonAttributes(oldMetaModelElement);
       }
     }
     this.addLanguageSettings(this.metaModelElement);
     this.setMetaModelElementAspectUrn(newCharacteristicType);
 
-    this.selectedCharacteristic.emit(characteristic as CharacteristicClassType);
+    if (this.metaModelElement.isAnonymous?.()) {
+      this.signalForm().set('name', this.metaModelElement.name);
+      this.signalForm().set('isAnonymous', true);
+    }
+
     this.updateFields(newCharacteristicType);
+
+    this.selectedCharacteristic.emit(characteristic as CharacteristicClassType);
   }
 
   private initListCharacteristics(): void {
@@ -178,7 +185,7 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
 
   private migrateCommonAttributes(oldMetaModelElement: NamedElement) {
     const modelKeys = Object.keys(this.metaModelElement);
-    const skipKeys = ['aspectModelUrn', 'name', 'className'];
+    const skipKeys = ['aspectModelUrn', 'name', '_name', 'className'];
 
     Object.keys(oldMetaModelElement).forEach(oldKey => {
       if (!skipKeys.includes(oldKey) && (modelKeys.includes(oldKey) || oldKey in this.metaModelElement)) {

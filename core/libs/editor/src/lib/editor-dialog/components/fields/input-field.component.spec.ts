@@ -148,6 +148,8 @@ describe('InputFieldComponent', () => {
 
     expect(component.isLowerCase('abc')).toBe(true);
     expect(component.isLowerCase('ABC')).toBe(false);
+    expect(component.isLowerCase('Property2#')).toBe(false);
+    expect(component.isLowerCase('1abc')).toBe(false);
 
     expect(component.isUpperCase('Abc')).toBe(true);
     expect(component.isUpperCase('abc')).toBe(false);

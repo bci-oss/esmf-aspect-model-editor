@@ -96,7 +96,7 @@ export class StructuredValuePropertyFieldComponent implements OnInit {
   }
 
   isLowerCase(value: string) {
-    return /[a-z]/.test(value?.[0] || '');
+    return /^(\b[a-z]+[a-zA-Z0-9]*)$/.test(value);
   }
 
   createNewProperty(name: string) {

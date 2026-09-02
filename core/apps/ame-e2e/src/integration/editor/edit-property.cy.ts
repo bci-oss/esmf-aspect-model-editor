@@ -513,8 +513,12 @@ describe('Test edit property', () => {
         .then(() => cy.dbClickShape('AspectDefault'))
         .then(() => cy.get('[data-cy="properties-modal-button"]').click({force: true}))
         .then(() => {
-          cy.get(`input[type="checkbox"][name="property1_${FIELD_notInPayload}"]`).should('not.exist');
-          cy.get(`input[type="checkbox"][name="property1_${FIELD_optional}"]`).click({force: true});
+          cy.get(
+            `input[type="checkbox"][name="ng.form5.urn:samm:org.eclipse.examples.aspect:1.0.0#property1.${FIELD_notInPayload}"]`,
+          ).should('not.exist');
+          cy.get(`input[type="checkbox"][name="ng.form5.urn:samm:org.eclipse.examples.aspect:1.0.0#property1.${FIELD_optional}"]`).click({
+            force: true,
+          });
           return cy.wait(500);
         })
         .then(() => cy.get('[data-cy="propertiesSaveButton"]').click({force: true}))
@@ -548,7 +552,9 @@ describe('Test edit property', () => {
         .then(() => cy.dbClickShape('Entity1'))
         .then(() => cy.get('[data-cy="properties-modal-button"]').click({force: true}))
         .then(() => {
-          cy.get(`input[type="checkbox"][name="property2_${FIELD_notInPayload}"]`).click({force: true});
+          cy.get(
+            `input[type="checkbox"][name="ng.form18.urn:samm:org.eclipse.examples.aspect:1.0.0#property2.${FIELD_notInPayload}"]`,
+          ).click({force: true});
           return cy.wait(500);
         })
         .then(() => cy.get('[data-cy="propertiesSaveButton"]').click({force: true}).should('not.exist'))
@@ -570,7 +576,12 @@ describe('Test edit property', () => {
         .then(() => cy.get(SELECTOR_elementBtn).click())
         .then(() => cy.dbClickShape('AspectDefault'))
         .then(() => cy.get('[data-cy="properties-modal-button"]').click({force: true}))
-        .then(() => cy.get(`[name="property1_${FIELD_payloadName}"]`).clear({force: true}).type('payloadName', {force: true}))
+        .then(() =>
+          cy
+            .get(`[name="ng.form5.urn:samm:org.eclipse.examples.aspect:1.0.0#property1.${FIELD_payloadName}"]`)
+            .clear({force: true})
+            .type('payloadName', {force: true}),
+        )
         .then(() => cy.wait(500))
         .then(() => cy.get('[data-cy="propertiesSaveButton"]').click({force: true}))
         .then(() => cy.wait(500))

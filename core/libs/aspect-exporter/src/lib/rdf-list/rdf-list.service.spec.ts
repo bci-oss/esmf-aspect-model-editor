@@ -496,7 +496,7 @@ describe('RDF Helper', () => {
         service.push(enumeration, namedVal, anonVal);
 
         shouldBeListAndHave({first: 2, rest: 2, list: getList()});
-        expect(service.valueVisitor.visit).toHaveBeenCalledWith(anonVal, expect.anything());
+        expect(service.valueVisitor.visit).toHaveBeenCalledWith(anonVal, expect.anything(), stringDataType.urn);
       });
     });
 

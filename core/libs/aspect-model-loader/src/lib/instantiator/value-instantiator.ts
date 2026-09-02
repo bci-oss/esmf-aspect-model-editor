@@ -18,7 +18,6 @@ import {basePropertiesFactory} from './meta-model-element-instantiator';
 
 export function valueFactory(initProps: BaseInitProps) {
   return (quads: Quad[], dataType = null, value = '') => {
-    // TODO check how to use dataType because the type should defined in the value element
     if (!quads?.length) return null;
 
     const {samm} = initProps.rdfModel;
@@ -45,6 +44,7 @@ export function valueFactory(initProps: BaseInitProps) {
       isAnonymous,
       hasSyntheticName: isAnonymous ? true : baseProperties.hasSyntheticName,
       value,
+      type: dataType,
     });
 
     for (const quad of quads) {

@@ -75,7 +75,7 @@ export class RdfListService implements CreateEmptyRdfList, EmptyRdfList {
 
     this.remove(source, ...elements);
     this.recreateList(list, [...listElements.map(({node}) => node), ...elementsToBeAdded.listElements]);
-    this.createPropertyList(elementsToBeAdded.overWrittenListElements);
+    this.createPropertyList(elementsToBeAdded.overWrittenListElements, source);
     return this;
   }
 
@@ -172,11 +172,16 @@ export class RdfListService implements CreateEmptyRdfList, EmptyRdfList {
     return quads;
   }
 
-  private createPropertyList(elements: PropertyListElement[]) {
+  private createPropertyList(elements: PropertyListElement[], source?: SourceElementType) {
     for (const element of elements) {
       const {metaModelElement: model, propertyPayload} = element;
       if (model instanceof DefaultValue && model.isAnonymous?.()) {
-        this.valueVisitor.visit(model, element.blankNode);
+        const dataTypeUrn =
+          (source as any)?.dataType?.urn ||
+          (source as any)?.dataType?.aspectModelUrn ||
+          (typeof (source as any)?.dataType === 'string' ? (source as any).dataType : null) ||
+          simpleDataTypes.string.isDefinedBy;
+        this.valueVisitor.visit(model, element.blankNode, dataTypeUrn);
         continue;
       }
 

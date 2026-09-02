@@ -12,6 +12,7 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
+import {simpleDataTypes} from '@ame/shared';
 import {inject, Injectable} from '@angular/core';
 import {
   DefaultCharacteristic,
@@ -172,13 +173,15 @@ export class CharacteristicVisitor extends BaseVisitor<DefaultCharacteristic> {
 
     const subject = customSubject || DataFactory.namedNode(characteristic.aspectModelUrn);
     let object = null;
+    const dataTypeUrn =
+      characteristic.dataType?.urn ||
+      characteristic.dataType?.aspectModelUrn ||
+      (typeof (characteristic.dataType as any)?.getUrn === 'function' ? (characteristic.dataType as any).getUrn() : null) ||
+      simpleDataTypes.string.isDefinedBy;
     if (characteristic.defaultValue instanceof NamedElement) {
       object = DataFactory.namedNode(characteristic.defaultValue.aspectModelUrn);
-    } else {
-      object = DataFactory.literal(
-        characteristic.defaultValue.value as string,
-        characteristic.dataType ? DataFactory.namedNode(characteristic.dataType?.getUrn()) : undefined,
-      );
+    } else if (characteristic.defaultValue) {
+      object = DataFactory.literal(characteristic.defaultValue.value as string, DataFactory.namedNode(dataTypeUrn));
     }
 
     this.removeOldAndAddNewReference(subject, this.sammC.DefaultValueProperty(), object);

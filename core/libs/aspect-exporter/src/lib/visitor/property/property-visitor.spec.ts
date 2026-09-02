@@ -151,6 +151,35 @@ describe('Property Visitor', () => {
     const quads = rdfModel.store.getQuads(DataFactory.namedNode('samm#property1'), rdfModel.samm.ExampleValueProperty(), null, null);
     expect(quads).toHaveLength(1);
     expect(quads[0].object.termType).toBe('BlankNode');
-    expect(valueVisitor.visit).toHaveBeenCalledWith(anonVal, quads[0].object);
+    expect(valueVisitor.visit).toHaveBeenCalledWith(anonVal, quads[0].object, expect.any(String));
+  });
+
+  it('should pass characteristic integer dataType to exampleValue', () => {
+    const intChar = {
+      aspectModelUrn: 'samm#characteristic1',
+      dataType: {
+        urn: 'http://www.w3.org/2001/XMLSchema#integer',
+      },
+    } as any;
+    const anonVal = new DefaultValue({
+      metaModelVersion: '1',
+      aspectModelUrn: 'samm#[Value]_1234',
+      name: '[Value]',
+      value: '42',
+      isAnonymous: true,
+    } as any);
+    const prop = new DefaultProperty({
+      metaModelVersion: '1',
+      aspectModelUrn: 'samm#property1',
+      name: 'property1',
+      characteristic: intChar,
+      exampleValue: anonVal,
+    });
+
+    service.visit(prop);
+
+    const quads = rdfModel.store.getQuads(DataFactory.namedNode('samm#property1'), rdfModel.samm.ExampleValueProperty(), null, null);
+    expect(quads).toHaveLength(1);
+    expect(valueVisitor.visit).toHaveBeenCalledWith(anonVal, quads[0].object, 'http://www.w3.org/2001/XMLSchema#integer');
   });
 });

@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {simpleDataTypes} from '@ame/shared';
 import {
   DefaultAspect,
   DefaultEntity,
@@ -35,6 +36,12 @@ export class RdfListHelper {
     if (source instanceof DefaultEntity || source instanceof DefaultAspect) {
       propertiesPayload = source.propertiesPayload;
     }
+
+    const defaultDataTypeUrn =
+      source?.dataType?.urn ||
+      source?.dataType?.aspectModelUrn ||
+      (typeof source?.dataType === 'string' ? source.dataType : null) ||
+      simpleDataTypes.string.isDefinedBy;
 
     const listElements = elements.map(metaModelElement => {
       const property: DefaultProperty = metaModelElement;
@@ -70,10 +77,11 @@ export class RdfListHelper {
       }
 
       if (metaModelElement instanceof ScalarValue) {
-        return DataFactory.literal(`${metaModelElement.value}`, DataFactory.namedNode(source.dataType.urn));
+        const dtUrn = metaModelElement.type?.urn || metaModelElement.type?.aspectModelUrn || defaultDataTypeUrn;
+        return DataFactory.literal(`${metaModelElement.value}`, DataFactory.namedNode(dtUrn));
       }
 
-      return DataFactory.literal(metaModelElement, DataFactory.namedNode(source.dataType.urn));
+      return DataFactory.literal(metaModelElement, DataFactory.namedNode(defaultDataTypeUrn));
     });
 
     return {

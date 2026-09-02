@@ -15,19 +15,23 @@ import {ElementSet} from '../shared/elements-set';
 import {ValueProps} from '../shared/props';
 import {ModelVisitor} from '../visitor/model-visitor';
 import {NamedElement} from './named-element';
+import {Type} from './type';
 
 export interface ValueElement extends NamedElement {
   value: string;
+  type?: Type;
   getValue(): string;
 }
 
 export class DefaultValue extends NamedElement implements ValueElement {
   override className = 'DefaultValue';
   value: string;
+  type?: Type;
 
   constructor(props: ValueProps) {
     super(props);
     this.value = props.value;
+    this.type = props.type;
   }
 
   override get children(): ElementSet {

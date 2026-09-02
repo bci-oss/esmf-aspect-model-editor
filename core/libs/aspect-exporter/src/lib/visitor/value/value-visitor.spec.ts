@@ -81,7 +81,7 @@ describe('ValueVisitor', () => {
     expect(addQuadSpy).toHaveBeenCalledWith(
       DataFactory.namedNode('samm#value1'),
       rdfModel.samm.ValueProperty(),
-      DataFactory.literal('http://example.com/value_test'),
+      DataFactory.literal('http://example.com/value_test', DataFactory.namedNode('http://www.w3.org/2001/XMLSchema#string')),
     );
   });
 
@@ -124,6 +124,29 @@ describe('ValueVisitor', () => {
       },
       blankNode,
     );
-    expect(addQuadSpy).toHaveBeenCalledWith(blankNode, rdfModel.samm.ValueProperty(), DataFactory.literal('42'));
+    expect(addQuadSpy).toHaveBeenCalledWith(
+      blankNode,
+      rdfModel.samm.ValueProperty(),
+      DataFactory.literal('42', DataFactory.namedNode('http://www.w3.org/2001/XMLSchema#string')),
+    );
+  });
+
+  it('should export with integer datatype when customDataTypeUrn is integer', () => {
+    const anonValue = new DefaultValue({
+      metaModelVersion: '1',
+      aspectModelUrn: 'samm#[Value]_1234',
+      name: '[Value]',
+      value: '42',
+      isAnonymous: true,
+    } as any);
+
+    const blankNode = DataFactory.blankNode();
+    service.visit(anonValue, blankNode, 'http://www.w3.org/2001/XMLSchema#integer');
+
+    expect(addQuadSpy).toHaveBeenCalledWith(
+      blankNode,
+      rdfModel.samm.ValueProperty(),
+      DataFactory.literal('42', DataFactory.namedNode('http://www.w3.org/2001/XMLSchema#integer')),
+    );
   });
 });

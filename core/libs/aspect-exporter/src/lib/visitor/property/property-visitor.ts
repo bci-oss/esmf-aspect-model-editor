@@ -12,6 +12,7 @@
  */
 
 import {LoadedFilesService} from '@ame/cache';
+import {simpleDataTypes} from '@ame/shared';
 import {getDescriptionsLocales, getPreferredNamesLocales} from '@ame/utils';
 import {inject, Injectable} from '@angular/core';
 import {DefaultProperty, DefaultTrait, DefaultValue} from '@esmf/aspect-model-loader';
@@ -56,11 +57,13 @@ export class PropertyVisitor extends BaseVisitor<DefaultProperty> {
       return;
     }
 
+    const dataTypeUrn = this.resolveDataTypeUrn(property);
+
     if (property.exampleValue instanceof DefaultValue) {
       if (property.exampleValue.isAnonymous?.()) {
         const blankNode = DataFactory.blankNode();
         this.store.addQuad(DataFactory.namedNode(property.aspectModelUrn), this.samm.ExampleValueProperty(), blankNode);
-        this.valueVisitor.visit(property.exampleValue, blankNode);
+        this.valueVisitor.visit(property.exampleValue, blankNode, dataTypeUrn);
         return;
       }
 
@@ -73,16 +76,43 @@ export class PropertyVisitor extends BaseVisitor<DefaultProperty> {
       return;
     }
 
-    const dataTypeUrn =
-      property.characteristic instanceof DefaultTrait
-        ? property.characteristic.baseCharacteristic?.dataType?.aspectModelUrn
-        : property.characteristic?.dataType?.aspectModelUrn;
-
     this.store.addQuad(
       DataFactory.namedNode(property.aspectModelUrn),
       this.samm.ExampleValueProperty(),
       DataFactory.literal(property.exampleValue.value.toString(), DataFactory.namedNode(dataTypeUrn)),
     );
+  }
+
+  private resolveDataTypeUrn(property: DefaultProperty): string {
+    const defaultType = simpleDataTypes.string.isDefinedBy;
+    if (!property?.characteristic) {
+      return defaultType;
+    }
+    const char = property.characteristic;
+    let typeObj: any = null;
+    if (char instanceof DefaultTrait) {
+      typeObj = char.baseCharacteristic?.dataType;
+    } else {
+      typeObj = (char as any)?.dataType;
+    }
+
+    if (!typeObj) {
+      return defaultType;
+    }
+
+    if (typeof typeObj === 'string') {
+      return typeObj;
+    }
+    if (typeObj.aspectModelUrn) {
+      return typeObj.aspectModelUrn;
+    }
+    if (typeObj.urn) {
+      return typeObj.urn;
+    }
+    if (typeof typeObj.getUrn === 'function') {
+      return typeObj.getUrn();
+    }
+    return defaultType;
   }
 
   private addProperties(property: DefaultProperty) {

@@ -185,4 +185,5 @@ export interface RangeConstraintProps extends ConstraintProps {
 
 export interface ValueProps extends NamedElementProps {
   value: string;
+  type?: Type;
 }

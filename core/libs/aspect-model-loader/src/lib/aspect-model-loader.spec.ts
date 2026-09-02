@@ -130,7 +130,7 @@ describe('AspectModelLoader', () => {
     samm:characteristic [ a samm:Characteristic ; samm:dataType xsd:integer ] ;
     samm:exampleValue [
         a samm:Value ;
-        samm:value "42" ;
+        samm:value 42 ;
         samm:description "The answer to everything"@en ;
     ] .
 `;

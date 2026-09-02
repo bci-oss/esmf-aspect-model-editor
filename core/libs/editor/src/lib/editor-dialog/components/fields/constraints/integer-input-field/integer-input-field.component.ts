@@ -25,16 +25,24 @@ import {InputFieldComponent} from '../../input-field.component';
   imports: [MatFormFieldModule, MatLabel, MatError, MatInput, FormField],
 })
 export class IntegerInputFieldComponent extends InputFieldComponent<DefaultFixedPointConstraint> implements OnInit, OnDestroy {
-  private readonly model = signal<number | null>(null);
+  private readonly model = signal<number | string | null>(null);
   private unregisterField = () => undefined;
 
   readonly field = form(this.model, path => {
     required(path);
     validate(path, ({value}) => {
       const integer = value();
-      return integer === null || (Number.isInteger(integer) && integer > 0)
-        ? null
-        : {kind: 'pattern', message: 'Please provide a positive integer'};
+      if (integer === null || integer === undefined || integer === '') {
+        return null;
+      }
+      if (typeof integer === 'number') {
+        return Number.isInteger(integer) && integer > 0 ? null : {kind: 'pattern', message: 'Please provide a positive integer'};
+      }
+      if (typeof integer === 'string') {
+        const trimmed = integer.trim();
+        return trimmed === '' || /^[1-9]\d*$/.test(trimmed) ? null : {kind: 'pattern', message: 'Please provide a positive integer'};
+      }
+      return {kind: 'pattern', message: 'Please provide a positive integer'};
     });
     disabled(path, {when: () => !!this.metaModelElement && this.loadedFiles.isElementExtern(this.metaModelElement)});
   });

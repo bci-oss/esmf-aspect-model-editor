@@ -83,6 +83,18 @@ describe('ScaleInputFieldComponent', () => {
     component.field().value.set(4);
     expect(component.hasError('pattern')).toBe(false);
     expect(signalForm.valid()).toBe(true);
+
+    component.field().value.set('-1' as any);
+    expect(component.hasError('pattern')).toBe(true);
+
+    component.field().value.set('0' as any);
+    expect(component.hasError('pattern')).toBe(true);
+
+    component.field().value.set('4' as any);
+    expect(component.hasError('pattern')).toBe(false);
+
+    component.field().value.set('abc' as any);
+    expect(component.hasError('pattern')).toBe(true);
   });
 
   it('should unregister field on destroy', () => {

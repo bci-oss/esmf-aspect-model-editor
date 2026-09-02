@@ -80,6 +80,21 @@ describe('MinLengthInputFieldComponent', () => {
 
     component.field().value.set(10);
     expect(component.hasError('pattern')).toBe(false);
+
+    component.field().value.set('-1' as any);
+    expect(component.hasError('pattern')).toBe(true);
+
+    component.field().value.set('10' as any);
+    expect(component.hasError('pattern')).toBe(false);
+
+    component.field().value.set('0' as any);
+    expect(component.hasError('pattern')).toBe(false);
+
+    component.field().value.set('abc' as any);
+    expect(component.hasError('pattern')).toBe(true);
+
+    component.field().value.set('1.5' as any);
+    expect(component.hasError('pattern')).toBe(true);
   });
 
   it('should unregister field on destroy', () => {

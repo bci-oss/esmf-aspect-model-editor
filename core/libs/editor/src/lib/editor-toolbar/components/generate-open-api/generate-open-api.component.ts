@@ -165,6 +165,13 @@ export class GenerateOpenApiComponent implements OnInit {
     }));
   }
 
+  hasResourcePathError(kind: string): boolean {
+    return this.openApiForm
+      .resourcePath()
+      .errors()
+      .some(error => error.kind === kind);
+  }
+
   handleFileDrop(event: DragEvent): void {
     event.preventDefault();
     if (!this.dropArea()?.nativeElement.contains(event.target)) return;

@@ -25,15 +25,23 @@ import {InputFieldComponent} from '../../input-field.component';
   imports: [MatFormFieldModule, MatLabel, FormField, MatInput, MatError],
 })
 export class MinLengthInputFieldComponent extends InputFieldComponent<DefaultLengthConstraint> implements OnInit, OnDestroy {
-  private readonly model = signal<number | null>(null);
+  private readonly model = signal<number | string | null>(null);
   private unregisterField = () => undefined;
 
   readonly field = form(this.model, path => {
     validate(path, ({value}) => {
       const length = value();
-      return length === null || (Number.isInteger(length) && length >= 0)
-        ? null
-        : {kind: 'pattern', message: 'Please provide a non-negative integer'};
+      if (length === null || length === undefined || length === '') {
+        return null;
+      }
+      if (typeof length === 'number') {
+        return Number.isInteger(length) && length >= 0 ? null : {kind: 'pattern', message: 'Please provide a non-negative integer'};
+      }
+      if (typeof length === 'string') {
+        const trimmed = length.trim();
+        return trimmed === '' || /^\d+$/.test(trimmed) ? null : {kind: 'pattern', message: 'Please provide a non-negative integer'};
+      }
+      return {kind: 'pattern', message: 'Please provide a non-negative integer'};
     });
     disabled(path, {when: () => !!this.metaModelElement && this.loadedFiles.isElementExtern(this.metaModelElement)});
   });

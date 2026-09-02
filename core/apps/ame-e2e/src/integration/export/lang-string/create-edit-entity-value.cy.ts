@@ -64,8 +64,8 @@ describe('Create and edit Entity value RDF lang string properties in edit view t
       .then(() =>
         cy.get(FIELD_propertyValueComplex).eq(0).should('exist').clear().type('ev2').get('.mat-mdc-option').contains('ev2').click(),
       )
-      .then(() => cy.get('[data-cy="property3Value"]').should('exist').clear().type('ev3'))
-      .then(() => cy.get('[data-cy="property4Value"]').should('exist').clear().type('ev4'))
+      .then(() => cy.get(FIELD_propertyValueNotComplex).eq(0).should('exist').clear().type('ev3'))
+      .then(() => cy.get(FIELD_propertyValueNotComplex).eq(1).should('exist').clear().type('ev4'))
       .then(() => cy.get(FIELD_propertyLanguageValue).should('exist').clear().type('de').get('.mat-mdc-option').contains('de').click())
       .then(() => cy.get(SELECTOR_entitySaveButton).click())
       .then(() => cy.wait(200))
@@ -146,21 +146,21 @@ describe('Create and edit Entity value RDF lang string properties in edit view t
       .then(() =>
         cy.get(FIELD_propertyValueComplex).eq(0).should('exist').clear().type('ev2').get('.mat-mdc-option').contains('ev2').click(),
       )
-      .then(() => cy.get('[data-cy="property3Value"]').should('exist').clear().type('ev3'))
+      .then(() => cy.get(FIELD_propertyValueNotComplex).eq(0).should('exist').clear().type('ev3'))
       .then(() =>
         cy.get(FIELD_propertyLanguageValue).eq(0).should('exist').clear().type('en').get('.mat-mdc-option').contains('en').click(),
       )
       .then(() => cy.get('[data-cy="property3Add"]').click())
-      .then(() => cy.get('[data-cy="property3Value"]').eq(1).should('exist').clear().type('ev4'))
+      .then(() => cy.get(FIELD_propertyValueNotComplex).eq(1).should('exist').clear().type('ev4'))
       .then(() =>
         cy.get(FIELD_propertyLanguageValue).eq(1).should('exist').clear().type('de').get('.mat-mdc-option').contains('de').click(),
       )
-      .then(() => cy.get('[data-cy="property4Value"]').should('exist').clear().type('ev5'))
+      .then(() => cy.get(FIELD_propertyValueNotComplex).eq(2).should('exist').clear().type('ev5'))
       .then(() =>
         cy.get(FIELD_propertyLanguageValue).eq(2).should('exist').clear().type('en').get('.mat-mdc-option').contains('en').click(),
       )
       .then(() => cy.get('[data-cy="property4Add"]').click())
-      .then(() => cy.get('[data-cy="property4Value"]').eq(1).should('exist').clear().type('ev6'))
+      .then(() => cy.get(FIELD_propertyValueNotComplex).eq(3).should('exist').clear().type('ev6'))
       .then(() =>
         cy.get(FIELD_propertyLanguageValue).eq(3).should('exist').clear().type('de').get('.mat-mdc-option').contains('de').click(),
       )

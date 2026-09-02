@@ -79,5 +79,14 @@ describe('IntegerInputFieldComponent signal form', () => {
     component.field().value.set(4);
     expect(component.field().valid()).toBe(true);
     expect(signalForm.value().integer).toBe(4);
+
+    component.field().value.set('-1' as any);
+    expect(component.hasError('pattern')).toBe(true);
+
+    component.field().value.set('0' as any);
+    expect(component.hasError('pattern')).toBe(true);
+
+    component.field().value.set('4' as any);
+    expect(component.field().valid()).toBe(true);
   });
 });

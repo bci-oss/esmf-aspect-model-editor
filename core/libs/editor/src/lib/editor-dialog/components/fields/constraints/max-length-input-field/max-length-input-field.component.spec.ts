@@ -80,6 +80,21 @@ describe('MaxLengthInputFieldComponent', () => {
 
     component.field().value.set(50);
     expect(component.hasError('pattern')).toBe(false);
+
+    component.field().value.set('-5' as any);
+    expect(component.hasError('pattern')).toBe(true);
+
+    component.field().value.set('50' as any);
+    expect(component.hasError('pattern')).toBe(false);
+
+    component.field().value.set('0' as any);
+    expect(component.hasError('pattern')).toBe(false);
+
+    component.field().value.set('invalid' as any);
+    expect(component.hasError('pattern')).toBe(true);
+
+    component.field().value.set('3.14' as any);
+    expect(component.hasError('pattern')).toBe(true);
   });
 
   it('should unregister field on destroy', () => {

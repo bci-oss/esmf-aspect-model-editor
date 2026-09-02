@@ -86,4 +86,22 @@ describe('GenerateOpenApiComponent', () => {
     expect(editorService.generateOpenApiSpec).toHaveBeenCalled();
     expect(dialogRef.close).toHaveBeenCalled();
   });
+
+  it('should validate resource path required and pattern errors', () => {
+    component.toggleResourcePath(true);
+    fixture.detectChanges();
+
+    component.openApiModel.update(model => ({...model, resourcePath: ''}));
+    fixture.detectChanges();
+    expect(component.hasResourcePathError('required')).toBe(true);
+
+    component.openApiModel.update(model => ({...model, resourcePath: '//'}));
+    fixture.detectChanges();
+    expect(component.hasResourcePathError('pattern')).toBe(true);
+
+    component.openApiModel.update(model => ({...model, resourcePath: '/resource'}));
+    fixture.detectChanges();
+    expect(component.hasResourcePathError('pattern')).toBe(false);
+    expect(component.hasResourcePathError('required')).toBe(false);
+  });
 });

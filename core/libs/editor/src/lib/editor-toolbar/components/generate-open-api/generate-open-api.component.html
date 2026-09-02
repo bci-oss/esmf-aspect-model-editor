@@ -93,9 +93,14 @@
             <mat-form-field appearance="fill">
               <mat-label data-cy="resourcePathTitle">{{ t('generateOpenapiSpecDialog.resourcePath') }}</mat-label>
               <input [formField]="openApiForm.resourcePath" matInput placeholder="/resource/{resourceId}" data-cy="resourcePathInput" />
-              @if (openApiForm.resourcePath().invalid()) {
+              @if (hasResourcePathError('required')) {
                 <mat-error data-cy="resourcePathRequiredError">
                   {{ t('generateOpenapiSpecDialog.resourcePathRequired') }}
+                </mat-error>
+              }
+              @if (hasResourcePathError('pattern')) {
+                <mat-error data-cy="resourcePathPatternError">
+                  {{ t('generateOpenapiSpecDialog.resourcePathPattern') }}
                 </mat-error>
               }
             </mat-form-field>

@@ -25,16 +25,24 @@ import {InputFieldComponent} from '../../input-field.component';
   imports: [MatFormFieldModule, MatLabel, FormField, MatError, MatInput],
 })
 export class ScaleInputFieldComponent extends InputFieldComponent<DefaultFixedPointConstraint> implements OnInit, OnDestroy {
-  private readonly model = signal<number | null>(null);
+  private readonly model = signal<number | string | null>(null);
   private unregisterField = () => undefined;
 
   readonly field = form(this.model, path => {
     required(path);
     validate(path, ({value}) => {
       const scale = value();
-      return scale === null || (Number.isInteger(scale) && scale > 0)
-        ? null
-        : {kind: 'pattern', message: 'Please provide a positive number'};
+      if (scale === null || scale === undefined || scale === '') {
+        return null;
+      }
+      if (typeof scale === 'number') {
+        return Number.isInteger(scale) && scale > 0 ? null : {kind: 'pattern', message: 'Please provide a positive number'};
+      }
+      if (typeof scale === 'string') {
+        const trimmed = scale.trim();
+        return trimmed === '' || /^[1-9]\d*$/.test(trimmed) ? null : {kind: 'pattern', message: 'Please provide a positive number'};
+      }
+      return {kind: 'pattern', message: 'Please provide a positive number'};
     });
     disabled(path, {when: () => !!this.metaModelElement && this.loadedFiles.isElementExtern(this.metaModelElement)});
   });

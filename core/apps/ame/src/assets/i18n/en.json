@@ -430,6 +430,7 @@
       "edit": "Edit {{value}}",
       "locateElement": "Locate element",
       "anonymous": "Anonymous (Inline Blank Node)",
+      "anonymousHint": "Define as an unnamed inline blank node within the parent element",
       "propertiesConfiguration": "Properties Configuration",
       "configure": "Configure",
       "propertiesModal": {

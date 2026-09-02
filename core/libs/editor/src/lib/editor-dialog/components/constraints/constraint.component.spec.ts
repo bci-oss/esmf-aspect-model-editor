@@ -22,7 +22,7 @@ import {DefaultAspect, DefaultConstraint, ModelElementCache, RdfModel} from '@es
 import {TranslocoTestingModule} from '@jsverse/transloco';
 import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
-import {of} from 'rxjs';
+import {BehaviorSubject} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {EditorModelService} from '../../editor-model.service';
 import {EditorDialogValidators} from '../../validators';
@@ -31,6 +31,7 @@ import {ConstraintComponent} from './constraint.component';
 describe('ConstraintComponent', () => {
   let component: ConstraintComponent;
   let fixture: ComponentFixture<ConstraintComponent>;
+  let elementSubject: BehaviorSubject<DefaultConstraint>;
 
   const dummyAspect = new DefaultAspect({
     aspectModelUrn: 'urn:test:1.0.0#Aspect',
@@ -43,8 +44,10 @@ describe('ConstraintComponent', () => {
     name: 'TestConstraint',
     metaModelVersion: '2.0.0',
   });
+  constraint.parents.push(dummyAspect);
 
   beforeEach(async () => {
+    elementSubject = new BehaviorSubject<DefaultConstraint>(constraint);
     await TestBed.configureTestingModule({
       imports: [
         ConstraintComponent,
@@ -53,8 +56,9 @@ describe('ConstraintComponent', () => {
       ],
       providers: [
         MockProvider(EditorModelService, {
-          getMetaModelElement: vi.fn(() => of(constraint)),
+          getMetaModelElement: vi.fn(() => elementSubject.asObservable()),
           isReadOnly: vi.fn(() => false),
+          updateMetaModelElement: vi.fn(),
         }),
         MockProvider(LoadedFilesService, {
           currentLoadedFile: new NamespaceFile(new RdfModel(new Store(), '2.0.0', 'urn:test:1.0.0#'), new ModelElementCache(), dummyAspect),
@@ -87,6 +91,7 @@ describe('ConstraintComponent', () => {
   });
 
   it('should toggle anonymous state and update name', () => {
+    expect(component.canBeAnonymous()).toBe(true);
     component.onAnonymousToggleChange(true);
     expect(component.isAnonymous()).toBe(true);
     expect(constraint.isAnonymous()).toBe(true);
@@ -96,6 +101,16 @@ describe('ConstraintComponent', () => {
     expect(component.isAnonymous()).toBe(false);
     expect(constraint.isAnonymous()).toBe(false);
     expect(constraint.name).toBe('Constraint');
+  });
+
+  it('should not allow anonymous when element has no parent', () => {
+    const constraintNoParent = new DefaultConstraint({
+      aspectModelUrn: 'urn:test:1.0.0#TestConstraintNoParent',
+      name: 'TestConstraintNoParent',
+      metaModelVersion: '2.0.0',
+    });
+    elementSubject.next(constraintNoParent);
+    expect(component.canBeAnonymous()).toBe(false);
   });
 
   it('should handle previous data change', () => {

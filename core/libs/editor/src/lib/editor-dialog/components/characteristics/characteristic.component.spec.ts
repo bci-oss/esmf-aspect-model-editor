@@ -18,11 +18,11 @@ import {RdfService} from '@ame/rdf/services';
 import {NotificationsService, SearchService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {DefaultCharacteristic, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
+import {DefaultAspect, DefaultCharacteristic, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {TranslocoTestingModule} from '@jsverse/transloco';
 import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
-import {of} from 'rxjs';
+import {BehaviorSubject} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {EditorModelService} from '../../editor-model.service';
 import {EditorSignalFormContext} from '../../forms/editor-signal-form-context';
@@ -32,14 +32,23 @@ import {CharacteristicComponent} from './characteristic.component';
 describe('CharacteristicComponent', () => {
   let component: CharacteristicComponent;
   let fixture: ComponentFixture<CharacteristicComponent>;
+  let elementSubject: BehaviorSubject<DefaultCharacteristic>;
+
+  const dummyAspect = new DefaultAspect({
+    aspectModelUrn: 'urn:test:1.0.0#Aspect',
+    name: 'Aspect',
+    metaModelVersion: '2.0.0',
+  });
 
   const char = new DefaultCharacteristic({
     aspectModelUrn: 'urn:test:1.0.0#Char',
     name: 'Char',
     metaModelVersion: '2.0.0',
   });
+  char.parents.push(dummyAspect);
 
   beforeEach(async () => {
+    elementSubject = new BehaviorSubject<DefaultCharacteristic>(char);
     await TestBed.configureTestingModule({
       imports: [
         CharacteristicComponent,
@@ -48,8 +57,9 @@ describe('CharacteristicComponent', () => {
       ],
       providers: [
         MockProvider(EditorModelService, {
-          getMetaModelElement: vi.fn(() => of(char)),
+          getMetaModelElement: vi.fn(() => elementSubject.asObservable()),
           isReadOnly: vi.fn(() => false),
+          updateMetaModelElement: vi.fn(),
         }),
         MockProvider(LoadedFilesService, {
           currentLoadedFile: new NamespaceFile(new RdfModel(new Store(), '2.0.0', 'urn:test:1.0.0#'), new ModelElementCache(), null),
@@ -105,5 +115,15 @@ describe('CharacteristicComponent', () => {
     component.onAnonymousToggleChange(false);
     expect(component.isAnonymous()).toBe(false);
     expect(component.signalForm().value()['isAnonymous']).toBe(false);
+  });
+
+  it('should not allow anonymous when element has no parent', () => {
+    const charNoParent = new DefaultCharacteristic({
+      aspectModelUrn: 'urn:test:1.0.0#CharNoParent',
+      name: 'CharNoParent',
+      metaModelVersion: '2.0.0',
+    });
+    elementSubject.next(charNoParent);
+    expect(component.canBeAnonymous()).toBe(false);
   });
 });

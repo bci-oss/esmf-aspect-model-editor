@@ -25,6 +25,7 @@ import {
 } from '@ame/editor';
 import {Component, computed, DestroyRef, inject, input, OnInit, signal} from '@angular/core';
 import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
+import {MatIcon} from '@angular/material/icon';
 import {MatSlideToggle} from '@angular/material/slide-toggle';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {StateCharacteristicComponent} from '../../components/characteristics/state-characteristic/state-characteristic.component';
@@ -36,6 +37,7 @@ import {PreviousFormDataSnapshot} from '../../interfaces';
 @Component({
   selector: 'ame-characteristic',
   templateUrl: './characteristic.component.html',
+  styleUrls: ['../fields/field.scss'],
   imports: [
     CharacteristicNameDropdownFieldComponent,
     BaseInputComponent,
@@ -50,6 +52,7 @@ import {PreviousFormDataSnapshot} from '../../interfaces';
     ElementListComponent,
     TranslocoDirective,
     MatSlideToggle,
+    MatIcon,
   ],
 })
 export class CharacteristicComponent implements OnInit {
@@ -68,7 +71,7 @@ export class CharacteristicComponent implements OnInit {
   public isAnonymous = signal(false);
   public canBeAnonymous = computed(() => {
     const el = this.element();
-    return Boolean(el && !el.isPredefined && !this.loadedFilesService.isElementExtern(el));
+    return Boolean(el && !el.isPredefined && !this.loadedFilesService.isElementExtern(el) && el.parents && el.parents.length > 0);
   });
 
   public characteristicClassType = signal(CharacteristicClassType);

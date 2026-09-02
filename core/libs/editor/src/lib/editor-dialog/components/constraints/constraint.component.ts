@@ -13,6 +13,7 @@
 import {LoadedFilesService} from '@ame/cache';
 import {AfterViewInit, ChangeDetectorRef, Component, computed, effect, inject, input, OnDestroy, signal} from '@angular/core';
 import {toSignal} from '@angular/core/rxjs-interop';
+import {MatIcon} from '@angular/material/icon';
 import {MatSlideToggle} from '@angular/material/slide-toggle';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../editor-model.service';
@@ -39,6 +40,7 @@ import {
 @Component({
   selector: 'ame-constraint',
   templateUrl: './constraint.component.html',
+  styleUrls: ['../fields/field.scss'],
   imports: [
     ElementListComponent,
     TranslocoDirective,
@@ -57,6 +59,7 @@ import {
     LowerBoundInputFieldComponent,
     RegularExpressionValueInputFieldComponent,
     MatSlideToggle,
+    MatIcon,
   ],
 })
 export class ConstraintComponent implements OnDestroy, AfterViewInit {
@@ -74,7 +77,7 @@ export class ConstraintComponent implements OnDestroy, AfterViewInit {
   public isAnonymous = signal(false);
   public canBeAnonymous = computed(() => {
     const el = this.element();
-    return Boolean(el && !el.isPredefined && !this.loadedFilesService.isElementExtern(el));
+    return Boolean(el && !el.isPredefined && !this.loadedFilesService.isElementExtern(el) && el.parents && el.parents.length > 0);
   });
 
   constructor() {

@@ -13,10 +13,21 @@
   -->
 
   @if (canBeAnonymous()) {
-    <div style="margin: 12px 0 16px 0">
-      <mat-slide-toggle [checked]="isAnonymous()" (change)="onAnonymousToggleChange($event.checked)">
-        {{ t('editorCanvas.shapeSetting.anonymous') }}
-      </mat-slide-toggle>
+    <div class="anonymous-toggle-card">
+      <div class="anonymous-toggle-card__content">
+        <div class="anonymous-toggle-card__title-row">
+          <mat-icon class="anonymous-toggle-card__icon">link_off</mat-icon>
+          <span class="anonymous-toggle-card__title">{{ t('editorCanvas.shapeSetting.anonymous') }}</span>
+        </div>
+        <p class="anonymous-toggle-card__hint">{{ t('editorCanvas.shapeSetting.anonymousHint') }}</p>
+      </div>
+      <mat-slide-toggle
+        [checked]="isAnonymous()"
+        [attr.aria-label]="t('editorCanvas.shapeSetting.anonymous')"
+        (change)="onAnonymousToggleChange($event.checked)"
+        color="primary"
+        data-cy="anonymousToggle"
+      />
     </div>
   }
 

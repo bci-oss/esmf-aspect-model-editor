@@ -423,6 +423,8 @@
       "cancel": "取消",
       "edit": "编辑 {{value}}",
       "locateElement": "定位元素",
+      "anonymous": "匿名（内联空白节点）",
+      "anonymousHint": "在父元素中定义为未命名的内联空白节点",
       "propertiesConfiguration": "属性Configuration",
       "configure": "配置",
       "propertiesModal": {

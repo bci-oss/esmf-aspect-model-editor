@@ -14,6 +14,7 @@
 import {LoadedFilesService} from '@ame/cache';
 import {Component, computed, effect, inject, input, signal} from '@angular/core';
 import {toSignal} from '@angular/core/rxjs-interop';
+import {MatIcon} from '@angular/material/icon';
 import {MatSlideToggle} from '@angular/material/slide-toggle';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {EditorModelService} from '../../editor-model.service';
@@ -24,7 +25,8 @@ import {BaseInputComponent, ValueInputFieldComponent} from '../fields';
 @Component({
   selector: 'ame-value',
   templateUrl: './value.component.html',
-  imports: [BaseInputComponent, ElementListComponent, TranslocoDirective, ValueInputFieldComponent, MatSlideToggle],
+  styleUrls: ['../fields/field.scss'],
+  imports: [BaseInputComponent, ElementListComponent, TranslocoDirective, ValueInputFieldComponent, MatSlideToggle, MatIcon],
 })
 export class ValueComponent {
   readonly signalForm = input(EditorSignalFormContext.create());
@@ -35,7 +37,7 @@ export class ValueComponent {
   public isAnonymous = signal(false);
   public canBeAnonymous = computed(() => {
     const el = this.element();
-    return Boolean(el && !el.isPredefined && !this.loadedFilesService.isElementExtern(el));
+    return Boolean(el && !el.isPredefined && !this.loadedFilesService.isElementExtern(el) && el.parents && el.parents.length > 0);
   });
 
   constructor() {

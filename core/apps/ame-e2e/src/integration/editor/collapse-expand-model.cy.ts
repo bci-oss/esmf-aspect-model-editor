@@ -20,7 +20,7 @@ describe('Test collapse/expand model', () => {
   it('should collapse the entire model', () => {
     cy.visitDefault();
     cy.startModelling()
-      .then(() => cy.get(SELECTOR_tbCollapseToggle).click({force: true}).wait(500))
+      .then(() => cy.get(SELECTOR_tbCollapseToggle).click({force: true}))
       .then(() => cyHelp.testShapeInCollapsedMode('AspectDefault'))
       .then(() => cyHelp.testShapeInCollapsedMode('property1'))
       .then(() => cyHelp.testShapeInCollapsedMode('Characteristic1'));

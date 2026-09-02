@@ -72,7 +72,7 @@ export class PropertiesButtonComponent {
         } as PropertiesDialogData,
         autoFocus: false,
       })
-      .afterClosed()
+      .beforeClosed()
       .pipe(takeUntilDestroyed(this.destroyRef), first())
       .subscribe((data: UpdatedProperties) => {
         if (!data) {

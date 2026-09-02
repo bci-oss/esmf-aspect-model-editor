@@ -29,7 +29,6 @@ describe('Test drag and drop ext constraint', () => {
   it('can add Constraint from external reference with different namespace', () => {
     const fileName = 'external-constraint-reference.ttl';
 
-    cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-response.json'});
     cy.intercept('GET', NAMESPACES_URL, {
       statusCode: 200,
       body: {

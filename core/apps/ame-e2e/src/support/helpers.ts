@@ -1,4 +1,3 @@
-/* eslint-disable cypress/no-unnecessary-waiting */
 /*
  * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
  *
@@ -15,9 +14,9 @@
 import {FileHandlingService} from '@ame/editor';
 import {MaxGraphAttributeService} from '@ame/max-graph';
 import {NamedElement} from '@esmf/aspect-model-loader';
+import {Cell, CellOverlay} from '@maxgraph/core';
 import {finalize} from 'rxjs/operators';
 import {FIELD_name, SELECTOR_editorSaveButton, SELECTOR_propertiesCancelButton, SIDEBAR_CLOSE_BUTTON} from './constants';
-import {Cell, CellOverlay} from '@maxgraph/core';
 
 /**
  * Provides helper functions for performing various actions and checks in Cypress tests related to a graphical interface.
@@ -69,12 +68,15 @@ export class cyHelp {
    * @returns {Cypress.Chainable} Cypress chainable object.
    */
   public static clickSaveButton(): Cypress.Chainable {
-    cy.wait(1000);
-    return this.forceChangeDetection().then(() => cy.get(SELECTOR_editorSaveButton).focus().click({force: true}));
+    return this.forceChangeDetection().then(() =>
+      cy.get(SELECTOR_editorSaveButton).should('be.visible').should('not.be.disabled').click({force: true}),
+    );
   }
 
   public static clickPropertiesCancelButton(): Cypress.Chainable {
-    return this.forceChangeDetection().then(() => cy.get(SELECTOR_propertiesCancelButton).focus().click({force: true}));
+    return this.forceChangeDetection().then(() =>
+      cy.get(SELECTOR_propertiesCancelButton).should('be.visible').should('not.be.disabled').click({force: true}),
+    );
   }
 
   /**
@@ -286,29 +288,21 @@ export class cyHelp {
    * @returns {Cypress.Chainable} Cypress chainable object.
    */
   static clickShape(name: string, selectMultipleShapes = false): Cypress.Chainable {
-    cy.getHTMLCell(name).should('exist');
+    const modifierKey = Cypress.platform !== 'darwin' ? '{ctrl}' : '{meta}';
 
     if (selectMultipleShapes) {
-      if (Cypress.platform !== 'darwin') {
-        cy.get('body').type('{ctrl}', {release: false, force: true});
-      } else {
-        cy.get('body').type('{meta}', {release: false, force: true});
-      }
+      cy.get('body').type(modifierKey, {release: false, force: true});
     }
 
-    if (Cypress.platform !== 'darwin') {
-      return cy
-        .getHTMLCell(name)
-        .first()
-        .click({force: true})
-        .then(() => cy.get('body').type('{ctrl}', {force: true}));
-    } else {
-      return cy
-        .getHTMLCell(name)
-        .first()
-        .click({force: true})
-        .then(() => cy.get('body').type('{meta}', {force: true}));
-    }
+    return cy
+      .getHTMLCell(name)
+      .scrollIntoView()
+      .click({force: true})
+      .then(() => {
+        if (selectMultipleShapes) {
+          cy.get('body').type(modifierKey, {force: true});
+        }
+      });
   }
 
   /**
@@ -318,7 +312,7 @@ export class cyHelp {
    * @returns {Cypress.Chainable} Cypress chainable object containing the label.
    */
   static getShapeLabelByKey(name: string, key: string) {
-    return cy.getHTMLCell(name).get(`.element-info[data-key="${key}"]`);
+    return cy.getHTMLCell(name).find(`.element-info[data-key="${key}"]`);
   }
 
   /**
@@ -342,11 +336,9 @@ export class cyHelp {
    * @param {string} newName - The new name to assign to the element.
    * @returns {Cypress.Chainable} - Returns a chainable Cypress command that performs the rename operation.
    */
-
   static renameElement(oldName: string, newName: string): Cypress.Chainable {
     return cy
-      .then(() => cy.dbClickShape(oldName))
-      .then(() => cy.get('#graph').click({force: true}))
+      .dbClickShape(oldName)
       .then(() => cy.get(FIELD_name).clear({force: true}).type(newName, {force: true}))
       .then(() => this.clickSaveButton());
   }

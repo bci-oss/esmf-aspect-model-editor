@@ -13,18 +13,11 @@
 
 /// <reference types="cypress" />
 
-import {NAMESPACES_URL} from '../../support/api-mocks';
-
 import {FIELD_name, SELECTOR_ecEvent, SELECTOR_elementBtn, SELECTOR_tbDeleteButton} from '../../support/constants';
 import {cyHelp} from '../../support/helpers';
 
 describe('Test edit Events', () => {
   it('can load events', () => {
-    cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-response.json'});
-    cy.intercept('GET', NAMESPACES_URL, {
-      statusCode: 200,
-      body: {},
-    });
     cy.visitDefault();
     cy.fixture('model-with-events')
       .as('rdfString')

@@ -1,4 +1,3 @@
-/* eslint-disable cypress/no-unnecessary-waiting */
 /*
  * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
  *
@@ -14,14 +13,9 @@
 
 /// <reference types="cypress" />
 
-import {NAMESPACES_URL} from '../../support/api-mocks';
-
-// TODO redo the setUpDynamicModellingInterceptors function
 describe('Elements count', () => {
   describe('Movement model', () => {
     it('should display elements count for incoming & outgoing edges', () => {
-      cy.intercept(NAMESPACES_URL, {statusCode: 200, body: {}});
-      cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-response.json'});
       cy.visitDefault();
       cy.fixture('/default-models/movement.txt')
         .then(rdfString => cy.loadModel(rdfString))
@@ -103,7 +97,6 @@ describe('Elements count', () => {
 
   describe('Enumeration instances model', () => {
     it('should display elements count for incoming & outgoing edges', () => {
-      cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-response.json'});
       cy.visitDefault();
       cy.fixture('/enumeration-instances.txt')
         .then(rdfString => cy.loadModel(rdfString))

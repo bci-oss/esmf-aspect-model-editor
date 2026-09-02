@@ -26,10 +26,6 @@ import {checkAspect, connectElements} from '../../../support/utils';
 describe('Test drag and drop ext characteristic', () => {
   it('can add Characteristic from external reference with same namespace', () => {
     const fileName = 'external-characteristic-reference.ttl';
-    cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-response.json'});
-    cy.intercept('GET', NAMESPACES_URL, {
-      'org.eclipse.examples.aspect:1.0.0': [fileName],
-    });
     cy.intercept('GET', NAMESPACES_URL, {
       statusCode: 200,
       body: {

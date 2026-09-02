@@ -26,7 +26,6 @@ import {checkAspectTree, connectElements, dragExternalReferenceWithChildren} fro
 describe('Test drag and drop ext properties', () => {
   const fileName = 'external-property-reference.ttl';
   it("can add Property with children's from external reference different namespace", () => {
-    cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-response.json'});
     cy.intercept('GET', NAMESPACES_URL, {
       statusCode: 200,
       body: {
@@ -90,7 +89,7 @@ describe('Test drag and drop ext properties', () => {
         .then(() => cyHelp.checkAspectDefaultExists())
         .then(() => cy.get(SELECTOR_workspaceBtn).click())
         .then(() => cy.get(SELECTOR_openNamespacesButton).contains(fileName).click({force: true}))
-        .then(() => cy.get(SELECTOR_searchElementsInp).type('externalPropertyWithChildren').wait(300))
+        .then(() => cy.get(SELECTOR_searchElementsInp).type('externalPropertyWithChildren'))
         .then(() => dragExternalReferenceWithChildren(SELECTOR_ecProperty, 100, 300))
         .then(() => cy.clickShape('externalPropertyWithChildren'))
         .then(() => connectElements('AspectDefault', 'externalPropertyWithChildren', true))

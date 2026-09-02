@@ -34,10 +34,16 @@
         <mat-header-cell *matHeaderCellDef>{{ t('editorCanvas.shapeSetting.propertiesModal.payloadName') }}</mat-header-cell>
         <mat-cell *matCellDef="let overwritten">
           @if (!(overwritten.disabled || overwritten.inherited)) {
-            @if (!isReadonly() && propertiesForm[overwritten.property.aspectModelUrn]) {
+            @if (!isReadonly()) {
               <mat-form-field>
                 <mat-label for="refines">Payload Name</mat-label>
-                <input [formField]="propertiesForm[overwritten.property.aspectModelUrn].payloadName" matInput />
+                <input
+                  [value]="propertiesModel()[overwritten.property.aspectModelUrn]?.payloadName || ''"
+                  [attr.data-cy]="'property-' + overwritten.property.name + '-payloadName'"
+                  [attr.name]="overwritten.property.aspectModelUrn + '.payloadName'"
+                  (input)="updatePayloadName(overwritten.property.aspectModelUrn, $any($event.target).value)"
+                  matInput
+                />
               </mat-form-field>
             } @else {
               <span>{{ propertiesModel()[overwritten.property.aspectModelUrn]?.payloadName }}</span>
@@ -49,8 +55,16 @@
       <ng-container matColumnDef="optional">
         <mat-header-cell *matHeaderCellDef>{{ t('editorCanvas.shapeSetting.propertiesModal.optional') }}</mat-header-cell>
         <mat-cell *matCellDef="let overwritten" [class.hidden]="overwritten.abstract">
-          @if (!isReadonly() && !(overwritten.disabled || overwritten.inherited) && propertiesForm[overwritten.property.aspectModelUrn]) {
-            <mat-checkbox [formField]="propertiesForm[overwritten.property.aspectModelUrn].optional"> Optional </mat-checkbox>
+          @if (!isReadonly() && !(overwritten.disabled || overwritten.inherited)) {
+            <mat-checkbox
+              [checked]="propertiesModel()[overwritten.property.aspectModelUrn]?.optional || false"
+              [attr.data-cy]="'property-' + overwritten.property.name + '-optional'"
+              [attr.name]="overwritten.property.aspectModelUrn + '.optional'"
+              (change)="updateOptional(overwritten.property.aspectModelUrn, $event.checked)"
+              (click)="updateOptional(overwritten.property.aspectModelUrn)"
+            >
+              Optional
+            </mat-checkbox>
           } @else {
             <mat-checkbox [disabled]="true" [checked]="propertiesModel()[overwritten.property.aspectModelUrn]?.optional">
               Optional
@@ -62,8 +76,16 @@
       <ng-container matColumnDef="notInPayload">
         <mat-header-cell *matHeaderCellDef>{{ t('editorCanvas.shapeSetting.propertiesModal.notInPayload') }}</mat-header-cell>
         <mat-cell *matCellDef="let overwritten">
-          @if (!isReadonly() && !(overwritten.disabled || overwritten.inherited) && propertiesForm[overwritten.property.aspectModelUrn]) {
-            <mat-checkbox [formField]="propertiesForm[overwritten.property.aspectModelUrn].notInPayload"> Not In Payload </mat-checkbox>
+          @if (!isReadonly() && !(overwritten.disabled || overwritten.inherited)) {
+            <mat-checkbox
+              [checked]="propertiesModel()[overwritten.property.aspectModelUrn]?.notInPayload || false"
+              [attr.data-cy]="'property-' + overwritten.property.name + '-notInPayload'"
+              [attr.name]="overwritten.property.aspectModelUrn + '.notInPayload'"
+              (change)="updateNotInPayload(overwritten.property.aspectModelUrn, $event.checked)"
+              (click)="updateNotInPayload(overwritten.property.aspectModelUrn)"
+            >
+              Not In Payload
+            </mat-checkbox>
           } @else {
             <mat-checkbox [disabled]="true" [checked]="propertiesModel()[overwritten.property.aspectModelUrn]?.notInPayload">
               Not In Payload

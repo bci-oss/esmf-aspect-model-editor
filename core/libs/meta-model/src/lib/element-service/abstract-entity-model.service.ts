@@ -46,8 +46,14 @@ export class AbstractEntityModelService extends BaseModelService {
     const metaModelElement = MaxGraphHelper.getModelElement<DefaultEntity>(cell);
 
     if (form.editedProperties) {
+      if (!metaModelElement.propertiesPayload) {
+        metaModelElement.propertiesPayload = {};
+      }
       for (const property of metaModelElement.properties) {
         const newKeys: Record<string, any> = form.editedProperties[property.aspectModelUrn];
+        if (!newKeys) {
+          continue;
+        }
         if (!metaModelElement.propertiesPayload[property.aspectModelUrn]) {
           metaModelElement.propertiesPayload[property.aspectModelUrn] = {} as any;
         }

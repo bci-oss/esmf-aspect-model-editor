@@ -1,4 +1,3 @@
-/* eslint-disable cypress/no-unnecessary-waiting */
 /*
  * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
  *
@@ -24,7 +23,6 @@ describe('Test search for element', () => {
       cy.clickAddShapePlusIcon('AspectDefault');
       cy.clickAddShapePlusIcon('AspectDefault');
       cy.clickAddShapePlusIcon('AspectDefault');
-      cy.wait(250);
       cy.searchesStateService().then(() =>
         cy
           .get(SELECTOR_searchInputField)
@@ -70,7 +68,6 @@ describe('Test search for element', () => {
         .type('c{enter}', {force: true})
         .type('1{enter}', {force: true})
         .type('${enter}', {force: true})
-        .wait(250)
         .get('.mat-mdc-autocomplete-panel')
         .children('mat-option')
         .then(listing => {

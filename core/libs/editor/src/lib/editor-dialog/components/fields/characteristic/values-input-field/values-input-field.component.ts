@@ -78,7 +78,7 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
   private readonly chipListModel = signal<string[]>([]);
   readonly searchField = form(this.searchModel, path => disabled(path, {when: this.blocked}));
   readonly chipListField = form(this.chipListModel, path => {
-    validate(path, () => (this.enumValues().length ? null : {kind: 'required', message: 'Please provide at least one enumeration value'}));
+    validate(path, ({value}) => (value()?.length ? null : {kind: 'required', message: 'Please provide at least one enumeration value'}));
     disabled(path, {when: this.blocked});
   });
   public enumEntityValues = computed(() => this.enumValues().filter(v => v instanceof DefaultEntityInstance));
@@ -236,7 +236,13 @@ export class ValuesInputFieldComponent extends InputFieldComponent<DefaultEnumer
 
   private syncFormValues() {
     const values = this.enumValues();
-    this.chipListModel.set(values.map(v => (v instanceof DefaultValue ? v.name : (v as any)?.value || (v as any)?.name || '')));
+    const names = values.map(v => (v instanceof DefaultValue ? v.name : (v as any)?.value || (v as any)?.name || ''));
+    this.chipListModel.set(names);
+    try {
+      this.chipListField()?.value.set(names);
+    } catch {
+      // ignore before form is bound
+    }
     this.signalForm().set('chipList', values);
     this.signalForm().set('enumValues', values);
   }

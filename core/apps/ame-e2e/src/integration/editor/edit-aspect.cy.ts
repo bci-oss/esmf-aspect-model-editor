@@ -1,4 +1,3 @@
-/* eslint-disable cypress/no-unnecessary-waiting */
 /*
  * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
  *
@@ -232,7 +231,8 @@ describe('Test editing Aspect', () => {
       .then(() => cy.clickShape('NewAspect'))
       .then(() => cy.get(SELECTOR_tbDeleteButton).click({force: true}))
       .then(() => cy.get(FIELD_renameModelInput).type('sharedModel'))
-      .then(() => cy.get(BUTTON_renameModelConfirm).click().wait(500))
+      .then(() => cy.get(BUTTON_renameModelConfirm).click())
+      .then(() => cy.get(BUTTON_renameModelConfirm).should('not.exist'))
       .then(() => cy.getUpdatedRDF().then(rdf => expect(rdf).not.to.contain('NewAspect')));
   });
 });

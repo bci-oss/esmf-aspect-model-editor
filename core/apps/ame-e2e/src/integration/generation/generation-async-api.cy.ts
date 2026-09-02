@@ -1,4 +1,3 @@
-/* eslint-disable cypress/no-unnecessary-waiting */
 /*
  * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
  *
@@ -27,38 +26,35 @@ describe('Test generation and download of async api specification', () => {
   it('Can generate valid JSON Async Api Specification', () => {
     cy.visitDefault();
     cy.startModelling()
-      .then(() => cy.openGenerationAsyncApiSpec().wait(500))
-      .wait(500)
+      .then(() => cy.openGenerationAsyncApiSpec())
       .then(() => cy.get(GENERATION_tbOutputButton).click())
       .then(() => cy.get(GENERATION_tbOutputButton_JSON).click())
-      .then(() => cy.get(GENERATION_tbApplicationIdInput).focus().clear().type('application:id').blur())
-      .then(() => cy.get(GENERATION_tbChannelAddressInput).focus().clear().type('foo/bar').blur())
-      .then(() => cy.get(GENERATION_tbGenerateAsyncApiButton).click().wait(5000))
-      .then(() => cy.fixture('cypress/downloads/AspectDefault-async-api.json'));
+      .then(() => cy.get(GENERATION_tbApplicationIdInput).clear().type('application:id'))
+      .then(() => cy.get(GENERATION_tbChannelAddressInput).clear().type('foo/bar'))
+      .then(() => cy.get(GENERATION_tbGenerateAsyncApiButton).click())
+      .then(() => cy.readFile('apps/ame-e2e/cypress/downloads/AspectDefault-async-api.json'));
   });
 
   it('Can generate valid YAML Async Api Specification', () => {
     cy.visitDefault();
     cy.startModelling()
-      .then(() => cy.openGenerationAsyncApiSpec().wait(500))
-      .wait(500)
-      .then(() => cy.get(GENERATION_tbApplicationIdInput).focus().clear().type('application:id').blur())
-      .then(() => cy.get(GENERATION_tbChannelAddressInput).focus().clear().type('foo/bar').blur())
-      .then(() => cy.get(GENERATION_tbGenerateAsyncApiButton).click().wait(5000))
-      .then(() => cy.fixture('cypress/downloads/AspectDefault-async-api.yaml'));
+      .then(() => cy.openGenerationAsyncApiSpec())
+      .then(() => cy.get(GENERATION_tbApplicationIdInput).clear().type('application:id'))
+      .then(() => cy.get(GENERATION_tbChannelAddressInput).clear().type('foo/bar'))
+      .then(() => cy.get(GENERATION_tbGenerateAsyncApiButton).click())
+      .then(() => cy.readFile('apps/ame-e2e/cypress/downloads/AspectDefault-async-api.yaml'));
   });
 
   it('Can generate and download valid package for Async Api Specification', () => {
     cy.visitDefault();
     cy.startModelling()
-      .then(() => cy.openGenerationAsyncApiSpec().wait(500))
-      .wait(500)
+      .then(() => cy.openGenerationAsyncApiSpec())
       .then(() => cy.get(GENERATION_tbOutputButton).click())
       .then(() => cy.get(GENERATION_tbOutputButton_JSON).click())
-      .then(() => cy.get(GENERATION_tbApplicationIdInput).focus().clear().type('application:id').blur())
-      .then(() => cy.get(GENERATION_tbChannelAddressInput).focus().clear().type('foo/bar').blur())
+      .then(() => cy.get(GENERATION_tbApplicationIdInput).clear().type('application:id'))
+      .then(() => cy.get(GENERATION_tbChannelAddressInput).clear().type('foo/bar'))
       .then(() => cy.get(GENERATION_writeSeparateFilesCheckbox).click())
-      .then(() => cy.get(GENERATION_tbGenerateAsyncApiButton).click().wait(5000))
-      .then(() => cy.fixture('cypress/downloads/AspectDefault-async-api.zip'));
+      .then(() => cy.get(GENERATION_tbGenerateAsyncApiButton).click())
+      .then(() => cy.readFile('apps/ame-e2e/cypress/downloads/AspectDefault-async-api.zip'));
   });
 });

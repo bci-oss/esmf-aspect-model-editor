@@ -1,4 +1,3 @@
-/* eslint-disable cypress/no-unnecessary-waiting */
 /*
  * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
  *
@@ -133,7 +132,6 @@ describe('Create and Edit Abstract Property', () => {
       cy.fixture('abstract-property')
         .as('rdfString')
         .then(rdfString => cy.loadModel(rdfString))
-        .wait(500)
         .then(() => cy.clickShape('abstractProperty1'));
     });
 
@@ -158,7 +156,6 @@ describe('Create and Edit Abstract Property', () => {
     it('should create model', () => {
       cy.visitDefault();
       cy.startModelling()
-        .wait(500)
         .then(() => cy.get(SELECTOR_elementBtn).click())
         .then(() => cy.dragElement(SELECTOR_ecAbstractEntity, 350, 300))
         .then(() => cy.clickShape('AbstractEntity1'));
@@ -179,13 +176,13 @@ describe('Create and Edit Abstract Property', () => {
         .then(() => cy.get(FIELD_preferredNameen).type('Preferred Name 1', {force: true}))
         .then(() => cy.get(FIELD_descriptionen).type('Description 1', {force: true}))
         .then(() => cy.addSeeElements('http://test1.com'))
-        .then(() => cyHelp.clickSaveButton().wait(500))
+        .then(() => cyHelp.clickSaveButton())
 
         .then(() => cy.dbClickShape('abstractProperty2'))
         .then(() => cy.get(FIELD_preferredNameen).type('Preferred Name 2', {force: true}))
         .then(() => cy.get(FIELD_descriptionen).type('Description 2', {force: true}))
         .then(() => cy.addSeeElements('http://test2.com'))
-        .then(() => cyHelp.clickSaveButton().wait(500));
+        .then(() => cyHelp.clickSaveButton());
 
       cy.getCellLabel('[abstractProperty1]', 'extends').should('eq', 'extends = abstractProperty1');
       cy.getCellLabel('[abstractProperty1]', 'preferredName').should('eq', 'Inherited\npreferredName = Preferred Name 1 @en');

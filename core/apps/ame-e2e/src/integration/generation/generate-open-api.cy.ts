@@ -1,4 +1,3 @@
-/* eslint-disable cypress/no-unnecessary-waiting */
 /*
  * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
  *
@@ -38,7 +37,7 @@ describe('Test generation and download of open api specification', () => {
   it('Can generate valid JSON Open Api Specification with resource path', () => {
     cy.visitDefault();
     cy.startModelling()
-      .then(() => cy.openGenerationOpenApiSpec().wait(500))
+      .then(() => cy.openGenerationOpenApiSpec())
       .then(() => cy.get(GENERATION_tbOutputButton).click())
       .then(() => cy.get(GENERATION_tbOutputButton_JSON).click())
       .then(() => cy.get(GENERATION_resourcePathTitle).should('not.exist'))
@@ -50,7 +49,8 @@ describe('Test generation and download of open api specification', () => {
           .should('be.visible')
           .should('contain.text', 'Resource Path - The resource path for the Aspect API endpoints'),
       )
-      .then(() => cy.get(GENERATION_resourcePathInput).should('exist').should('be.visible').focus().clear().blur())
+      .then(() => cy.get(GENERATION_resourcePathInput).should('exist').should('be.visible').click().clear())
+      .then(() => cy.get(GENERATION_resourcePathTitle).click())
       .then(() =>
         cy
           .get(GENERATION_resourcePathRequiredError)
@@ -71,14 +71,14 @@ describe('Test generation and download of open api specification', () => {
       .then(() => cy.get(GENERATION_uploadContentFileInput).attachFile('valid-json.json'))
       .then(() => cy.get(GENERATION_uploadContent).should('not.exist'))
       .then(() => cy.get(GENERATION_accordionTitle).should('exist').should('be.visible').should('contain.text', 'Properties'))
-      .then(() => cy.get(GENERATION_tbGenerateOpenApiButton).click().wait(5000))
-      .then(() => cy.fixture('cypress/downloads/AspectDefault-open-api.json'));
+      .then(() => cy.get(GENERATION_tbGenerateOpenApiButton).click({force: true}))
+      .then(() => cy.readFile('apps/ame-e2e/cypress/downloads/AspectDefault-open-api.json'));
   });
 
   it('Can generate valid JSON Open Api Specification', () => {
     cy.visitDefault();
     cy.startModelling()
-      .then(() => cy.openGenerationOpenApiSpec().wait(500))
+      .then(() => cy.openGenerationOpenApiSpec())
       .then(() => cy.get(GENERATION_tbOutputButton).click())
       .then(() => cy.get(GENERATION_tbOutputButton_JSON).click())
       .then(() => cy.get(GENERATION_tbBaseUrlInput).focus().clear().blur())
@@ -86,16 +86,15 @@ describe('Test generation and download of open api specification', () => {
         cy.get(GENERATION_tbBaseUrlInputError).should('exist').should('be.visible').should('contain.text', 'Please add a valid url'),
       )
       .then(() => cy.get(GENERATION_tbBaseUrlInput).focus().type('https://example.com').blur())
-      .wait(7000)
       .then(() => cy.get(GENERATION_tbBaseUrlInputError).should('not.exist'))
-      .then(() => cy.get(GENERATION_tbGenerateOpenApiButton).click({force: true}).wait(5000))
-      .then(() => cy.fixture('cypress/downloads/AspectDefault-open-api.json'));
+      .then(() => cy.get(GENERATION_tbGenerateOpenApiButton).click({force: true}))
+      .then(() => cy.readFile('apps/ame-e2e/cypress/downloads/AspectDefault-open-api.json'));
   });
 
   it('Can generate valid YAML Open Api Specification with resource path', () => {
     cy.visitDefault();
     cy.startModelling()
-      .then(() => cy.openGenerationOpenApiSpec().wait(500))
+      .then(() => cy.openGenerationOpenApiSpec())
       .then(() => cy.get(GENERATION_resourcePathTitle).should('not.exist'))
       .then(() => cy.get(GENERATION_activateResourcePathCheckbox).click())
       .then(() =>
@@ -105,7 +104,8 @@ describe('Test generation and download of open api specification', () => {
           .should('be.visible')
           .should('contain.text', 'Resource Path - The resource path for the Aspect API endpoints'),
       )
-      .then(() => cy.get(GENERATION_resourcePathInput).should('exist').should('be.visible').focus().clear().blur())
+      .then(() => cy.get(GENERATION_resourcePathInput).should('exist').should('be.visible').click().clear())
+      .then(() => cy.get(GENERATION_resourcePathTitle).click())
       .then(() =>
         cy
           .get(GENERATION_resourcePathRequiredError)
@@ -126,16 +126,14 @@ describe('Test generation and download of open api specification', () => {
       .then(() => cy.get(GENERATION_uploadContentFileInput).attachFile('valid-yml.yml'))
       .then(() => cy.get(GENERATION_uploadContent).should('not.exist'))
       .then(() => cy.get(GENERATION_accordionTitle).should('exist').should('be.visible').should('contain.text', 'Properties'))
-      .wait(3000)
       .then(() => cy.get(GENERATION_tbGenerateOpenApiButton).click({force: true}))
-      .wait(3000)
-      .then(() => cy.fixture('cypress/downloads/AspectDefault-open-api.yaml'));
+      .then(() => cy.readFile('apps/ame-e2e/cypress/downloads/AspectDefault-open-api.yaml'));
   });
 
   it('Can generate and download valid YAML Open Api Specification', () => {
     cy.visitDefault();
     cy.startModelling()
-      .then(() => cy.openGenerationOpenApiSpec().wait(500))
+      .then(() => cy.openGenerationOpenApiSpec())
       .then(() => cy.get(GENERATION_tbOutputButton).click())
       .then(() => cy.get(GENERATION_tbOutputButton_YAML).click())
       .then(() => cy.get(GENERATION_tbBaseUrlInput).focus().clear().blur())
@@ -143,16 +141,15 @@ describe('Test generation and download of open api specification', () => {
         cy.get(GENERATION_tbBaseUrlInputError).should('exist').should('be.visible').should('contain.text', 'Please add a valid url'),
       )
       .then(() => cy.get(GENERATION_tbBaseUrlInput).focus().clear().type('https://example.com').blur())
-      .wait(7000)
       .then(() => cy.get(GENERATION_tbBaseUrlInputError).should('not.exist'))
-      .then(() => cy.get(GENERATION_tbGenerateOpenApiButton).click({force: true}).wait(5000))
-      .then(() => cy.fixture('cypress/downloads/AspectDefault-open-api.yaml'));
+      .then(() => cy.get(GENERATION_tbGenerateOpenApiButton).click({force: true}))
+      .then(() => cy.readFile('apps/ame-e2e/cypress/downloads/AspectDefault-open-api.yaml'));
   });
 
   it('Test some generate variations', () => {
     cy.visitDefault();
     cy.startModelling()
-      .then(() => cy.openGenerationOpenApiSpec().wait(500))
+      .then(() => cy.openGenerationOpenApiSpec())
       .then(() => cy.get(GENERATION_resourcePathTitle).should('not.exist'))
       .then(() => {
         cy.get(GENERATION_activateResourcePathCheckbox).click();
@@ -201,7 +198,7 @@ describe('Test generation and download of open api specification', () => {
   it('should show the checkboxs when the expansion panel Include API extensions is opened', () => {
     cy.visitDefault();
     cy.startModelling()
-      .then(() => cy.openGenerationOpenApiSpec().wait(500))
+      .then(() => cy.openGenerationOpenApiSpec())
       .then(() =>
         cy
           .get('[data-cy=includeAPIextensions]')

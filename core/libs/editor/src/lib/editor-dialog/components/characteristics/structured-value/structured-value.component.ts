@@ -122,15 +122,17 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
       return;
     }
 
-    this.handlePredefinedRegex();
     this.selectedRule.set(selectedRule.regex);
     this.deconstructionRuleModel.set(selectedRule.regex);
     this.ruleLocked.set(true);
     this.elementsModel.set([...predefinedRule.elements]);
+    this.elements = predefinedRule.elements;
     this.signalForm().set('elements', [...predefinedRule.elements]);
+    this.handlePredefinedRegex();
   }
 
   openModal() {
+    this.rebuildElements();
     this.matDialog
       .open(StructuredValuePropertiesComponent, {
         data: {
@@ -138,7 +140,7 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
           parentProperties: this.metaModelElement?.parents || [],
         },
       })
-      .afterClosed()
+      .beforeClosed()
       .pipe(take(1))
       .subscribe(value => {
         if (!value) {

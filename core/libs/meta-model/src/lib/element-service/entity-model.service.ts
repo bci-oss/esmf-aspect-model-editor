@@ -46,6 +46,9 @@ export class EntityModelService extends BaseModelService {
     const modelElement = MaxGraphHelper.getModelElement<DefaultEntity>(cell);
 
     if (form.editedProperties) {
+      if (!modelElement.propertiesPayload) {
+        modelElement.propertiesPayload = {};
+      }
       for (const property of modelElement.properties) {
         const newKeys = form.editedProperties[property.aspectModelUrn];
         if (!newKeys) {

@@ -11,7 +11,6 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MaxGraphAttributeService} from '@ame/max-graph';
 import {cyHelp} from './helpers';
 
 export function connectElements(parent: string, child: string, expected: boolean) {
@@ -70,29 +69,7 @@ export function checkAspectTree(aspect) {
 }
 
 export const dragExternalReferenceWithChildren = (selector: string, x: number, y: number) => {
-  cy.getMaxgraphAttributeService().then((service: MaxGraphAttributeService) => {
-    const container = service.graph.container;
-    const {scrollLeft, scrollTop} = container;
-
-    const graphX = scrollLeft + x;
-    const graphY = scrollTop + y;
-
-    if (Cypress.platform === 'darwin') {
-      cy.get(':nth-child(1) > ' + selector).trigger('mousedown', {which: 1});
-      cy.get(':nth-child(1) > ' + selector).trigger('mousemove', {clientX: graphX, clientY: graphY, waitForAnimations: true});
-      cy.get('#graph > svg').click(graphX, graphY, {force: true});
-      cy.get('#graph > svg').trigger('mouseup', {force: true});
-    } else {
-      cy.get(':nth-child(1) > ' + selector).trigger('pointerdown', {which: 1});
-      cy.get(':nth-child(1) > ' + selector).trigger('pointermove', {
-        clientX: graphX,
-        clientY: graphY,
-        waitForAnimations: true,
-      });
-      cy.get('#graph > svg').click(graphX, graphY, {force: true});
-      cy.get('#graph > svg').trigger('pointerup', {force: true});
-    }
-  });
+  return cy.dragElement(`:nth-child(1) > ${selector}`, x, y);
 };
 
 export const loadModel = (fixturePath: string) => {

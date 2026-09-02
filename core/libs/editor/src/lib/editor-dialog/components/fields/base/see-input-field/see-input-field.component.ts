@@ -113,12 +113,10 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
       const seeValue = this.getCurrentValue();
       const decodedValue = this.decodeUriComponent(seeValue);
       this.elements.set(
-        [...(decodedValue?.split(',') || [])]
-          .filter(Boolean)
-          .map(urn => ({
-            name: urn.includes('#') && urn.startsWith('urn:samm') ? urn.split('#')[1] : '',
-            urn,
-          })),
+        [...(decodedValue?.split(',') || [])].filter(Boolean).map(urn => ({
+          name: urn.includes('#') && urn.startsWith('urn:samm') ? urn.split('#')[1] : '',
+          urn,
+        })),
       );
     });
   }
@@ -187,12 +185,10 @@ export class SeeInputFieldComponent extends InputFieldComponent<NamedElement> im
     this.seeModel.set(decodedValue || '');
     this.unregisterField = this.signalForm().register(this.fieldName, this.seeField);
     this.elements.set(
-      [...(decodedValue?.split(',') || [])]
-        .filter(Boolean)
-        .map(urn => ({
-          name: urn.includes('#') && urn.startsWith('urn:samm') ? urn.split('#')[1] : '',
-          urn,
-        })),
+      [...(decodedValue?.split(',') || [])].filter(Boolean).map(urn => ({
+        name: urn.includes('#') && urn.startsWith('urn:samm') ? urn.split('#')[1] : '',
+        urn,
+      })),
     );
   }
 

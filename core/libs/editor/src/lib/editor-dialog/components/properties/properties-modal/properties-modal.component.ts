@@ -181,6 +181,35 @@ export class PropertiesModalComponent implements OnInit, AfterViewInit {
     this.dialogRef.close();
   }
 
+  updateOptional(urn: string, checked?: boolean) {
+    this.propertiesModel.update(model => {
+      const current = model[urn]?.optional || false;
+      const next = checked !== undefined ? checked : !current;
+      return {
+        ...model,
+        [urn]: {...model[urn], optional: next},
+      };
+    });
+  }
+
+  updateNotInPayload(urn: string, checked?: boolean) {
+    this.propertiesModel.update(model => {
+      const current = model[urn]?.notInPayload || false;
+      const next = checked !== undefined ? checked : !current;
+      return {
+        ...model,
+        [urn]: {...model[urn], notInPayload: next},
+      };
+    });
+  }
+
+  updatePayloadName(urn: string, value: string) {
+    this.propertiesModel.update(model => ({
+      ...model,
+      [urn]: {...model[urn], payloadName: value},
+    }));
+  }
+
   saveChanges() {
     this.dialogRef.close(this.propertiesModel());
   }

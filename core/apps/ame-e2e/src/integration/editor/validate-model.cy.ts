@@ -18,7 +18,6 @@ import {SELECTOR_notificationsBtn, SELECTOR_notificationsDialogCloseButton} from
 describe('Test validate Aspect', () => {
   it('can validate default model', () => {
     cy.visitDefault();
-    cy.wait(1000);
     cy.startModellingInvalidModel();
     cy.get(SELECTOR_notificationsBtn)
       .click()

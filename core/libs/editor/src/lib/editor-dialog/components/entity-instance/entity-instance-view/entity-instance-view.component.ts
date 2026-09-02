@@ -147,7 +147,7 @@ export class EntityInstanceViewComponent implements OnInit, OnDestroy {
     };
     this.matDialog
       .open(EntityInstanceModalComponent, config)
-      .afterClosed()
+      .beforeClosed()
       .pipe(filter(entityValue => entityValue))
       .subscribe((entityValueConfig: NewEntityInstanceDialogResult) => {
         if (!entityValueConfig) {

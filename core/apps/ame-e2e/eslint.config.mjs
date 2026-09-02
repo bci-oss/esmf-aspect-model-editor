@@ -10,6 +10,9 @@ const compat = new FlatCompat({
 });
 
 export default [
+  {
+    ignores: ['**/*.html', '**/fixtures/**', '**/downloads/**', '**/coverage/**'],
+  },
   ...baseConfig,
   ...compat.extends('plugin:cypress/recommended'),
   {
@@ -27,8 +30,5 @@ export default [
       '@typescript-eslint/no-empty-function': 'off',
       'no-undef': 'off',
     },
-  },
-  {
-    ignores: ['**/*.html'],
   },
 ];

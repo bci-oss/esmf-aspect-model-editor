@@ -190,7 +190,8 @@ export class ElementModelService {
       return false;
     }
     this.renameModelService.open().subscribe(data => {
-      if (!data?.name) {
+      const fileName = data?.fileName || (data as any)?.name;
+      if (!fileName) {
         return;
       }
 
@@ -199,7 +200,7 @@ export class ElementModelService {
       this.modelService.removeAspect();
       this.removeElementData(cell);
 
-      this.loadedFilesService.updateAbsoluteName(oldAbsoluteName, `${loadedFile.namespace}:${data.name}`);
+      this.loadedFilesService.updateAbsoluteName(oldAbsoluteName, `${loadedFile.namespace}:${fileName}`);
       this.titleService.updateTitle(loadedFile.absoluteName);
     });
 

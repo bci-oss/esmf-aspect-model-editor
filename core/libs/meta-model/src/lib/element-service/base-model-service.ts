@@ -60,7 +60,7 @@ export abstract class BaseModelService {
         this.currentCachedFile.updateElementKey(oldUrn, newUrn);
         modelElement.aspectModelUrn = newUrn;
       }
-    } else {
+    } else if (form.name !== undefined) {
       const newName = form.name?.startsWith('[')
         ? modelElement.className
           ? modelElement.className.replace('Default', '')

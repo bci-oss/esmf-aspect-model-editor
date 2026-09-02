@@ -1,4 +1,3 @@
-/* eslint-disable cypress/no-unnecessary-waiting */
 /*
  * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
  *
@@ -24,8 +23,7 @@ describe('Test language settings', () => {
     cy.startModelling();
     cy.get(SELECTOR_settingsButton)
       .click()
-      .wait(1000)
-      .then(() => cy.get(':nth-child(7) > .settings__node').click())
+      .then(() => cy.get(':nth-child(7) > .settings__node').should('be.visible').click())
       .then(() => cy.get(copyrightField).should('exist').clear().should('have.value', ''));
   });
 

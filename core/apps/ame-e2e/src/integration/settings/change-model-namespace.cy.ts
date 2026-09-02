@@ -1,4 +1,3 @@
-/* eslint-disable cypress/no-unnecessary-waiting */
 /*
  * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
  *
@@ -229,7 +228,8 @@ describe('Test namespace settings dialog', () => {
   });
 
   function openNamespaceSettings() {
-    return cy.get(SELECTOR_settingsButton).click().wait(1000).get(':nth-child(6) > .settings__node').click();
+    cy.get(SELECTOR_settingsButton).click();
+    return cy.get(':nth-child(6) > .settings__node').should('be.visible').click();
   }
 
   function verifyNamespaceSettings(namespace: string, version: string): void {

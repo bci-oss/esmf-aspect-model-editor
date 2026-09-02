@@ -1,4 +1,3 @@
-/* eslint-disable cypress/no-unnecessary-waiting */
 /*
  * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
  *
@@ -20,8 +19,8 @@ describe('Test generation and download of Aspect Model documentation', () => {
   it('Can generate and download valid Aspect Model documentation', () => {
     cy.visitDefault();
     cy.startModelling()
-      .then(() => cy.openGenerationDocumentation().wait(500))
-      .then(() => cy.get(GENERATION_tbDownloadDoc).click({force: true}).wait(5000))
-      .then(() => cy.fixture('cypress/downloads/AspectDefault-documentation.html'));
+      .then(() => cy.openGenerationDocumentation())
+      .then(() => cy.get(GENERATION_tbDownloadDoc).should('be.visible').click({force: true}))
+      .then(() => cy.readFile('apps/ame-e2e/cypress/downloads/AspectDefault-documentation.html'));
   });
 });

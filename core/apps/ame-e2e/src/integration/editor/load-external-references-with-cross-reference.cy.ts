@@ -1,4 +1,3 @@
-/* eslint-disable cypress/no-unnecessary-waiting */
 /*
  * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
  *
@@ -21,7 +20,6 @@ import {cyHelp} from '../../support/helpers';
 // TODO redo all interceptors
 describe.skip('Test load external reference with cross references', () => {
   it('Loading different elements from cross referenced file one way', () => {
-    cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-response.json'});
     cy.intercept('GET', NAMESPACES_URL, {
       'org.eclipse.digitaltwin:1.0.0': [
         'external-entity-reference.txt',
@@ -131,7 +129,6 @@ describe.skip('Test load external reference with cross references', () => {
     cy.fixture('/external-reference/cross-references/model-with-cross-referenced-element')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
-      .wait(500)
       .then(() => cyHelp.checkAspectDefaultExists())
       .then(() => cy.getAspect())
       .then(aspect => {
@@ -185,7 +182,6 @@ describe.skip('Test load external reference with cross references', () => {
   });
 
   it('Loading different elements from cross referenced file mixing', () => {
-    cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-response.json'});
     cy.intercept('GET', NAMESPACES_URL, {
       'org.eclipse.digitaltwin:1.0.0': [
         'external-entity-reference.txt',
@@ -245,7 +241,6 @@ describe.skip('Test load external reference with cross references', () => {
     cy.fixture('/external-reference/cross-references/model-with-cross-referenced-element-with-mixing-namespaces')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
-      .wait(500)
       .then(() => cyHelp.checkAspectDefaultExists())
       .then(() => cy.getAspect())
       .then(aspect => {

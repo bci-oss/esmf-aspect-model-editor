@@ -26,7 +26,6 @@ import {checkRelationParentChild, connectElements} from '../../../support/utils'
 describe('Test drag and drop ext properties', () => {
   const fileName = 'external-property-reference.ttl';
   it('can add Property from external reference with same namespace', () => {
-    cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-response.json'});
     cy.intercept('GET', NAMESPACES_URL, {
       statusCode: 200,
       body: {

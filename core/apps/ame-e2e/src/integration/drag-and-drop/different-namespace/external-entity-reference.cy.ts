@@ -26,7 +26,6 @@ import {checkAspectAndChildrenEntity, connectElements} from '../../../support/ut
 describe('Test drag and drop', () => {
   it('can add Entity from external reference with different namespace', () => {
     const fileName = 'external-entity-reference.ttl';
-    cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-response.json'});
     cy.intercept('GET', NAMESPACES_URL, {
       statusCode: 200,
       body: {

@@ -1,4 +1,3 @@
-/* eslint-disable cypress/no-unnecessary-waiting */
 /*
  * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
  *
@@ -169,7 +168,7 @@ describe('Create and Edit Abstract Entity', () => {
         .then(() => cy.dragElement(SELECTOR_ecAbstractEntity, 350, 300).then(() => cy.clickShape('AbstractEntity1')))
         .then(() => cy.dragElement(SELECTOR_ecAbstractEntity, 350, 300).then(() => cy.clickShape('AbstractEntity2')))
         .then(() => cy.clickConnectShapes('AbstractEntity1', 'AbstractEntity2'))
-        .then(() => cy.get('[data-cy="formatButton"]').click({force: true}).wait(200))
+        .then(() => cy.get('[data-cy="formatButton"]').click({force: true}))
         .then(() => cy.dbClickShape('AbstractEntity1'))
         .then(() => cy.get(FIELD_extends).should('have.value', 'AbstractEntity2'))
         .then(() => cy.get(SELECTOR_editorCancelButton).click({force: true}));
@@ -194,14 +193,14 @@ describe('Create and Edit Abstract Entity', () => {
         .clickShape('Characteristic1') // To lost focus on AbstractEntity2
         .then(() => cy.clickConnectShapes('AbstractEntity2', 'AbstractEntity1'))
         .then(() => cy.get(SELECTOR_notificationsBtn).click({force: true}))
-        .then(() => cy.wait(500).get('.mat-mdc-cell').contains('Recursive elements').should('exist'))
-        .then(() => cy.wait(500).get(SELECTOR_notificationsDialogCloseButton).click({force: true}));
+        .then(() => cy.get('.mat-mdc-cell').contains('Recursive elements').should('exist'))
+        .then(() => cy.get(SELECTOR_notificationsDialogCloseButton).click({force: true}));
     });
 
     it('AbstractEntity1 should not have AbstractEntity2 values anymore', () => {
       cy.clickShape('AbstractEntity2')
         .then(() => cy.get(SELECTOR_tbDeleteButton).click({force: true}))
-        .then(() => cy.clickShape('AbstractEntity1').dbClickShape('AbstractEntity1').wait(500))
+        .then(() => cy.clickShape('AbstractEntity1').dbClickShape('AbstractEntity1'))
         .then(() => cy.get(FIELD_preferredNameen).should('have.value', ''))
         .then(() => cy.get(FIELD_descriptionen).should('have.value', ''))
         .then(() => cy.get(FIELD_see).should('have.value', ''))
@@ -230,8 +229,8 @@ describe('Create and Edit Abstract Entity', () => {
         .then(() => cy.dbClickShape('AbstractEntity1'))
         .then(() => cy.get('[data-cy="properties-modal-button"]').click({force: true}))
         .then(() => cy.get('.mat-mdc-cell').should('contain', 'abstractProperty1'))
-        .then(() => cy.get('.mat-mdc-cell').get('input').should('not.be.disabled'))
-        .then(() => cy.wait(500).get('mat-dialog-container .close-button').click())
+        .then(() => cy.get('.mat-mdc-cell input').should('not.be.disabled'))
+        .then(() => cy.get('mat-dialog-container .close-button').click())
         .then(() => cy.get(SELECTOR_editorCancelButton).click({force: true}));
     });
 
@@ -242,8 +241,8 @@ describe('Create and Edit Abstract Entity', () => {
         .then(() => cy.dbClickShape('AbstractEntity2'))
         .then(() => cy.get('[data-cy="properties-modal-button"]').click({force: true}))
         .then(() => cy.get('.mat-mdc-cell').should('contain', 'abstractProperty1'))
-        .then(() => cy.get('.mat-mdc-cell').get('input').should('be.disabled'))
-        .then(() => cy.wait(500).get('mat-dialog-container .close-button').click());
+        .then(() => cy.get('.mat-mdc-cell input').should('be.disabled'))
+        .then(() => cy.get('mat-dialog-container .close-button').click());
     });
   });
 
@@ -261,8 +260,8 @@ describe('Create and Edit Abstract Entity', () => {
         .then(() => cy.dbClickShape('AbstractEntity1'))
         .then(() => cy.get('[data-cy="properties-modal-button"]').click({force: true}))
         .then(() => cy.get('.mat-mdc-cell').should('contain', 'property1'))
-        .then(() => cy.get('.mat-mdc-cell').get('input').should('not.be.disabled'))
-        .then(() => cy.wait(500).get('mat-dialog-container .close-button').click())
+        .then(() => cy.get('.mat-mdc-cell input').should('not.be.disabled'))
+        .then(() => cy.get('mat-dialog-container .close-button').click())
         .then(() => cy.get(SELECTOR_editorCancelButton).click({force: true}))
         .then(() => cy.getUpdatedRDF())
         .then(rdf => {
@@ -278,8 +277,8 @@ describe('Create and Edit Abstract Entity', () => {
         .then(() => cy.dbClickShape('AbstractEntity2'))
         .then(() => cy.get('[data-cy="properties-modal-button"]').click({force: true}))
         .then(() => cy.get('.mat-mdc-cell').should('contain', 'property1'))
-        .then(() => cy.get('.mat-mdc-cell').get('input').should('be.disabled'))
-        .then(() => cy.wait(500).get('mat-dialog-container .close-button').click());
+        .then(() => cy.get('.mat-mdc-cell input').should('be.disabled'))
+        .then(() => cy.get('mat-dialog-container .close-button').click());
     });
   });
 
@@ -305,7 +304,6 @@ describe('Create and Edit Abstract Entity', () => {
     it('should create model', () => {
       cy.visitDefault();
       cy.startModelling()
-        .wait(500)
         .then(() => cy.get(SELECTOR_elementBtn).click())
         .then(() => cy.clickAddShapePlusIcon('Characteristic1'))
         .then(() => cy.dragElement(SELECTOR_ecAbstractEntity, 350, 300).then(() => cy.clickShape('AbstractEntity1')))
@@ -316,7 +314,7 @@ describe('Create and Edit Abstract Entity', () => {
         .then(() => cy.get(FIELD_preferredNameen).type('Preferred Name 1', {force: true}))
         .then(() => cy.get(FIELD_descriptionen).type('Description 1', {force: true}))
         .then(() => cy.addSeeElements('http://test1.com'))
-        .then(() => cyHelp.clickSaveButton().wait(500));
+        .then(() => cyHelp.clickSaveButton());
 
       cy.getCellLabel('Entity1', 'extends').should('eq', 'extends = AbstractEntity1');
       cy.getCellLabel('Entity1', 'preferredName').should('eq', 'Inherited\npreferredName = Preferred Name 1 @en');

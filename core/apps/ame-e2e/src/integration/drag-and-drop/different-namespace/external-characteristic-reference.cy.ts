@@ -27,7 +27,6 @@ describe('Test drag and drop ext characteristic', () => {
   it('can add Characteristic from external reference with different namespace', () => {
     const fileName = 'external-characteristic-reference.ttl';
 
-    cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-response.json'});
     cy.intercept('GET', NAMESPACES_URL, {
       statusCode: 200,
       body: {

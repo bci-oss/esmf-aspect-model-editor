@@ -19,7 +19,6 @@ import {SELECTOR_notificationsBtn, SELECTOR_notificationsDialogCloseButton} from
 
 describe.skip('Test loading aspect with extended external Entity', () => {
   it('should display an error that external reference is not included in the namespace file structure', () => {
-    cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-response.json'});
     cy.visitDefault();
     cy.fixture('/external-reference/same-namespace/model-with-extended-entity.txt')
       .then(rdfString => cy.loadModel(rdfString))
@@ -28,19 +27,17 @@ describe.skip('Test loading aspect with extended external Entity', () => {
           .click({force: true})
           .then(() =>
             cy
-              .wait(500)
               .get('.mat-mdc-cell')
               .contains(
                 ' The Aspect model contains an external reference that is not included in the namespace file structure or is invalid',
               )
               .should('exist'),
           )
-          .then(() => cy.wait(500).get(SELECTOR_notificationsDialogCloseButton).click({force: true}));
+          .then(() => cy.get(SELECTOR_notificationsDialogCloseButton).click({force: true}));
       });
   });
 
   it('should load a model with an entity that extends an external entity in same namespace', () => {
-    cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-response.json'});
     cy.intercept('GET', NAMESPACES_URL, {
       'org.eclipse.examples:1.0.0': ['example.txt'],
     });
@@ -63,7 +60,6 @@ describe.skip('Test loading aspect with extended external Entity', () => {
     cy.fixture('/external-reference/same-namespace/model-with-extended-entity')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
-      .wait(500)
       .then(() => cy.getAspect())
       .then(aspect => {
         expect(aspect.name).to.equal('AspectWithExtendedEntity');
@@ -80,7 +76,6 @@ describe.skip('Test loading aspect with extended external Entity', () => {
   });
 
   it('should load a model with an entity that extends an external entity in different namespace', () => {
-    cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-response.json'});
     cy.intercept('GET', NAMESPACES_URL, {
       'org.eclipse.different:1.0.0': ['example.txt'],
     });
@@ -103,7 +98,6 @@ describe.skip('Test loading aspect with extended external Entity', () => {
     cy.fixture('/external-reference/different-namespace/model-with-entity-that-extends-from-different-namespace')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
-      .wait(500)
       .then(() => cy.getAspect())
       .then(aspect => {
         expect(aspect.name).to.equal('AspectWithExtendedEntity');

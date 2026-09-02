@@ -1,4 +1,3 @@
-/* eslint-disable cypress/no-unnecessary-waiting */
 /*
  * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
  *
@@ -18,11 +17,11 @@ import {NamespacesManagerService} from '@ame/namespace-manager';
 import {ModelService} from '@ame/rdf/services';
 import {SearchesStateService} from '@ame/utils';
 import {Aspect} from '@esmf/aspect-model-loader';
+import {EventObject, InternalEvent} from '@maxgraph/core';
 import 'cypress-file-upload';
-import {NAMESPACES_URL} from './api-mocks';
+import {API_BASE_URL, FORMAT_API_URL, VALIDATE_API_URL} from './api-mocks';
 import {FIELD_see, SELECTOR_editorSaveButton, SELECTOR_tbConnectButton} from './constants';
 import {cyHelp} from './helpers';
-import {EventObject, InternalEvent} from '@maxgraph/core';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -128,9 +127,9 @@ declare global {
       /**
        * Custom command to get the HTML cell containing all information about a specific cell by name.
        * @param name The name of the cell.
-       * @returns {Cypress.Chainable} A chainable Cypress object.
+       * @returns {Cypress.Chainable<JQuery<HTMLElement>>} A chainable Cypress object.
        */
-      getHTMLCell(name: string): Chainable;
+      getHTMLCell(name: string): Chainable<JQuery<HTMLElement>>;
 
       /**
        * Custom command to double-click a shape to open its editor, using the shape's internal name or its label name in the DOM.
@@ -286,7 +285,11 @@ declare global {
   }
 }
 
-Cypress.Commands.add('visitDefault', () => cy.visit('/editor?e2e=true').wait(2000));
+Cypress.Commands.add('visitDefault', () => {
+  cy.visit('/editor?e2e=true');
+  cy.get('ame-loading-screen', {timeout: 15000}).should('not.exist');
+  return cy.get('#graph', {timeout: 15000}).should('be.visible');
+});
 
 Cypress.Commands.add('getAspect', () => cy.window().then(win => win['angular.LoadedFilesService'].currentLoadedFile.aspect as Aspect));
 
@@ -297,18 +300,13 @@ Cypress.Commands.add('getMaxgraphAttributeService', () => cy.window().then(win =
 
 Cypress.Commands.add('getModelService', () => cy.window().then(win => win['angular.modelService']));
 
-Cypress.Commands.add('getHTMLCell', (name: string) =>
-  cy.get(`[data-cell-id="${name}"]`).then($el => {
-    $el.get(0).scrollIntoView({block: 'center'});
-    return $el;
-  }),
-);
+Cypress.Commands.add('getHTMLCell', (name: string) => cy.get(`[data-cell-id="${name}"]`).first());
 
 Cypress.Commands.add('dbClickShape', (name: string) => {
-  cy.getHTMLCell(name)
-    .scrollIntoView()
+  return cy
+    .getHTMLCell(name)
     .dblclick({force: true})
-    .then(() => cy.get(SELECTOR_editorSaveButton).should('exist'))
+    .then(() => cy.get(SELECTOR_editorSaveButton).should('be.visible'))
     .then(() => cy.getHTMLCell(name));
 });
 
@@ -319,111 +317,93 @@ Cypress.Commands.add('getCellLabel', (shape: string, keyName: string) => {
 Cypress.Commands.add('clickShape', cyHelp.clickShape);
 
 Cypress.Commands.add('clickAddShapePlusIcon', (name: string) =>
-  cy
-    .window()
-    .then(win => {
-      const foundShape = cyHelp.findShapeByName(name, win);
-      if (!foundShape) {
-        throw new Error(`Shape ${name} not found`);
-      }
-      const plusIcon = cyHelp.getAddShapeOverlay(foundShape);
-      if (!plusIcon) {
-        throw new Error('Add Shape Overlay not found');
-      }
-      plusIcon.fireEvent(new EventObject(InternalEvent.CLICK));
-      return foundShape;
-    })
-    .wait(250),
+  cy.window().then(win => {
+    const foundShape = cyHelp.findShapeByName(name, win);
+    if (!foundShape) {
+      throw new Error(`Shape ${name} not found`);
+    }
+    const plusIcon = cyHelp.getAddShapeOverlay(foundShape);
+    if (!plusIcon) {
+      throw new Error('Add Shape Overlay not found');
+    }
+    plusIcon.fireEvent(new EventObject(InternalEvent.CLICK));
+    return foundShape;
+  }),
 );
 
 Cypress.Commands.add('clickAddInputShapeIcon', (name: string) =>
-  cy
-    .window()
-    .then(win => {
-      const foundShape = cyHelp.findShapeByName(name, win);
-      if (!foundShape) {
-        throw new Error(`Shape ${name} not found`);
-      }
-      const inputIcon = cyHelp.getAddInputShapeOverlay(foundShape);
-      if (!inputIcon) {
-        throw new Error('Add Shape Overlay not found');
-      }
-      inputIcon.fireEvent(new EventObject(InternalEvent.CLICK));
-      return foundShape;
-    })
-    .wait(250),
+  cy.window().then(win => {
+    const foundShape = cyHelp.findShapeByName(name, win);
+    if (!foundShape) {
+      throw new Error(`Shape ${name} not found`);
+    }
+    const inputIcon = cyHelp.getAddInputShapeOverlay(foundShape);
+    if (!inputIcon) {
+      throw new Error('Add Shape Overlay not found');
+    }
+    inputIcon.fireEvent(new EventObject(InternalEvent.CLICK));
+    return foundShape;
+  }),
 );
 
 Cypress.Commands.add('clickAddOutputShapeIcon', (name: string) =>
-  cy
-    .window()
-    .then(win => {
-      const foundShape = cyHelp.findShapeByName(name, win);
-      if (!foundShape) {
-        throw new Error(`Shape ${name} not found`);
-      }
-      const outputIcon = cyHelp.getAddOutputShapeOverlay(foundShape);
-      if (!outputIcon) {
-        throw new Error('Add Shape Overlay not found');
-      }
-      outputIcon.fireEvent(new EventObject(InternalEvent.CLICK));
-      return foundShape;
-    })
-    .wait(250),
+  cy.window().then(win => {
+    const foundShape = cyHelp.findShapeByName(name, win);
+    if (!foundShape) {
+      throw new Error(`Shape ${name} not found`);
+    }
+    const outputIcon = cyHelp.getAddOutputShapeOverlay(foundShape);
+    if (!outputIcon) {
+      throw new Error('Add Shape Overlay not found');
+    }
+    outputIcon.fireEvent(new EventObject(InternalEvent.CLICK));
+    return foundShape;
+  }),
 );
 
 Cypress.Commands.add('clickAddLeftShapeIcon', (name: string) =>
-  cy
-    .window()
-    .then(win => {
-      const foundShape = cyHelp.findShapeByName(name, win);
-      if (!foundShape) {
-        throw new Error(`Shape ${name} not found`);
-      }
-      const leftIcon = cyHelp.getAddLeftShapeOverlay(foundShape);
-      if (!leftIcon) {
-        throw new Error('Add Shape Overlay not found');
-      }
-      leftIcon.fireEvent(new EventObject(InternalEvent.CLICK));
-      return foundShape;
-    })
-    .wait(250),
+  cy.window().then(win => {
+    const foundShape = cyHelp.findShapeByName(name, win);
+    if (!foundShape) {
+      throw new Error(`Shape ${name} not found`);
+    }
+    const leftIcon = cyHelp.getAddLeftShapeOverlay(foundShape);
+    if (!leftIcon) {
+      throw new Error('Add Shape Overlay not found');
+    }
+    leftIcon.fireEvent(new EventObject(InternalEvent.CLICK));
+    return foundShape;
+  }),
 );
 
 Cypress.Commands.add('clickAddRightShapeIcon', (name: string) =>
-  cy
-    .window()
-    .then(win => {
-      const foundShape = cyHelp.findShapeByName(name, win);
-      if (!foundShape) {
-        throw new Error(`Shape ${name} not found`);
-      }
-      const rightIcon = cyHelp.getAddRightShapeOverlay(foundShape);
-      if (!rightIcon) {
-        throw new Error('Add Shape Overlay not found');
-      }
-      rightIcon.fireEvent(new EventObject(InternalEvent.CLICK));
-      return foundShape;
-    })
-    .wait(250),
+  cy.window().then(win => {
+    const foundShape = cyHelp.findShapeByName(name, win);
+    if (!foundShape) {
+      throw new Error(`Shape ${name} not found`);
+    }
+    const rightIcon = cyHelp.getAddRightShapeOverlay(foundShape);
+    if (!rightIcon) {
+      throw new Error('Add Shape Overlay not found');
+    }
+    rightIcon.fireEvent(new EventObject(InternalEvent.CLICK));
+    return foundShape;
+  }),
 );
 
 Cypress.Commands.add('clickAddTraitPlusIcon', (characteristicName: string) =>
-  cy
-    .window()
-    .then(win => {
-      const foundShape = cyHelp.findShapeByName(characteristicName, win);
-      if (!foundShape) {
-        throw new Error(`Shape ${characteristicName} not found`);
-      }
-      const constraintIcon = cyHelp.getAddConstraintOverlay(foundShape);
-      if (!constraintIcon) {
-        throw new Error('Add Constrain Overlay not found');
-      }
-      constraintIcon.fireEvent(new EventObject(InternalEvent.CLICK));
-      return foundShape;
-    })
-    .wait(250),
+  cy.window().then(win => {
+    const foundShape = cyHelp.findShapeByName(characteristicName, win);
+    if (!foundShape) {
+      throw new Error(`Shape ${characteristicName} not found`);
+    }
+    const constraintIcon = cyHelp.getAddConstraintOverlay(foundShape);
+    if (!constraintIcon) {
+      throw new Error('Add Constrain Overlay not found');
+    }
+    constraintIcon.fireEvent(new EventObject(InternalEvent.CLICK));
+    return foundShape;
+  }),
 );
 
 Cypress.Commands.add('clickConnectShapes', (nameSource, nameTarget) =>
@@ -446,6 +426,7 @@ Cypress.Commands.add('dragElement', (selector: string, x: number, y: number) =>
     if (Cypress.platform === 'darwin') {
       return cy
         .get(selector)
+        .first()
         .trigger('mousedown', 'left', {which: 1, force: true})
         .trigger('mousemove', {clientX: graphX, clientY: graphY, force: true, waitForAnimations: true})
         .then(() => cy.get('#graph > svg').click(graphX, graphY, {force: true}).trigger('mouseup', {force: true}));
@@ -453,6 +434,7 @@ Cypress.Commands.add('dragElement', (selector: string, x: number, y: number) =>
 
     return cy
       .get(selector)
+      .first()
       .trigger('pointerdown', {button: 0, force: true})
       .trigger('pointermove', {clientX: graphX, clientY: graphY, force: true, waitForAnimations: true})
       .then(() => cy.get('#graph > svg').click(graphX, graphY, {force: true}).trigger('pointerup', {force: true}));
@@ -494,39 +476,22 @@ Cypress.Commands.add('shapesConnected', (sourceShapeName: string, targetShapeNam
 );
 
 Cypress.Commands.add('startModellingInvalidModel', () => {
-  cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-response.json'});
-  cy.intercept('POST', 'http://localhost:9090/ame/api/models/format', () => {});
-
   return cy.fixture('/invalid-file.txt', 'utf-8').then(model => {
-    cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-with-error.json'});
-    cy.intercept('POST', 'http://localhost:9090/ame/api/models/format', () => {});
-
+    cy.intercept('POST', VALIDATE_API_URL, {fixture: 'model-validation-with-error.json'}).as('validateInvalidModel');
     return cyHelp.loadModel(model);
   });
 });
 
-Cypress.Commands.add('startModelling', (ownNamespaceInterceptor = false) => {
-  cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-response.json'});
-  cy.intercept('POST', 'http://localhost:9090/ame/api/models/format', () => {});
-
-  if (!ownNamespaceInterceptor) {
-    // TODO we have to move this somewhere else, because it is not needed for every test
-    cy.intercept('GET', NAMESPACES_URL, {statusCode: 200, body: {}});
-  }
-
+Cypress.Commands.add('startModelling', () => {
   return cy.fixture('/default-models/aspect-default.txt', 'utf-8').then(model => cyHelp.loadModel(model));
 });
 
 Cypress.Commands.add('loadModel', (rdfString: string) => {
-  cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-response.json'});
-  cy.intercept('POST', 'http://localhost:9090/ame/api/models/format', () => {});
-
   return cyHelp.loadModel(rdfString);
 });
 
 Cypress.Commands.add('saveAspectModelToWorkspace', () => {
-  cy.intercept('POST', 'http://localhost:9090/ame/api/models/validate', {fixture: 'model-validation-response.json'});
-  cy.intercept('POST', 'http://localhost:9090/ame/api/models/format', {fixture: '/default-models/aspect-default.txt'});
+  cy.intercept('POST', FORMAT_API_URL, {fixture: '/default-models/aspect-default.txt'}).as('formatWorkspaceModel');
 
   return cy.window().then(win => {
     const fileHandlingService: FileHandlingService = win['angular.fileHandlingService'];
@@ -535,29 +500,13 @@ Cypress.Commands.add('saveAspectModelToWorkspace', () => {
 });
 
 Cypress.Commands.add('openGenerationOpenApiSpec', () => {
-  cy.intercept(
-    'POST',
-    'http://localhost:9090/ame/api/generate/open-api-spec?language=en&output=json&baseUrl=https://example.com&includeQueryApi=false&useSemanticVersion=false&pagingOption=NO_PAGING&includePost=false&includePut=false&includePatch=false&resourcePath=/resource/%7BresourceId%7D&ymlProperties=&jsonProperties=',
-    {fixture: 'AspectDefault-open-api.json'},
-  );
-
-  cy.intercept(
-    'POST',
-    'http://localhost:9090/ame/api/generate/open-api-spec?language=en&output=yaml&baseUrl=https://example.com&includeQueryApi=false&useSemanticVersion=false&pagingOption=NO_PAGING&includePost=false&includePut=false&includePatch=false&resourcePath=null&ymlProperties=&jsonProperties=',
-    {fixture: 'AspectDefault-open-api.yaml'},
-  );
-
-  cy.intercept(
-    'POST',
-    'http://localhost:9090/ame/api/generate/open-api-spec?language=en&output=json&baseUrl=https://example.com&includeQueryApi=false&useSemanticVersion=false&pagingOption=NO_PAGING&includePost=false&includePut=false&includePatch=false&resourcePath=/resource/%7BresourceId%7D&ymlProperties=&jsonProperties=%7B%0A%20%20%22key%22:%20%22value%22%0A%7D',
-    {fixture: 'AspectDefault-open-api.json'},
-  );
-
-  cy.intercept(
-    'POST',
-    'http://localhost:9090/ame/api/generate/open-api-spec?language=en&output=yaml&baseUrl=https://example.com&includeQueryApi=false&useSemanticVersion=false&pagingOption=NO_PAGING&includePost=false&includePut=false&includePatch=false&resourcePath=/resource/%7BresourceId%7D&ymlProperties=resourceId:%0A%20%20name:%20resourceId%0A%20%20in:%20path%0A%20%20description:%20An%20example%20resource%20Id.%0A%20%20required:%20true%0A%20%20schema:%0A%20%20%20%20type:%20string%0A&jsonProperties=',
-    {fixture: 'AspectDefault-open-api.yaml'},
-  );
+  cy.intercept('POST', /\/generate\/open-api-spec(\?.*)?$/, req => {
+    if (req.url.includes('output=yaml')) {
+      req.reply({fixture: 'AspectDefault-open-api.yaml'});
+    } else {
+      req.reply({fixture: 'AspectDefault-open-api.json'});
+    }
+  });
 
   return cy.window().then(win => {
     const generateHandlingService: GenerateHandlingService = win['angular.generateHandlingService'];
@@ -566,23 +515,15 @@ Cypress.Commands.add('openGenerationOpenApiSpec', () => {
 });
 
 Cypress.Commands.add('openGenerationAsyncApiSpec', () => {
-  cy.intercept(
-    'POST',
-    'http://localhost:9090/ame/api/generate/async-api-spec?language=en&output=json&applicationId=application:id&channelAddress=foo/bar&useSemanticVersion=false&writeSeparateFiles=false',
-    {fixture: 'AspectDefault-open-api.json'},
-  );
-
-  cy.intercept(
-    'POST',
-    'http://localhost:9090/ame/api/generate/async-api-spec?language=en&output=yaml&applicationId=application:id&channelAddress=foo/bar&useSemanticVersion=false&writeSeparateFiles=false',
-    {fixture: 'AspectDefault-open-api.json'},
-  );
-
-  cy.intercept(
-    'POST',
-    'http://localhost:9090/ame/api/generate/async-api-spec?language=en&output=json&applicationId=application:id&channelAddress=foo/bar&useSemanticVersion=false&writeSeparateFiles=true',
-    {fixture: 'AspectDefault-open-api.json'},
-  );
+  cy.intercept('POST', /\/generate\/async-api-spec(\?.*)?$/, req => {
+    if (req.url.includes('writeSeparateFiles=true')) {
+      req.reply({fixture: 'AspectDefault-open-api.json'});
+    } else if (req.url.includes('output=yaml')) {
+      req.reply({fixture: 'AspectDefault-open-api.yaml'});
+    } else {
+      req.reply({fixture: 'AspectDefault-open-api.json'});
+    }
+  });
 
   return cy.window().then(win => {
     const generateHandlingService: GenerateHandlingService = win['angular.generateHandlingService'];
@@ -591,7 +532,7 @@ Cypress.Commands.add('openGenerationAsyncApiSpec', () => {
 });
 
 Cypress.Commands.add('openGenerationDocumentation', () => {
-  cy.intercept('POST', 'http://localhost:9090/ame/api/generate/documentation?language=en', {fixture: 'valid-documentation.html'});
+  cy.intercept('POST', `${API_BASE_URL}/generate/documentation?language=en`, {fixture: 'valid-documentation.html'});
 
   return cy.window().then(win => {
     const generateHandlingService: GenerateHandlingService = win['angular.generateHandlingService'];
@@ -600,7 +541,7 @@ Cypress.Commands.add('openGenerationDocumentation', () => {
 });
 
 Cypress.Commands.add('openGenerationJsonSample', () => {
-  cy.intercept('POST', 'http://localhost:9090/ame/api/generate/json-sample', {fixture: 'valid-json.json'});
+  cy.intercept('POST', `${API_BASE_URL}/generate/json-sample`, {fixture: 'valid-json.json'});
 
   return cy.window().then(win => {
     const generateHandlingService: GenerateHandlingService = win['angular.generateHandlingService'];
@@ -609,7 +550,7 @@ Cypress.Commands.add('openGenerationJsonSample', () => {
 });
 
 Cypress.Commands.add('openGenerationJsonSchema', () => {
-  cy.intercept('POST', 'http://localhost:9090/ame/api/generate/json-schema?language=en', {fixture: 'valid-json.json'});
+  cy.intercept('POST', `${API_BASE_URL}/generate/json-schema?language=en`, {fixture: 'valid-json.json'});
 
   return cy.window().then(win => {
     const generateHandlingService: GenerateHandlingService = win['angular.generateHandlingService'];
@@ -633,7 +574,8 @@ Cypress.Commands.add('namespacesManagerService', () => {
 
 Cypress.Commands.add('addSeeElements', (...elements: string[]) => {
   for (const element of elements) {
-    cy.get(FIELD_see).clear({force: true}).type(element, {force: true}).get(`[data-cy="option__${element}"]`).click({force: true});
+    cy.get(FIELD_see).clear({force: true}).type(element, {force: true});
+    cy.get(`[data-cy="option__${element}"]`).click({force: true});
   }
 });
 
@@ -644,7 +586,8 @@ Cypress.Commands.add('removeSeeElements', (...elements: string[]) => {
   }
 
   for (const element of elements) {
-    cy.get(FIELD_see).clear({force: true}).get(`[data-cy="chip__${element}"] [data-cy="see-remove-chip"]`).click({force: true});
+    cy.get(FIELD_see).clear({force: true});
+    cy.get(`[data-cy="chip__${element}"] [data-cy="see-remove-chip"]`).click({force: true});
   }
 });
 

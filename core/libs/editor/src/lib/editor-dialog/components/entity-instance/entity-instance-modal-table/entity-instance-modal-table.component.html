@@ -76,13 +76,7 @@
               } @else {
                 <mat-form-field class="source__input" appearance="fill">
                   <mat-label>{{ t('entityValue.value') }}</mat-label>
-                  <input
-                    [formField]="propertiesForm[source[0].name][i].value"
-                    [attr.data-cy]="source[0].name + 'Value'"
-                    matInput
-                    type="text"
-                    data-cy="propertyValueNotComplex"
-                  />
+                  <input [formField]="propertiesForm[source[0].name][i].value" matInput type="text" data-cy="propertyValueNotComplex" />
                   @if (isRequiredInvalid(source[0], i, 'value')) {
                     <mat-error>{{ t('editorCanvas.shapeSetting.field.value.pleaseDefine') }}</mat-error>
                   }

@@ -54,7 +54,6 @@ export class InputChiplistFieldComponent extends InputFieldComponent<DefaultOper
   private readonly searchModel = signal('');
   private readonly inputModel = signal<Property[]>([]);
   private readonly disabledState = signal(false);
-  private unregisterField = () => undefined;
 
   private readonly createDuplicateNameResource = (name: Signal<string>) =>
     rxResource({
@@ -77,7 +76,6 @@ export class InputChiplistFieldComponent extends InputFieldComponent<DefaultOper
     });
     disabled(path, {when: this.disabledState});
   });
-  readonly inputField = form(this.inputModel, path => disabled(path, {when: this.disabledState}));
   readonly filteredPropertyTypes = computed(() => {
     const value = this.searchModel();
     const properties = CacheUtils.getCachedElements(this.currentCachedFile, DefaultProperty)
@@ -115,7 +113,7 @@ export class InputChiplistFieldComponent extends InputFieldComponent<DefaultOper
   }
 
   ngOnDestroy() {
-    this.unregisterField();
+    this.signalForm().remove('inputChipList');
     super.ngOnDestroy();
   }
 
@@ -123,9 +121,11 @@ export class InputChiplistFieldComponent extends InputFieldComponent<DefaultOper
     const inputValueList = this.metaModelElement?.input;
 
     this.disabledState.set(this.loadedFiles.isElementExtern(this.metaModelElement));
-    this.inputModel.set(inputValueList ? [...inputValueList] : []);
+    this.removable.set(!this.disabledState());
+    const list = inputValueList ? [...inputValueList] : [];
+    this.inputModel.set(list);
+    this.signalForm().set('inputChipList', list);
     this.searchModel.set('');
-    this.unregisterField = this.signalForm().register('inputChipList', this.inputField);
   }
 
   onSelectionChange(fieldPath: string, newValue: any) {
@@ -162,12 +162,14 @@ export class InputChiplistFieldComponent extends InputFieldComponent<DefaultOper
 
     if (index >= 0) {
       this.inputModel.update(values => values.filter(input => input !== value));
+      this.signalForm().set('inputChipList', this.inputModel());
     }
   }
 
   private addProperty(property: DefaultProperty | Property) {
     if (!property || this.inputModel().includes(property)) return;
     this.inputModel.update(values => [...values, property]);
+    this.signalForm().set('inputChipList', this.inputModel());
     this.searchModel.set('');
   }
 }

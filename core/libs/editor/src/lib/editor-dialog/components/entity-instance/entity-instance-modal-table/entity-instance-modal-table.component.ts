@@ -94,7 +94,6 @@ export class EntityInstanceModalTableComponent {
   readonly propertiesModel = signal<EntityInstancePropertiesModel>({});
   readonly locks = signal<EntityInstancePropertyLocks>({});
   readonly newEntityValues = signal<DefaultEntityInstance[]>([]);
-  readonly newEntityValuesForm = form(this.newEntityValues);
   readonly propertiesForm = form(this.propertiesModel, path => {
     validate(path, () =>
       this.entity() && hasMissingRequiredEntityInstanceValue(this.entity(), this.propertiesModel())

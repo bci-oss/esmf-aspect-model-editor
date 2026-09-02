@@ -16,7 +16,7 @@ import {MaxGraphService} from '@ame/max-graph';
 import {SearchService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {DefaultOperation, DefaultProperty, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
+import {DefaultCharacteristic, DefaultOperation, DefaultProperty, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {of} from 'rxjs';
@@ -35,11 +35,20 @@ describe('InputChiplistFieldComponent', () => {
   let prop1: DefaultProperty;
 
   beforeEach(() => {
+    const char1 = new DefaultCharacteristic({
+      aspectModelUrn: 'urn:test:1.0.0#Char1',
+      name: 'Char1',
+      metaModelVersion: '2.0.0',
+    });
+
     prop1 = new DefaultProperty({
       aspectModelUrn: 'urn:test:1.0.0#prop1',
       name: 'prop1',
       metaModelVersion: '2.0.0',
+      characteristic: char1,
     });
+
+    char1.parents.push(prop1);
 
     operation = new DefaultOperation({
       aspectModelUrn: 'urn:test:1.0.0#TestOp',
@@ -47,6 +56,8 @@ describe('InputChiplistFieldComponent', () => {
       metaModelVersion: '2.0.0',
       input: [prop1],
     });
+
+    prop1.parents.push(operation);
 
     cachedFile = new ModelElementCache();
     cachedFile.addElement(prop1.aspectModelUrn, prop1);

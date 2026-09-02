@@ -80,14 +80,18 @@ describe('EntityInstanceModalTableComponent', () => {
     expect(component.isLocked('serialNumber', 0, 'value')).toBe(false);
   });
 
-  it('creates and tracks a nested entity instance', () => {
-    const nestedType = new DefaultEntity({aspectModelUrn: 'urn:test:1.0.0#Part', name: 'Part', metaModelVersion: '2.0.0'});
+  it('creates and tracks a nested entity instance with nested properties without stack overflow', () => {
+    const nestedProperty = scalarProperty('subProperty');
+    const nestedType = entityWith(nestedProperty);
+    nestedProperty.parents.push(nestedType);
+
     property.characteristic = new DefaultCharacteristic({
       aspectModelUrn: 'urn:test:1.0.0#PartCharacteristic',
       name: 'PartCharacteristic',
       metaModelVersion: '2.0.0',
       dataType: nestedType,
     });
+    property.parents.push(entity);
 
     component.createNewEntityValue(property, 'PartOne');
 

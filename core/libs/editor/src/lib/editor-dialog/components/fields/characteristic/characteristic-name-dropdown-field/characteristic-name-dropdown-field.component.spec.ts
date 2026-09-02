@@ -11,7 +11,14 @@ import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {ElementCreatorService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {DefaultCharacteristic, DefaultMeasurement, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
+import {
+  DefaultCharacteristic,
+  DefaultDuration,
+  DefaultMeasurement,
+  DefaultUnit,
+  ModelElementCache,
+  RdfModel,
+} from '@esmf/aspect-model-loader';
 import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {of} from 'rxjs';
@@ -25,6 +32,7 @@ describe('CharacteristicNameDropdownFieldComponent', () => {
   let fixture: ComponentFixture<CharacteristicNameDropdownFieldComponent>;
   let signalForm: EditorSignalFormContext;
   let editorModelService: EditorModelService;
+  let elementCreatorService: ElementCreatorService;
   const characteristic = new DefaultCharacteristic({
     aspectModelUrn: 'urn:test:1.0.0#Characteristic',
     name: 'Characteristic',
@@ -46,11 +54,14 @@ describe('CharacteristicNameDropdownFieldComponent', () => {
         MockProvider(ModelElementNamingService),
         MockProvider(ModelService),
         MockProvider(SammLanguageSettingsService, {getSammLanguageCodes: vi.fn(() => [])}),
-        MockProvider(ElementCreatorService),
+        MockProvider(ElementCreatorService, {
+          createEmptyElement: vi.fn((cls: any) => new cls({aspectModelUrn: 'urn:test:1.0.0#New', name: 'New', metaModelVersion: '2.0.0'})),
+        }),
       ],
     });
     signalForm = TestBed.runInInjectionContext(() => EditorSignalFormContext.create());
     editorModelService = TestBed.inject(EditorModelService);
+    elementCreatorService = TestBed.inject(ElementCreatorService);
     fixture = TestBed.createComponent(CharacteristicNameDropdownFieldComponent);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('signalForm', signalForm);
@@ -86,5 +97,32 @@ describe('CharacteristicNameDropdownFieldComponent', () => {
 
     expect(signalForm.value().changedMetaModel).toBe(measurement);
     expect(editorModelService.updateMetaModelElement).toHaveBeenCalledWith(measurement);
+  });
+
+  it('should preserve unit when changing characteristic class from Measurement to Duration', () => {
+    fixture.detectChanges();
+
+    const unit = new DefaultUnit({
+      name: 'second',
+      aspectModelUrn: 'urn:samm:org.eclipse.esmf.samm:unit:2.0.0#second',
+      metaModelVersion: '2.0.0',
+      quantityKinds: [],
+    });
+    const measurement = new DefaultMeasurement({
+      aspectModelUrn: 'urn:test:1.0.0#Measurement1',
+      name: 'Measurement1',
+      metaModelVersion: '2.0.0',
+      unit,
+    });
+
+    component.metaModelElement = measurement;
+    component.selectedMetaModelElement = measurement;
+
+    component.onCharacteristicChange(CharacteristicClassType.Duration);
+
+    expect(component.metaModelElement).toBeInstanceOf(DefaultDuration);
+    expect((component.metaModelElement as DefaultDuration).unit).toBe(unit);
+    expect((component.metaModelElement as DefaultDuration).name).toBe('Measurement1');
+    expect(editorModelService.updateMetaModelElement).toHaveBeenCalledWith(component.metaModelElement);
   });
 });

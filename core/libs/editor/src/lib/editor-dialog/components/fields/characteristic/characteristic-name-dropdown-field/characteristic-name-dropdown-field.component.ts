@@ -41,7 +41,6 @@ import {
   DefaultStructuredValue,
   DefaultTimeSeries,
   NamedElement,
-  Unit,
   useLoader,
 } from '@esmf/aspect-model-loader';
 import {DataFactory} from 'n3';
@@ -64,7 +63,6 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
   public loadedFilesService = inject(LoadedFilesService);
 
   public listCharacteristics: Map<string, () => DefaultCharacteristic> = new Map();
-  public units: Array<Unit> = [];
 
   public listCharacteristicGroup = signal<Map<string, Array<string>>>(new Map());
 
@@ -181,26 +179,10 @@ export class CharacteristicNameDropdownFieldComponent extends DropdownFieldCompo
   private migrateCommonAttributes(oldMetaModelElement: NamedElement) {
     const modelKeys = Object.keys(this.metaModelElement);
     const skipKeys = ['aspectModelUrn', 'name', 'className'];
-    const {createUnit} = useLoader({
-      rdfModel: this.loadedFilesService.currentLoadedFile.rdfModel,
-      cache: this.loadedFilesService.currentLoadedFile.cachedFile,
-    });
 
     Object.keys(oldMetaModelElement).forEach(oldKey => {
-      if (modelKeys.includes(oldKey) && !skipKeys.includes(oldKey)) {
-        if (oldKey === 'unit' && this.metaModelElement instanceof DefaultDuration) {
-          const matchedUnit = this.units.find(
-            unit =>
-              unit.quantityKinds &&
-              unit.quantityKinds.includes('time') &&
-              unit.name.toLowerCase().indexOf(oldMetaModelElement[oldKey].name.toLowerCase()) >= 0,
-          );
-          if (matchedUnit) {
-            this.metaModelElement[oldKey] = createUnit(matchedUnit.name);
-          }
-        } else {
-          this.metaModelElement[oldKey] = oldMetaModelElement[oldKey];
-        }
+      if (!skipKeys.includes(oldKey) && (modelKeys.includes(oldKey) || oldKey in this.metaModelElement)) {
+        this.metaModelElement[oldKey] = oldMetaModelElement[oldKey];
       }
     });
   }

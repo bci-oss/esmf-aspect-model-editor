@@ -13,15 +13,8 @@
 
 /// <reference types="cypress" />
 
-import {NAMESPACES_URL, SAMM_VERSION_ACTUAL} from '../../../support/api-mocks';
-import {
-  SELECTOR_ecProperty,
-  SELECTOR_openNamespacesButton,
-  SELECTOR_searchElementsInp,
-  SELECTOR_workspaceBtn,
-} from '../../../support/constants';
-import {cyHelp} from '../../../support/helpers';
-import {checkRelationParentChild, connectElements} from '../../../support/utils';
+import {SELECTOR_ecProperty} from '../../../support/constants';
+import {checkRelationParentChild, connectElements, setupAndDragExternalReference} from '../../../support/utils';
 
 describe('Test drag and drop ext properties', () => {
   before(() => {
@@ -29,70 +22,15 @@ describe('Test drag and drop ext properties', () => {
   });
 
   it('can add Property from external reference with different namespace', () => {
-    const fileName = 'external-property-reference.ttl';
-    cy.intercept('GET', NAMESPACES_URL, {
-      statusCode: 200,
-      body: {
-        'org.eclipse.different': [
-          {
-            version: '1.0.0',
-            models: [
-              {
-                model: fileName,
-                aspectModelUrn: 'urn:samm:org.eclipse.different:1.0.0#externalProperty',
-                version: SAMM_VERSION_ACTUAL,
-                existing: true,
-              },
-            ],
-          },
-        ],
-      },
-    });
-
-    cy.fixture(`/external-reference/different-namespace/without-childrens/${fileName}`).then(fixtureContent => {
-      cy.intercept(
-        {
-          method: 'POST',
-          url: 'http://localhost:9090/ame/api/models/batch',
-        },
-        {
-          statusCode: 200,
-          body: [
-            {
-              aspectModelUrn: 'urn:samm:org.eclipse.different:1.0.0#externalProperty',
-              aspectModel: fixtureContent,
-              absoluteName: `org.eclipse.different:1.0.0:${fileName}`,
-              fileName: fileName,
-              modelVersion: '2.2.0',
-            },
-          ],
-        },
-      );
-    });
-
-    cy.fixture(`external-reference/different-namespace/without-childrens/${fileName}`).then(fixtureContent => {
-      cy.intercept(
-        {
-          method: 'GET',
-          url: 'http://localhost:9090/ame/api/models',
-          headers: {'Aspect-Model-Urn': 'urn:samm:org.eclipse.different:1.0.0#externalProperty'},
-        },
-        {
-          statusCode: 200,
-          body: {
-            content: fixtureContent,
-            sourceLocation: `file:/path/to/${fileName}`,
-          },
-        },
-      );
-    });
-
-    cy.startModelling(true)
-      .then(() => cyHelp.checkAspectDefaultExists())
-      .then(() => cy.get(SELECTOR_workspaceBtn).click())
-      .then(() => cy.get(SELECTOR_openNamespacesButton).contains(fileName).click({force: true}))
-      .then(() => cy.get(SELECTOR_searchElementsInp).type('property'))
-      .then(() => cy.dragElement(SELECTOR_ecProperty, 100, 300))
+    setupAndDragExternalReference({
+      fileName: 'external-property-reference.ttl',
+      elementName: 'externalProperty',
+      elementSelector: SELECTOR_ecProperty,
+      isSameNamespace: false,
+      searchTerm: 'property',
+      x: 100,
+      y: 300,
+    })
       .then(() => cy.clickShape('externalProperty'))
       .then(() => connectElements('AspectDefault', 'externalProperty', true))
       .then(() => cy.getAspect())

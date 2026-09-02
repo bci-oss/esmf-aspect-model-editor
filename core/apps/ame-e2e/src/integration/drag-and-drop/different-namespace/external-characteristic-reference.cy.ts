@@ -13,15 +13,8 @@
 
 /// <reference types="cypress" />
 
-import {NAMESPACES_URL, SAMM_VERSION_ACTUAL} from '../../../support/api-mocks';
-import {
-  SELECTOR_ecCharacteristic,
-  SELECTOR_openNamespacesButton,
-  SELECTOR_searchElementsInp,
-  SELECTOR_workspaceBtn,
-} from '../../../support/constants';
-import {cyHelp} from '../../../support/helpers';
-import {checkAspect, connectElements} from '../../../support/utils';
+import {SELECTOR_ecCharacteristic} from '../../../support/constants';
+import {checkAspect, connectElements, setupAndDragExternalReference} from '../../../support/utils';
 
 describe('Test drag and drop ext characteristic', () => {
   before(() => {
@@ -29,71 +22,15 @@ describe('Test drag and drop ext characteristic', () => {
   });
 
   it('can add Characteristic from external reference with different namespace', () => {
-    const fileName = 'external-characteristic-reference.ttl';
-
-    cy.intercept('GET', NAMESPACES_URL, {
-      statusCode: 200,
-      body: {
-        'org.eclipse.different': [
-          {
-            version: '1.0.0',
-            models: [
-              {
-                model: fileName,
-                aspectModelUrn: 'urn:samm:org.eclipse.different:1.0.0#ExternalCharacteristic',
-                version: SAMM_VERSION_ACTUAL,
-                existing: true,
-              },
-            ],
-          },
-        ],
-      },
-    });
-
-    cy.fixture(`external-reference/different-namespace/without-childrens/${fileName}`).then(fixtureContent => {
-      cy.intercept(
-        {
-          method: 'POST',
-          url: 'http://localhost:9090/ame/api/models/batch',
-        },
-        {
-          statusCode: 200,
-          body: [
-            {
-              aspectModelUrn: 'urn:samm:org.eclipse.different:1.0.0#ExternalCharacteristic',
-              aspectModel: fixtureContent,
-              absoluteName: `org.eclipse.different:1.0.0:${fileName}`,
-              fileName: fileName,
-              modelVersion: '2.2.0',
-            },
-          ],
-        },
-      );
-    });
-
-    cy.fixture(`external-reference/different-namespace/without-childrens/${fileName}`).then(fixtureContent => {
-      cy.intercept(
-        {
-          method: 'GET',
-          url: 'http://localhost:9090/ame/api/models',
-          headers: {'Aspect-Model-Urn': 'urn:samm:org.eclipse.different:1.0.0#ExternalCharacteristic'},
-        },
-        {
-          statusCode: 200,
-          body: {
-            content: fixtureContent,
-            sourceLocation: `file:/path/to/${fileName}`,
-          },
-        },
-      );
-    });
-
-    cy.startModelling(true)
-      .then(() => cyHelp.checkAspectDefaultExists())
-      .then(() => cy.get(SELECTOR_workspaceBtn).click())
-      .then(() => cy.get(SELECTOR_openNamespacesButton).contains(fileName).click({force: true}))
-      .then(() => cy.get(SELECTOR_searchElementsInp).type('characteristic'))
-      .then(() => cy.dragElement(SELECTOR_ecCharacteristic, 100, 300))
+    setupAndDragExternalReference({
+      fileName: 'external-characteristic-reference.ttl',
+      elementName: 'ExternalCharacteristic',
+      elementSelector: SELECTOR_ecCharacteristic,
+      isSameNamespace: false,
+      searchTerm: 'characteristic',
+      x: 100,
+      y: 300,
+    })
       .then(() => connectElements('property1', 'ExternalCharacteristic', false))
       .then(() => cy.getAspect())
       .then(checkAspect)

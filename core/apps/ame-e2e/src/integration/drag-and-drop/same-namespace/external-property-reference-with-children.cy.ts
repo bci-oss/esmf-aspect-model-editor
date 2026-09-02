@@ -13,15 +13,8 @@
 
 /// <reference types="cypress" />
 
-import {NAMESPACES_URL, SAMM_VERSION_ACTUAL} from '../../../support/api-mocks';
-import {
-  SELECTOR_ecProperty,
-  SELECTOR_openNamespacesButton,
-  SELECTOR_searchElementsInp,
-  SELECTOR_workspaceBtn,
-} from '../../../support/constants';
-import {cyHelp} from '../../../support/helpers';
-import {checkAspectTree, connectElements, dragExternalReferenceWithChildren} from '../../../support/utils';
+import {SELECTOR_ecProperty} from '../../../support/constants';
+import {checkAspectTree, connectElements, setupAndDragExternalReference} from '../../../support/utils';
 
 describe('Test drag and drop ext properties', () => {
   before(() => {
@@ -30,69 +23,16 @@ describe('Test drag and drop ext properties', () => {
 
   const fileName = 'external-property-reference.ttl';
   it("can add Property with children's from external reference same namespace", () => {
-    cy.intercept('GET', NAMESPACES_URL, {
-      statusCode: 200,
-      body: {
-        'org.eclipse.examples.aspect': [
-          {
-            version: '1.0.0',
-            models: [
-              {
-                model: fileName,
-                aspectModelUrn: 'urn:samm:org.eclipse.examples.aspect:1.0.0#externalPropertyWithChildren',
-                version: SAMM_VERSION_ACTUAL,
-                existing: true,
-              },
-            ],
-          },
-        ],
-      },
-    });
-
-    cy.fixture(`/external-reference/same-namespace/without-childrens/${fileName}`).then(fixtureContent => {
-      cy.intercept(
-        {
-          method: 'POST',
-          url: 'http://localhost:9090/ame/api/models/batch',
-        },
-        {
-          statusCode: 200,
-          body: [
-            {
-              aspectModelUrn: 'urn:samm:org.eclipse.examples.aspect:1.0.0#externalPropertyWithChildren',
-              aspectModel: fixtureContent,
-              absoluteName: `org.eclipse.examples.aspect:1.0.0:${fileName}`,
-              fileName: fileName,
-              modelVersion: '2.2.0',
-            },
-          ],
-        },
-      );
-    });
-
-    cy.fixture(`/external-reference/same-namespace/with-childrens/${fileName}`).then(fixtureContent => {
-      cy.intercept(
-        {
-          method: 'GET',
-          url: 'http://localhost:9090/ame/api/models',
-          headers: {'Aspect-Model-Urn': 'urn:samm:org.eclipse.examples.aspect:1.0.0#externalPropertyWithChildren'},
-        },
-        {
-          statusCode: 200,
-          body: {
-            content: fixtureContent,
-            sourceLocation: `file:/path/to/${fileName}`,
-          },
-        },
-      );
-    });
-
-    cy.startModelling(true)
-      .then(() => cyHelp.checkAspectDefaultExists())
-      .then(() => cy.get(SELECTOR_workspaceBtn).click())
-      .then(() => cy.get(SELECTOR_openNamespacesButton).contains(fileName).click({force: true}))
-      .then(() => cy.get(SELECTOR_searchElementsInp).type('externalPropertyWithChildren'))
-      .then(() => dragExternalReferenceWithChildren(SELECTOR_ecProperty, 100, 300))
+    setupAndDragExternalReference({
+      fileName,
+      elementName: 'externalPropertyWithChildren',
+      elementSelector: SELECTOR_ecProperty,
+      isSameNamespace: true,
+      hasChildren: true,
+      searchTerm: 'externalPropertyWithChildren',
+      x: 100,
+      y: 300,
+    })
       .then(() => connectElements('AspectDefault', 'externalPropertyWithChildren', true))
       .then(() => cy.getAspect())
       .then(checkAspectTree)

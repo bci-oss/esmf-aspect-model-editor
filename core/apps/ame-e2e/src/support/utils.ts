@@ -11,7 +11,132 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {API_BASE_URL, MODELS_API_URL, NAMESPACES_URL, SAMM_VERSION_ACTUAL} from './api-mocks';
+import {SELECTOR_openNamespacesButton, SELECTOR_searchElementsInp, SELECTOR_workspaceBtn} from './constants';
 import {cyHelp} from './helpers';
+
+export interface ExternalReferenceOptions {
+  fileName: string;
+  elementName: string;
+  elementSelector: string;
+  isSameNamespace?: boolean;
+  namespace?: string;
+  hasChildren?: boolean;
+  searchTerm?: string;
+  x?: number;
+  y?: number;
+  version?: string;
+  modelVersion?: string;
+}
+
+export function setupExternalReference(options: {
+  fileName: string;
+  elementName: string;
+  isSameNamespace?: boolean;
+  namespace?: string;
+  hasChildren?: boolean;
+  version?: string;
+  modelVersion?: string;
+}): void {
+  const isSame = options.isSameNamespace !== false;
+  const namespace = options.namespace ?? (isSame ? 'org.eclipse.examples.aspect' : 'org.eclipse.different');
+  const version = options.version ?? '1.0.0';
+  const modelVersion = options.modelVersion ?? SAMM_VERSION_ACTUAL;
+  const urn = `urn:samm:${namespace}:${version}#${options.elementName}`;
+  const nsFolder = isSame ? 'same-namespace' : 'different-namespace';
+  const batchFixture = `external-reference/${nsFolder}/without-childrens/${options.fileName}`;
+  const modelsFixture = options.hasChildren
+    ? `external-reference/${nsFolder}/with-childrens/${options.fileName}`
+    : `external-reference/${nsFolder}/without-childrens/${options.fileName}`;
+
+  cy.intercept('GET', NAMESPACES_URL, {
+    statusCode: 200,
+    body: {
+      [namespace]: [
+        {
+          version,
+          models: [
+            {
+              model: options.fileName,
+              aspectModelUrn: urn,
+              version: SAMM_VERSION_ACTUAL,
+              existing: true,
+            },
+          ],
+        },
+      ],
+    },
+  });
+
+  cy.fixture(batchFixture).then(fixtureContent => {
+    cy.intercept(
+      {
+        method: 'POST',
+        url: `${API_BASE_URL}/models/batch`,
+      },
+      {
+        statusCode: 200,
+        body: [
+          {
+            aspectModelUrn: urn,
+            aspectModel: fixtureContent,
+            absoluteName: `${namespace}:${version}:${options.fileName}`,
+            fileName: options.fileName,
+            modelVersion,
+          },
+        ],
+      },
+    );
+  });
+
+  cy.fixture(modelsFixture).then(fixtureContent => {
+    cy.intercept(
+      {
+        method: 'GET',
+        url: MODELS_API_URL,
+        headers: {'Aspect-Model-Urn': urn},
+      },
+      {
+        statusCode: 200,
+        body: {
+          content: fixtureContent,
+          sourceLocation: `file:/path/to/${options.fileName}`,
+        },
+      },
+    );
+  });
+}
+
+export function dragExternalElementFromWorkspace(options: {
+  fileName: string;
+  searchTerm?: string;
+  elementSelector: string;
+  x?: number;
+  y?: number;
+  hasChildren?: boolean;
+}): Cypress.Chainable {
+  const searchTerm = options.searchTerm ?? options.fileName;
+  const x = options.x ?? 100;
+  const y = options.y ?? 300;
+
+  return cy
+    .startModelling(true)
+    .then(() => cyHelp.checkAspectDefaultExists())
+    .then(() => cy.get(SELECTOR_workspaceBtn).click())
+    .then(() => cy.get(SELECTOR_openNamespacesButton).contains(options.fileName).click({force: true}))
+    .then(() => cy.get(SELECTOR_searchElementsInp).type(searchTerm))
+    .then(() => {
+      if (options.hasChildren) {
+        return dragExternalReferenceWithChildren(options.elementSelector, x, y);
+      }
+      return cy.dragElement(options.elementSelector, x, y);
+    });
+}
+
+export function setupAndDragExternalReference(options: ExternalReferenceOptions): Cypress.Chainable {
+  setupExternalReference(options);
+  return dragExternalElementFromWorkspace(options);
+}
 
 export function connectElements(parent: string, child: string, expected: boolean) {
   return cy

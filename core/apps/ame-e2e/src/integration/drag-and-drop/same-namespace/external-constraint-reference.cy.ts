@@ -13,17 +13,9 @@
 
 /// <reference types="cypress" />
 
-import {NAMESPACES_URL, SAMM_VERSION_ACTUAL} from '../../../support/api-mocks';
-import {
-  SELECTOR_ecConstraint,
-  SELECTOR_ecTrait,
-  SELECTOR_elementBtn,
-  SELECTOR_openNamespacesButton,
-  SELECTOR_searchElementsInp,
-  SELECTOR_workspaceBtn,
-} from '../../../support/constants';
+import {SELECTOR_ecConstraint, SELECTOR_ecTrait, SELECTOR_elementBtn} from '../../../support/constants';
 import {cyHelp} from '../../../support/helpers';
-import {checkAspectAndChildrenConstraint} from '../../../support/utils';
+import {checkAspectAndChildrenConstraint, setupAndDragExternalReference} from '../../../support/utils';
 
 describe('Test drag and drop ext constraint', () => {
   before(() => {
@@ -31,70 +23,15 @@ describe('Test drag and drop ext constraint', () => {
   });
 
   it('can add Constraint from external reference with same namespace', () => {
-    const fileName = 'external-constraint-reference.ttl';
-    cy.intercept('GET', NAMESPACES_URL, {
-      statusCode: 200,
-      body: {
-        'org.eclipse.examples.aspect': [
-          {
-            version: '1.0.0',
-            models: [
-              {
-                model: fileName,
-                aspectModelUrn: 'urn:samm:org.eclipse.examples.aspect:1.0.0#ExternalConstraint',
-                version: SAMM_VERSION_ACTUAL,
-                existing: true,
-              },
-            ],
-          },
-        ],
-      },
-    });
-
-    cy.fixture(`/external-reference/same-namespace/without-childrens/${fileName}`).then(fixtureContent => {
-      cy.intercept(
-        {
-          method: 'POST',
-          url: 'http://localhost:9090/ame/api/models/batch',
-        },
-        {
-          statusCode: 200,
-          body: [
-            {
-              aspectModelUrn: 'urn:samm:org.eclipse.examples.aspect:1.0.0#ExternalConstraint',
-              aspectModel: fixtureContent,
-              absoluteName: `org.eclipse.examples.aspect:1.0.0:${fileName}`,
-              fileName: fileName,
-              modelVersion: '2.2.0',
-            },
-          ],
-        },
-      );
-    });
-
-    cy.fixture(`/external-reference/same-namespace/without-childrens/${fileName}`).then(fixtureContent => {
-      cy.intercept(
-        {
-          method: 'GET',
-          url: 'http://localhost:9090/ame/api/models',
-          headers: {'Aspect-Model-Urn': 'urn:samm:org.eclipse.examples.aspect:1.0.0#ExternalConstraint'},
-        },
-        {
-          statusCode: 200,
-          body: {
-            content: fixtureContent,
-            sourceLocation: `file:/path/to/${fileName}`,
-          },
-        },
-      );
-    });
-
-    cy.startModelling(true)
-      .then(() => cyHelp.checkAspectDefaultExists())
-      .then(() => cy.get(SELECTOR_workspaceBtn).click())
-      .then(() => cy.get(SELECTOR_openNamespacesButton).contains(fileName).click({force: true}))
-      .then(() => cy.get(SELECTOR_searchElementsInp).type('constraint'))
-      .then(() => cy.dragElement(SELECTOR_ecConstraint, 100, 300))
+    setupAndDragExternalReference({
+      fileName: 'external-constraint-reference.ttl',
+      elementName: 'ExternalConstraint',
+      elementSelector: SELECTOR_ecConstraint,
+      isSameNamespace: true,
+      searchTerm: 'constraint',
+      x: 100,
+      y: 300,
+    })
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.dragElement(SELECTOR_ecTrait, 1100, 300))
       .then(() => cy.clickConnectShapes('property1', 'Trait1'))

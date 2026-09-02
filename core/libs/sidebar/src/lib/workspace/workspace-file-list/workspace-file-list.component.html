@@ -64,7 +64,15 @@
             aria-label="Select file {{ file.name }}"
           >
             <div class="content">
-              <mat-icon>{{ file.loaded ? 'arrow_right_alt' : file.outdated ? 'update' : file.errored ? 'error' : 'description' }}</mat-icon>
+              <mat-icon>{{
+                isCurrentFile(namespace.key, file.name)
+                  ? 'arrow_right_alt'
+                  : file.outdated
+                    ? 'update'
+                    : file.errored
+                      ? 'error'
+                      : 'description'
+              }}</mat-icon>
               <span>{{ file.name }}</span>
             </div>
             <button

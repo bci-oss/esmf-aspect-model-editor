@@ -194,6 +194,10 @@ export class WorkspaceFileListComponent {
     return !this.isOpenable();
   }
 
+  public isCurrentFile(namespace?: string, fileName?: string): boolean {
+    return this.sidebarService.isCurrentFile(namespace, fileName);
+  }
+
   public isDeleteDisabled() {
     const selection = this.menuSelection();
     if (!selection) return true;

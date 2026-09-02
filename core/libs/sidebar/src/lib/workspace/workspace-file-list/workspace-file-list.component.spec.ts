@@ -256,6 +256,15 @@ describe('WorkspaceFileListComponent', () => {
     }
   });
 
+  it('should identify current file correctly', () => {
+    expect(component.isCurrentFile('org.eclipse.esmf:1.0.0', 'Current.ttl')).toBe(true);
+    expect(component.isCurrentFile('org.eclipse.esmf:1.0.0', 'File1.ttl')).toBe(false);
+
+    loadedFilesMock.currentLoadedFile = {namespace: 'org.eclipse.esmf:1.0.0', name: 'File1.ttl'};
+    expect(component.isCurrentFile('org.eclipse.esmf:1.0.0', 'Current.ttl')).toBe(false);
+    expect(component.isCurrentFile('org.eclipse.esmf:1.0.0', 'File1.ttl')).toBe(true);
+  });
+
   it('should sort namespaces alphabetically', () => {
     const unsorted = [
       {key: 'org.b:1.0.0', value: []},

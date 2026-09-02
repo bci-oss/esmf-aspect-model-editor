@@ -26,9 +26,10 @@
       <mat-cell *matCellDef="let group; let index = index">
         <ame-structured-value-property-field
           class="property-field"
-          [field]="propertiesForm[index].property"
           [defaultProperty]="group.property"
+          [excludedProperties]="data.parentProperties || []"
           [attr.data-cy]="'property-' + group.regex"
+          (propertyChange)="onPropertyChange(index, group.key, $event)"
         ></ame-structured-value-property-field>
       </mat-cell>
     </ng-container>

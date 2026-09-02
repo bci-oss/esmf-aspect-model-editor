@@ -14,15 +14,15 @@
 import {CacheUtils, LoadedFilesService} from '@ame/cache';
 import {ElementCreatorService} from '@ame/shared';
 import {AsyncPipe} from '@angular/common';
-import {Component, inject, input, OnInit, signal} from '@angular/core';
+import {Component, inject, input, OnInit, output, signal} from '@angular/core';
 import {toObservable} from '@angular/core/rxjs-interop';
-import {disabled, FieldTree, form, FormField, required, validate} from '@angular/forms/signals';
+import {disabled, form, FormField, required, validate} from '@angular/forms/signals';
 import {MatAutocomplete, MatAutocompleteTrigger, MatOptgroup, MatOption} from '@angular/material/autocomplete';
 import {MatIconButton} from '@angular/material/button';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatError, MatInput, MatLabel} from '@angular/material/input';
-import {DefaultCharacteristic, DefaultProperty, RdfModel} from '@esmf/aspect-model-loader';
+import {DefaultCharacteristic, DefaultProperty, NamedElement, RdfModel} from '@esmf/aspect-model-loader';
 import {debounceTime, map, Observable} from 'rxjs';
 
 @Component({
@@ -46,7 +46,8 @@ import {debounceTime, map, Observable} from 'rxjs';
 })
 export class StructuredValuePropertyFieldComponent implements OnInit {
   public defaultProperty = input<DefaultProperty>(null);
-  public readonly field = input.required<FieldTree<DefaultProperty | null>>();
+  public excludedProperties = input<NamedElement[]>([]);
+  readonly propertyChange = output<DefaultProperty | null>();
 
   private elementCreator = inject(ElementCreatorService);
   public loadedFiles = inject(LoadedFilesService);
@@ -55,7 +56,12 @@ export class StructuredValuePropertyFieldComponent implements OnInit {
   public displayModel = signal('');
   public filteredProperties$: Observable<any> = toObservable(this.displayModel).pipe(
     debounceTime(250),
-    map(value => CacheUtils.getCachedElements(this.currentCacheFile, DefaultProperty).filter(property => property.name.includes(value))),
+    map(value => {
+      const excludedUrns = new Set(this.excludedProperties().map(p => p.aspectModelUrn));
+      return CacheUtils.getCachedElements(this.currentCacheFile, DefaultProperty).filter(
+        property => !excludedUrns.has(property.aspectModelUrn) && property.name.includes(value),
+      );
+    }),
   );
   public displayForm = form(this.displayModel, path => {
     required(path);
@@ -86,7 +92,7 @@ export class StructuredValuePropertyFieldComponent implements OnInit {
   unlock() {
     this.locked.set(false);
     this.displayModel.set('');
-    this.field()().value.set(null);
+    this.propertyChange.emit(null);
   }
 
   isLowerCase(value: string) {
@@ -108,13 +114,13 @@ export class StructuredValuePropertyFieldComponent implements OnInit {
       name,
       characteristic,
     });
-    this.field()().value.set(newProperty);
     this.locked.set(true);
+    this.propertyChange.emit(newProperty);
   }
 
   onSelectionChange(property: DefaultProperty) {
-    this.field()().value.set(property);
     this.displayModel.set(property.name);
     this.locked.set(true);
+    this.propertyChange.emit(property);
   }
 }

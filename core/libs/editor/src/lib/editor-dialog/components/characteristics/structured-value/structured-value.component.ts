@@ -133,7 +133,10 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
   openModal() {
     this.matDialog
       .open(StructuredValuePropertiesComponent, {
-        data: {groups: this.groups},
+        data: {
+          groups: this.groups,
+          parentProperties: this.metaModelElement?.parents || [],
+        },
       })
       .afterClosed()
       .pipe(take(1))
@@ -309,7 +312,7 @@ export class StructuredValueComponent extends InputFieldComponent<DefaultStructu
     }
   }
 
-  private setElementsControllerValue(setPropertiesFromElements?: boolean) {
+  private setElementsControllerValue() {
     this.elements = [...(this.splitters || []), ...(this.groups || [])]
       .sort((a, b) => a.start - b.start)
       .map(v => (v.isSplitter ? v.text : v.property));

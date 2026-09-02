@@ -78,7 +78,7 @@ describe('StructuredValuePropertiesComponent', () => {
   it('should create and populate a valid signal form', () => {
     expect(component).toBeTruthy();
     expect(component.dataSource.data.length).toBe(1);
-    expect(component.propertiesModel()[0].property).toBe(property);
+    expect(component.propertiesModel()[0].propertyName).toBe('prop1');
     expect(component.propertiesForm().valid()).toBe(true);
   });
 
@@ -88,7 +88,7 @@ describe('StructuredValuePropertiesComponent', () => {
   });
 
   it('should prevent saving while a required property is missing', () => {
-    component.propertiesForm[0].property().value.set(null);
+    component.onPropertyChange(0, '[0-5] -> ([a-z]+)', null);
     component.closeModal(true);
 
     expect(component.propertiesForm().invalid()).toBe(true);

@@ -13,9 +13,7 @@
 
 import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {ElementCreatorService} from '@ame/shared';
-import {signal} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {form} from '@angular/forms/signals';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DefaultAspect, DefaultProperty, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {Store} from 'n3';
@@ -55,10 +53,7 @@ describe('StructuredValuePropertyFieldComponent', () => {
 
     fixture = TestBed.createComponent(StructuredValuePropertyFieldComponent);
     component = fixture.componentInstance;
-    const selectedModel = signal<{property: DefaultProperty | null}>({property: defaultProp});
-    const selectedForm = TestBed.runInInjectionContext(() => form(selectedModel));
     fixture.componentRef.setInput('defaultProperty', defaultProp);
-    fixture.componentRef.setInput('field', selectedForm.property);
     fixture.detectChanges();
   });
 
@@ -70,18 +65,24 @@ describe('StructuredValuePropertyFieldComponent', () => {
   });
 
   it('should unlock and clear both signal models', () => {
+    const propertyChangeSpy = vi.fn();
+    component.propertyChange.subscribe(propertyChangeSpy);
+
     component.unlock();
     expect(component.locked()).toBe(false);
     expect(component.displayModel()).toBe('');
-    expect(component.field()().value()).toBeNull();
+    expect(propertyChangeSpy).toHaveBeenCalledWith(null);
   });
 
-  it('should update the parent signal field on selection', () => {
+  it('should update and emit property on selection', () => {
+    const propertyChangeSpy = vi.fn();
+    component.propertyChange.subscribe(propertyChangeSpy);
+
     component.unlock();
     component.onSelectionChange(defaultProp);
 
-    expect(component.field()().value()).toBe(defaultProp);
     expect(component.displayModel()).toBe('testProp');
     expect(component.locked()).toBe(true);
+    expect(propertyChangeSpy).toHaveBeenCalledWith(defaultProp);
   });
 });

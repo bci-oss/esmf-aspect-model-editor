@@ -500,6 +500,7 @@ Cypress.Commands.add('saveAspectModelToWorkspace', () => {
 });
 
 Cypress.Commands.add('openGenerationOpenApiSpec', () => {
+  cy.get('mat-dialog-container').should('not.exist');
   cy.intercept('POST', /\/generate\/open-api-spec(\?.*)?$/, req => {
     if (req.url.includes('output=yaml')) {
       req.reply({fixture: 'AspectDefault-open-api.yaml'});
@@ -515,6 +516,7 @@ Cypress.Commands.add('openGenerationOpenApiSpec', () => {
 });
 
 Cypress.Commands.add('openGenerationAsyncApiSpec', () => {
+  cy.get('mat-dialog-container').should('not.exist');
   cy.intercept('POST', /\/generate\/async-api-spec(\?.*)?$/, req => {
     if (req.url.includes('writeSeparateFiles=true')) {
       req.reply({fixture: 'AspectDefault-open-api.json'});
@@ -532,6 +534,7 @@ Cypress.Commands.add('openGenerationAsyncApiSpec', () => {
 });
 
 Cypress.Commands.add('openGenerationDocumentation', () => {
+  cy.get('mat-dialog-container').should('not.exist');
   cy.intercept('POST', `${API_BASE_URL}/generate/documentation?language=en`, {fixture: 'valid-documentation.html'});
 
   return cy.window().then(win => {
@@ -541,6 +544,7 @@ Cypress.Commands.add('openGenerationDocumentation', () => {
 });
 
 Cypress.Commands.add('openGenerationJsonSample', () => {
+  cy.get('mat-dialog-container').should('not.exist');
   cy.intercept('POST', `${API_BASE_URL}/generate/json-sample`, {fixture: 'valid-json.json'});
 
   return cy.window().then(win => {
@@ -550,6 +554,7 @@ Cypress.Commands.add('openGenerationJsonSample', () => {
 });
 
 Cypress.Commands.add('openGenerationJsonSchema', () => {
+  cy.get('mat-dialog-container').should('not.exist');
   cy.intercept('POST', `${API_BASE_URL}/generate/json-schema?language=en`, {fixture: 'valid-json.json'});
 
   return cy.window().then(win => {

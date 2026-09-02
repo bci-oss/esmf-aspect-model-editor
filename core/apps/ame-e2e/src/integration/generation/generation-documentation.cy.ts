@@ -16,10 +16,13 @@
 import {GENERATION_tbDownloadDoc} from '../../support/constants';
 
 describe('Test generation and download of Aspect Model documentation', () => {
-  it('Can generate and download valid Aspect Model documentation', () => {
+  before(() => {
     cy.visitDefault();
-    cy.startModelling()
-      .then(() => cy.openGenerationDocumentation())
+    cy.startModelling();
+  });
+
+  it('Can generate and download valid Aspect Model documentation', () => {
+    cy.openGenerationDocumentation()
       .then(() => cy.get(GENERATION_tbDownloadDoc).should('be.visible').click({force: true}))
       .then(() => cy.readFile('apps/ame-e2e/cypress/downloads/AspectDefault-documentation.html'));
   });

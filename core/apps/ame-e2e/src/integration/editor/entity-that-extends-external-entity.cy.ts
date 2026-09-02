@@ -18,8 +18,11 @@ import {NAMESPACES_URL} from '../../support/api-mocks';
 import {SELECTOR_notificationsBtn, SELECTOR_notificationsDialogCloseButton} from '../../support/constants';
 
 describe.skip('Test loading aspect with extended external Entity', () => {
-  it('should display an error that external reference is not included in the namespace file structure', () => {
+  before(() => {
     cy.visitDefault();
+  });
+
+  it('should display an error that external reference is not included in the namespace file structure', () => {
     cy.fixture('/external-reference/same-namespace/model-with-extended-entity.txt')
       .then(rdfString => cy.loadModel(rdfString))
       .then(() => {
@@ -56,7 +59,6 @@ describe.skip('Test loading aspect with extended external Entity', () => {
       },
     );
 
-    cy.visitDefault();
     cy.fixture('/external-reference/same-namespace/model-with-extended-entity')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
@@ -94,7 +96,6 @@ describe.skip('Test loading aspect with extended external Entity', () => {
       },
     );
 
-    cy.visitDefault();
     cy.fixture('/external-reference/different-namespace/model-with-entity-that-extends-from-different-namespace')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))

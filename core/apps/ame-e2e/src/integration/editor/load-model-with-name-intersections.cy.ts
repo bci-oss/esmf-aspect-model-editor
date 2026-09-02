@@ -14,9 +14,12 @@
 /// <reference types="cypress" />
 
 describe('Test models with intersected names', () => {
+  before(() => {
+    cy.visitDefault();
+  });
+
   describe('PredefinedAndCustomCharacteristicsSameName', () => {
     it('should load "PredefinedAndCustomCharacteristicsSameName" model', () => {
-      cy.visitDefault();
       cy.fixture('predefined-and-custom-characteristics-same-name')
         .as('rdfString')
         .then(rdfString => cy.loadModel(rdfString))

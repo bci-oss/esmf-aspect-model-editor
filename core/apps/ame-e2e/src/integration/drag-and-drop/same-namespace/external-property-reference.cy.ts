@@ -24,6 +24,10 @@ import {cyHelp} from '../../../support/helpers';
 import {checkRelationParentChild, connectElements} from '../../../support/utils';
 
 describe('Test drag and drop ext properties', () => {
+  before(() => {
+    cy.visitDefault();
+  });
+
   const fileName = 'external-property-reference.ttl';
   it('can add Property from external reference with same namespace', () => {
     cy.intercept('GET', NAMESPACES_URL, {
@@ -83,26 +87,23 @@ describe('Test drag and drop ext properties', () => {
       );
     });
 
-    cy.visitDefault().then(() =>
-      cy
-        .startModelling(true)
-        .then(() => cyHelp.checkAspectDefaultExists())
-        .then(() => cy.get(SELECTOR_workspaceBtn).click())
-        .then(() => cy.get(SELECTOR_openNamespacesButton).contains(fileName).click({force: true}))
-        .then(() => cy.get(SELECTOR_searchElementsInp).type('property'))
-        .then(() => cy.dragElement(SELECTOR_ecProperty, 100, 300))
-        .then(() => cy.clickShape('externalProperty'))
-        .then(() => connectElements('AspectDefault', 'externalProperty', true))
-        .then(() => cy.getAspect())
-        .then(aspect => checkRelationParentChild(aspect, 'AspectDefault', 'externalProperty'))
-        .then(() => cy.getUpdatedRDF())
-        .then(rdf => {
-          expect(rdf).to.contain('samm:properties (:property1 :externalProperty)');
-          expect(rdf).to.contain(':property1 a samm:Property');
-          expect(rdf).to.contain('samm:characteristic :Characteristic1');
-          expect(rdf).to.contain(':Characteristic1 a samm:Characteristic');
-          expect(rdf).not.contain(':externalProperty a samm:Property');
-        }),
-    );
+    cy.startModelling(true)
+      .then(() => cyHelp.checkAspectDefaultExists())
+      .then(() => cy.get(SELECTOR_workspaceBtn).click())
+      .then(() => cy.get(SELECTOR_openNamespacesButton).contains(fileName).click({force: true}))
+      .then(() => cy.get(SELECTOR_searchElementsInp).type('property'))
+      .then(() => cy.dragElement(SELECTOR_ecProperty, 100, 300))
+      .then(() => cy.clickShape('externalProperty'))
+      .then(() => connectElements('AspectDefault', 'externalProperty', true))
+      .then(() => cy.getAspect())
+      .then(aspect => checkRelationParentChild(aspect, 'AspectDefault', 'externalProperty'))
+      .then(() => cy.getUpdatedRDF())
+      .then(rdf => {
+        expect(rdf).to.contain('samm:properties (:property1 :externalProperty)');
+        expect(rdf).to.contain(':property1 a samm:Property');
+        expect(rdf).to.contain('samm:characteristic :Characteristic1');
+        expect(rdf).to.contain(':Characteristic1 a samm:Characteristic');
+        expect(rdf).not.contain(':externalProperty a samm:Property');
+      });
   });
 });

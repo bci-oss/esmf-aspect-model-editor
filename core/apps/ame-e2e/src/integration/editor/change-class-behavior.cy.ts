@@ -63,8 +63,11 @@ const fields = [
 describe('Constraint', () => {
   for (const field of fields) {
     describe(`${field.name} Field`, () => {
-      it('should create and rename Constraint', () => {
+      before(() => {
         cy.visitDefault();
+      });
+
+      it('should create and rename Constraint', () => {
         cy.startModelling()
           .then(() => cy.shapeExists('AspectDefault'))
           .then(() => cy.get(SELECTOR_elementBtn).click())
@@ -89,9 +92,12 @@ describe('Constraint', () => {
 describe('Characteristic', () => {
   for (const field of fields) {
     describe(`${field.name} Field`, () => {
+      before(() => {
+        cy.visitDefault();
+      });
+
       it('should create and rename Characteristic', () => {
         cy.intercept('GET', NAMESPACES_URL, {statusCode: 200, body: {}});
-        cy.visitDefault();
         cy.startModelling()
           .then(() => cy.shapeExists('AspectDefault'))
           .then(() => cy.get(SELECTOR_elementBtn).click())

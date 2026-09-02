@@ -13,10 +13,11 @@
 
 /// <reference types="cypress" />
 
+import {SELECTOR_editorCancelButton} from '../../../support/constants';
 import {assertRdf, loadModel, openElementAndAssertValues} from '../../../support/utils';
 
 describe('Loading Entity value with lang string properties', () => {
-  beforeEach(() => {
+  before(() => {
     cy.visitDefault();
   });
 
@@ -67,6 +68,7 @@ describe('Loading Entity value with lang string properties', () => {
         ],
       },
     ]);
+    cy.get(SELECTOR_editorCancelButton).click({force: true});
   });
 
   it('should have two entity values with rdf lang string in two Collections', () => {
@@ -118,5 +120,6 @@ describe('Loading Entity value with lang string properties', () => {
         ],
       },
     ]);
+    cy.get(SELECTOR_editorCancelButton).click({force: true});
   });
 });

@@ -24,6 +24,10 @@ import {cyHelp} from '../../../support/helpers';
 import {checkAspectTree, connectElements, dragExternalReferenceWithChildren} from '../../../support/utils';
 
 describe('Test drag and drop ext properties', () => {
+  before(() => {
+    cy.visitDefault();
+  });
+
   const fileName = 'external-property-reference.ttl';
   it("can add Property with children's from external reference different namespace", () => {
     cy.intercept('GET', NAMESPACES_URL, {
@@ -83,35 +87,32 @@ describe('Test drag and drop ext properties', () => {
       );
     });
 
-    cy.visitDefault().then(() =>
-      cy
-        .startModelling(true)
-        .then(() => cyHelp.checkAspectDefaultExists())
-        .then(() => cy.get(SELECTOR_workspaceBtn).click())
-        .then(() => cy.get(SELECTOR_openNamespacesButton).contains(fileName).click({force: true}))
-        .then(() => cy.get(SELECTOR_searchElementsInp).type('externalPropertyWithChildren'))
-        .then(() => dragExternalReferenceWithChildren(SELECTOR_ecProperty, 100, 300))
-        .then(() => cy.clickShape('externalPropertyWithChildren'))
-        .then(() => connectElements('AspectDefault', 'externalPropertyWithChildren', true))
-        .then(() => cy.getAspect())
-        .then(checkAspectTree)
-        .then(() => cy.getUpdatedRDF())
-        .then(rdf => {
-          expect(rdf).to.contain('@prefix : <urn:samm:org.eclipse.examples.aspect:1.0.0#>.');
-          expect(rdf).to.contain('@prefix ext-different: <urn:samm:org.eclipse.different:1.0.0#>.');
-          expect(rdf).to.contain('samm:properties (:property1 ext-different:externalPropertyWithChildren)');
-          expect(rdf).to.contain(':property1 a samm:Property');
-          expect(rdf).to.contain('samm:characteristic :Characteristic1');
-          expect(rdf).to.contain(':Characteristic1 a samm:Characteristic');
-          expect(rdf).not.contain(':externalPropertyWithChildren a samm:Property');
-          expect(rdf).not.contain(':ChildrenCharacteristic1 a samm:Characteristic');
-          expect(rdf).not.contain(':ChildrenEntity1 a samm:Entity');
-          expect(rdf).not.contain(':childrenProperty1 a samm:Property');
-          expect(rdf).not.contain(':childrenProperty2 a samm:Property');
-          expect(rdf).not.contain('samm:characteristic samm-c:Boolean');
-          expect(rdf).not.contain(':ChildrenCharacteristic2 a samm:Characteristic');
-          expect(rdf).not.contain(':ChildrenEntity2 a samm:Entity');
-        }),
-    );
+    cy.startModelling(true)
+      .then(() => cyHelp.checkAspectDefaultExists())
+      .then(() => cy.get(SELECTOR_workspaceBtn).click())
+      .then(() => cy.get(SELECTOR_openNamespacesButton).contains(fileName).click({force: true}))
+      .then(() => cy.get(SELECTOR_searchElementsInp).type('externalPropertyWithChildren'))
+      .then(() => dragExternalReferenceWithChildren(SELECTOR_ecProperty, 100, 300))
+      .then(() => cy.clickShape('externalPropertyWithChildren'))
+      .then(() => connectElements('AspectDefault', 'externalPropertyWithChildren', true))
+      .then(() => cy.getAspect())
+      .then(checkAspectTree)
+      .then(() => cy.getUpdatedRDF())
+      .then(rdf => {
+        expect(rdf).to.contain('@prefix : <urn:samm:org.eclipse.examples.aspect:1.0.0#>.');
+        expect(rdf).to.contain('@prefix ext-different: <urn:samm:org.eclipse.different:1.0.0#>.');
+        expect(rdf).to.contain('samm:properties (:property1 ext-different:externalPropertyWithChildren)');
+        expect(rdf).to.contain(':property1 a samm:Property');
+        expect(rdf).to.contain('samm:characteristic :Characteristic1');
+        expect(rdf).to.contain(':Characteristic1 a samm:Characteristic');
+        expect(rdf).not.contain(':externalPropertyWithChildren a samm:Property');
+        expect(rdf).not.contain(':ChildrenCharacteristic1 a samm:Characteristic');
+        expect(rdf).not.contain(':ChildrenEntity1 a samm:Entity');
+        expect(rdf).not.contain(':childrenProperty1 a samm:Property');
+        expect(rdf).not.contain(':childrenProperty2 a samm:Property');
+        expect(rdf).not.contain('samm:characteristic samm-c:Boolean');
+        expect(rdf).not.contain(':ChildrenCharacteristic2 a samm:Characteristic');
+        expect(rdf).not.contain(':ChildrenEntity2 a samm:Entity');
+      });
   });
 });

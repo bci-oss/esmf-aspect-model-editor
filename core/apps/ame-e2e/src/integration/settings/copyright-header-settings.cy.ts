@@ -16,10 +16,13 @@
 import {SELECTOR_settingsButton, SettingsDialogSelectors} from '../../support/constants';
 
 describe('Test language settings', () => {
+  before(() => {
+    cy.visitDefault();
+  });
+
   const copyrightField = '[data-cy=copyright]';
 
   it('can see copyright header', () => {
-    cy.visitDefault();
     cy.startModelling();
     cy.get(SELECTOR_settingsButton)
       .click()

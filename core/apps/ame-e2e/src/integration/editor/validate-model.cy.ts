@@ -16,9 +16,12 @@
 import {SELECTOR_notificationsBtn, SELECTOR_notificationsDialogCloseButton} from '../../support/constants';
 
 describe('Test validate Aspect', () => {
-  it('can validate default model', () => {
+  before(() => {
     cy.visitDefault();
     cy.startModellingInvalidModel();
+  });
+
+  it('can validate default model', () => {
     cy.get(SELECTOR_notificationsBtn)
       .click()
       .then(() => {

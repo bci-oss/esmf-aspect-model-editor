@@ -16,19 +16,22 @@
 import {GENERATION_downloadFileButton} from '../../support/constants';
 
 describe('Test generation and download of Json payload/schema', () => {
-  it('Can generate and download valid Json payload', () => {
+  before(() => {
     cy.visitDefault();
-    cy.startModelling()
-      .then(() => cy.openGenerationJsonSample())
+    cy.startModelling();
+  });
+
+  it('Can generate and download valid Json payload', () => {
+    cy.openGenerationJsonSample()
       .then(() => cy.get(GENERATION_downloadFileButton).should('be.visible').click({force: true}))
-      .then(() => cy.readFile('apps/ame-e2e/cypress/downloads/AspectDefault-sample.json'));
+      .then(() => cy.readFile('apps/ame-e2e/cypress/downloads/AspectDefault-sample.json'))
+      .then(() => cy.get('button.close-button').click({force: true}));
   });
 
   it('Can generate and download valid Json schema', () => {
-    cy.visitDefault();
-    cy.startModelling()
-      .then(() => cy.openGenerationJsonSchema())
+    cy.openGenerationJsonSchema()
       .then(() => cy.get(GENERATION_downloadFileButton).should('be.visible').click({force: true}))
-      .then(() => cy.readFile('apps/ame-e2e/cypress/downloads/AspectDefault-schema.json'));
+      .then(() => cy.readFile('apps/ame-e2e/cypress/downloads/AspectDefault-schema.json'))
+      .then(() => cy.get('button.close-button').click({force: true}));
   });
 });

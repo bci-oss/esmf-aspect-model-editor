@@ -24,7 +24,7 @@ import {
 import {assertRdf, loadModel, openElementAndAssertValues} from '../../../support/utils';
 
 describe('Loading and edit Entity value RDF lang string properties on modal tests', () => {
-  beforeEach(() => {
+  before(() => {
     cy.visitDefault();
   });
 

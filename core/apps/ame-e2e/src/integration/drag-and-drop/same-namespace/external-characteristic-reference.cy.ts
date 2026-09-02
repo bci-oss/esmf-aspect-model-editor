@@ -24,6 +24,10 @@ import {cyHelp} from '../../../support/helpers';
 import {checkAspect, connectElements} from '../../../support/utils';
 
 describe('Test drag and drop ext characteristic', () => {
+  before(() => {
+    cy.visitDefault();
+  });
+
   it('can add Characteristic from external reference with same namespace', () => {
     const fileName = 'external-characteristic-reference.ttl';
     cy.intercept('GET', NAMESPACES_URL, {
@@ -83,25 +87,22 @@ describe('Test drag and drop ext characteristic', () => {
       );
     });
 
-    cy.visitDefault().then(() =>
-      cy
-        .startModelling(true)
-        .then(() => cyHelp.checkAspectDefaultExists())
-        .then(() => cy.get(SELECTOR_workspaceBtn).click())
-        .then(() => cy.get(SELECTOR_openNamespacesButton).contains(fileName).click({force: true}))
-        .then(() => cy.get(SELECTOR_searchElementsInp).type('constraint'))
-        .then(() => cy.dragElement(SELECTOR_ecCharacteristic, 100, 300))
-        .then(() => cy.clickShape('ExternalCharacteristic'))
-        .then(() => connectElements('property1', 'ExternalCharacteristic', false))
-        .then(() => cy.getAspect())
-        .then(checkAspect)
-        .then(() => cy.getUpdatedRDF())
-        .then(rdf => {
-          expect(rdf).to.contain('samm:properties (:property1)');
-          expect(rdf).to.contain(':property1 a samm:Property');
-          expect(rdf).to.contain('samm:characteristic :ExternalCharacteristic');
-          expect(rdf).not.contain(':ExternalCharacteristic a samm:Characteristic');
-        }),
-    );
+    cy.startModelling(true)
+      .then(() => cyHelp.checkAspectDefaultExists())
+      .then(() => cy.get(SELECTOR_workspaceBtn).click())
+      .then(() => cy.get(SELECTOR_openNamespacesButton).contains(fileName).click({force: true}))
+      .then(() => cy.get(SELECTOR_searchElementsInp).type('constraint'))
+      .then(() => cy.dragElement(SELECTOR_ecCharacteristic, 100, 300))
+      .then(() => cy.clickShape('ExternalCharacteristic'))
+      .then(() => connectElements('property1', 'ExternalCharacteristic', false))
+      .then(() => cy.getAspect())
+      .then(checkAspect)
+      .then(() => cy.getUpdatedRDF())
+      .then(rdf => {
+        expect(rdf).to.contain('samm:properties (:property1)');
+        expect(rdf).to.contain(':property1 a samm:Property');
+        expect(rdf).to.contain('samm:characteristic :ExternalCharacteristic');
+        expect(rdf).not.contain(':ExternalCharacteristic a samm:Characteristic');
+      });
   });
 });

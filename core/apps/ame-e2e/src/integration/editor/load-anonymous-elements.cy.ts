@@ -14,8 +14,11 @@
 /// <reference types="cypress" />
 
 describe('Test load aspect model with anonymous elements', () => {
-  it('load aspect model with anonymous elements', () => {
+  before(() => {
     cy.visitDefault();
+  });
+
+  it('load aspect model with anonymous elements', () => {
     cy.fixture('anonymous-elements')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))

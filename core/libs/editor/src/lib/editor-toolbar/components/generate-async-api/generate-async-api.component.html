@@ -93,7 +93,14 @@
 
     <mat-dialog-actions align="end">
       <button type="button" mat-flat-button mat-dialog-close>{{ t('generateAsyncapiSpecDialog.button.cancel') }}</button>
-      <button [disabled]="asyncApiForm().invalid()" type="submit" mat-flat-button color="primary" data-cy="tbGenerateAsyncApiButton">
+      <button
+        [disabled]="asyncApiForm().invalid()"
+        (click)="generateAsyncApiSpec()"
+        type="submit"
+        mat-flat-button
+        color="primary"
+        data-cy="tbGenerateAsyncApiButton"
+      >
         <span>{{ t('generateAsyncapiSpecDialog.button.generate') }}</span>
       </button></mat-dialog-actions
     >

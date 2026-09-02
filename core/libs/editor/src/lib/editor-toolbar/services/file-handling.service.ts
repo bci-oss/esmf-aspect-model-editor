@@ -117,8 +117,8 @@ export class FileHandlingService {
     if (!modelContent) return of(null);
 
     const loadingScreenOptions: LoadingScreenOptions = {
-      title: this.translate.language.notificationDialog?.LOADING,
-      content: this.translate.language.notificationDialog?.CONTENT,
+      title: this.translate.language?.notificationDialog?.LOADING,
+      content: this.translate.language?.notificationDialog?.CONTENT,
       hasCloseButton: true,
     };
     this.loadingScreenService.open(loadingScreenOptions);
@@ -132,7 +132,7 @@ export class FileHandlingService {
       }),
       catchError(httpError => {
         this.notificationsService.error({
-          title: this.translate.language.notificationService.loadingError,
+          title: this.translate.language?.notificationService?.loadingError,
           message: httpError?.error?.error?.message,
           timeout: 5000,
         });
@@ -157,7 +157,7 @@ export class FileHandlingService {
         first(),
         tap(() => {
           const loadingScreenOptions: LoadingScreenOptions = {
-            title: this.translate.language.notificationDialog?.LOADING,
+            title: this.translate.language?.notificationDialog?.LOADING,
             hasCloseButton: true,
           };
           this.loadingScreenService.open(loadingScreenOptions);
@@ -315,8 +315,8 @@ export class FileHandlingService {
     }
 
     this.loadingScreenService.open({
-      title: this.translate.language.notificationDialog?.SAVING,
-      content: this.translate.language.notificationDialog?.CONTENT,
+      title: this.translate.language?.notificationDialog?.SAVING,
+      content: this.translate.language?.notificationDialog?.CONTENT,
       hasCloseButton: false,
     });
 
@@ -333,7 +333,7 @@ export class FileHandlingService {
       }),
       catchError(httpError => {
         this.notificationsService.error({
-          title: this.translate.language.notificationService.exportingTitleError,
+          title: this.translate.language?.notificationService?.exportingTitleError,
           message: httpError?.error?.error?.message,
           timeout: 5000,
         });
@@ -498,7 +498,7 @@ export class FileHandlingService {
   onValidateFile() {
     if (!this.currentLoadedFile.cachedFile.getKeys().length) {
       this.notificationsService.info({
-        title: this.translate.language.notificationDialog?.NO_ASPECT_TITLE,
+        title: this.translate.language?.notificationDialog?.NO_ASPECT_TITLE,
         timeout: 5000,
       });
       return;
@@ -509,8 +509,8 @@ export class FileHandlingService {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   validateFile(callback?: Function) {
     const loadingScreenOptions: LoadingScreenOptions = {
-      title: this.translate.language.notificationDialog?.VALIDATING,
-      content: this.translate.language.notificationDialog?.CONTENT,
+      title: this.translate.language?.notificationDialog?.VALIDATING,
+      content: this.translate.language?.notificationDialog?.CONTENT,
       hasCloseButton: true,
     };
     this.loadingScreenService.open(loadingScreenOptions);
@@ -525,12 +525,12 @@ export class FileHandlingService {
       catchError(error => {
         this.loadingScreenService.close();
         if (error?.type === SaveValidateErrorsCodes.validationInProgress) {
-          this.notificationsService.error({title: this.translate.language.notificationService.validationInProgress});
+          this.notificationsService.error({title: this.translate.language?.notificationService?.validationInProgress});
           return of(() => 'Validation in progress');
         }
         this.notificationsService.error({
-          title: this.translate.language.notificationService.validationErrorTitle,
-          message: this.translate.language.notificationService.validationErrorMessage,
+          title: this.translate.language?.notificationService?.validationErrorTitle,
+          message: this.translate.language?.notificationService?.validationErrorMessage,
           timeout: 5000,
         });
         console.error(`Error occurred while validating the current model (${JSON.stringify(error)})`);

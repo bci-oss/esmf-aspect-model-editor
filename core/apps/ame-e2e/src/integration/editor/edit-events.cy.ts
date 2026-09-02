@@ -17,8 +17,11 @@ import {FIELD_name, SELECTOR_ecEvent, SELECTOR_elementBtn, SELECTOR_tbDeleteButt
 import {cyHelp} from '../../support/helpers';
 
 describe('Test edit Events', () => {
-  it('can load events', () => {
+  before(() => {
     cy.visitDefault();
+  });
+
+  it('can load events', () => {
     cy.fixture('model-with-events')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
@@ -44,7 +47,6 @@ describe('Test edit Events', () => {
   });
 
   it('can add properties', () => {
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.shapeExists('AspectDefault'))

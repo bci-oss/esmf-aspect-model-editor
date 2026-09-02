@@ -26,6 +26,10 @@ import {cyHelp} from '../../../support/helpers';
 import {checkAspectAndChildrenConstraint} from '../../../support/utils';
 
 describe('Test drag and drop ext constraint', () => {
+  before(() => {
+    cy.visitDefault();
+  });
+
   it('can add Constraint from external reference with different namespace', () => {
     const fileName = 'external-constraint-reference.ttl';
 
@@ -86,33 +90,30 @@ describe('Test drag and drop ext constraint', () => {
       );
     });
 
-    cy.visitDefault().then(() =>
-      cy
-        .startModelling(true)
-        .then(() => cyHelp.checkAspectDefaultExists())
-        .then(() => cy.get(SELECTOR_workspaceBtn).click())
-        .then(() => cy.get(SELECTOR_openNamespacesButton).contains(fileName).click({force: true}))
-        .then(() => cy.get(SELECTOR_searchElementsInp).type('constraint'))
-        .then(() => cy.dragElement(SELECTOR_ecConstraint, 100, 300))
-        .then(() => cy.get(SELECTOR_elementBtn).click())
-        .then(() => cy.dragElement(SELECTOR_ecTrait, 1100, 300))
-        .then(() => cy.clickConnectShapes('property1', 'Trait1'))
-        .then(() => cy.clickConnectShapes('Trait1', 'ExternalConstraint'))
-        .then(() => cyHelp.hasAddShapeOverlay('Trait1').then(hasAddOverlay => expect(hasAddOverlay).equal(true)))
-        .then(() => cy.getAspect())
-        .then(checkAspectAndChildrenConstraint)
-        .then(() => cy.getUpdatedRDF())
-        .then(rdf => {
-          expect(rdf).to.contain('@prefix : <urn:samm:org.eclipse.examples.aspect:1.0.0#>.');
-          expect(rdf).to.contain('@prefix ext-different: <urn:samm:org.eclipse.different:1.0.0#>.');
-          expect(rdf).to.contain('samm:properties (:property1)');
-          expect(rdf).to.contain(':property1 a samm:Property');
-          expect(rdf).to.contain('samm:characteristic :Trait1');
-          expect(rdf).to.contain('samm-c:baseCharacteristic :Characteristic2');
-          expect(rdf).to.contain(':Characteristic2 a samm:Characteristic');
-          expect(rdf).to.contain('samm-c:constraint :EncodingConstraint1, ext-different:ExternalConstraint');
-          expect(rdf).not.contain(':ExternalConstraint a samm:EncodingConstraint');
-        }),
-    );
+    cy.startModelling(true)
+      .then(() => cyHelp.checkAspectDefaultExists())
+      .then(() => cy.get(SELECTOR_workspaceBtn).click())
+      .then(() => cy.get(SELECTOR_openNamespacesButton).contains(fileName).click({force: true}))
+      .then(() => cy.get(SELECTOR_searchElementsInp).type('constraint'))
+      .then(() => cy.dragElement(SELECTOR_ecConstraint, 100, 300))
+      .then(() => cy.get(SELECTOR_elementBtn).click())
+      .then(() => cy.dragElement(SELECTOR_ecTrait, 1100, 300))
+      .then(() => cy.clickConnectShapes('property1', 'Trait1'))
+      .then(() => cy.clickConnectShapes('Trait1', 'ExternalConstraint'))
+      .then(() => cyHelp.hasAddShapeOverlay('Trait1').then(hasAddOverlay => expect(hasAddOverlay).equal(true)))
+      .then(() => cy.getAspect())
+      .then(checkAspectAndChildrenConstraint)
+      .then(() => cy.getUpdatedRDF())
+      .then(rdf => {
+        expect(rdf).to.contain('@prefix : <urn:samm:org.eclipse.examples.aspect:1.0.0#>.');
+        expect(rdf).to.contain('@prefix ext-different: <urn:samm:org.eclipse.different:1.0.0#>.');
+        expect(rdf).to.contain('samm:properties (:property1)');
+        expect(rdf).to.contain(':property1 a samm:Property');
+        expect(rdf).to.contain('samm:characteristic :Trait1');
+        expect(rdf).to.contain('samm-c:baseCharacteristic :Characteristic2');
+        expect(rdf).to.contain(':Characteristic2 a samm:Characteristic');
+        expect(rdf).to.contain('samm-c:constraint :EncodingConstraint1, ext-different:ExternalConstraint');
+        expect(rdf).not.contain(':ExternalConstraint a samm:EncodingConstraint');
+      });
   });
 });

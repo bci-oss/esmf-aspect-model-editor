@@ -14,7 +14,7 @@
 import {CacheUtils, LoadedFilesService} from '@ame/cache';
 import {NgClass} from '@angular/common';
 import {AfterViewInit, Component, inject, OnInit, signal, viewChild} from '@angular/core';
-import {form, FormField} from '@angular/forms/signals';
+import {form} from '@angular/forms/signals';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatCheckbox} from '@angular/material/checkbox';
 import {MAT_DIALOG_DATA, MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle} from '@angular/material/dialog';
@@ -83,7 +83,6 @@ export type PropertiesFormModel = Record<string, PropertyItemForm>;
     MatCellDef,
     MatHeaderCellDef,
     NgClass,
-    FormField,
     MatFormFieldModule,
     MatLabel,
     MatInput,

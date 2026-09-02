@@ -17,8 +17,11 @@ import {SELECTOR_alertRightButton, SELECTOR_settingsButton, SettingsDialogSelect
 import {cyHelp} from '../../support/helpers';
 
 describe('Test language settings', () => {
-  it('can open settings dialog', () => {
+  before(() => {
     cy.visitDefault();
+  });
+
+  it('can open settings dialog', () => {
     cy.startModelling();
     cy.get(SELECTOR_settingsButton)
       .click()
@@ -46,16 +49,16 @@ describe('Test language settings', () => {
       .click({force: true})
       .then(() => cy.get('[data-cy="settingsDialogApplyButton"]').click({force: true}))
       .then(() => cy.get('[data-cy="alert-left-btn"]').click({force: true}))
-      .then(() => cy.get('[data-cy="langCode"]').last().should('exist').should('have.value', 'English (en)'));
+      .then(() => cy.get('[data-cy="langCode"]').last().should('exist').should('have.value', 'English (en)'))
+      .then(() => cy.get(SettingsDialogSelectors.settingsDialogCancelButton).click());
   });
 
   it('can delete and remove all multi language information in the loaded model', () => {
-    cy.visitDefault();
     cy.fixture('multi-language-model')
       .as('rdfString')
       .then(rdfString => {
         cy.loadModel(rdfString).then(() => {
-          cy.get('.cdk-overlay-container').should('not.be.visible');
+          cy.get('mat-dialog-container').should('not.exist');
           cy.get(SELECTOR_settingsButton).click();
           cy.get(':nth-child(5) > .settings__node').should('be.visible').click();
           cy.get('[data-cy=langCode]').should('have.length', 3);
@@ -66,7 +69,7 @@ describe('Test language settings', () => {
             .should('be.visible')
             .click({force: true})
             .then(() => {
-              cy.get('.cdk-overlay-container', {timeout: 8000}).should('not.be.visible');
+              cy.get('mat-dialog-container', {timeout: 8000}).should('not.exist');
               cy.getUpdatedRDF().then(rdf => {
                 expect(rdf).not.contain('@en-us');
                 expect(rdf).not.contain('@de-de');

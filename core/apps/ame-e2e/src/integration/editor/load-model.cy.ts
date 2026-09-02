@@ -32,8 +32,11 @@ import {
 import {cyHelp} from '../../support/helpers';
 
 describe('Test load different characteristics', () => {
-  it('can load characteristic classes', () => {
+  before(() => {
     cy.visitDefault();
+  });
+
+  it('can load characteristic classes', () => {
     cy.fixture('all-characteristic')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))

@@ -15,8 +15,11 @@
 
 import {NAMESPACES_URL} from '../../support/api-mocks';
 
-// TODO redo all interceptors
 describe.skip('Test load external reference with same namespace', () => {
+  before(() => {
+    cy.visitDefault();
+  });
+
   it('Loading property element with there children from external file with same namespace', () => {
     cy.intercept('GET', NAMESPACES_URL, {
       'org.eclipse.examples:1.0.0': ['external-property-reference-with-children.txt'],
@@ -36,7 +39,6 @@ describe.skip('Test load external reference with same namespace', () => {
       },
     );
 
-    cy.visitDefault();
     cy.fixture('/external-reference/same-namespace/model-with-external-property-reference-with-children')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
@@ -93,7 +95,6 @@ describe.skip('Test load external reference with same namespace', () => {
       },
     );
 
-    cy.visitDefault();
     cy.fixture('/external-reference/same-namespace/model-with-external-operation-reference-with-children')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
@@ -169,7 +170,6 @@ describe.skip('Test load external reference with same namespace', () => {
       },
     );
 
-    cy.visitDefault();
     cy.fixture('/external-reference/same-namespace/model-with-external-characteristic-reference-with-children')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
@@ -224,7 +224,6 @@ describe.skip('Test load external reference with same namespace', () => {
       },
     );
 
-    cy.visitDefault();
     cy.fixture('/external-reference/same-namespace/model-with-external-unit-reference')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
@@ -271,7 +270,6 @@ describe.skip('Test load external reference with same namespace', () => {
       },
     );
 
-    cy.visitDefault();
     cy.fixture('/external-reference/same-namespace/model-with-external-entity-reference-with-children')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
@@ -387,7 +385,6 @@ describe.skip('Test load external reference with same namespace', () => {
       },
     );
 
-    cy.visitDefault();
     cy.fixture('/external-reference/same-namespace/model-with-several-external-reference')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))

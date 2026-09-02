@@ -17,8 +17,11 @@ import {NAMESPACES_URL} from '../../support/api-mocks';
 
 import {cyHelp} from '../../support/helpers';
 
-// TODO redo all interceptors
 describe.skip('Test load external reference with cross references', () => {
+  before(() => {
+    cy.visitDefault();
+  });
+
   it('Loading different elements from cross referenced file one way', () => {
     cy.intercept('GET', NAMESPACES_URL, {
       'org.eclipse.digitaltwin:1.0.0': [
@@ -125,7 +128,6 @@ describe.skip('Test load external reference with cross references', () => {
       },
     );
 
-    cy.visitDefault();
     cy.fixture('/external-reference/cross-references/model-with-cross-referenced-element')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
@@ -233,12 +235,11 @@ describe.skip('Test load external reference with cross references', () => {
         headers: {namespace: 'org.eclipse.different:1.0.0', 'file-name': 'external-characteristic-reference.txt'},
       },
       {
-        fixture: '/external-reference/cross-references/mixing-namespace/external-characteristic-reference.txt',
+        fixture: '/external-reference/cross-references/same-namespace/external-operation-reference.txt',
       },
     );
 
-    cy.visitDefault();
-    cy.fixture('/external-reference/cross-references/model-with-cross-referenced-element-with-mixing-namespaces')
+    cy.fixture('/external-reference/cross-references/model-with-cross-referenced-element')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
       .then(() => cyHelp.checkAspectDefaultExists())

@@ -14,9 +14,12 @@
 /// <reference types="cypress" />
 
 describe('Elements count', () => {
+  before(() => {
+    cy.visitDefault();
+  });
+
   describe('Movement model', () => {
     it('should display elements count for incoming & outgoing edges', () => {
-      cy.visitDefault();
       cy.fixture('/default-models/movement.txt')
         .then(rdfString => cy.loadModel(rdfString))
         .then(() => {
@@ -97,7 +100,6 @@ describe('Elements count', () => {
 
   describe('Enumeration instances model', () => {
     it('should display elements count for incoming & outgoing edges', () => {
-      cy.visitDefault();
       cy.fixture('/enumeration-instances.txt')
         .then(rdfString => cy.loadModel(rdfString))
         .then(() => {

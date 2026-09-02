@@ -41,8 +41,11 @@ import {
 import {cyHelp} from '../../support/helpers';
 
 describe('Test enumeration entity instance', () => {
-  it('should create nested entity instances', () => {
+  before(() => {
     cy.visitDefault();
+  });
+
+  it('should create nested entity instances', () => {
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.dbClickShape('Characteristic1'))
@@ -136,7 +139,6 @@ describe('Test enumeration entity instance', () => {
   });
 
   it('add entity instances with one property', () => {
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.shapeExists('Characteristic1'))
@@ -191,7 +193,6 @@ describe('Test enumeration entity instance', () => {
   });
 
   it('add entity instance without property', () => {
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.shapeExists('Characteristic1'))
@@ -218,7 +219,6 @@ describe('Test enumeration entity instance', () => {
   });
 
   it('show searchbar when complex values enumeration is selected', () => {
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.shapeExists('Characteristic1'))
@@ -245,7 +245,6 @@ describe('Test enumeration entity instance', () => {
   });
 
   it('import new model with entity instances', () => {
-    cy.visitDefault();
     cy.fixture('entity-values-enumeration')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
@@ -416,7 +415,6 @@ describe('Test enumeration entity instance', () => {
   });
 
   it('delete all entity instance one by one', () => {
-    cy.visitDefault();
     cy.fixture('entity-values-enumeration')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
@@ -460,7 +458,6 @@ describe('Test enumeration entity instance', () => {
   });
 
   it('should add manually new entity instance shape', () => {
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.shapeExists('Characteristic1'))
@@ -539,7 +536,6 @@ describe('Test enumeration entity instance', () => {
   });
 
   it('should create NewEntity', () => {
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.dbClickShape('Characteristic1'))
@@ -553,7 +549,6 @@ describe('Test enumeration entity instance', () => {
   });
 
   it('should create NewEntity and new entity instances', () => {
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.dbClickShape('Characteristic1'))
@@ -575,7 +570,6 @@ describe('Test enumeration entity instance', () => {
   });
 
   it('should create enumeration with lang string values', () => {
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.clickAddShapePlusIcon('Characteristic1'))
@@ -687,7 +681,6 @@ describe('Test enumeration entity instance', () => {
   });
 
   it('should create nested enumerations', () => {
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.clickAddShapePlusIcon('Characteristic1'))
       .then(() => cy.clickAddShapePlusIcon('Entity1'))

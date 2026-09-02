@@ -37,8 +37,11 @@ import {cyHelp} from '../../support/helpers';
 
 describe('Create and Edit Abstract Entity', () => {
   describe('Edit abstract entity fields', () => {
-    it('should add new abstract entity', () => {
+    before(() => {
       cy.visitDefault();
+    });
+
+    it('should add new abstract entity', () => {
       cy.startModelling()
         .then(() => cy.get(SELECTOR_elementBtn).click())
         .then(() => cy.dragElement(SELECTOR_ecAbstractEntity, 350, 300))
@@ -113,8 +116,11 @@ describe('Create and Edit Abstract Entity', () => {
   });
 
   describe('Entity -> Abstract Entity', () => {
-    it('should create', () => {
+    before(() => {
       cy.visitDefault();
+    });
+
+    it('should create', () => {
       cy.startModelling()
         .then(() => cy.get(SELECTOR_elementBtn).click())
         .then(() => cy.dragElement(SELECTOR_ecAbstractEntity, 350, 300).then(() => cy.clickShape('AbstractEntity1')))
@@ -161,8 +167,11 @@ describe('Create and Edit Abstract Entity', () => {
   });
 
   describe('Abstract Entity -> Abstract Entity', () => {
-    it('should connect AbstractEntity1 to AbstractEntity2', () => {
+    before(() => {
       cy.visitDefault();
+    });
+
+    it('should connect AbstractEntity1 to AbstractEntity2', () => {
       cy.startModelling()
         .then(() => cy.get(SELECTOR_elementBtn).click())
         .then(() => cy.dragElement(SELECTOR_ecAbstractEntity, 350, 300).then(() => cy.clickShape('AbstractEntity1')))
@@ -216,8 +225,11 @@ describe('Create and Edit Abstract Entity', () => {
   });
 
   describe('Abstract Entity -> Abstract Property', () => {
-    it('should create', () => {
+    before(() => {
       cy.visitDefault();
+    });
+
+    it('should create', () => {
       cy.startModelling()
         .then(() => cy.get(SELECTOR_elementBtn).click())
         .then(() => cy.dragElement(SELECTOR_ecAbstractEntity, 350, 300).then(() => cy.clickShape('AbstractEntity1')))
@@ -247,8 +259,11 @@ describe('Create and Edit Abstract Entity', () => {
   });
 
   describe('Abstract Entity -> Property', () => {
-    it('should create', () => {
+    before(() => {
       cy.visitDefault();
+    });
+
+    it('should create', () => {
       cy.startModelling()
         .then(() => cy.get(SELECTOR_elementBtn).click())
         .then(() => cy.dragElement(SELECTOR_ecAbstractEntity, 350, 300))
@@ -283,9 +298,11 @@ describe('Create and Edit Abstract Entity', () => {
   });
 
   describe('Abstract Entity import', () => {
-    it('should import', () => {
+    before(() => {
       cy.visitDefault();
-      cy.startModelling();
+    });
+
+    it('should import', () => {
       cy.fixture('abstract-entity')
         .as('rdfString')
         .then(rdfString => cy.loadModel(rdfString))
@@ -301,8 +318,11 @@ describe('Create and Edit Abstract Entity', () => {
   });
 
   describe('Abstract Entity export', () => {
-    it('should create model', () => {
+    before(() => {
       cy.visitDefault();
+    });
+
+    it('should create model', () => {
       cy.startModelling()
         .then(() => cy.get(SELECTOR_elementBtn).click())
         .then(() => cy.clickAddShapePlusIcon('Characteristic1'))

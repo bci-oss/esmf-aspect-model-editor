@@ -23,38 +23,37 @@ import {
 } from '../../support/constants';
 
 describe('Test generation and download of async api specification', () => {
-  it('Can generate valid JSON Async Api Specification', () => {
+  before(() => {
     cy.visitDefault();
-    cy.startModelling()
-      .then(() => cy.openGenerationAsyncApiSpec())
+    cy.startModelling();
+  });
+
+  it('Can generate valid JSON Async Api Specification', () => {
+    cy.openGenerationAsyncApiSpec()
       .then(() => cy.get(GENERATION_tbOutputButton).click())
       .then(() => cy.get(GENERATION_tbOutputButton_JSON).click())
-      .then(() => cy.get(GENERATION_tbApplicationIdInput).clear().type('application:id'))
-      .then(() => cy.get(GENERATION_tbChannelAddressInput).clear().type('foo/bar'))
-      .then(() => cy.get(GENERATION_tbGenerateAsyncApiButton).click())
+      .then(() => cy.get(GENERATION_tbApplicationIdInput).clear({force: true}).type('application:id'))
+      .then(() => cy.get(GENERATION_tbChannelAddressInput).clear({force: true}).type('foo/bar'))
+      .then(() => cy.get(GENERATION_tbGenerateAsyncApiButton).click({force: true}))
       .then(() => cy.readFile('apps/ame-e2e/cypress/downloads/AspectDefault-async-api.json'));
   });
 
   it('Can generate valid YAML Async Api Specification', () => {
-    cy.visitDefault();
-    cy.startModelling()
-      .then(() => cy.openGenerationAsyncApiSpec())
-      .then(() => cy.get(GENERATION_tbApplicationIdInput).clear().type('application:id'))
-      .then(() => cy.get(GENERATION_tbChannelAddressInput).clear().type('foo/bar'))
-      .then(() => cy.get(GENERATION_tbGenerateAsyncApiButton).click())
+    cy.openGenerationAsyncApiSpec()
+      .then(() => cy.get(GENERATION_tbApplicationIdInput).clear({force: true}).type('application:id'))
+      .then(() => cy.get(GENERATION_tbChannelAddressInput).clear({force: true}).type('foo/bar'))
+      .then(() => cy.get(GENERATION_tbGenerateAsyncApiButton).click({force: true}))
       .then(() => cy.readFile('apps/ame-e2e/cypress/downloads/AspectDefault-async-api.yaml'));
   });
 
   it('Can generate and download valid package for Async Api Specification', () => {
-    cy.visitDefault();
-    cy.startModelling()
-      .then(() => cy.openGenerationAsyncApiSpec())
+    cy.openGenerationAsyncApiSpec()
       .then(() => cy.get(GENERATION_tbOutputButton).click())
       .then(() => cy.get(GENERATION_tbOutputButton_JSON).click())
-      .then(() => cy.get(GENERATION_tbApplicationIdInput).clear().type('application:id'))
-      .then(() => cy.get(GENERATION_tbChannelAddressInput).clear().type('foo/bar'))
+      .then(() => cy.get(GENERATION_tbApplicationIdInput).clear({force: true}).type('application:id'))
+      .then(() => cy.get(GENERATION_tbChannelAddressInput).clear({force: true}).type('foo/bar'))
       .then(() => cy.get(GENERATION_writeSeparateFilesCheckbox).click())
-      .then(() => cy.get(GENERATION_tbGenerateAsyncApiButton).click())
+      .then(() => cy.get(GENERATION_tbGenerateAsyncApiButton).click({force: true}))
       .then(() => cy.readFile('apps/ame-e2e/cypress/downloads/AspectDefault-async-api.zip'));
   });
 });

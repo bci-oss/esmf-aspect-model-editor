@@ -43,14 +43,18 @@ import {cyHelp} from '../../support/helpers';
 import {assertRdf} from '../../support/utils';
 
 describe('Test editing Characteristic', () => {
-  it('can add new', () => {
+  before(() => {
     cy.visitDefault();
+  });
+
+  it('can add new', () => {
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.shapeExists('Characteristic1'))
       .then(() => cy.getAspect())
       .then(aspect => {
-        expect(aspect.properties).to.have.length(1);
+        expect(aspect.name).to.equal('AspectDefault');
+        expect(aspect.properties[0].name).to.equal('property1');
         expect(aspect.properties[0].characteristic.name).to.equal('Characteristic1');
       });
   });

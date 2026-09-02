@@ -39,8 +39,11 @@ import {cyHelp} from '../../support/helpers';
 
 // These tests are for the special case that the name of the shape is changed and the turtle file is generated correctly.
 describe('Test edit property', () => {
-  it('should rename first property and new property', () => {
+  before(() => {
     cy.visitDefault();
+  });
+
+  it('should rename first property and new property', () => {
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click({force: true}))
       .then(() => cy.shapeExists('property1'))
@@ -87,7 +90,6 @@ describe('Test edit property', () => {
       },
     );
 
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.shapeExists('property1'))
       .then(() => cy.dbClickShape('property1'))
@@ -219,7 +221,6 @@ describe('Test edit property', () => {
   });
 
   it('should rename first property and rename new added property', () => {
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.shapeExists('property1'))
@@ -244,7 +245,6 @@ describe('Test edit property', () => {
   });
 
   it('should rename first property and rename second added second property and add new default property', () => {
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.shapeExists('property1'))
@@ -271,7 +271,6 @@ describe('Test edit property', () => {
   });
 
   it('should rename property and rename second added property and rename third added default property', () => {
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.shapeExists('property1'))
@@ -304,7 +303,6 @@ describe('Test edit property', () => {
   it('should not allow to put 2 properties with the same name', () => {
     cy.intercept('GET', NAMESPACES_URL, {statusCode: 200, body: {}});
 
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       // create a
@@ -354,7 +352,6 @@ describe('Test edit property', () => {
   });
 
   it('should rename aspect after rename property and create new default property', () => {
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.shapeExists('property1'))
@@ -383,7 +380,6 @@ describe('Test edit property', () => {
   });
 
   it('should create entity rename new created property and create new default entity property', () => {
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.clickAddShapePlusIcon('Characteristic1'))
@@ -411,7 +407,6 @@ describe('Test edit property', () => {
   });
 
   it('should rename entity after rename new created property and create new default entity property', () => {
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.clickAddShapePlusIcon('Characteristic1'))
@@ -445,7 +440,6 @@ describe('Test edit property', () => {
   });
 
   it('should rename entity property and create new default property and then create aspect property and rename the aspect', () => {
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.clickAddShapePlusIcon('Characteristic1'))
@@ -491,7 +485,6 @@ describe('Test edit property', () => {
 
   describe('property optionality', () => {
     it('should overwrite property with optional and notInPayload should not be present', () => {
-      cy.visitDefault();
       cy.startModelling()
         .then(() => cy.get(SELECTOR_elementBtn).click({force: true}))
         .then(() => cy.dbClickShape('AspectDefault'))
@@ -515,7 +508,6 @@ describe('Test edit property', () => {
     });
 
     it('should overwrite property of complex enumeration with notInPayload', () => {
-      cy.visitDefault();
       cy.startModelling()
         .then(() => cy.get(SELECTOR_elementBtn).click({force: true}))
         .then(() => cy.clickAddShapePlusIcon('Characteristic1'))
@@ -545,7 +537,6 @@ describe('Test edit property', () => {
     });
 
     it('should overwrite property with payloadName', () => {
-      cy.visitDefault();
       cy.startModelling()
         .then(() => cy.get(SELECTOR_elementBtn).click({force: true}))
         .then(() => cy.dbClickShape('AspectDefault'))

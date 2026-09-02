@@ -34,10 +34,13 @@ import {
 } from '../../support/constants';
 
 describe('Test generation and download of open api specification', () => {
-  it('Can generate valid JSON Open Api Specification with resource path', () => {
+  before(() => {
     cy.visitDefault();
-    cy.startModelling()
-      .then(() => cy.openGenerationOpenApiSpec())
+    cy.startModelling();
+  });
+
+  it('Can generate valid JSON Open Api Specification with resource path', () => {
+    cy.openGenerationOpenApiSpec()
       .then(() => cy.get(GENERATION_tbOutputButton).click())
       .then(() => cy.get(GENERATION_tbOutputButton_JSON).click())
       .then(() => cy.get(GENERATION_resourcePathTitle).should('not.exist'))
@@ -76,9 +79,7 @@ describe('Test generation and download of open api specification', () => {
   });
 
   it('Can generate valid JSON Open Api Specification', () => {
-    cy.visitDefault();
-    cy.startModelling()
-      .then(() => cy.openGenerationOpenApiSpec())
+    cy.openGenerationOpenApiSpec()
       .then(() => cy.get(GENERATION_tbOutputButton).click())
       .then(() => cy.get(GENERATION_tbOutputButton_JSON).click())
       .then(() => cy.get(GENERATION_tbBaseUrlInput).focus().clear().blur())
@@ -92,9 +93,7 @@ describe('Test generation and download of open api specification', () => {
   });
 
   it('Can generate valid YAML Open Api Specification with resource path', () => {
-    cy.visitDefault();
-    cy.startModelling()
-      .then(() => cy.openGenerationOpenApiSpec())
+    cy.openGenerationOpenApiSpec()
       .then(() => cy.get(GENERATION_resourcePathTitle).should('not.exist'))
       .then(() => cy.get(GENERATION_activateResourcePathCheckbox).click())
       .then(() =>
@@ -131,9 +130,7 @@ describe('Test generation and download of open api specification', () => {
   });
 
   it('Can generate and download valid YAML Open Api Specification', () => {
-    cy.visitDefault();
-    cy.startModelling()
-      .then(() => cy.openGenerationOpenApiSpec())
+    cy.openGenerationOpenApiSpec()
       .then(() => cy.get(GENERATION_tbOutputButton).click())
       .then(() => cy.get(GENERATION_tbOutputButton_YAML).click())
       .then(() => cy.get(GENERATION_tbBaseUrlInput).focus().clear().blur())
@@ -147,9 +144,7 @@ describe('Test generation and download of open api specification', () => {
   });
 
   it('Test some generate variations', () => {
-    cy.visitDefault();
-    cy.startModelling()
-      .then(() => cy.openGenerationOpenApiSpec())
+    cy.openGenerationOpenApiSpec()
       .then(() => cy.get(GENERATION_resourcePathTitle).should('not.exist'))
       .then(() => {
         cy.get(GENERATION_activateResourcePathCheckbox).click();
@@ -192,25 +187,22 @@ describe('Test generation and download of open api specification', () => {
         cy.get(GENERATION_uploadContent).should('not.exist');
         cy.get(GENERATION_accordionTitle).should('not.exist');
         cy.get(GENERATION_tbGenerateOpenApiButton).should('be.enabled');
+        cy.get('[data-cy=cancelOpenApiButton]').click();
       });
   });
 
   it('should show the checkboxs when the expansion panel Include API extensions is opened', () => {
-    cy.visitDefault();
-    cy.startModelling()
-      .then(() => cy.openGenerationOpenApiSpec())
-      .then(() =>
-        cy
-          .get('[data-cy=includeAPIextensions]')
-          .click()
-          .then(() => {
-            cy.get('[data-cy=includePost]').should('be.visible');
-            cy.get('[data-cy=includePut]').should('be.visible');
-            cy.get('[data-cy=includePatch]').should('be.visible');
-            cy.get('[data-cy=includePatch]').should('be.visible');
-            cy.get('[data-cy=cancelOpenApiButton]').click();
-          }),
-      );
+    cy.openGenerationOpenApiSpec().then(() =>
+      cy
+        .get('[data-cy=includeAPIextensions] mat-panel-description')
+        .click()
+        .then(() => {
+          cy.get('[data-cy=includePost]').should('be.visible');
+          cy.get('[data-cy=includePut]').should('be.visible');
+          cy.get('[data-cy=includePatch]').should('be.visible');
+          cy.get('[data-cy=cancelOpenApiButton]').click();
+        }),
+    );
   });
 
   function checkResourcePath(): void {

@@ -15,8 +15,11 @@
 
 import {NAMESPACES_URL} from '../../support/api-mocks';
 
-// TODO redo all interceptors
 describe.skip('Test drag and drop', () => {
+  before(() => {
+    cy.visitDefault();
+  });
+
   it('Loading property element with there children from external file with different namespace', () => {
     cy.intercept('GET', NAMESPACES_URL, {
       'org.eclipse.different:1.0.0': ['external-property-reference.txt'],
@@ -33,7 +36,6 @@ describe.skip('Test drag and drop', () => {
       },
     );
 
-    cy.visitDefault();
     cy.fixture('/external-reference/different-namespace/model-with-external-property-reference-with-childrens')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
@@ -87,7 +89,6 @@ describe.skip('Test drag and drop', () => {
       },
     );
 
-    cy.visitDefault();
     cy.fixture('/external-reference/different-namespace/entity-external-property-with-children-reference')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
@@ -138,7 +139,6 @@ describe.skip('Test drag and drop', () => {
       },
     );
 
-    cy.visitDefault();
     cy.fixture('/external-reference/different-namespace/model-with-external-operation-reference-with-children')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
@@ -211,7 +211,6 @@ describe.skip('Test drag and drop', () => {
       },
     );
 
-    cy.visitDefault();
     cy.fixture('/external-reference/different-namespace/model-with-external-characteristic-reference-with-childrens')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
@@ -266,7 +265,6 @@ describe.skip('Test drag and drop', () => {
       },
     );
 
-    cy.visitDefault();
     cy.fixture('/external-reference/different-namespace/model-with-external-entity-reference-with-childrens')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
@@ -320,7 +318,6 @@ describe.skip('Test drag and drop', () => {
       },
     );
 
-    cy.visitDefault();
     cy.fixture('/external-reference/different-namespace/model-with-external-unit-reference')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))
@@ -426,7 +423,6 @@ describe.skip('Test drag and drop', () => {
       },
     );
 
-    cy.visitDefault();
     cy.fixture('/external-reference/different-namespace/model-with-several-external-reference')
       .as('rdfString')
       .then(rdfString => cy.loadModel(rdfString))

@@ -31,8 +31,11 @@ import {cyHelp} from '../../support/helpers';
 
 describe('Create and Edit Abstract Property', () => {
   describe('Property -> Abstract Property', () => {
-    it('should create', () => {
+    before(() => {
       cy.visitDefault();
+    });
+
+    it('should create', () => {
       cy.startModelling()
         .then(() => cy.get(SELECTOR_elementBtn).click())
         .then(() => {
@@ -58,8 +61,11 @@ describe('Create and Edit Abstract Property', () => {
   });
 
   describe('Edit abstract property fields', () => {
-    it('should edit preferred name field', () => {
+    before(() => {
       cy.visitDefault();
+    });
+
+    it('should edit preferred name field', () => {
       cy.startModelling()
         .then(() => cy.get(SELECTOR_elementBtn).click())
         .then(() => cy.dragElement(SELECTOR_ecAbstractProperty, 350, 300))
@@ -127,7 +133,6 @@ describe('Create and Edit Abstract Property', () => {
   // TODO fix the entry file
   describe.skip('Abstract Property import', () => {
     it('should import', () => {
-      cy.visitDefault();
       cy.startModelling();
       cy.fixture('abstract-property')
         .as('rdfString')
@@ -153,8 +158,11 @@ describe('Create and Edit Abstract Property', () => {
   });
 
   describe('Abstract Property export', () => {
-    it('should create model', () => {
+    before(() => {
       cy.visitDefault();
+    });
+
+    it('should create model', () => {
       cy.startModelling()
         .then(() => cy.get(SELECTOR_elementBtn).click())
         .then(() => cy.dragElement(SELECTOR_ecAbstractEntity, 350, 300))
@@ -219,8 +227,11 @@ describe('Create and Edit Abstract Property', () => {
   });
 
   describe('Abstract Property can be connected to another shape only if it is connected to AbstractEntity', () => {
-    it('should not be able to connect abstract property to a property', () => {
+    before(() => {
       cy.visitDefault();
+    });
+
+    it('should not be able to connect abstract property to a property', () => {
       cy.startModelling()
         .then(() => cy.get(SELECTOR_elementBtn).click())
         .then(() => cy.dragElement(SELECTOR_ecAbstractProperty, 350, 300))

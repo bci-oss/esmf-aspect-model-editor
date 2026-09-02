@@ -34,12 +34,11 @@ import {cyHelp} from '../../../support/helpers';
 import {assertRdf, openElementAndAssertValues} from '../../../support/utils';
 
 describe('Create and edit Entity value RDF lang string properties in edit view tests', () => {
-  beforeEach(() => {
+  before(() => {
     cy.visitDefault();
   });
 
   it('should change entity values with rdf lang string property in on Collection', () => {
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.dbClickShape('Characteristic1'))
@@ -128,7 +127,6 @@ describe('Create and edit Entity value RDF lang string properties in edit view t
   });
 
   it('should change entity values with rdf lang string property into two different Collection', () => {
-    cy.visitDefault();
     cy.startModelling()
       .then(() => cy.get(SELECTOR_elementBtn).click())
       .then(() => cy.dbClickShape('Characteristic1'))

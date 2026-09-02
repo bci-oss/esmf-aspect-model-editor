@@ -15,7 +15,7 @@
   <mat-label>output</mat-label>
   <input #output [matAutocomplete]="auto" [formField]="displayField" spellcheck="false" matInput data-cy="output" />
   @if (displayField().disabled() && !loadedFiles.isElementExtern(metaModelElement)) {
-    <button (click)="unlockOutput()" data-cy="clear-output-button" matSuffix mat-icon-button tabindex="-1">
+    <button (click)="unlockOutput()" data-cy="clear-output-button" type="button" matSuffix mat-icon-button tabindex="-1">
       <mat-icon>close</mat-icon>
     </button>
   }

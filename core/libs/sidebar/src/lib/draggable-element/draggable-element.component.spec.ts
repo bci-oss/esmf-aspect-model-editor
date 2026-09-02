@@ -73,4 +73,13 @@ describe('DraggableElementComponent', () => {
     expect(shadowEl.style.width).toBe(circleShapeGeometry.expandedWith + 'px');
     expect(shadowEl.style.borderRadius).toBe('50%');
   });
+
+  it('should not register draggable when readonly is true', () => {
+    fixture.componentRef.setInput('type', 'characteristic');
+    fixture.componentRef.setInput('urn', 'urn:samm:org.eclipse.esmf:1.0.0#AnonChar');
+    fixture.componentRef.setInput('readonly', true);
+    fixture.detectChanges();
+
+    expect(editorServiceMock.makeDraggable).not.toHaveBeenCalled();
+  });
 });

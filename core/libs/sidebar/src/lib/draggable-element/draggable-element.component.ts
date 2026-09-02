@@ -23,6 +23,7 @@ import {AfterViewInit, Component, ElementRef, inject, input, Renderer2} from '@a
 export class DraggableElementComponent implements AfterViewInit {
   readonly type = input<ElementType>();
   readonly urn = input<string>('');
+  readonly readonly = input<boolean>(false);
 
   private elementRef = inject(ElementRef<HTMLDivElement>);
   private renderer = inject(Renderer2);
@@ -30,6 +31,10 @@ export class DraggableElementComponent implements AfterViewInit {
   public editorService = inject(EditorService);
 
   ngAfterViewInit(): void {
+    if (this.readonly()) {
+      return;
+    }
+
     const type = this.type();
     if (type) {
       this.elementRef.nativeElement.dataset.type = type;

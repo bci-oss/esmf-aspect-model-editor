@@ -41,8 +41,23 @@ export class PropertyModelService extends BaseModelService {
       form.exampleValue = null;
     }
 
+    const previousExampleValue = modelElement.exampleValue;
+
     if (form.exampleValue instanceof DefaultValue) {
       this.currentCachedFile.addElement(form.exampleValue.aspectModelUrn, form.exampleValue);
+    }
+
+    if (
+      previousExampleValue instanceof DefaultValue &&
+      previousExampleValue.isAnonymous?.() &&
+      previousExampleValue !== form.exampleValue
+    ) {
+      this.currentCachedFile.removeElement(previousExampleValue.aspectModelUrn);
+      MaxGraphHelper.removeRelation(modelElement, previousExampleValue);
+      const prevCell = this.maxgraphService.resolveCellByModelElement(previousExampleValue);
+      if (prevCell) {
+        this.maxgraphService.removeCells([prevCell]);
+      }
     }
 
     modelElement.exampleValue = form.exampleValue;
@@ -66,6 +81,15 @@ export class PropertyModelService extends BaseModelService {
     }
 
     this.updateExtends(cell);
+
+    if (node?.exampleValue instanceof DefaultValue && node.exampleValue.isAnonymous?.()) {
+      const anonValue = node.exampleValue;
+      this.currentCachedFile.removeElement(anonValue.aspectModelUrn);
+      const anonCell = this.maxgraphService.resolveCellByModelElement(anonValue);
+      if (anonCell) {
+        this.maxgraphService.removeCells([anonCell]);
+      }
+    }
 
     super.delete(cell);
     this.entityInstanceService.onPropertyRemove(node, () => {

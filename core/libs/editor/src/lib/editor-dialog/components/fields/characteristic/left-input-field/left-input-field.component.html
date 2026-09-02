@@ -16,7 +16,7 @@
     <mat-label>left</mat-label>
     <input #left [matAutocomplete]="auto" [formField]="displayField" matInput data-cy="left" required />
     @if (displayField().disabled() && !loadedFiles.isElementExtern(metaModelElement)) {
-      <button (click)="unlockLeft()" data-cy="clear-left-button" matSuffix mat-icon-button tabindex="-1">
+      <button (click)="unlockLeft()" data-cy="clear-left-button" type="button" matSuffix mat-icon-button tabindex="-1">
         <mat-icon>close</mat-icon>
       </button>
     }

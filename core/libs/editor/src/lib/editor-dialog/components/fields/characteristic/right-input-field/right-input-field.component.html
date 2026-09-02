@@ -16,7 +16,7 @@
     <mat-label>right</mat-label>
     <input #right [matAutocomplete]="auto" [formField]="displayField" matInput data-cy="right" required />
     @if (displayField().disabled() && !loadedFiles.isElementExtern(metaModelElement)) {
-      <button (click)="unlockRight()" data-cy="clear-right-button" matSuffix mat-icon-button tabindex="-1">
+      <button (click)="unlockRight()" data-cy="clear-right-button" type="button" matSuffix mat-icon-button tabindex="-1">
         <mat-icon>close</mat-icon>
       </button>
     }

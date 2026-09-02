@@ -15,7 +15,7 @@
   <mat-label>dataType</mat-label>
   <input #dataType [matAutocomplete]="auto" [formField]="displayField" matInput data-cy="dataType" />
   @if (!frozen() && displayField().disabled() && loadedFiles.isElementInCurrentFile(metaModelElement)) {
-    <button (click)="unlockDataType()" data-cy="clear-dataType-button" matSuffix mat-icon-button tabindex="-1">
+    <button (click)="unlockDataType()" data-cy="clear-dataType-button" type="button" matSuffix mat-icon-button tabindex="-1">
       <mat-icon>close</mat-icon>
     </button>
   }

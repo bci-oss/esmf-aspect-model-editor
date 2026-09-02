@@ -16,7 +16,7 @@
     <mat-label>unit</mat-label>
     <input #unit [matAutocomplete]="auto" [formField]="displayField" matInput data-cy="unit" />
     @if (displayField().disabled() && !loadedFiles.isElementExtern(metaModelElement)) {
-      <button (click)="unlockUnit()" data-cy="clear-unit-button" matSuffix mat-icon-button tabindex="-1">
+      <button (click)="unlockUnit()" data-cy="clear-unit-button" type="button" matSuffix mat-icon-button tabindex="-1">
         <mat-icon>close</mat-icon>
       </button>
     }

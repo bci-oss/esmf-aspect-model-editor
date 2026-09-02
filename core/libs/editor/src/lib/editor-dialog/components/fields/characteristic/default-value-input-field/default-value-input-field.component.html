@@ -16,7 +16,7 @@
   <input #valuesInput [matAutocomplete]="auto" [formField]="displayField" matInput data-cy="defaultValue" />
 
   @if (displayField().disabled()) {
-    <button (click)="unlockDefaultValue()" data-cy="clear-example-value-button" matSuffix mat-icon-button tabindex="-1">
+    <button (click)="unlockDefaultValue()" data-cy="clear-example-value-button" type="button" matSuffix mat-icon-button tabindex="-1">
       <mat-icon>close</mat-icon>
     </button>
   }

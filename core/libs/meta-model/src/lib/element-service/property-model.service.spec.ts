@@ -86,4 +86,45 @@ describe('PropertyModelService', () => {
     expect(mockEntityInstanceService.onPropertyRemove).toHaveBeenCalled();
     expect(mockMaxgraphService.removeCells).toHaveBeenCalledWith([cell]);
   });
+
+  it('should remove anonymous exampleValue from cache and graph when property is deleted', () => {
+    const anonVal = new DefaultValue({
+      name: '[Value]',
+      aspectModelUrn: 'urn:test#[Value]_1234',
+      value: '42',
+      metaModelVersion: '2.2.0',
+      isAnonymous: true,
+    });
+    const prop = new DefaultProperty({name: 'P', aspectModelUrn: 'urn:test#P', metaModelVersion: '2.2.0', exampleValue: anonVal});
+    const cell = new Cell();
+    MaxGraphHelper.setElementNode(cell, {element: prop} as any);
+    const anonCell = new Cell();
+    mockMaxgraphService.resolveCellByModelElement = vi.fn().mockReturnValue(anonCell);
+
+    service.delete(cell);
+    const loadedFiles = TestBed.inject(LoadedFilesService);
+    expect(loadedFiles.currentLoadedFile.cachedFile.removeElement).toHaveBeenCalledWith('urn:test#[Value]_1234');
+    expect(mockMaxgraphService.removeCells).toHaveBeenCalledWith([anonCell]);
+  });
+
+  it('should remove anonymous exampleValue when exampleValue is changed or cleared on update', () => {
+    const anonVal = new DefaultValue({
+      name: '[Value]',
+      aspectModelUrn: 'urn:test#[Value]_1234',
+      value: '42',
+      metaModelVersion: '2.2.0',
+      isAnonymous: true,
+    });
+    const prop = new DefaultProperty({name: 'P', aspectModelUrn: 'urn:test#P', metaModelVersion: '2.2.0', exampleValue: anonVal});
+    const cell = new Cell();
+    MaxGraphHelper.setElementNode(cell, {element: prop} as any);
+    const anonCell = new Cell();
+    mockMaxgraphService.resolveCellByModelElement = vi.fn().mockReturnValue(anonCell);
+
+    service.update(cell, {name: 'P', exampleValue: null});
+    const loadedFiles = TestBed.inject(LoadedFilesService);
+    expect(loadedFiles.currentLoadedFile.cachedFile.removeElement).toHaveBeenCalledWith('urn:test#[Value]_1234');
+    expect(mockMaxgraphService.removeCells).toHaveBeenCalledWith([anonCell]);
+    expect(prop.exampleValue).toBeNull();
+  });
 });

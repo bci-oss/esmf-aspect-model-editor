@@ -186,7 +186,7 @@ describe('WorkspaceFileElementsComponent', () => {
     expect(component.searched()['property']).toHaveLength(0);
   });
 
-  it('should not include anonymous elements in the sidebar list', () => {
+  it('should include anonymous elements in the sidebar list', () => {
     fixture = TestBed.createComponent(WorkspaceFileElementsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -222,6 +222,78 @@ describe('WorkspaceFileElementsComponent', () => {
     TestBed.flushEffects();
 
     expect(component.elements()['property']?.elements?.length).toBe(1);
-    expect(component.elements()['characteristic']?.elements?.length).toBe(0);
+    expect(component.elements()['characteristic']?.elements?.length).toBe(1);
+  });
+
+  it('should resolve parent names for elements and handle nested anonymous parents', () => {
+    fixture = TestBed.createComponent(WorkspaceFileElementsComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const parentProp = new DefaultProperty({
+      name: 'rootProperty',
+      aspectModelUrn: 'urn:samm:org.eclipse.esmf:1.0.0#rootProperty',
+      metaModelVersion: '2.1.0',
+    });
+
+    const anonChar = new DefaultCharacteristic({
+      name: '[Characteristic]',
+      aspectModelUrn: 'urn:samm:org.eclipse.esmf:1.0.0#anonChar',
+      metaModelVersion: '2.1.0',
+      isAnonymous: true,
+    });
+    anonChar.addParent(parentProp);
+
+    const childConstraint = new DefaultCharacteristic({
+      name: '[Constraint]',
+      aspectModelUrn: 'urn:samm:org.eclipse.esmf:1.0.0#childConstraint',
+      metaModelVersion: '2.1.0',
+      isAnonymous: true,
+    });
+    childConstraint.addParent(anonChar);
+
+    expect(component.getElementParentNames(anonChar)).toEqual(['rootProperty']);
+    expect(component.getElementParentNames(childConstraint)).toEqual(['rootProperty']);
+    expect(component.getElementDescription(anonChar)).toBe('In: rootProperty');
+    expect(component.getElementDescription(childConstraint)).toBe('In: rootProperty');
+  });
+
+  it('should match search query against parent information in anonymous elements', () => {
+    fixture = TestBed.createComponent(WorkspaceFileElementsComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+
+    const parentProp = new DefaultProperty({
+      name: 'voltageProperty',
+      aspectModelUrn: 'urn:samm:org.eclipse.esmf:1.0.0#voltageProperty',
+      metaModelVersion: '2.1.0',
+    });
+
+    const anonChar = new DefaultCharacteristic({
+      name: '[SingleEntity]',
+      aspectModelUrn: 'urn:samm:org.eclipse.esmf:1.0.0#anonChar',
+      metaModelVersion: '2.1.0',
+      isAnonymous: true,
+    });
+    anonChar.addParent(parentProp);
+
+    const mockFileWithAnon = {
+      cachedFile: {
+        getAllElements: () => [parentProp, anonChar],
+      },
+    };
+
+    loadedFilesMock.getFile.mockReturnValue(mockFileWithAnon);
+
+    const file = new FileStatus('Test.ttl');
+    file.aspectModelUrn = 'urn:samm:org.eclipse.esmf:1.0.0#Test';
+    sidebarService.selection.select('org.eclipse.esmf:1.0.0', file);
+    TestBed.flushEffects();
+
+    component.search({target: {value: 'voltage'}} as any);
+    vi.advanceTimersByTime(150);
+
+    expect(component.searched()['property']).toHaveLength(1);
+    expect(component.searched()['characteristic']).toHaveLength(1);
   });
 });

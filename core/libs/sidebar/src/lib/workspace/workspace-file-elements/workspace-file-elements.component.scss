@@ -136,6 +136,11 @@
       opacity: 0.5;
       pointer-events: none;
     }
+
+    &.readonly {
+      cursor: default;
+      opacity: 0.65;
+    }
   }
 }
 

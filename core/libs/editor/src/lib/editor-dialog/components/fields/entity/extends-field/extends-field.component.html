@@ -14,7 +14,7 @@
   <mat-label>extends</mat-label>
   <input #extends [matAutocomplete]="auto" [formField]="displayField" matInput data-cy="extendsValue" />
   @if (displayField().disabled() && !loadedFiles.isElementExtern(metaModelElement) && !metaModelElement.isPredefined) {
-    <button (click)="unlockExtends()" data-cy="clear-extends-button" matSuffix mat-icon-button tabindex="-1">
+    <button (click)="unlockExtends()" data-cy="clear-extends-button" type="button" matSuffix mat-icon-button tabindex="-1">
       <mat-icon>close</mat-icon>
     </button>
   }

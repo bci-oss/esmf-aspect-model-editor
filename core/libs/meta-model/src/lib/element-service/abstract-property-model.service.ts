@@ -20,7 +20,7 @@ import {
 } from '@ame/max-graph';
 import {SammLanguageSettingsService} from '@ame/settings-dialog';
 import {inject, Injectable} from '@angular/core';
-import {DefaultProperty, HasExtends, NamedElement} from '@esmf/aspect-model-loader';
+import {DefaultProperty, DefaultValue, HasExtends, NamedElement, ScalarValue} from '@esmf/aspect-model-loader';
 import {Cell} from '@maxgraph/core';
 import {BaseModelService} from './base-model-service';
 
@@ -37,6 +37,30 @@ export class AbstractPropertyModelService extends BaseModelService {
 
   update(cell: Cell, form: {[key: string]: any}) {
     const metaModelElement = MaxGraphHelper.getModelElement<DefaultProperty>(cell);
+
+    if (form.exampleValue instanceof ScalarValue && form.exampleValue.value === '') {
+      form.exampleValue = null;
+    }
+
+    const previousExampleValue = metaModelElement.exampleValue;
+
+    if (form.exampleValue instanceof DefaultValue) {
+      this.currentCachedFile.addElement(form.exampleValue.aspectModelUrn, form.exampleValue);
+    }
+
+    if (
+      previousExampleValue instanceof DefaultValue &&
+      previousExampleValue.isAnonymous?.() &&
+      previousExampleValue !== form.exampleValue
+    ) {
+      this.currentCachedFile.removeElement(previousExampleValue.aspectModelUrn);
+      MaxGraphHelper.removeRelation(metaModelElement, previousExampleValue);
+      const prevCell = this.maxgraphService.resolveCellByModelElement(previousExampleValue);
+      if (prevCell) {
+        this.maxgraphService.removeCells([prevCell]);
+      }
+    }
+
     metaModelElement.exampleValue = form.exampleValue;
 
     super.update(cell, form);
@@ -46,7 +70,16 @@ export class AbstractPropertyModelService extends BaseModelService {
   }
 
   delete(cell: Cell) {
+    const node = MaxGraphHelper.getModelElement<DefaultProperty>(cell);
     this.updateExtends(cell);
+    if (node?.exampleValue instanceof DefaultValue && node.exampleValue.isAnonymous?.()) {
+      const anonValue = node.exampleValue;
+      this.currentCachedFile.removeElement(anonValue.aspectModelUrn);
+      const anonCell = this.maxgraphService.resolveCellByModelElement(anonValue);
+      if (anonCell) {
+        this.maxgraphService.removeCells([anonCell]);
+      }
+    }
     super.delete(cell);
     this.maxgraphService.removeCells([cell]);
   }

@@ -137,6 +137,59 @@ export class WorkspaceFileElementsComponent {
     }
   }
 
+  public getElementParentNames(element: NamedElement): string[] {
+    if (!element?.parents || element.parents.length === 0) {
+      return [];
+    }
+
+    const parentNames = new Set<string>();
+    const visited = new Set<any>();
+
+    const traverse = (el: NamedElement) => {
+      const key = el.aspectModelUrn || el;
+      if (visited.has(key)) {
+        return;
+      }
+      visited.add(key);
+
+      for (const parent of el.parents || []) {
+        if (!parent) {
+          continue;
+        }
+        if (parent.isAnonymous?.()) {
+          const beforeSize = parentNames.size;
+          traverse(parent);
+          if (parentNames.size === beforeSize && parent.name) {
+            parentNames.add(parent.name);
+          }
+        } else if (parent.name) {
+          parentNames.add(parent.name);
+        }
+      }
+    };
+
+    traverse(element);
+    return Array.from(parentNames);
+  }
+
+  public getElementDescription(element: NamedElement): string {
+    const parentNames = this.getElementParentNames(element);
+    const parentInfo = parentNames.length ? `In: ${parentNames.join(', ')}` : '';
+    const description = element.getDescription?.('en') || element.descriptions?.get('en') || '';
+
+    if (element.isAnonymous?.()) {
+      if (parentInfo && description) {
+        return `${parentInfo} • ${description}`;
+      }
+      if (parentInfo) {
+        return parentInfo;
+      }
+      return description;
+    }
+
+    return description;
+  }
+
   public search(event: KeyboardEvent) {
     const target = event.target as HTMLInputElement;
     if (this.searchThrottle) {
@@ -151,9 +204,12 @@ export class WorkspaceFileElementsComponent {
       for (const key in currentElements) {
         newSearched[key] = searchString
           ? currentElements[key].elements.filter((element: NamedElement) => {
+              const elementDesc = this.getElementDescription(element);
               // @TODO Search for the language the application is set on
               return (
-                element.name?.toLowerCase().includes(searchString) || element.getDescription?.('en')?.toLowerCase()?.includes(searchString)
+                element.name?.toLowerCase().includes(searchString) ||
+                elementDesc?.toLowerCase().includes(searchString) ||
+                element.getDescription?.('en')?.toLowerCase()?.includes(searchString)
               );
             })
           : currentElements[key].elements;
@@ -169,7 +225,7 @@ export class WorkspaceFileElementsComponent {
     const sections = Object.values(currentElements);
 
     for (const element of cachedFile.getAllElements()) {
-      sections.find(e => element instanceof e.class && !element.isAnonymous?.())?.elements?.push?.(element);
+      sections.find(e => element instanceof e.class)?.elements?.push?.(element);
     }
   }
 

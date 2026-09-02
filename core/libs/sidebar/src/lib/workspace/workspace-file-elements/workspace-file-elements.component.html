@@ -65,15 +65,17 @@
                   <ame-draggable-element
                     class="element"
                     [class.disabled]="elementImported(element)"
+                    [class.readonly]="element.isAnonymous?.()"
                     [type]="key"
                     [urn]="element.aspectModelUrn"
-                    [matTooltip]="t('sidebar.dragIntoView')"
+                    [readonly]="element.isAnonymous?.()"
+                    [matTooltip]="element.isAnonymous?.() ? getElementDescription(element) || '' : t('sidebar.dragIntoView')"
                   >
                     <!-- TODO Language to be replaced with language translation key  -->
                     <ame-element
                       [type]="sammElements[key]"
                       [name]="element.name"
-                      [description]="element.descriptions.get('en')"
+                      [description]="getElementDescription(element)"
                     ></ame-element>
                   </ame-draggable-element>
                 }

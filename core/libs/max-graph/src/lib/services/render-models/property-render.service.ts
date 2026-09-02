@@ -56,6 +56,7 @@ export class PropertyRenderService extends BaseRenderService {
         this.filtersService.createNode(element.exampleValue, {parent: MaxGraphHelper.getModelElement(cell)}),
       );
 
+    this.removeExampleValueConnection(cell, element.exampleValue);
     this.shapeConnectorService.connectShapes(element, element.exampleValue, cell, exampleValueToConnect);
     this.refreshPropertiesLabel(exampleValueToConnect, element.exampleValue);
   }
@@ -80,15 +81,21 @@ export class PropertyRenderService extends BaseRenderService {
     this.shapeConnectorService.connectShapes(metaModelElement, extendsElement, cell, entityCell);
   }
 
-  private removeExampleValueConnection(cell: Cell) {
+  private removeExampleValueConnection(cell: Cell, keepValue?: DefaultValue) {
     this.maxgraphService.graph
       .getOutgoingEdges(cell, null)
       .filter(edge => {
         const targetModel = MaxGraphHelper.getModelElement<NamedElement>(edge.target);
-        return targetModel instanceof DefaultValue;
+        return targetModel instanceof DefaultValue && targetModel !== keepValue;
       })
       .forEach((edgeToRemove: any) => {
-        this.maxgraphService.removeCells([edgeToRemove]);
+        const targetCell = edgeToRemove.target;
+        const targetModel = MaxGraphHelper.getModelElement<NamedElement>(targetCell);
+        if (targetModel instanceof DefaultValue && targetModel.isAnonymous?.()) {
+          this.maxgraphService.removeCells([targetCell]);
+        } else {
+          this.maxgraphService.removeCells([edgeToRemove]);
+        }
       });
   }
 }

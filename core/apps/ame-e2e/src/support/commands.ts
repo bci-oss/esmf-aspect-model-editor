@@ -83,6 +83,12 @@ declare global {
       openGenerationJsonSchema(): Chainable;
 
       /**
+       * Custom command to open the generation of AASX specification.
+       * @returns {Cypress.Chainable} A chainable Cypress object.
+       */
+      openGenerationAASX(): Chainable;
+
+      /**
        * Custom command to access the state service used for searches.
        * @returns {Cypress.Chainable} A chainable Cypress object.
        */
@@ -560,6 +566,18 @@ Cypress.Commands.add('openGenerationJsonSchema', () => {
   return cy.window().then(win => {
     const generateHandlingService: GenerateHandlingService = win['angular.generateHandlingService'];
     return generateHandlingService.generateJsonSchema().subscribe();
+  });
+});
+
+Cypress.Commands.add('openGenerationAASX', () => {
+  cy.get('mat-dialog-container').should('not.exist');
+  cy.intercept('POST', /\/generate\/aasx(\?.*)?$/, req => {
+    req.reply({body: '<aasx-blob-content>'});
+  });
+
+  return cy.window().then(win => {
+    const generateHandlingService: GenerateHandlingService = win['angular.generateHandlingService'];
+    return generateHandlingService.openGenerationAASX().afterClosed().subscribe();
   });
 });
 

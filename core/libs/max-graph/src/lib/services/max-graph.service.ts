@@ -174,11 +174,20 @@ export class MaxGraphService {
    * @throws {Error} - If there are issues in shape creation or overlay operations.
    */
   renderModelElement(node: ModelTree<NamedElement>, configuration?: ShapeConfiguration): Cell {
-    const geometry = this.maxgraphGeometryProviderService.createGeometry(
-      node,
-      (configuration && configuration?.geometry?.x) || this.nextCellCoordinates?.x || 0,
-      (configuration && configuration?.geometry?.y) || this.nextCellCoordinates?.y || 0,
-    );
+    const rawX = (configuration && configuration?.geometry?.x) ?? this.nextCellCoordinates?.x ?? 0;
+    const rawY = (configuration && configuration?.geometry?.y) ?? this.nextCellCoordinates?.y ?? 0;
+
+    let posX = rawX;
+    let posY = rawY;
+
+    if (this.graph) {
+      const initialGeo = this.maxgraphGeometryProviderService.createGeometry(node, rawX, rawY);
+      const available = MaxGraphHelper.findAvailablePosition(this.graph, rawX, rawY, initialGeo.width, initialGeo.height);
+      posX = available.x;
+      posY = available.y;
+    }
+
+    const geometry = this.maxgraphGeometryProviderService.createGeometry(node, posX, posY);
 
     this.nextCellCoordinates = null;
     const cellStyle = this.themeService.generateThemeStyle(node.shape?.maxgraphStyle?.baseStyleNames[0] || '');

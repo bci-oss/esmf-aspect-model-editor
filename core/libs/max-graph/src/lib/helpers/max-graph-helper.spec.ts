@@ -266,4 +266,65 @@ describe('MaxGraphHelper', () => {
       expect(titleSpan.classList.contains('anonymous-node')).toBe(true);
     });
   });
+
+  describe('avoidCellCollisions & findAvailablePosition & getCellsBoundingBox', () => {
+    it('should compute bounding box for given cells', () => {
+      const c1 = new Cell();
+      c1.vertex = true;
+      c1.geometry = {x: 10, y: 20, width: 100, height: 50} as any;
+
+      const c2 = new Cell();
+      c2.vertex = true;
+      c2.geometry = {x: 50, y: 100, width: 80, height: 40} as any;
+
+      const bbox = MaxGraphHelper.getCellsBoundingBox([c1, c2]);
+      expect(bbox).toBeDefined();
+      expect(bbox.x).toBe(10);
+      expect(bbox.y).toBe(20);
+      expect(bbox.width).toBe(120); // 50 + 80 - 10
+      expect(bbox.height).toBe(120); // 100 + 40 - 20
+    });
+
+    it('should adjust dx/dy when moved cell overlaps with existing vertex', () => {
+      const existing = new Cell();
+      existing.vertex = true;
+      existing.geometry = {x: 100, y: 100, width: 100, height: 60} as any;
+
+      const moved = new Cell();
+      moved.vertex = true;
+      moved.geometry = {x: 0, y: 100, width: 100, height: 60} as any;
+
+      const mockGraph = {
+        getDefaultParent: () => ({}),
+        getChildVertices: () => [existing, moved],
+      } as unknown as Graph;
+
+      // Moving by dx=100, dy=0 would place 'moved' at (100, 100) exactly overlapping 'existing'
+      const {dx, dy} = MaxGraphHelper.avoidCellCollisions(mockGraph, [moved], 100, 0, 20);
+      const newX = moved.geometry.x + dx;
+      const newY = moved.geometry.y + dy;
+
+      const overlaps =
+        newX < existing.geometry.x + existing.geometry.width &&
+        newX + moved.geometry.width > existing.geometry.x &&
+        newY < existing.geometry.y + existing.geometry.height &&
+        newY + moved.geometry.height > existing.geometry.y;
+
+      expect(overlaps).toBe(false);
+    });
+
+    it('should find non-overlapping available position for new cell', () => {
+      const existing = new Cell();
+      existing.vertex = true;
+      existing.geometry = {x: 0, y: 0, width: 100, height: 50} as any;
+
+      const mockGraph = {
+        getDefaultParent: () => ({}),
+        getChildVertices: () => [existing],
+      } as unknown as Graph;
+
+      const pos = MaxGraphHelper.findAvailablePosition(mockGraph, 0, 0, 100, 50, 20);
+      expect(pos.y).toBeGreaterThanOrEqual(70); // 0 + 50 + 20
+    });
+  });
 });

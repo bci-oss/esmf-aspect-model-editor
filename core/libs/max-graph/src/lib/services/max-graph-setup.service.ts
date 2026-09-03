@@ -113,6 +113,12 @@ export class MaxGraphSetupService {
       console.warn('No selection handler found.');
     }
 
+    const originalMoveCells = this.graph.moveCells.bind(this.graph);
+    this.graph.moveCells = (cells: Cell[], dx = 0, dy = 0, clone = false, target?: Cell, evt?: MouseEvent, mapping?: any): Cell[] => {
+      const {dx: adjDx, dy: adjDy} = MaxGraphHelper.avoidCellCollisions(this.graph, cells, dx, dy);
+      return originalMoveCells(cells, adjDx, adjDy, clone, target, evt, mapping);
+    };
+
     this.initializeGraphConstants();
     this.initLayout();
 

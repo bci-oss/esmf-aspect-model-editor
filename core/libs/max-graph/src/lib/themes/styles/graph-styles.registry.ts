@@ -41,10 +41,10 @@ export class GraphStylesRegistry {
 
   private static defaultEdgeStyle(): CellStyle {
     return {
-      edgeStyle: 'entityRelationEdgeStyle',
+      edgeStyle: 'orthogonalEdgeStyle',
       endArrow: 'block',
       fontSize: FONT.edge,
-      curved: true,
+      rounded: true,
       shape: 'connector',
       strokeColor: COLORS.text,
       fontColor: COLORS.text,

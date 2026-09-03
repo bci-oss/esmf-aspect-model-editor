@@ -31,7 +31,7 @@ import {
   HasExtends,
   NamedElement,
 } from '@esmf/aspect-model-loader';
-import {Cell, CellOverlay, CompactTreeLayout, Graph, HierarchicalLayout} from '@maxgraph/core';
+import {Cell, CellOverlay, CompactTreeLayout, Graph, HierarchicalLayout, Rectangle} from '@maxgraph/core';
 import {ModelBaseProperties} from '../models';
 import {MaxGraphVisitorHelper, ShapeAttribute} from './max-graph-visitor-helper';
 
@@ -225,6 +225,141 @@ export class MaxGraphHelper {
     return cell?.overlays?.find(overlay => overlay.align === 'right');
   }
 
+  static getSubtreeCells(graph: Graph, root: Cell): Cell[] {
+    const visited = new Set<Cell>();
+    const queue = [root];
+    while (queue.length > 0) {
+      const current = queue.shift();
+      if (!current || visited.has(current)) continue;
+      visited.add(current);
+      const edges = graph.getOutgoingEdges(current, null) || [];
+      for (const edge of edges) {
+        if (edge.target && !visited.has(edge.target)) {
+          queue.push(edge.target);
+        }
+      }
+    }
+    return Array.from(visited);
+  }
+
+  static getCellsBoundingBox(cells: Cell[]): Rectangle | null {
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    let hasValid = false;
+
+    for (const cell of cells) {
+      if (!cell?.isVertex() || !cell.geometry) continue;
+      hasValid = true;
+      minX = Math.min(minX, cell.geometry.x);
+      minY = Math.min(minY, cell.geometry.y);
+      maxX = Math.max(maxX, cell.geometry.x + cell.geometry.width);
+      maxY = Math.max(maxY, cell.geometry.y + cell.geometry.height);
+    }
+
+    return hasValid ? new Rectangle(minX, minY, maxX - minX, maxY - minY) : null;
+  }
+
+  static avoidCellCollisions(graph: Graph, movedCells: Cell[], dx: number, dy: number, padding = 20): {dx: number; dy: number} {
+    if (!graph || !movedCells || movedCells.length === 0) {
+      return {dx, dy};
+    }
+
+    const isVertex = (c: Cell) => (typeof c?.isVertex === 'function' ? c.isVertex() : !!c?.vertex);
+
+    const movedVertices = movedCells.filter(c => isVertex(c) && c.geometry);
+    if (movedVertices.length === 0) {
+      return {dx, dy};
+    }
+
+    const allVertices = graph.getChildVertices(graph.getDefaultParent()) || [];
+    const otherVertices = allVertices.filter(v => !movedCells.includes(v) && isVertex(v) && v.geometry);
+
+    let adjustedDx = dx;
+    let adjustedDy = dy;
+
+    let hasCollision = true;
+    let iterations = 0;
+    while (hasCollision && iterations < 10) {
+      iterations++;
+      hasCollision = false;
+
+      for (const cell of movedVertices) {
+        let targetX = cell.geometry.x + adjustedDx;
+        let targetY = cell.geometry.y + adjustedDy;
+        const targetW = cell.geometry.width;
+        const targetH = cell.geometry.height;
+
+        for (const other of otherVertices) {
+          const oX = other.geometry.x;
+          const oY = other.geometry.y;
+          const oW = other.geometry.width;
+          const oH = other.geometry.height;
+
+          const overlaps =
+            targetX < oX + oW + padding &&
+            targetX + targetW + padding > oX &&
+            targetY < oY + oH + padding &&
+            targetY + targetH + padding > oY;
+
+          if (overlaps) {
+            hasCollision = true;
+            const pushRight = oX + oW + padding - targetX;
+            const pushDown = oY + oH + padding - targetY;
+
+            if (Math.abs(pushRight) <= Math.abs(pushDown)) {
+              adjustedDx += pushRight;
+              targetX += pushRight;
+            } else {
+              adjustedDy += pushDown;
+              targetY += pushDown;
+            }
+          }
+        }
+      }
+    }
+
+    return {dx: adjustedDx, dy: adjustedDy};
+  }
+
+  static findAvailablePosition(
+    graph: Graph,
+    initialX: number,
+    initialY: number,
+    width: number,
+    height: number,
+    padding = 20,
+  ): {x: number; y: number} {
+    const x = initialX;
+    let y = initialY;
+    const isVertex = (c: Cell) => (typeof c?.isVertex === 'function' ? c.isVertex() : !!c?.vertex);
+    const vertices = (graph?.getChildVertices(graph?.getDefaultParent()) || []).filter(v => isVertex(v) && v.geometry);
+
+    let hasOverlap = true;
+    let iterations = 0;
+    while (hasOverlap && iterations < 50) {
+      iterations++;
+      hasOverlap = false;
+      for (const v of vertices) {
+        const vX = v.geometry.x;
+        const vY = v.geometry.y;
+        const vW = v.geometry.width;
+        const vH = v.geometry.height;
+
+        const overlaps = x < vX + vW + padding && x + width + padding > vX && y < vY + vH + padding && y + height + padding > vY;
+
+        if (overlaps) {
+          hasOverlap = true;
+          y = vY + vH + padding;
+          break;
+        }
+      }
+    }
+
+    return {x, y};
+  }
+
   static setCompactTreeLayout(graph: Graph, inCollapsedMode: boolean, cell?: Cell): void {
     const graphLayout = new CompactTreeLayout(graph);
     graphLayout.maintainParentLocation = true;
@@ -237,9 +372,34 @@ export class MaxGraphHelper {
     if (cell) {
       graphLayout.execute(graph.getDefaultParent(), cell);
     } else {
-      graph.getChildVertices(graph.getDefaultParent())?.forEach(element => {
-        if (this.getModelElement(element).parents.length === 0) {
-          graphLayout.execute(graph.getDefaultParent(), element);
+      const rootVertices = (graph.getChildVertices(graph.getDefaultParent()) || []).filter(
+        element => (this.getModelElement(element)?.parents?.length ?? 0) === 0,
+      );
+
+      let currentRight = 40;
+      rootVertices.forEach((root, index) => {
+        graphLayout.execute(graph.getDefaultParent(), root);
+        const subtreeCells = this.getSubtreeCells(graph, root);
+        const bbox = this.getCellsBoundingBox(subtreeCells);
+        if (bbox && index > 0) {
+          const deltaX = currentRight - bbox.x;
+          if (deltaX !== 0) {
+            graph.model.beginUpdate();
+            try {
+              subtreeCells.forEach(c => {
+                if (c.geometry) {
+                  const geo = c.geometry.clone();
+                  geo.x += deltaX;
+                  graph.model.setGeometry(c, geo);
+                }
+              });
+            } finally {
+              graph.model.endUpdate();
+            }
+          }
+          currentRight += bbox.width + 80;
+        } else if (bbox) {
+          currentRight = bbox.x + bbox.width + 80;
         }
       });
     }

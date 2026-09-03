@@ -80,8 +80,12 @@ export class GenerateHandlingService {
   }
 
   onGenerateAASXFile() {
-    const cb = () => this.matDialog.open(AASXGenerationModalComponent, {disableClose: true});
+    const cb = () => this.openGenerationAASX();
     this.validateFile(cb);
+  }
+
+  openGenerationAASX(): MatDialogRef<AASXGenerationModalComponent> {
+    return this.matDialog.open(AASXGenerationModalComponent, {disableClose: true});
   }
 
   onGenerateJsonSample() {

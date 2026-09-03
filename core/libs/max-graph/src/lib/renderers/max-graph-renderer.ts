@@ -177,8 +177,9 @@ export class MaxGraphRenderer implements ModelRenderer<Cell, Cell> {
 
   renderCharacteristic(node: ModelTree<DefaultCharacteristic>, parentCell: Cell, geometry: ShapeConfiguration['geometry'] = {}): Cell {
     const characteristic = node.element;
+    const isAnonymous = characteristic?.isAnonymous?.() || characteristic?.syntheticName;
     const cell =
-      this.shapes.get(characteristic.aspectModelUrn) ||
+      (!isAnonymous ? this.shapes.get(characteristic.aspectModelUrn) : undefined) ||
       this.getOrCreateCell(node, {
         shapeAttributes: MaxGraphVisitorHelper.getCharacteristicProperties(characteristic, this.sammLangService),
         geometry,
@@ -325,10 +326,11 @@ export class MaxGraphRenderer implements ModelRenderer<Cell, Cell> {
   }
 
   private getOrCreateCell(node: ModelTree<any>, {shapeAttributes, geometry}: ShapeConfiguration): Cell {
+    const isAnonymous = node.element?.isAnonymous?.() || node.element?.syntheticName;
     const shape =
-      this.shapes.get(node.element.aspectModelUrn) ||
-      this.shapes.get(node.element.name) ||
-      this.maxgraphService.resolveCellByModelElement(node.element);
+      (!isAnonymous ? this.shapes.get(node.element.aspectModelUrn) : undefined) ||
+      (!isAnonymous ? this.shapes.get(node.element.name) : undefined) ||
+      (!isAnonymous ? this.maxgraphService.resolveCellByModelElement(node.element) : undefined);
 
     if (shape) {
       return shape;
@@ -337,6 +339,7 @@ export class MaxGraphRenderer implements ModelRenderer<Cell, Cell> {
     const cell = this.createCell(node, {shapeAttributes, geometry});
 
     if (
+      !isAnonymous &&
       this.rdfModel &&
       !RdfModelUtil.isPredefinedCharacteristic(node.element.aspectModelUrn, this.rdfModel.sammC) &&
       !RdfModelUtil.isSammUDefinition(node.element.aspectModelUrn, this.rdfModel.sammU)

@@ -13,19 +13,38 @@
 
 /// <reference types="cypress" />
 
-import {SELECTOR_notificationsBtn, SELECTOR_notificationsDialogCloseButton} from '../../support/constants';
+import {
+  SELECTOR_notificationsBtn,
+  SELECTOR_notificationsClearButton,
+  SELECTOR_notificationsDialogCloseButton,
+  SELECTOR_tbValidateButton,
+} from '../../support/constants';
 
-describe('Test validate Aspect', () => {
-  before(() => {
+describe('Test validate Aspect and Notifications', () => {
+  it('can validate valid default model manually via toolbar without errors', () => {
     cy.visitDefault();
-    cy.startModellingInvalidModel();
+    cy.startModelling();
+    cy.get(SELECTOR_tbValidateButton).click({force: true});
+    cy.get(SELECTOR_notificationsBtn).then($btn => {
+      const badge = $btn.find('.mat-badge-content');
+      if (badge.length > 0) {
+        expect(badge.text().trim()).to.satisfy((t: string) => t === '' || t === '0');
+      }
+    });
   });
 
-  it('can validate default model', () => {
+  it('shows validation notifications on invalid model and allows clearing them', () => {
+    cy.visitDefault();
+    cy.startModellingInvalidModel();
     cy.get(SELECTOR_notificationsBtn)
-      .click()
+      .click({force: true})
       .then(() => {
-        assert(cy.contains('.message-title', 'Mandatory property samm:characteristic is missing on :property1.'));
+        cy.contains('.message-title', 'Mandatory property samm:characteristic is missing on :property1.').should('be.visible');
+      })
+      .then(() => {
+        cy.get(SELECTOR_notificationsClearButton).click({force: true});
+      })
+      .then(() => {
         cy.get(SELECTOR_notificationsDialogCloseButton).click({force: true});
       });
   });

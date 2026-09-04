@@ -15,6 +15,7 @@ import {Injectable} from '@angular/core';
 import {Cell, CellStyle, Graph} from '@maxgraph/core';
 import {MaxGraphHelper} from '../helpers';
 import {ModelStyleResolver, ThemeColors} from '../models';
+import {darkColors} from './dark-theme';
 import {lightColors} from './light-theme';
 
 @Injectable({providedIn: 'root'})
@@ -23,6 +24,7 @@ export class ThemeService {
   private graph: Graph;
 
   public currentColors: ThemeColors = lightColors;
+  public currentTheme: 'light' | 'dark' = 'light';
 
   private static STROKE_WIDTH = 'strokeWidth';
   private static STROKE_Color = 'strokeColor';
@@ -33,6 +35,7 @@ export class ThemeService {
       [ThemeService.STROKE_WIDTH]: 2,
       [ThemeService.STROKE_Color]: this.currentColors.border,
       [ThemeService.FILL_COLOR]: this.currentColors.font,
+      fontColor: this.currentColors.font,
     };
   }
 
@@ -62,16 +65,38 @@ export class ThemeService {
 
   applyTheme(theme: string) {
     this.setCssVars(theme);
-    this.graph.getChildVertices(this.graph.getDefaultParent()).forEach((cell: Cell) => {
-      const modelElement = MaxGraphHelper.getModelElement(cell);
-      const styleName = (cell.style?.baseStyleNames?.[0] as string) || (modelElement ? ModelStyleResolver.resolve(modelElement) : '');
-      const style = this.generateThemeStyle(styleName);
-      if (modelElement?.isAnonymous?.()) {
-        style.dashed = true;
-        style.dashPattern = '4 4';
+    if (!this.graph) return;
+
+    this.graph.batchUpdate(() => {
+      const defaultEdgeStyle = this.graph.getStylesheet()?.getDefaultEdgeStyle();
+      if (defaultEdgeStyle) {
+        defaultEdgeStyle.strokeColor = this.currentColors.border;
+        defaultEdgeStyle.fontColor = this.currentColors.font;
       }
-      this.graph.setCellStyle(style, [cell]);
+      const defaultVertexStyle = this.graph.getStylesheet()?.getDefaultVertexStyle();
+      if (defaultVertexStyle) {
+        defaultVertexStyle.strokeColor = this.currentColors.border;
+        defaultVertexStyle.fontColor = this.currentColors.font;
+      }
+
+      this.graph.getChildCells(this.graph.getDefaultParent(), true, true).forEach((cell: Cell) => {
+        if (cell.isEdge()) {
+          this.graph.setCellStyles('strokeColor', this.currentColors.border, [cell]);
+          this.graph.setCellStyles('fontColor', this.currentColors.font, [cell]);
+        } else if (cell.isVertex()) {
+          const modelElement = MaxGraphHelper.getModelElement(cell);
+          const styleName = (cell.style?.baseStyleNames?.[0] as string) || (modelElement ? ModelStyleResolver.resolve(modelElement) : '');
+          const style = this.generateThemeStyle(styleName);
+          if (modelElement?.isAnonymous?.()) {
+            style.dashed = true;
+            style.dashPattern = '4 4';
+          }
+          this.graph.setCellStyle(style, [cell]);
+        }
+      });
     });
+
+    this.graph.refresh();
   }
 
   generateThemeStyle(styleName: string): CellStyle {
@@ -81,13 +106,27 @@ export class ThemeService {
 
     return {
       baseStyleNames: [styleName],
-      ...Object.fromEntries(Object.entries(this.getDefaultShapesColors)),
-      ...Object.fromEntries(Object.entries(this.theme[styleName])),
+      fontColor: this.currentColors.font,
+      strokeColor: this.currentColors.border,
+      strokeWidth: 2,
+      ...(this.theme[styleName] || {}),
     } as CellStyle;
   }
 
   setCssVars(theme: string) {
-    this.currentColors = theme === 'light' ? lightColors : null;
+    this.currentTheme = theme === 'dark' ? 'dark' : 'light';
+    this.currentColors = this.currentTheme === 'dark' ? darkColors : lightColors;
+
+    if (this.currentTheme === 'dark') {
+      this.root.classList.add('dark-theme');
+      document.body?.classList.add('dark-theme');
+      this.root.setAttribute('data-theme', 'dark');
+    } else {
+      this.root.classList.remove('dark-theme');
+      document.body?.classList.remove('dark-theme');
+      this.root.removeAttribute('data-theme');
+    }
+
     Object.entries(this.currentColors).forEach(([key, color]: any) => this.root.style.setProperty(`--ame-${key}`, color));
   }
 }

@@ -20,6 +20,7 @@ export interface Settings {
   autoValidationEnabled: boolean;
   autoFormatEnabled: boolean;
   enableHierarchicalLayout: boolean;
+  darkMode?: boolean;
   validationTimerSeconds: number;
   saveTimerSeconds: number;
   showConnectionLabels: boolean;

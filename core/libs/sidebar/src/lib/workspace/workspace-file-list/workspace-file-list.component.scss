@@ -27,7 +27,7 @@
 
   ::ng-deep {
     mat-form-field .mdc-text-field {
-      background-color: white;
+      background-color: var(--ame-surface, white);
     }
   }
 }
@@ -107,7 +107,7 @@
     position: relative;
 
     &:hover {
-      background-color: #e1e1e1;
+      background-color: var(--ame-surface-hover, #e1e1e1);
 
       > button {
         display: inline-flex;
@@ -115,7 +115,7 @@
     }
 
     &.selected {
-      background-color: #e1e1e1;
+      background-color: var(--ame-surface-selected, #e1e1e1);
       cursor: default;
     }
 

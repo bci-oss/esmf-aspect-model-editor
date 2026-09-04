@@ -39,6 +39,18 @@
   </ame-bar-item>
 
   <ame-bar-item
+    class="sidebar__item sidebar__theme"
+    [matTooltipShowDelay]="0"
+    [matTooltipHideDelay]="0"
+    [matTooltip]="isDarkMode ? t('tooltips.lightMode') : t('tooltips.darkMode')"
+    (click)="toggleDarkMode()"
+    matTooltipPosition="right"
+    data-cy="darkModeBtn"
+  >
+    <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+  </ame-bar-item>
+
+  <ame-bar-item
     class="sidebar__item sidebar__settings"
     [matTooltipShowDelay]="0"
     [matTooltipHideDelay]="0"

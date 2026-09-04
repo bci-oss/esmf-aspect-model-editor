@@ -367,6 +367,8 @@
       "displayEntityValueEntity": "展示 'Entity Value - Entity' 关系",
       "displayPropertyAbstractProperty": "展示 'Property - Abstract Property' 关系",
       "displayDisambiguationLabel": "展示 消歧义 标签",
+      "darkMode": "暗黑模式",
+      "darkModeTooltip": "切换编辑器和画布的暗黑模式主题。",
       "autoValidationTooltip": "完成一次验证后，经过等待时间后，将触发下一次自动验证。",
       "autoFormattingTooltip": "自动设置图表上元素的格式。",
       "displayDisambiguationLabelTooltip": "显示需要消歧的关系标签，例如操作输入/输出、特征左/右以及设置了 notInPayload 的属性。"
@@ -566,6 +568,8 @@
     "settings": "设置",
     "notifications": "通知",
     "help": "帮助",
+    "darkMode": "切换到暗黑模式",
+    "lightMode": "切换到明亮模式",
     "unfold": "打开",
     "unfoldNamespaces": "打开namespaces",
     "fold": "折叠",

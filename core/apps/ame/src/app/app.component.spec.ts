@@ -35,7 +35,7 @@ describe('AppComponent', () => {
   let browserService: {isStartedAsElectronApp: ReturnType<typeof vi.fn>};
   let electronTunnelService: {subscribeMessages: ReturnType<typeof vi.fn>; sendTranslationsToElectron: ReturnType<typeof vi.fn>};
   let configurationService: {getSettings: ReturnType<typeof vi.fn>};
-  let themeService: {setCssVars: ReturnType<typeof vi.fn>};
+  let themeService: {applyTheme: ReturnType<typeof vi.fn>; setCssVars: ReturnType<typeof vi.fn>};
   let langChanges$: BehaviorSubject<string>;
   let translate: {
     translateService: {
@@ -60,8 +60,8 @@ describe('AppComponent', () => {
     domainModelToRdf = {listenForStoreUpdates: vi.fn()};
     browserService = {isStartedAsElectronApp: vi.fn(() => false)};
     electronTunnelService = {subscribeMessages: vi.fn(), sendTranslationsToElectron: vi.fn()};
-    configurationService = {getSettings: vi.fn(() => ({useSaturatedColors: false}))};
-    themeService = {setCssVars: vi.fn()};
+    configurationService = {getSettings: vi.fn(() => ({darkMode: false}))};
+    themeService = {applyTheme: vi.fn(), setCssVars: vi.fn()};
     langChanges$ = new BehaviorSubject('en');
     translate = {
       translateService: {
@@ -153,20 +153,20 @@ describe('AppComponent', () => {
       expect(electronTunnelService.sendTranslationsToElectron).not.toHaveBeenCalled();
     });
 
-    it('should apply the light css theme when saturated colors are disabled', () => {
-      configurationService.getSettings.mockReturnValue({useSaturatedColors: false});
+    it('should apply the light theme when dark mode is disabled', () => {
+      configurationService.getSettings.mockReturnValue({darkMode: false});
 
       fixture.detectChanges();
 
-      expect(themeService.setCssVars).toHaveBeenCalledWith('light');
+      expect(themeService.applyTheme).toHaveBeenCalledWith('light');
     });
 
-    it('should apply the default css theme when saturated colors are enabled', () => {
-      configurationService.getSettings.mockReturnValue({useSaturatedColors: true});
+    it('should apply the dark theme when dark mode is enabled', () => {
+      configurationService.getSettings.mockReturnValue({darkMode: true});
 
       fixture.detectChanges();
 
-      expect(themeService.setCssVars).toHaveBeenCalledWith('');
+      expect(themeService.applyTheme).toHaveBeenCalledWith('dark');
     });
 
     it('should listen for loading unless running under e2e', () => {

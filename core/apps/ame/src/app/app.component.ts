@@ -70,7 +70,8 @@ export class AppComponent implements OnInit {
       this.setContextMenu();
     }
 
-    this.themeService.setCssVars(this.configurationService.getSettings()?.useSaturatedColors ? '' : 'light');
+    const settings = this.configurationService.getSettings();
+    this.themeService.applyTheme(settings?.darkMode ? 'dark' : 'light');
 
     if (window.location.search.includes('?e2e=true')) {
       return;

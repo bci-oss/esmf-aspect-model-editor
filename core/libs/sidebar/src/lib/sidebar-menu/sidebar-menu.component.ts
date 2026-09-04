@@ -12,6 +12,8 @@
  */
 
 import {InformationHandlingService} from '@ame/editor';
+import {ThemeService} from '@ame/max-graph';
+import {ConfigurationService} from '@ame/settings-dialog';
 import {BarItemComponent, NotificationsService} from '@ame/shared';
 import {AsyncPipe} from '@angular/common';
 import {Component, inject} from '@angular/core';
@@ -29,9 +31,23 @@ import {SidebarStateService} from '../sidebar-state.service';
 })
 export class SidebarMenuComponent {
   private informationService = inject(InformationHandlingService);
+  private configurationService = inject(ConfigurationService);
+  private themeService = inject(ThemeService);
 
   public notificationService = inject(NotificationsService);
   public sidebarService = inject(SidebarStateService);
+
+  get isDarkMode(): boolean {
+    return this.themeService.currentTheme === 'dark';
+  }
+
+  toggleDarkMode(): void {
+    const settings = this.configurationService.getSettings();
+    const newDarkMode = !this.isDarkMode;
+    settings.darkMode = newDarkMode;
+    this.configurationService.setSettings(settings);
+    this.themeService.applyTheme(newDarkMode ? 'dark' : 'light');
+  }
 
   openSettingsDialog() {
     this.informationService.openSettingsDialog();

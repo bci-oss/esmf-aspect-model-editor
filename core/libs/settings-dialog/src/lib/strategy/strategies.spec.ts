@@ -13,7 +13,7 @@
 
 import {LoadedFilesService} from '@ame/cache';
 import {EditorService, ModelSaverService} from '@ame/editor';
-import {MaxGraphService} from '@ame/max-graph';
+import {MaxGraphService, ThemeService} from '@ame/max-graph';
 import {ElectronTunnelService, TitleService} from '@ame/shared';
 import {LanguageTranslationService} from '@ame/translation';
 import {TestBed} from '@angular/core/testing';
@@ -41,6 +41,7 @@ describe('Settings Update Strategies', () => {
       autoValidationEnabled: false,
       autoFormatEnabled: false,
       enableHierarchicalLayout: false,
+      darkMode: false,
       validationTimerSeconds: 60,
       saveTimerSeconds: 60,
       showConnectionLabels: false,
@@ -61,6 +62,7 @@ describe('Settings Update Strategies', () => {
       editorConfiguration: {
         enableHierarchicalLayout: true,
         showConnectionLabels: true,
+        darkMode: true,
       },
       languageConfiguration: {
         userInterface: 'de',
@@ -120,22 +122,30 @@ describe('Settings Update Strategies', () => {
   describe('EditorConfigurationUpdateStrategy', () => {
     let strategy: EditorConfigurationUpdateStrategy;
     let maxGraphService: {formatShapes: ReturnType<typeof vi.fn>};
+    let themeService: {applyTheme: ReturnType<typeof vi.fn>};
 
     beforeEach(() => {
       maxGraphService = {formatShapes: vi.fn()};
+      themeService = {applyTheme: vi.fn()};
 
       TestBed.configureTestingModule({
-        providers: [EditorConfigurationUpdateStrategy, {provide: MaxGraphService, useValue: maxGraphService}],
+        providers: [
+          EditorConfigurationUpdateStrategy,
+          {provide: MaxGraphService, useValue: maxGraphService},
+          {provide: ThemeService, useValue: themeService},
+        ],
       });
 
       strategy = TestBed.inject(EditorConfigurationUpdateStrategy);
     });
 
-    it('should update editor configuration settings and format shapes', () => {
+    it('should update editor configuration settings, theme and format shapes', () => {
       strategy.updateSettings(mockFormData, initialSettings);
 
       expect(initialSettings.enableHierarchicalLayout).toBe(true);
       expect(initialSettings.showConnectionLabels).toBe(true);
+      expect(initialSettings.darkMode).toBe(true);
+      expect(themeService.applyTheme).toHaveBeenCalledWith('dark');
       expect(maxGraphService.formatShapes).toHaveBeenCalledWith(true);
     });
   });

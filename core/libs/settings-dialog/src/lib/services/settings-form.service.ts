@@ -38,6 +38,7 @@ const createDefaultSettingsModel = (): SettingsFormData => ({
   editorConfiguration: {
     enableHierarchicalLayout: true,
     showConnectionLabels: true,
+    darkMode: false,
   },
   languageConfiguration: {
     userInterface: 'en',
@@ -166,6 +167,7 @@ export class SettingsFormService {
       editorConfiguration: {
         enableHierarchicalLayout: settings.enableHierarchicalLayout,
         showConnectionLabels: settings.showConnectionLabels,
+        darkMode: settings.darkMode ?? false,
       },
       languageConfiguration: {
         userInterface: this.translate.translateService.getActiveLang(),

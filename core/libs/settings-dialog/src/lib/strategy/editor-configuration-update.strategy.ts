@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {MaxGraphService} from '@ame/max-graph';
+import {MaxGraphService, ThemeService} from '@ame/max-graph';
 import {inject, Injectable} from '@angular/core';
 import {Settings, SettingsFormData} from '../model';
 import {SettingsUpdateStrategy} from './settings-update.strategy';
@@ -19,6 +19,7 @@ import {SettingsUpdateStrategy} from './settings-update.strategy';
 @Injectable({providedIn: 'root'})
 export class EditorConfigurationUpdateStrategy implements SettingsUpdateStrategy {
   private readonly maxgraphService = inject(MaxGraphService);
+  private readonly themeService = inject(ThemeService);
 
   updateSettings(model: SettingsFormData, settings: Settings): void {
     const editorConfiguration = model?.editorConfiguration;
@@ -26,7 +27,9 @@ export class EditorConfigurationUpdateStrategy implements SettingsUpdateStrategy
 
     settings.enableHierarchicalLayout = editorConfiguration.enableHierarchicalLayout;
     settings.showConnectionLabels = editorConfiguration.showConnectionLabels;
+    settings.darkMode = editorConfiguration.darkMode;
 
+    this.themeService.applyTheme(settings.darkMode ? 'dark' : 'light');
     this.maxgraphService.formatShapes(true);
   }
 }

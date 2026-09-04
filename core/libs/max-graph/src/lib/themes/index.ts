@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+export * from './dark-theme';
 export * from './light-theme';
 export * from './styles';
 export * from './theme.service';

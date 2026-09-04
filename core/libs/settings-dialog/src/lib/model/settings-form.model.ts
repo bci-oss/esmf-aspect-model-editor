@@ -24,6 +24,7 @@ export interface AutomatedWorkflowFormData {
 export interface EditorConfigurationFormData {
   enableHierarchicalLayout: boolean;
   showConnectionLabels: boolean;
+  darkMode: boolean;
 }
 
 export interface AspectModelLanguageEntry {

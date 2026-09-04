@@ -79,6 +79,16 @@ $ame-light-theme: mat.m2-define-light-theme(
   )
 );
 
+$ame-dark-theme: mat.m2-define-dark-theme(
+  (
+    color: (
+      primary: $ame-primary,
+      accent: $ame-accent,
+      warn: $ame-warn,
+    ),
+  )
+);
+
 .mat-mdc-mini-fab.mat-accent {
   --mat-fab-small-foreground-color: map.get($ame-colors, font) !important;
 }
@@ -96,3 +106,7 @@ $ame-light-theme: mat.m2-define-light-theme(
 }
 
 @include mat.all-component-themes($ame-light-theme);
+
+.dark-theme {
+  @include mat.all-component-colors($ame-dark-theme);
+}

@@ -373,6 +373,8 @@
       "displayEntityValueEntity": "Display 'Entity Value - Entity' relationship",
       "displayPropertyAbstractProperty": "Display 'Property - Abstract Property' relationship",
       "displayDisambiguationLabel": "Display disambiguation labels",
+      "darkMode": "Dark mode",
+      "darkModeTooltip": "Toggle dark mode theme for the editor and graph canvas.",
       "autoValidationTooltip": "After completing a validation, after passing the waiting period the next auto-validation will be triggered.",
       "autoFormattingTooltip": "Auto format elements on the graph.",
       "displayDisambiguationLabelTooltip": "Displays labels on relationships that require disambiguation, e.g. Operation input/output, Characteristic Either left/right and Properties with notInPayload set."
@@ -572,6 +574,8 @@
     "settings": "Settings",
     "notifications": "Notifications",
     "help": "Help",
+    "darkMode": "Switch to dark mode",
+    "lightMode": "Switch to light mode",
     "unfold": "Unfold",
     "unfoldNamespaces": "Unfold namespaces",
     "fold": "Fold",

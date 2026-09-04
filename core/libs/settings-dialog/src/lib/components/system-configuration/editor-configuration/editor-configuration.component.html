@@ -36,6 +36,15 @@
           </mat-icon>
         </mat-slide-toggle>
       </div>
+
+      <div class="setting-item">
+        <mat-slide-toggle [formField]="form.editorConfiguration.darkMode" data-cy="darkModeToggle">
+          {{ t('settingsDialog.configuration.darkMode') }}
+          <mat-icon [matTooltipShowDelay]="0" [matTooltipHideDelay]="100" [matTooltip]="t('settingsDialog.configuration.darkModeTooltip')">
+            info
+          </mat-icon>
+        </mat-slide-toggle>
+      </div>
     </div>
   </div>
 </ng-container>

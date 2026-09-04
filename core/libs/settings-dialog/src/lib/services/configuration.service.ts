@@ -24,6 +24,7 @@ const DEFAULT_SETTINGS: Settings = {
   autoValidationEnabled: true,
   autoFormatEnabled: true,
   enableHierarchicalLayout: true,
+  darkMode: false,
   validationTimerSeconds: 400,
   saveTimerSeconds: 60,
   showConnectionLabels: true,

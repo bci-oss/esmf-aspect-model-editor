@@ -145,23 +145,26 @@
   }
 }
 
-.mat-menu-item {
+.filter-menu-item {
   display: block;
+  width: 100%;
 
   ::ng-deep {
     .mdc-form-field {
       display: flex;
       justify-content: space-between;
-      padding: 0 10px;
+      width: 100%;
+      padding: 6px 16px;
 
       .mdc-label {
         margin-left: 0;
         flex: 1;
-      }
-
-      .mdc-checkbox__checkmark {
-        color: white !important;
+        color: var(--ame-font, inherit);
       }
     }
+  }
+
+  &:hover {
+    background-color: var(--ame-surface-hover, #f3f3f3);
   }
 }

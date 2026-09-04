@@ -16,7 +16,7 @@ import {LoadedFilesService, NamespaceFile} from '@ame/cache';
 import {ModelLoaderService} from '@ame/editor';
 import {MaxGraphService} from '@ame/max-graph';
 import {ElementIconComponent, ElementType, sammElements} from '@ame/shared';
-import {Component, DestroyRef, effect, inject, signal} from '@angular/core';
+import {Component, DestroyRef, effect, inject, signal, untracked} from '@angular/core';
 import {MatMiniFabButton} from '@angular/material/button';
 import {MatCheckbox} from '@angular/material/checkbox';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -25,7 +25,20 @@ import {MatInput} from '@angular/material/input';
 import {MatMenu, MatMenuTrigger} from '@angular/material/menu';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatTooltip} from '@angular/material/tooltip';
-import {NamedElement} from '@esmf/aspect-model-loader';
+import {
+  DefaultAspect,
+  DefaultCharacteristic,
+  DefaultConstraint,
+  DefaultEntity,
+  DefaultEntityInstance,
+  DefaultEvent,
+  DefaultOperation,
+  DefaultProperty,
+  DefaultTrait,
+  DefaultUnit,
+  DefaultValue,
+  NamedElement,
+} from '@esmf/aspect-model-loader';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {first, switchMap} from 'rxjs';
 import {DraggableElementComponent} from '../../draggable-element/draggable-element.component';
@@ -78,6 +91,7 @@ export class WorkspaceFileElementsComponent {
   ];
 
   private searchThrottle: NodeJS.Timeout | null = null;
+  private currentSearchString = '';
 
   constructor() {
     this.destroyRef.onDestroy(() => {
@@ -88,31 +102,33 @@ export class WorkspaceFileElementsComponent {
 
     effect(() => {
       const selection = this.sidebarService.selection.selection();
-      if (selection) {
-        const newElements: Record<string, any> = {};
-        const newSearched: Record<string, any[]> = {};
+      untracked(() => {
+        if (selection) {
+          const newElements: Record<string, any> = {};
+          const newSearched: Record<string, any[]> = {};
 
-        for (const element of this.elementsOrder) {
-          newElements[element] = {
-            ...sammElements[element],
-            elements: [],
-            hidden: true,
-            displayed: true,
-          };
-          newSearched[element] = newElements[element].elements;
+          for (const element of this.elementsOrder) {
+            newElements[element] = {
+              ...sammElements[element],
+              elements: [],
+              hidden: true,
+              displayed: true,
+            };
+            newSearched[element] = [];
+          }
+
+          this.elements.set(newElements);
+          this.searched.set(newSearched);
+
+          const namespaceFile = this.loadedFilesService.getFile(`${selection.namespace}:${selection.file}`);
+
+          if (namespaceFile?.cachedFile?.getAllElements?.()?.length) {
+            this.updateElements(namespaceFile);
+          } else {
+            this.requestFile(`${selection.namespace}:${selection.file}`, selection.aspectModelUrn);
+          }
         }
-
-        this.elements.set(newElements);
-        this.searched.set(newSearched);
-
-        const namespaceFile = this.loadedFilesService.getFile(`${selection.namespace}:${selection.file}`);
-
-        if (namespaceFile?.cachedFile.getAllElements().length) {
-          this.updateElements(this.loadedFilesService.getFile(`${selection.namespace}:${selection.file}`));
-        } else {
-          this.requestFile(`${selection.namespace}:${selection.file}`, selection.aspectModelUrn);
-        }
-      }
+      });
     });
   }
 
@@ -123,15 +139,31 @@ export class WorkspaceFileElementsComponent {
     return false;
   }
 
-  public toggleFilter(event: MouseEvent, key: string) {
-    event.stopPropagation();
+  public toggleFilter(checkedOrEvent: boolean | Event, key: string) {
+    if (typeof checkedOrEvent !== 'boolean' && checkedOrEvent?.stopPropagation) {
+      checkedOrEvent.stopPropagation();
+    }
+    const isChecked = typeof checkedOrEvent === 'boolean' ? checkedOrEvent : !this.elements()[key]?.displayed;
     const currentElements = this.elements();
     if (currentElements[key]) {
       this.elements.set({
         ...currentElements,
         [key]: {
           ...currentElements[key],
-          displayed: !currentElements[key].displayed,
+          displayed: isChecked,
+        },
+      });
+    }
+  }
+
+  public toggleSectionExpand(key: string) {
+    const currentElements = this.elements();
+    if (currentElements[key]) {
+      this.elements.set({
+        ...currentElements,
+        [key]: {
+          ...currentElements[key],
+          hidden: !currentElements[key].hidden,
         },
       });
     }
@@ -197,36 +229,96 @@ export class WorkspaceFileElementsComponent {
     }
 
     this.searchThrottle = setTimeout(() => {
-      const searchString = target.value.toLowerCase();
-      const currentElements = this.elements();
-      const newSearched: Record<string, any[]> = {};
-
-      for (const key in currentElements) {
-        newSearched[key] = searchString
-          ? currentElements[key].elements.filter((element: NamedElement) => {
-              const elementDesc = this.getElementDescription(element);
-              // @TODO Search for the language the application is set on
-              return (
-                element.name?.toLowerCase().includes(searchString) ||
-                elementDesc?.toLowerCase().includes(searchString) ||
-                element.getDescription?.('en')?.toLowerCase()?.includes(searchString)
-              );
-            })
-          : currentElements[key].elements;
-      }
-
-      this.searched.set(newSearched);
+      this.currentSearchString = target.value.toLowerCase();
+      this.applySearchFilter();
     }, 100);
   }
 
+  private applySearchFilter() {
+    const searchString = this.currentSearchString;
+    const currentElements = this.elements();
+    const newSearched: Record<string, any[]> = {};
+
+    for (const key of this.elementsOrder) {
+      const elementsList = currentElements[key]?.elements || [];
+      newSearched[key] = searchString
+        ? elementsList.filter((element: NamedElement) => {
+            const elementDesc = this.getElementDescription(element);
+            return (
+              element.name?.toLowerCase().includes(searchString) ||
+              elementDesc?.toLowerCase().includes(searchString) ||
+              element.getDescription?.('en')?.toLowerCase()?.includes(searchString)
+            );
+          })
+        : [...elementsList];
+    }
+
+    this.searched.set(newSearched);
+  }
+
+  private resolveElementType(element: NamedElement): ElementType | null {
+    if (element instanceof DefaultProperty) {
+      return (element as any).isAbstract ? 'abstract-property' : 'property';
+    }
+    if (element instanceof DefaultEntity) {
+      return (element as any).isAbstract ? 'abstract-entity' : 'entity';
+    }
+    if (element instanceof DefaultCharacteristic) {
+      return 'characteristic';
+    }
+    if (element instanceof DefaultAspect) {
+      return 'aspect';
+    }
+    if (element instanceof DefaultConstraint) {
+      return 'constraint';
+    }
+    if (element instanceof DefaultTrait) {
+      return 'trait';
+    }
+    if (element instanceof DefaultOperation) {
+      return 'operation';
+    }
+    if (element instanceof DefaultEvent) {
+      return 'event';
+    }
+    if (element instanceof DefaultUnit) {
+      return 'unit';
+    }
+    if (element instanceof DefaultValue) {
+      return 'value';
+    }
+    if (element instanceof DefaultEntityInstance) {
+      return 'entityInstance';
+    }
+    return null;
+  }
+
   private updateElements(file: NamespaceFile) {
+    if (!file?.cachedFile) {
+      return;
+    }
     const cachedFile = file.cachedFile;
     const currentElements = this.elements();
-    const sections = Object.values(currentElements);
+    const newElements: Record<string, any> = {};
+
+    for (const key of this.elementsOrder) {
+      newElements[key] = {
+        ...sammElements[key],
+        elements: [],
+        hidden: currentElements[key]?.hidden ?? true,
+        displayed: currentElements[key]?.displayed ?? true,
+      };
+    }
 
     for (const element of cachedFile.getAllElements()) {
-      sections.find(e => element instanceof e.class)?.elements?.push?.(element);
+      const type = this.resolveElementType(element);
+      if (type && newElements[type]) {
+        newElements[type].elements.push(element);
+      }
     }
+
+    this.elements.set(newElements);
+    this.applySearchFilter();
   }
 
   private requestFile(absoluteName: string, aspectModelUrn: string) {

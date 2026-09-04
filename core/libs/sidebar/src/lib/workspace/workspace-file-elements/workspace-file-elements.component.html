@@ -28,7 +28,7 @@
         <input [placeholder]="t('sidebar.actions.searchElements')" (keyup)="search($event)" matInput data-cy="searchElements" />
       </mat-form-field>
 
-      <button class="filter" [matMenuTriggerFor]="filter" mat-mini-fab>
+      <button class="filter" [matMenuTriggerFor]="filter" mat-mini-fab data-cy="elementsFilterBtn">
         <mat-icon>filter_list</mat-icon>
       </button>
     </div>
@@ -39,29 +39,29 @@
         <p>Loading elements...</p>
       </div>
     } @else {
-      <div class="elements">
+      <div class="elements" data-cy="fileElementsList">
         @for (key of elementsOrder; track key) {
-          @if (searched()[key].length && elements()[key].displayed) {
-            <div class="elements__section" [class.expanded]="!elements()[key].hidden">
+          @if (searched()[key]?.length && elements()[key]?.displayed) {
+            <div class="elements__section" [class.expanded]="!elements()[key]?.hidden" [attr.data-cy]="'section-' + key">
               <div class="elements__header">
-                <h3 class="elements__title">{{ elements()[key].plural }} ({{ searched()[key].length }})</h3>
-                @if (searched()[key].length > 4) {
+                <h3 class="elements__title">{{ elements()[key]?.plural }} ({{ searched()[key]?.length }})</h3>
+                @if (searched()[key]?.length > 4) {
                   <button
                     class="show-elements"
-                    [attr.aria-expanded]="!elements()[key].hidden"
-                    (click)="elements()[key].hidden = !elements()[key].hidden"
-                    (keyup.enter)="elements()[key].hidden = !elements()[key].hidden"
-                    (keyup.space)="elements()[key].hidden = !elements()[key].hidden"
+                    [attr.aria-expanded]="!elements()[key]?.hidden"
+                    (click)="toggleSectionExpand(key)"
+                    (keyup.enter)="toggleSectionExpand(key)"
+                    (keyup.space)="toggleSectionExpand(key)"
                     type="button"
                     aria-label="Toggle show elements"
                   >
-                    {{ elements()[key].hidden ? t('sidebar.actions.showAll') : t('sidebar.actions.showLess') }}
+                    {{ elements()[key]?.hidden ? t('sidebar.actions.showAll') : t('sidebar.actions.showLess') }}
                   </button>
                 }
               </div>
 
               <ng-container>
-                @for (element of elements()[key].hidden ? searched()[key].slice(0, 5) : searched()[key]; track element.aspectModelUrn) {
+                @for (element of elements()[key]?.hidden ? searched()[key].slice(0, 5) : searched()[key]; track element.aspectModelUrn) {
                   <ame-draggable-element
                     class="element"
                     [class.disabled]="elementImported(element)"
@@ -71,7 +71,6 @@
                     [readonly]="element.isAnonymous?.()"
                     [matTooltip]="element.isAnonymous?.() ? getElementDescription(element) || '' : t('sidebar.dragIntoView')"
                   >
-                    <!-- TODO Language to be replaced with language translation key  -->
                     <ame-element
                       [type]="sammElements[key]"
                       [name]="element.name"
@@ -86,15 +85,18 @@
       </div>
     }
 
-    <mat-menu class="filter-menu" #filter>
+    <mat-menu class="filter-menu" #filter="matMenu">
       @for (key of elementsOrder; track key) {
-        @if (searched()[key].length) {
+        @if (elements()[key]?.elements?.length) {
           <mat-checkbox
-            class="mat-menu-item"
-            [checked]="elements()[key].displayed"
-            (click)="toggleFilter($event, key)"
+            class="filter-menu-item"
+            [checked]="elements()[key]?.displayed"
+            [attr.data-cy]="'filterCheckbox-' + key"
+            (click)="$event.stopPropagation()"
+            (change)="toggleFilter($event.checked, key)"
             labelPosition="before"
-            >{{ elements()[key].plural }}
+          >
+            {{ elements()[key]?.plural }}
           </mat-checkbox>
         }
       }

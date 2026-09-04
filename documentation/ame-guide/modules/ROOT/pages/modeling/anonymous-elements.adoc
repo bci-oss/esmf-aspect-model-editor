@@ -39,7 +39,7 @@ To make an element anonymous:
 
 // PLACEHOLDER IMAGE: Edit dialog with Anonymous toggle enabled
 // Description: Screenshot showing the Edit dialog of a Characteristic or Constraint with the "Anonymous" toggle switched ON and the Name field disabled/hidden.
-image::anonymous-toggle-edit-dialog.png[Edit dialog showing Anonymous toggle enabled, width=60%, link=self]
+image::anonymous-toggle-edit-dialog.png[Edit dialog showing Anonymous toggle enabled, width=50%, link=self]
 
 == Representation on the Graph Canvas
 
@@ -50,7 +50,7 @@ On the graph canvas, anonymous elements are visually distinguished from named el
 
 // PLACEHOLDER IMAGE: Graph canvas with Anonymous elements
 // Description: Screenshot showing the editor graph canvas where a Property is connected to an anonymous Characteristic (displayed as "[Characteristic]" or "[Measurement]") and an anonymous Constraint.
-image::anonymous-elements-canvas.png[Anonymous elements represented on the graph canvas, width=70%, link=self]
+image::anonymous-elements-canvas.png[Anonymous elements represented on the graph canvas, width=50%, link=self]
 
 == Deleting Anonymous Elements
 

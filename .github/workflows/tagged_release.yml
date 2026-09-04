@@ -187,7 +187,7 @@ jobs:
       - name: Install node modules
         run: |
           pnpm install --include=optional
-          pnpm rebuild nx --update-binary
+          pnpm rebuild nx
         working-directory: core
 
       - name: Set app version (Unix)

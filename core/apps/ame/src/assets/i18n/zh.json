@@ -381,6 +381,8 @@
       "findElements": "寻找元素",
       "copyFilePath": "复制文件路径",
       "copiedFilePath": "文件路径已复制到剪贴板",
+      "copyGithubUrl": "复制 GitHub 链接",
+      "copiedGithubUrl": "GitHub 链接已复制到剪贴板",
       "delete": "删除",
       "deleteNamespace": "删除命名空间版本",
       "namespaceMenu": "打开命名空间 {{namespace}} 的菜单"
@@ -419,7 +421,8 @@
         "ok": "清空工作区",
         "success": "工作区已清空",
         "successMessage": "已删除 {{count}} 个文件。",
-        "successBackup": "已删除 {{count}} 个文件。已在工作区文件夹中创建备份。"
+        "successBackup": "已删除 {{count}} 个文件。已在工作区文件夹中创建备份。",
+        "workspace": "工作区"
       },
       "failed": "删除失败",
       "checkFailed": "无法检查引用。未删除任何内容。",
@@ -431,7 +434,8 @@
         "namespaceOpenElsewhere": "该命名空间版本的模型已在另一个窗口中打开。删除前，请先在该窗口中关闭它",
         "clearEmpty": "工作区为空",
         "clearOpenHere": "清空工作区前，请先关闭此窗口中所有工作区模型",
-        "clearOpenElsewhere": "另一个窗口中打开了工作区模型。清空工作区前，请先在该窗口中关闭它们"
+        "clearOpenElsewhere": "另一个窗口中打开了工作区模型。清空工作区前，请先在该窗口中关闭它们",
+        "readOnly": "来自 GitHub 源的模型为只读，无法删除"
       }
     }
   },
@@ -980,5 +984,118 @@
   },
   "dialog": {
     "close": "关闭 (Esc)"
+  },
+  "modelSources": {
+    "appliedImmediately": "此部分的更改会立即生效。",
+    "loadError": "无法加载模型源。",
+    "readOnlySave": "此模型属于只读源“{{source}}”，无法更改。GitHub 源中的模型只能查看。",
+    "workspaces": {
+      "title": "工作区",
+      "description": "包含 Aspect Model 的本地文件夹。默认工作区始终包含在内。",
+      "hint": "如果有多个工作区，保存新模型时可选择工作区。现有模型始终保存在其所在位置。",
+      "defaultName": "{{name}}（默认）",
+      "defaultLocked": "默认工作区无法移除",
+      "add": "添加工作区…",
+      "pickTitle": "选择工作区文件夹",
+      "remove": "移除工作区（文件保留在磁盘上）",
+      "error": "更改工作区失败",
+      "note": "文件夹必须遵循 SAMM 结构：namespace/version/model.ttl。",
+      "pendingAdd": "新增",
+      "pendingRemoval": "将被移除",
+      "undo": "保留工作区",
+      "discard": "放弃",
+      "duplicate": "文件夹 \"{{name}}\" 已是工作区",
+      "applyHint": "点击“应用”或“确定”以保存工作区更改。",
+      "applied": "工作区已更新",
+      "desktopOnly": "只能在桌面应用中添加工作区。"
+    },
+    "github": {
+      "title": "GitHub 源",
+      "description": "来自 GitHub 仓库的只读 Aspect Model，例如用于引用共享模型。",
+      "hint": "来自 GitHub 的模型为只读。您可以在侧边栏中查看并引用其元素，但不能打开或修改。只有点击“更新”时才会下载更新。",
+      "listTitle": "仓库",
+      "empty": "尚未添加仓库。",
+      "url": "仓库 URL",
+      "urlHint": "粘贴链接，例如 https://github.com/owner/repo/tree/main/models",
+      "urlInvalid": "这不是 GitHub 仓库 URL",
+      "refType": "分支或标签",
+      "branch": "分支",
+      "tag": "标签",
+      "directory": "仓库中的文件夹",
+      "directoryHint": "可选；包含命名空间的文件夹",
+      "add": "添加",
+      "added": "已添加并下载 GitHub 源“{{name}}”",
+      "addError": "添加 GitHub 源失败",
+      "check": "检查更新",
+      "checkError": "检查更新失败",
+      "sync": "重新下载",
+      "synced": "“{{name}}”已同步",
+      "syncError": "同步失败",
+      "updateError": "更改 GitHub 源失败",
+      "remove": "移除源及本地副本",
+      "removed": "已移除 GitHub 源“{{name}}”",
+      "removeError": "移除 GitHub 源失败",
+      "upToDate": "“{{name}}”已是最新",
+      "updateFound": "“{{name}}”有可用更新",
+      "syncedInfo": "版本 {{sha}}，{{date}}",
+      "updateNotificationTitle": "有可用更新",
+      "updateNotificationMessage": "“{{name}}”在 GitHub 上有更新版本。点击此处同步。",
+      "state": {
+        "notSynced": "未下载",
+        "upToDate": "最新",
+        "updateAvailable": "有可用更新",
+        "error": "错误",
+        "disabled": "已隐藏"
+      },
+      "advanced": "分支、标签和文件夹（分支：{{ref}}）",
+      "checkAll": "检查更新",
+      "updatesFound": "{{count}} 个仓库有可用更新",
+      "allUpToDate": "所有仓库均为最新",
+      "more": "更多操作",
+      "enable": "显示模型",
+      "disable": "隐藏模型",
+      "action": {
+        "download": "下载",
+        "update": "更新",
+        "retry": "重试"
+      },
+      "details": {
+        "branch": "分支 {{ref}}",
+        "tag": "标签 {{ref}}",
+        "folder": "文件夹 {{folder}}"
+      }
+    },
+    "token": {
+      "title": "访问令牌",
+      "hint": "仅在访问私有仓库或大量请求时需要。令牌保存在操作系统的钥匙串中。",
+      "label": "个人访问令牌",
+      "save": "保存令牌",
+      "delete": "删除令牌",
+      "stored": "已存储在钥匙串中",
+      "session": "仅限本次会话",
+      "none": "无令牌",
+      "saved": "{{host}} 的令牌已存储在钥匙串中",
+      "savedSession": "{{host}} 的令牌将使用到应用关闭（无可用钥匙串）",
+      "saveError": "存储令牌失败",
+      "deleted": "已删除 {{host}} 的令牌",
+      "deleteError": "删除令牌失败",
+      "webHint": "在浏览器版本中，请为后端设置环境变量 GITHUB_TOKEN 以访问私有仓库。",
+      "set": "设置令牌",
+      "replace": "替换令牌",
+      "cancel": "取消"
+    },
+    "targetDialog": {
+      "title": "保存新模型",
+      "content": "应将“{{file}}”保存到哪个工作区？",
+      "save": "保存",
+      "cancel": "取消"
+    },
+    "sidebar": {
+      "readOnlySource": "只读，来自 GitHub {{name}}",
+      "workspaceSource": "工作区 {{name}}",
+      "readOnlyBadge": "只读",
+      "readOnlyOpen": "来自 GitHub 的模型只能查看。点击文件以查看其元素。",
+      "emptySource": "此来源中没有模型"
+    }
   }
 }

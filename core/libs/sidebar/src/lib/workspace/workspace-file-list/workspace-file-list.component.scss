@@ -58,6 +58,61 @@
   overflow-x: hidden;
   padding-bottom: 1rem;
 
+  // Header of a workspace or GitHub source; only shown with more than one source.
+  .source {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    margin-top: 16px;
+    padding: 6px 12px 6px 4px;
+    background: var(--ame-surface-card, var(--ame-gray-5, #f5f5f6));
+    border: none;
+    border-top: 1px solid var(--ame-border-color, var(--ame-gray-10, #cfd0d1));
+    border-bottom: 1px solid var(--ame-border-color, var(--ame-gray-10, #cfd0d1));
+    font: inherit;
+    font-weight: 600;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &__name {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    &__badge {
+      flex-shrink: 0;
+      padding: 1px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 500;
+      background-color: var(--ame-gray-10, #e0e0e0);
+    }
+
+    &:focus-visible {
+      outline: 2px solid #007bc0;
+      outline-offset: -2px;
+    }
+  }
+
+  .source-content--indented {
+    padding-left: 8px;
+  }
+
+  .source-empty {
+    margin: 8px 16px 0 32px;
+    font-size: 12px;
+    opacity: 0.7;
+  }
+
+  .file.read-only-file .content span {
+    opacity: 0.8;
+  }
+
   .namespace-row {
     display: flex;
     align-items: center;
@@ -237,4 +292,12 @@
 // A disabled menu item does not receive pointer events, so its tooltip sits on a wrapper.
 .menu-item-wrapper {
   display: block;
+}
+
+.content .read-only {
+  margin-left: 4px;
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  opacity: 0.7;
 }

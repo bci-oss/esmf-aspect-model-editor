@@ -11,7 +11,15 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ConfirmDialogEnum, ConfirmDialogPort, ModelSessionFacade, ReferenceReport, TabsStore, WorkspaceFacade} from '@ame/domain';
+import {
+  ConfirmDialogEnum,
+  ConfirmDialogPort,
+  ModelSessionFacade,
+  ModelSourcesStore,
+  ReferenceReport,
+  TabsStore,
+  WorkspaceFacade,
+} from '@ame/domain';
 import {
   LanguageTranslationService,
   NotificationsService,
@@ -24,7 +32,12 @@ import {inject, Injectable, signal} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {catchError, finalize, map, Observable, of, switchMap} from 'rxjs';
 import {FileStatus, SidebarStateService} from '../../sidebar-state.service';
-import {ClearWorkspaceDialogComponent, ClearWorkspaceDialogData, ClearWorkspaceDialogResult} from './clear-workspace-dialog.component';
+import {
+  ClearWorkspaceDialogComponent,
+  ClearWorkspaceDialogData,
+  ClearWorkspaceDialogResult,
+  ClearWorkspaceOption,
+} from './clear-workspace-dialog.component';
 import {ReferencesDialogComponent, ReferencesDialogData} from './references-dialog.component';
 
 /** Splits a workspace namespace key `org.example:1.0.0` into namespace and version. */
@@ -36,7 +49,7 @@ export function splitNamespaceKey(namespaceKey: string): {namespace: string; ver
 }
 
 /** Why a file, a namespace version or the workspace cannot be deleted right now. */
-export type DeletionBlockReason = 'busy' | 'empty' | 'openHere' | 'openElsewhere';
+export type DeletionBlockReason = 'busy' | 'empty' | 'openHere' | 'openElsewhere' | 'readOnly';
 
 /**
  * Deletes files, namespace versions or the whole workspace.
@@ -56,6 +69,7 @@ export class WorkspaceDeletionService {
   private readonly translate = inject(LanguageTranslationService);
   private readonly tauriSignals = inject(TauriSignalsService);
   private readonly otherWindows = inject(OtherWindowsModelsService);
+  private readonly modelSources = inject(ModelSourcesStore);
 
   /** True while references are checked or something is deleted. */
   public readonly busy = signal(false);
@@ -80,12 +94,23 @@ export class WorkspaceDeletionService {
     return Object.keys(namespaces).some(namespaceKey => this.isNamespaceOpen(namespaceKey));
   }
 
-  public workspaceFileCount(): number {
-    return Object.values(this.sidebarService.namespacesState.namespaces()).reduce((count, files) => count + files.length, 0);
+  /** Number of files that can be deleted: files of read-only (GitHub) sources do not count. */
+  public workspaceFileCount(workspace?: string): number {
+    return Object.values(this.sidebarService.namespacesState.namespaces()).reduce(
+      (count, files) => count + files.filter(file => this.isWritable(file) && (!workspace || file.source?.path === workspace)).length,
+      0,
+    );
+  }
+
+  /** Files of GitHub sources can only be viewed. */
+  public isReadOnly(file: FileStatus | undefined): boolean {
+    return !!file?.source?.readOnly;
   }
 
   /** Why the file cannot be deleted right now, or null if it can. */
   public fileBlockReason(namespaceKey: string, fileName: string): DeletionBlockReason | null {
+    const file = this.sidebarService.namespacesState.namespaces()[namespaceKey]?.find(entry => entry.name === fileName);
+    if (this.isReadOnly(file)) return 'readOnly';
     if (this.busy()) return 'busy';
     if (this.isFileOpen(namespaceKey, fileName)) return 'openHere';
     if (this.otherWindows.isFileOpen(namespaceKey, fileName)) return 'openElsewhere';
@@ -94,6 +119,8 @@ export class WorkspaceDeletionService {
 
   /** Why the namespace version cannot be deleted right now, or null if it can. */
   public namespaceBlockReason(namespaceKey: string): DeletionBlockReason | null {
+    const files = this.sidebarService.namespacesState.namespaces()[namespaceKey] ?? [];
+    if (files.length && files.every(file => this.isReadOnly(file))) return 'readOnly';
     if (this.busy()) return 'busy';
     if (this.isNamespaceOpen(namespaceKey)) return 'openHere';
     if (this.otherWindows.isNamespaceOpen(namespaceKey)) return 'openElsewhere';
@@ -112,14 +139,15 @@ export class WorkspaceDeletionService {
   /** Tooltip explaining a block reason, empty if nothing blocks. */
   public blockReasonText(kind: 'file' | 'namespace' | 'clear', reason: DeletionBlockReason | null): string {
     if (!reason) return '';
-    const key = reason === 'busy' ? 'busy' : `${kind}${reason.charAt(0).toUpperCase()}${reason.slice(1)}`;
+    const key = reason === 'busy' || reason === 'readOnly' ? reason : `${kind}${reason.charAt(0).toUpperCase()}${reason.slice(1)}`;
     return this.t(`sidebar.deletion.reason.${key}`);
   }
 
   /** Checks the references of a file, asks for confirmation and deletes it. Emits whether it was deleted. */
   public deleteFile(namespaceKey: string, file: FileStatus): Observable<boolean> {
     const {namespace, version} = splitNamespaceKey(namespaceKey);
-    return this.check(this.workspaceApi.getReferences(namespace, version, file.name), 'file', file.name).pipe(
+    const workspace = this.workspaceOf([file]);
+    return this.check(this.workspaceApi.getReferences(namespace, version, file.name, workspace), 'file', file.name).pipe(
       switchMap(deletable =>
         !deletable
           ? of(ConfirmDialogEnum.cancel)
@@ -149,10 +177,11 @@ export class WorkspaceDeletionService {
   /** Checks the references of a namespace version, asks for confirmation and deletes it. Emits whether it was deleted. */
   public deleteNamespace(namespaceKey: string): Observable<boolean> {
     const {namespace, version} = splitNamespaceKey(namespaceKey);
-    const files = this.sidebarService.namespacesState.namespaces()[namespaceKey] ?? [];
+    const files = (this.sidebarService.namespacesState.namespaces()[namespaceKey] ?? []).filter(file => this.isWritable(file));
+    const workspace = this.workspaceOf(files);
     const t = this.t.bind(this);
 
-    return this.check(this.workspaceApi.getReferences(namespace, version), 'namespace', namespaceKey).pipe(
+    return this.check(this.workspaceApi.getReferences(namespace, version, undefined, workspace), 'namespace', namespaceKey).pipe(
       switchMap(deletable =>
         !deletable
           ? of(ConfirmDialogEnum.cancel)
@@ -170,7 +199,7 @@ export class WorkspaceDeletionService {
       switchMap(confirm =>
         confirm !== ConfirmDialogEnum.ok
           ? of(false)
-          : this.run(this.workspaceApi.deleteNamespace(namespace, version), 'namespace', namespaceKey).pipe(
+          : this.run(this.workspaceApi.deleteNamespace(namespace, version, workspace), 'namespace', namespaceKey).pipe(
               map(deleted => {
                 if (deleted) {
                   this.notifications.success({title: t('sidebar.deletion.namespace.success', {name: namespaceKey})});
@@ -186,10 +215,18 @@ export class WorkspaceDeletionService {
   /** Asks for a typed confirmation and deletes all Aspect Models of the workspace. Emits whether it was cleared. */
   public clearWorkspace(): Observable<boolean> {
     const t = this.t.bind(this);
+    const workspaces: ClearWorkspaceOption[] = this.modelSources.hasMultipleWorkspaces()
+      ? this.modelSources.workspaces().map(source => ({
+          path: source.path,
+          name: source.name,
+          defaultWorkspace: source.defaultWorkspace,
+          fileCount: this.workspaceFileCount(source.path),
+        }))
+      : [];
 
     return this.matDialog
       .open<ClearWorkspaceDialogComponent, ClearWorkspaceDialogData, ClearWorkspaceDialogResult>(ClearWorkspaceDialogComponent, {
-        data: {fileCount: this.workspaceFileCount()},
+        data: {fileCount: this.workspaceFileCount(), workspaces, selected: this.modelSources.defaultWorkspace()},
         width: viewportSafeWidth(560),
       })
       .afterClosed()
@@ -197,7 +234,7 @@ export class WorkspaceDeletionService {
         switchMap(result => {
           if (!result) return of(false);
           this.busy.set(true);
-          return this.workspaceApi.clearWorkspace(result.backup).pipe(
+          return this.workspaceApi.clearWorkspace(result.backup, result.workspace).pipe(
             map(cleared => {
               this.notifications.success({
                 title: t('sidebar.deletion.clear.success'),
@@ -205,7 +242,7 @@ export class WorkspaceDeletionService {
                   ? t('sidebar.deletion.clear.successBackup', {count: cleared.deletedFiles})
                   : t('sidebar.deletion.clear.successMessage', {count: cleared.deletedFiles}),
               });
-              this.forgetDeletedFiles(this.sidebarService.namespacesState.namespaces(), true);
+              this.forgetDeletedFiles(this.filesOfWorkspace(result.workspace), true);
               return true;
             }),
             catchError(error => {
@@ -216,6 +253,31 @@ export class WorkspaceDeletionService {
           );
         }),
       );
+  }
+
+  private isWritable(file: FileStatus): boolean {
+    return !this.isReadOnly(file);
+  }
+
+  /**
+   * The workspace containing all given files, sent along so the backend knows which copy is meant if several
+   * workspaces contain the namespace. Undefined if the files are spread over several workspaces or the source is unknown.
+   */
+  private workspaceOf(files: FileStatus[]): string | undefined {
+    const paths = new Set(files.map(file => (file.source?.type === 'workspace' ? file.source.path : undefined)));
+    return paths.size === 1 ? [...paths][0] : undefined;
+  }
+
+  /** The writable files that are deleted when the workspace (or all writable workspaces) is cleared. */
+  private filesOfWorkspace(workspace?: string): Record<string, FileStatus[]> {
+    return Object.fromEntries(
+      Object.entries(this.sidebarService.namespacesState.namespaces())
+        .map(([namespaceKey, files]) => [
+          namespaceKey,
+          files.filter(file => this.isWritable(file) && (!workspace || file.source?.path === workspace)),
+        ])
+        .filter(([, files]) => files.length),
+    );
   }
 
   /** Emits whether it may be deleted; shows why not otherwise. Never emits true if the check failed. */

@@ -14,7 +14,7 @@
 import {InjectionToken} from '@angular/core';
 import {TAURI_EVENTS} from './enums';
 import {OpenModelsSnapshot, OpenWindowModels} from './model/startup-options';
-import {BackendStatus, TauriApi, TauriContextMenuPayload} from './model/tauri-api.model';
+import {BackendStatus, GithubTokenInfo, TauriApi, TauriContextMenuPayload} from './model/tauri-api.model';
 
 declare global {
   interface Window {
@@ -209,6 +209,32 @@ function createTauriBridge(): TauriApi {
       ]);
       const windows = await invoke<OpenWindowModels[]>('get_open_models');
       return {windowLabel: getCurrentWebviewWindow().label, windows};
+    },
+
+    async pickDirectory(title?: string): Promise<string | null> {
+      const {open} = await import('@tauri-apps/plugin-dialog');
+      const selected = await open({directory: true, multiple: false, title});
+      return typeof selected === 'string' ? selected : null;
+    },
+
+    async githubTokenSet(host: string, token: string): Promise<GithubTokenInfo> {
+      const {invoke} = await import('@tauri-apps/api/core');
+      return await invoke<GithubTokenInfo>('github_token_set', {host, token});
+    },
+
+    async githubTokenDelete(host: string): Promise<void> {
+      const {invoke} = await import('@tauri-apps/api/core');
+      await invoke('github_token_delete', {host});
+    },
+
+    async githubTokenInfo(host: string): Promise<GithubTokenInfo> {
+      const {invoke} = await import('@tauri-apps/api/core');
+      return await invoke<GithubTokenInfo>('github_token_info', {host});
+    },
+
+    async githubSourceAction<T = unknown>(id: string, host: string, action: 'check' | 'sync'): Promise<T> {
+      const {invoke} = await import('@tauri-apps/api/core');
+      return await invoke<T>('github_source_action', {id, host, action});
     },
 
     showContextMenu(payload: TauriContextMenuPayload): void {

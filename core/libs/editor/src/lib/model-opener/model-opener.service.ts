@@ -11,8 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelOpenerPort, OpenModelOptions, PromptUploadOptions} from '@ame/domain';
-import {TauriSignals, TauriSignalsService} from '@ame/shared';
+import {ModelOpenerPort, OpenModelOptions, PromptUploadOptions, WorkspaceNamespacesService} from '@ame/domain';
+import {LanguageTranslationService, NotificationsService, TauriSignals, TauriSignalsService} from '@ame/shared';
 import {inject, Injectable, Injector} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {filter, first, map, Observable, of, switchMap} from 'rxjs';
@@ -54,6 +54,7 @@ export class ModelOpenerService implements ModelOpenerPort {
    * If the active tab is clean empty (new-model with no aspect/shapes), opens in current tab directly.
    */
   public promptAndOpen(options: OpenModelOptions): Observable<boolean> {
+    if (this.rejectReadOnly(options)) return of(false);
     const existingTab = this.tabStateService.findTab(options.namespace, options.file);
     if (existingTab) {
       return this.tabStateService.switchToTab(existingTab.id, options.editElementUrn || options.aspectModelUrn);
@@ -127,6 +128,7 @@ export class ModelOpenerService implements ModelOpenerPort {
    * If the model is already open in another tab, that tab is shown instead of opening it twice.
    */
   public openInCurrentWindow(options: OpenModelOptions): Observable<boolean> {
+    if (this.rejectReadOnly(options)) return of(false);
     const existingTab = this.tabStateService.findTab(options.namespace, options.file);
     if (existingTab) {
       return this.tabStateService.switchToTab(existingTab.id, options.editElementUrn || options.aspectModelUrn);
@@ -150,6 +152,7 @@ export class ModelOpenerService implements ModelOpenerPort {
    * Opens the model in a new tab within the current window.
    */
   public openInNewTab(options: OpenModelOptions): Observable<boolean> {
+    if (this.rejectReadOnly(options)) return of(false);
     this.tabStateService.saveActiveTabSnapshot();
     this.fileHandlingService.loadNamespaceFile(`${options.namespace}:${options.file}`, options.aspectModelUrn || options.editElementUrn);
     return of(true);
@@ -159,6 +162,7 @@ export class ModelOpenerService implements ModelOpenerPort {
    * Opens the model in a new Tauri window.
    */
   public openInNewWindow(options: OpenModelOptions): void {
+    if (this.rejectReadOnly(options)) return;
     this.tauriSignalsService.call('openWindow', {
       namespace: options.namespace,
       file: options.file,
@@ -166,6 +170,22 @@ export class ModelOpenerService implements ModelOpenerPort {
       aspectModelUrn: options.aspectModelUrn || options.editElementUrn,
       editElement: options.editElementUrn,
     });
+  }
+
+  /**
+   * Models of GitHub sources are only shown in the element list of the sidebar; they are never opened in the editor.
+   * Every way to open a model (sidebar, search, referenced elements) goes through this service, so this is the one gate.
+   */
+  private rejectReadOnly(options: OpenModelOptions): boolean {
+    const file = this.injector.get(WorkspaceNamespacesService, null)?.getFile(options.namespace, options.file);
+    if (!file?.source?.readOnly) return false;
+
+    const translate = this.injector.get(LanguageTranslationService, null)?.translateService;
+    this.injector.get(NotificationsService, null)?.info({
+      title: translate?.translate('modelSources.sidebar.readOnlyOpen') || 'Models from GitHub can only be viewed.',
+      timeout: 5000,
+    });
+    return true;
   }
 
   /**

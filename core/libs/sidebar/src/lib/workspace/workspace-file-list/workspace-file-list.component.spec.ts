@@ -11,7 +11,16 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ConfirmDialogEnum, ConfirmDialogPort, ModelOpenerPort, ModelSessionFacade, TabsStore, WorkspaceFacade} from '@ame/domain';
+import {
+  ConfirmDialogEnum,
+  ConfirmDialogPort,
+  ModelOpenerPort,
+  ModelSessionFacade,
+  ModelSource,
+  ModelSourcesStore,
+  TabsStore,
+  WorkspaceFacade,
+} from '@ame/domain';
 import {
   ClipboardService,
   LanguageTranslationService,
@@ -23,7 +32,7 @@ import {provideZonelessChangeDetection} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {TranslocoTestingModule} from '@jsverse/transloco';
-import {of} from 'rxjs';
+import {of, throwError} from 'rxjs';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {FileStatus, SidebarStateService} from '../../sidebar-state.service';
 import {WorkspaceFileListComponent} from './workspace-file-list.component';
@@ -57,7 +66,9 @@ describe('WorkspaceFileListComponent', () => {
     confirmDialogMock = {open: vi.fn(() => of(ConfirmDialogEnum.ok))};
     modelApiMock = {
       deleteAspectModel: vi.fn(() => of(undefined)),
-      getStoragePath: vi.fn(() => of({storagePath: '/workspace'})),
+      getStoragePath: vi.fn((file?: {namespace: string; version: string; fileName: string; workspace?: string}) =>
+        of({storagePath: file ? `${file.workspace ?? '/workspace'}/${file.namespace}/${file.version}/${file.fileName}` : '/workspace'}),
+      ),
       getReferences: vi.fn(() => of({deletable: true, references: [], unreadableFiles: []})),
       deleteNamespace: vi.fn(() => of({deletable: true, references: [], unreadableFiles: []})),
     };
@@ -308,7 +319,7 @@ describe('WorkspaceFileListComponent', () => {
 
     component.deleteFile();
 
-    expect(modelApiMock.getReferences).toHaveBeenCalledWith('org.eclipse.esmf', '1.0.0', 'File1.ttl');
+    expect(modelApiMock.getReferences).toHaveBeenCalledWith('org.eclipse.esmf', '1.0.0', 'File1.ttl', undefined);
     expect(modelApiMock.getReferences.mock.invocationCallOrder[0]).toBeLessThan(confirmDialogMock.open.mock.invocationCallOrder[0]);
   });
 
@@ -368,9 +379,9 @@ describe('WorkspaceFileListComponent', () => {
       expect(component.isNamespaceDeleteDisabled()).toBe(false);
       component.deleteNamespace();
 
-      expect(modelApiMock.getReferences).toHaveBeenCalledWith('org.eclipse.esmf', '1.0.0');
+      expect(modelApiMock.getReferences).toHaveBeenCalledWith('org.eclipse.esmf', '1.0.0', undefined, undefined);
       expect(confirmDialogMock.open).toHaveBeenCalled();
-      expect(modelApiMock.deleteNamespace).toHaveBeenCalledWith('org.eclipse.esmf', '1.0.0');
+      expect(modelApiMock.deleteNamespace).toHaveBeenCalledWith('org.eclipse.esmf', '1.0.0', undefined);
       expect(tauriSignalsMock.call).toHaveBeenCalledWith('requestRefreshWorkspaces');
     });
 
@@ -441,6 +452,37 @@ describe('WorkspaceFileListComponent', () => {
     component.copyFilePath();
 
     expect(copy).toHaveBeenCalledWith('/workspace/org.eclipse.esmf/1.0.0/File1.ttl');
+  });
+
+  it('should copy the path of the file in the source that contains it', () => {
+    const clipboard = TestBed.inject(ClipboardService);
+    const copy = vi.spyOn(clipboard, 'copy').mockImplementation(() => undefined);
+
+    const file = sidebarService.namespacesState.getFile('org.eclipse.esmf:1.0.0', 'File1.ttl') as FileStatus;
+    file.source = {type: 'github', id: 'gh', name: 'GitHub', path: '/home/ame/github/gh', readOnly: true, defaultWorkspace: false};
+    component.prepare('org.eclipse.esmf:1.0.0', file);
+    component.copyFilePath();
+
+    expect(modelApiMock.getStoragePath).toHaveBeenCalledWith({
+      namespace: 'org.eclipse.esmf',
+      version: '1.0.0',
+      fileName: 'File1.ttl',
+      workspace: '/home/ame/github/gh',
+    });
+    expect(copy).toHaveBeenCalledWith('/home/ame/github/gh/org.eclipse.esmf/1.0.0/File1.ttl');
+  });
+
+  it('should build the path from the source root if the backend cannot locate the file', () => {
+    const clipboard = TestBed.inject(ClipboardService);
+    const copy = vi.spyOn(clipboard, 'copy').mockImplementation(() => undefined);
+    modelApiMock.getStoragePath.mockReturnValueOnce(throwError(() => new Error('not found')));
+
+    const file = sidebarService.namespacesState.getFile('org.eclipse.esmf:1.0.0', 'File1.ttl') as FileStatus;
+    file.source = {type: 'workspace', id: '/data/second', name: 'Second', path: '/data/second', readOnly: false, defaultWorkspace: false};
+    component.prepare('org.eclipse.esmf:1.0.0', file);
+    component.copyFilePath();
+
+    expect(copy).toHaveBeenCalledWith('/data/second/org.eclipse.esmf/1.0.0/File1.ttl');
   });
 
   it('should identify current file correctly', () => {
@@ -593,6 +635,80 @@ describe('WorkspaceFileListComponent', () => {
 
       expect(row('File1.ttl').classList).not.toContain('selected--linked');
       expect(row('File1.ttl').classList).not.toContain('selected');
+    });
+  });
+  describe('source groups', () => {
+    const defaultWs: ModelSource = {
+      type: 'workspace',
+      id: '/default',
+      name: 'models',
+      path: '/default',
+      readOnly: false,
+      defaultWorkspace: true,
+    };
+    const otherWs: ModelSource = {type: 'workspace', id: '/other', name: 'other', path: '/other', readOnly: false, defaultWorkspace: false};
+    const github: ModelSource = {
+      type: 'github',
+      id: 'gh1',
+      name: 'owner/repo@main',
+      path: '/cache/gh1',
+      readOnly: true,
+      defaultWorkspace: false,
+    };
+    let ghFile: FileStatus;
+
+    beforeEach(() => {
+      TestBed.inject(ModelSourcesStore).sources.set([github, otherWs, defaultWs]);
+      const other = new FileStatus('Other.ttl');
+      other.source = otherWs;
+      sidebarService.namespacesState.setFile('com.other:1.0.0', other);
+      ghFile = new FileStatus('Remote.ttl');
+      ghFile.source = github;
+      sidebarService.namespacesState.setFile('com.remote:1.0.0', ghFile);
+      fixture.detectChanges();
+    });
+
+    it('should order default workspace, other workspaces and GitHub sources', () => {
+      const groups = component.groups();
+      expect(groups.map(group => group.key)).toEqual(['/default', '/other', 'gh1']);
+      expect(groups[0].namespaces.map(ns => ns.key)).toEqual(['org.eclipse.esmf:1.0.0']);
+      expect(groups[2].readOnly).toBe(true);
+      expect(component.showSourceHeaders()).toBe(true);
+    });
+
+    it('should render source headers with a read-only badge for GitHub sources', () => {
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.querySelector('[data-testid="workspace-source-github"]')).toBeTruthy();
+      expect(el.querySelectorAll('[data-testid="workspace-source-read-only"]')).toHaveLength(1);
+    });
+
+    it('should only show the element list for read-only models', () => {
+      const select = vi.spyOn(component, 'selectFile').mockImplementation(() => undefined);
+      component.promptOpenFile('com.remote:1.0.0', ghFile);
+      expect(select).toHaveBeenCalledWith('com.remote:1.0.0', ghFile);
+      expect(modelOpenerMock.promptAndOpen).not.toHaveBeenCalled();
+      expect(component.isReadOnly(ghFile)).toBe(true);
+    });
+
+    it('should copy the GitHub link for files of GitHub sources', () => {
+      TestBed.inject(ModelSourcesStore).config.set({
+        version: 1,
+        workspaces: ['/default'],
+        githubSources: [{id: 'gh1', host: 'github.com', owner: 'owner', repository: 'repo', ref: 'feature/x', directory: 'models'}],
+      });
+      ghFile.source = {...github, path: '/cache/gh1'};
+      modelApiMock.getStoragePath.mockReturnValue(of({storagePath: '/cache/gh1/com.remote/1.0.0/Remote.ttl'}));
+      const copy = vi.spyOn(TestBed.inject(ClipboardService), 'copy').mockImplementation(() => undefined);
+
+      component.prepare('com.remote:1.0.0', ghFile);
+      component.copyFilePath();
+
+      expect(copy).toHaveBeenCalledWith('https://github.com/owner/repo/blob/feature/x/models/com.remote/1.0.0/Remote.ttl');
+    });
+
+    it('should hide source headers with a single source', () => {
+      TestBed.inject(ModelSourcesStore).sources.set([defaultWs]);
+      expect(component.showSourceHeaders()).toBe(false);
     });
   });
 });

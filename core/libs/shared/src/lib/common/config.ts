@@ -30,6 +30,8 @@ export const config: AppConfig = {
     models: '/ame/api/models',
     generate: '/ame/api/generate',
     package: '/ame/api/package',
+    workspaces: '/ame/api/workspaces',
+    githubSources: '/ame/api/sources/github',
   },
 };
 

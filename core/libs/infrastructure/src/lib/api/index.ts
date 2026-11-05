@@ -14,5 +14,6 @@
 export * from './backend-auth.interceptor';
 export * from './migrator-api.service';
 export * from './model-api.service';
+export * from './model-sources-api.service';
 export * from './model-validator.service';
 export * from './workspace-api.facade';

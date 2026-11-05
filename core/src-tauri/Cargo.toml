@@ -32,6 +32,8 @@ tokio = { version = "1", features = ["full"] }
 dirs = "5"
 # Random token that authenticates the UI against the backend sidecar.
 getrandom = "0.3"
+# Stores GitHub access tokens in the credential store of the operating system.
+keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service", "crypto-rust"] }
 
 [dev-dependencies]
 tauri = { version = "2.11.3", features = ["test", "tray-icon"] }

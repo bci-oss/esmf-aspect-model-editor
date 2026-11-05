@@ -11,10 +11,9 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelOpenerPort, WorkspaceFacade, WorkspaceStore} from '@ame/domain';
+import {ModelOpenerPort, ModelSource, ModelSourcesStore, WorkspaceFacade, WorkspaceStore} from '@ame/domain';
 import {ClipboardService, LanguageTranslationService, NotificationsService} from '@ame/shared';
-import {KeyValuePipe} from '@angular/common';
-import {Component, DestroyRef, effect, inject, signal} from '@angular/core';
+import {Component, computed, DestroyRef, effect, inject, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatMiniFabButton} from '@angular/material/button';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -26,6 +25,15 @@ import {TranslocoDirective} from '@jsverse/transloco';
 import {FileStatus, SidebarStateService} from '../../sidebar-state.service';
 import {WorkspaceDeletionService} from '../workspace-deletion/workspace-deletion.service';
 import {WorkspaceMigrateComponent} from '../workspace-migrate/workspace-migrate.component';
+
+/** The files of one source (workspace or GitHub repository), grouped by namespace. */
+export interface SourceGroup {
+  /** Stable key; `''` for files without a known source (e.g. an older backend). */
+  key: string;
+  source?: ModelSource;
+  readOnly: boolean;
+  namespaces: {key: string; files: FileStatus[]}[];
+}
 
 @Component({
   selector: 'ame-workspace-file-list',
@@ -42,7 +50,6 @@ import {WorkspaceMigrateComponent} from '../workspace-migrate/workspace-migrate.
     MatMenuItem,
     WorkspaceMigrateComponent,
     TranslocoDirective,
-    KeyValuePipe,
   ],
 })
 export class WorkspaceFileListComponent {
@@ -56,6 +63,7 @@ export class WorkspaceFileListComponent {
   public readonly sidebarService = inject(SidebarStateService);
   public readonly workspaceStore = inject(WorkspaceStore);
   public readonly deletion = inject(WorkspaceDeletionService);
+  private readonly modelSources = inject(ModelSourcesStore);
 
   public readonly menuSelection = signal<{namespace: string; file: FileStatus} | null>(null);
   public readonly namespaceMenuSelection = signal<string | null>(null);
@@ -63,6 +71,36 @@ export class WorkspaceFileListComponent {
   public readonly searched = signal<Record<string, FileStatus[]>>({});
   public readonly folded = signal<Record<string, boolean>>({});
   public readonly searchString = signal('');
+  public readonly collapsedSources = signal<ReadonlySet<string>>(new Set());
+
+  /**
+   * Workspaces first (default workspace on top), then GitHub sources, each with its namespaces in alphabetical order.
+   * With a single source the headers are hidden and the list looks like before.
+   */
+  public readonly groups = computed<SourceGroup[]>(() => {
+    const sources = this.modelSources.sources();
+    const order = [...sources].sort((a, b) => rank(a) - rank(b));
+    const groups = new Map<string, SourceGroup>(
+      order.map(source => [source.id, {key: source.id, source, readOnly: source.readOnly, namespaces: []}]),
+    );
+    const fallbackKey = order.find(source => source.defaultWorkspace)?.id ?? '';
+
+    for (const [namespace, files] of Object.entries(this.searched()).sort(([a], [b]) => a.localeCompare(b))) {
+      const bySource = new Map<string, FileStatus[]>();
+      for (const file of files) {
+        const key = file.source?.id && groups.has(file.source.id) ? file.source.id : fallbackKey;
+        bySource.set(key, [...(bySource.get(key) ?? []), file]);
+      }
+      for (const [key, sourceFiles] of bySource) {
+        if (!groups.has(key)) groups.set(key, {key, readOnly: false, namespaces: []});
+        groups.get(key)?.namespaces.push({key: namespace, files: sourceFiles});
+      }
+    }
+
+    return [...groups.values()].filter(group => group.namespaces.length || (!this.searchString() && group.source));
+  });
+
+  public readonly showSourceHeaders = computed(() => this.modelSources.sources().length > 1);
 
   public get namespaces() {
     return this.sidebarService.namespacesState.namespaces();
@@ -165,7 +203,14 @@ export class WorkspaceFileListComponent {
     if (!selection) return false;
 
     const {file} = selection;
-    return !(file.outdated || file.errored);
+    return !(file.outdated || file.errored || this.isReadOnly(file));
+  }
+
+  /** Explains why "Open" is disabled for files of GitHub sources. */
+  public openTooltip(): string {
+    return this.isReadOnly(this.menuSelection()?.file)
+      ? this.translate.translateService.translate('modelSources.sidebar.readOnlyOpen')
+      : '';
   }
 
   public openContextMenu($event: MouseEvent, namespace: string, file: FileStatus, trigger: MatMenuTrigger) {
@@ -177,7 +222,7 @@ export class WorkspaceFileListComponent {
 
   public loadInNewTab() {
     const selection = this.menuSelection();
-    if (!selection || selection.file.outdated || selection.file.errored) return;
+    if (!selection || !this.isOpenable()) return;
 
     this.modelOpener
       ?.openInNewTab({
@@ -192,7 +237,7 @@ export class WorkspaceFileListComponent {
 
   public loadInNewWindow() {
     const selection = this.menuSelection();
-    if (!selection || selection.file.outdated || selection.file.errored) return;
+    if (!selection || !this.isOpenable()) return;
 
     this.modelOpener?.openInNewWindow({
       namespace: selection.namespace,
@@ -249,6 +294,10 @@ export class WorkspaceFileListComponent {
   }
 
   public promptOpenFile(namespace: string, file: FileStatus) {
+    if (this.isReadOnly(file)) {
+      this.selectFile(namespace, file);
+      return;
+    }
     if (file.outdated || file.errored || this.isCurrentFile(namespace, file.name)) {
       return;
     }
@@ -264,7 +313,7 @@ export class WorkspaceFileListComponent {
 
   public openFile() {
     const selection = this.menuSelection();
-    if (!selection || selection.file.outdated || selection.file.errored) return;
+    if (!selection || !this.isOpenable()) return;
 
     this.modelOpener
       ?.openInCurrentWindow({
@@ -292,41 +341,72 @@ export class WorkspaceFileListComponent {
     const selection = this.menuSelection();
     if (!selection) return;
 
+    const {namespace, file} = selection;
+    const separator = namespace.lastIndexOf(':');
+    const sourceRoot = file.source?.path || '';
+    if (separator < 0) {
+      this.copyLocation(file, this.buildOsFilePath(sourceRoot, namespace, file.name));
+      return;
+    }
+
     this.modelApiService
-      .getStoragePath()
+      .getStoragePath({
+        namespace: namespace.substring(0, separator),
+        version: namespace.substring(separator + 1),
+        fileName: file.name,
+        workspace: file.source?.path,
+      })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: response => {
-          const rootPath = response?.storagePath || response?.path || '';
-          const osFilePath = this.buildOsFilePath(rootPath, selection.namespace, selection.file.name);
-          this.copyToClipboard(osFilePath);
-        },
-        error: () => {
-          const fallback = `${selection.namespace.replace(':', '/')}/${selection.file.name}`;
-          this.copyToClipboard(fallback);
-        },
+        next: response => this.copyLocation(file, response?.storagePath || this.buildOsFilePath(sourceRoot, namespace, file.name)),
+        error: () => this.copyLocation(file, this.buildOsFilePath(sourceRoot, namespace, file.name)),
       });
+  }
+
+  /** Files of GitHub sources are copied as link to the file in the repository, all others as local path. */
+  private copyLocation(file: FileStatus, localPath: string) {
+    const url = this.githubFileUrl(file, localPath);
+    this.copyToClipboard(url ?? localPath, url ? 'sidebar.fileMenu.copiedGithubUrl' : 'sidebar.fileMenu.copiedFilePath');
+  }
+
+  private githubFileUrl(file: FileStatus, localPath: string): string | null {
+    const source = file.source;
+    if (source?.type !== 'github') return null;
+    const config = this.modelSources.config()?.githubSources.find(github => github.id === source.id);
+    if (!config) return null;
+
+    const root = source.path.replace(/\\/g, '/').replace(/\/+$/, '');
+    const path = localPath.replace(/\\/g, '/');
+    if (!root || !path.startsWith(`${root}/`)) return null;
+
+    const segments = [...(config.directory ?? '').split('/'), ...path.substring(root.length + 1).split('/')].filter(
+      segment => segment.length,
+    );
+    const encode = (value: string) => value.split('/').map(encodeURIComponent).join('/');
+    return `https://${config.host || 'github.com'}/${encode(config.owner)}/${encode(config.repository)}/blob/${encode(config.ref)}/${segments.map(encodeURIComponent).join('/')}`;
   }
 
   private buildOsFilePath(storagePath: string, namespaceKey: string, fileName: string): string {
     if (!storagePath) {
-      return `${namespaceKey.replace(':', '/')}/${fileName}`;
+      return `${namespaceKey.replace(/:([^:]*)$/, '/$1')}/${fileName}`;
     }
 
     const isWindows = storagePath.includes('\\');
     const sep = isWindows ? '\\' : '/';
     const cleanStoragePath = storagePath.replace(/[/\\]+$/, '');
 
-    const [namespace, version] = namespaceKey.split(':');
+    const separator = namespaceKey.lastIndexOf(':');
+    const [namespace, version] =
+      separator < 0 ? [namespaceKey, ''] : [namespaceKey.substring(0, separator), namespaceKey.substring(separator + 1)];
     const segments = version ? [namespace, version, fileName] : [namespace, fileName];
 
     return `${cleanStoragePath}${sep}${segments.join(sep)}`;
   }
 
-  private copyToClipboard(text: string) {
+  private copyToClipboard(text: string, titleKey = 'sidebar.fileMenu.copiedFilePath') {
     this.clipboard.copy(text);
 
-    const title = this.translate.translateService.translate('sidebar.fileMenu.copiedFilePath') || 'File path copied to clipboard';
+    const title = this.translate.translateService.translate(titleKey) || 'Copied to clipboard';
     this.notificationService.success({title, message: text});
   }
 
@@ -338,6 +418,23 @@ export class WorkspaceFileListComponent {
     return namespaces.sort((n1, n2) => (n1.key >= n2.key ? 1 : -1));
   }
 
+  public toggleSource(key: string) {
+    this.collapsedSources.update(keys => {
+      const next = new Set(keys);
+      if (!next.delete(key)) next.add(key);
+      return next;
+    });
+  }
+
+  public isSourceCollapsed(key: string): boolean {
+    return this.showSourceHeaders() && this.collapsedSources().has(key) && !this.searchString();
+  }
+
+  /** Files of GitHub sources are only shown in the element list; they cannot be opened in the editor. */
+  public isReadOnly(file: FileStatus | undefined): boolean {
+    return !!file?.source?.readOnly;
+  }
+
   public toggleNamespaceFold(namespaceKey: string) {
     const currentFolded = this.folded();
     this.folded.set({
@@ -347,6 +444,21 @@ export class WorkspaceFileListComponent {
   }
 
   public getFileTooltip(namespaceKey: string, file: FileStatus): string {
+    const tooltip = this.getStateTooltip(namespaceKey, file);
+    return file.source && (file.source.readOnly || this.modelSources.sources().length > 1)
+      ? `${tooltip} · ${this.sourceTooltip(file)}`
+      : tooltip;
+  }
+
+  /** Where the file comes from; files of GitHub sources are read-only. */
+  public sourceTooltip(file: FileStatus): string {
+    const source = file.source;
+    if (!source) return '';
+    const key = source.readOnly ? 'modelSources.sidebar.readOnlySource' : 'modelSources.sidebar.workspaceSource';
+    return this.translate.translateService.translate(key, {name: source.name});
+  }
+
+  private getStateTooltip(namespaceKey: string, file: FileStatus): string {
     if (this.isCurrentFile(namespaceKey, file.name)) {
       const tooltip = this.translate.language.tooltips?.currentFile || 'Currently opened file';
       return `${file.name} (${tooltip})`;
@@ -373,4 +485,9 @@ export class WorkspaceFileListComponent {
   hasMissingReferences(file: FileStatus): boolean {
     return !file.errored && !!file.missingDependencies?.length;
   }
+}
+
+function rank(source: ModelSource): number {
+  if (source.defaultWorkspace) return 0;
+  return source.type === 'workspace' ? 1 : 2;
 }

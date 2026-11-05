@@ -1,0 +1,252 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t">
+  <div class="sources">
+    @if (loadError()) {
+      <div class="sources__error" role="alert" data-testid="github-load-error">
+        <mat-icon>error</mat-icon><span>{{ loadError() }}</span>
+      </div>
+    }
+
+    <div class="sources__info" role="note">
+      <mat-icon>visibility</mat-icon>
+      <span>{{ t('modelSources.github.hint') }}</span>
+    </div>
+
+    <!-- 1. Add a repository: one field, the details are optional -->
+    <section class="sources__card" data-testid="github-add-card">
+      <div class="sources__add">
+        <mat-form-field class="sources__grow" appearance="outline" subscriptSizing="dynamic">
+          <mat-label>{{ t('modelSources.github.url') }}</mat-label>
+          <input
+            #urlInput
+            [value]="url()"
+            [disabled]="adding()"
+            (input)="onUrlInput(urlInput.value)"
+            (keydown.enter)="add()"
+            placeholder="https://github.com/eclipse-esmf/esmf-sdk/tree/main/models"
+            matInput
+            data-testid="github-url"
+          />
+          @if (urlInvalid()) {
+            <mat-hint class="sources__invalid">{{ t('modelSources.github.urlInvalid') }}</mat-hint>
+          } @else {
+            <mat-hint>{{ t('modelSources.github.urlHint') }}</mat-hint>
+          }
+        </mat-form-field>
+        <button [disabled]="!canAdd()" (click)="add()" mat-flat-button color="primary" type="button" data-testid="github-add">
+          @if (adding()) {
+            <mat-progress-spinner diameter="18" mode="indeterminate" />
+          } @else {
+            <mat-icon>add</mat-icon>
+          }
+          {{ t('modelSources.github.add') }}
+        </button>
+      </div>
+
+      <button
+        class="sources__toggle"
+        [attr.aria-expanded]="showAdvanced()"
+        (click)="showAdvanced.set(!showAdvanced())"
+        mat-button
+        type="button"
+        data-testid="github-advanced-toggle"
+      >
+        <mat-icon>{{ showAdvanced() ? 'expand_less' : 'expand_more' }}</mat-icon>
+        {{ t('modelSources.github.advanced', {ref: ref() || '–'}) }}
+      </button>
+
+      @if (showAdvanced()) {
+        <div class="sources__advanced" data-testid="github-advanced">
+          <mat-button-toggle-group
+            [value]="refType()"
+            [disabled]="adding()"
+            [attr.aria-label]="t('modelSources.github.refType')"
+            (change)="refType.set($event.value)"
+            hideSingleSelectionIndicator
+          >
+            <mat-button-toggle value="branch">{{ t('modelSources.github.branch') }}</mat-button-toggle>
+            <mat-button-toggle value="tag">{{ t('modelSources.github.tag') }}</mat-button-toggle>
+          </mat-button-toggle-group>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>{{ refType() === 'tag' ? t('modelSources.github.tag') : t('modelSources.github.branch') }}</mat-label>
+            <input #refInput [value]="ref()" [disabled]="adding()" (input)="ref.set(refInput.value)" matInput data-testid="github-ref" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>{{ t('modelSources.github.directory') }}</mat-label>
+            <input
+              #directoryInput
+              [value]="directory()"
+              [disabled]="adding()"
+              (input)="directory.set(directoryInput.value)"
+              placeholder="models"
+              matInput
+              data-testid="github-directory"
+            />
+            <mat-hint>{{ t('modelSources.github.directoryHint') }}</mat-hint>
+          </mat-form-field>
+        </div>
+      }
+    </section>
+
+    <!-- 2. The repositories: state + the one useful action, everything else in the menu -->
+    <div class="sources__header">
+      <h4 class="sources__subtitle">{{ t('modelSources.github.listTitle') }}</h4>
+      @if (sources().length) {
+        <button [disabled]="checkingAll()" (click)="checkAll()" mat-button type="button" data-testid="github-check-all">
+          <mat-icon>refresh</mat-icon>
+          {{ t('modelSources.github.checkAll') }}
+        </button>
+      }
+    </div>
+
+    <div class="sources__list">
+      @for (source of sources(); track source.id) {
+        @let state = this.state(source);
+        @let status = this.status(source);
+        @let action = primaryAction(source);
+        @let busy = store.isBusy(source.id ?? '');
+        <div class="sources__item" [class.sources__item--disabled]="state === 'disabled'" [attr.data-testid]="'github-source-' + $index">
+          <div class="sources__main">
+            <span class="sources__name">
+              <mat-icon>cloud</mat-icon>
+              {{ repositoryName(source) }}
+              <span class="sources__badge sources__badge--{{ state }}" [attr.data-testid]="'github-state-' + state">
+                {{ t('modelSources.github.state.' + state) }}
+              </span>
+            </span>
+            <span class="sources__path">{{ details(source, status?.syncedAt | date: 'short') }}</span>
+            @if (status?.lastError) {
+              <span class="sources__item-error" data-testid="github-source-error">{{ status?.lastError }}</span>
+            }
+          </div>
+          <div class="sources__actions">
+            @if (busy) {
+              <mat-progress-spinner diameter="20" mode="indeterminate" />
+            } @else if (action) {
+              <button [attr.data-testid]="'github-' + action" (click)="sync(source)" mat-stroked-button type="button">
+                {{ t('modelSources.github.action.' + action) }}
+              </button>
+            }
+            <button
+              [disabled]="busy"
+              [matMenuTriggerFor]="sourceMenu"
+              [matTooltip]="t('modelSources.github.more')"
+              [attr.aria-label]="t('modelSources.github.more')"
+              mat-icon-button
+              type="button"
+              data-testid="github-menu"
+            >
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #sourceMenu="matMenu">
+              <button [disabled]="state === 'disabled'" (click)="check(source)" mat-menu-item data-testid="github-check">
+                <mat-icon>manage_search</mat-icon>{{ t('modelSources.github.check') }}
+              </button>
+              <button [disabled]="state === 'disabled'" (click)="sync(source)" mat-menu-item data-testid="github-sync">
+                <mat-icon>sync</mat-icon>{{ t('modelSources.github.sync') }}
+              </button>
+              <button (click)="toggleEnabled(source, state === 'disabled')" mat-menu-item data-testid="github-enabled">
+                <mat-icon>{{ state === 'disabled' ? 'visibility' : 'visibility_off' }}</mat-icon>
+                {{ state === 'disabled' ? t('modelSources.github.enable') : t('modelSources.github.disable') }}
+              </button>
+              <button (click)="remove(source)" mat-menu-item data-testid="github-remove">
+                <mat-icon>delete</mat-icon>{{ t('modelSources.github.remove') }}
+              </button>
+            </mat-menu>
+          </div>
+        </div>
+      } @empty {
+        <p class="sources__empty" data-testid="github-empty">{{ t('modelSources.github.empty') }}</p>
+      }
+    </div>
+
+    <!-- 3. Access token: only needed for private repositories -->
+    <h4 class="sources__subtitle">{{ t('modelSources.token.title') }}</h4>
+    @if (canStoreTokens) {
+      <p class="sources__note">{{ t('modelSources.token.hint') }}</p>
+      @for (host of tokenHosts(); track host) {
+        @let tokenState = tokenStatus()[host];
+        <div class="sources__token" [attr.data-testid]="'github-token-' + host">
+          <span class="sources__name">
+            <mat-icon>key</mat-icon>{{ host }}
+            @if (tokenState?.stored) {
+              <span class="sources__badge sources__badge--upToDate">
+                {{ tokenState?.persistent ? t('modelSources.token.stored') : t('modelSources.token.session') }}
+              </span>
+            } @else {
+              <span class="sources__badge">{{ t('modelSources.token.none') }}</span>
+            }
+          </span>
+          @if (tokenEditing() === host) {
+            <div class="sources__token-edit">
+              <mat-form-field class="sources__token-input" appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{ t('modelSources.token.label') }}</mat-label>
+                <input
+                  #tokenField
+                  [value]="tokenInput()[host] ?? ''"
+                  [disabled]="tokenBusy()"
+                  (input)="setTokenInput(host, tokenField.value)"
+                  (keydown.enter)="saveToken(host)"
+                  (keydown.escape)="editToken(null); $event.stopPropagation()"
+                  autocomplete="off"
+                  matInput
+                  type="password"
+                  data-testid="github-token-input"
+                />
+              </mat-form-field>
+              <button
+                [disabled]="tokenBusy() || !(tokenInput()[host] ?? '').trim()"
+                (click)="saveToken(host)"
+                mat-flat-button
+                color="primary"
+                type="button"
+                data-testid="github-token-save"
+              >
+                {{ t('modelSources.token.save') }}
+              </button>
+              <button [disabled]="tokenBusy()" (click)="editToken(null)" mat-button type="button" data-testid="github-token-cancel">
+                {{ t('modelSources.token.cancel') }}
+              </button>
+            </div>
+          } @else {
+            <span class="sources__actions">
+              <button [disabled]="tokenBusy()" (click)="editToken(host)" mat-stroked-button type="button" data-testid="github-token-edit">
+                {{ tokenState?.stored ? t('modelSources.token.replace') : t('modelSources.token.set') }}
+              </button>
+              @if (tokenState?.stored) {
+                <button
+                  [disabled]="tokenBusy()"
+                  [matTooltip]="t('modelSources.token.delete')"
+                  [attr.aria-label]="t('modelSources.token.delete')"
+                  (click)="deleteToken(host)"
+                  mat-icon-button
+                  type="button"
+                  data-testid="github-token-delete"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              }
+            </span>
+          }
+        </div>
+      }
+    } @else {
+      <div class="sources__info" role="note" data-testid="github-token-web-hint">
+        <mat-icon>info</mat-icon>
+        <span>{{ t('modelSources.token.webHint') }}</span>
+      </div>
+    }
+  </div>
+</ng-container>

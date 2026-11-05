@@ -13,8 +13,18 @@
 
 import {EventEmitter, inject, Injectable} from '@angular/core';
 import {ToastrService} from 'ngx-toastr';
+import {take} from 'rxjs';
 import {NotificationType} from '../enums';
 import {NotificationModel} from '../model';
+
+export interface NotificationOptions {
+  title?: string;
+  message?: string;
+  link?: string;
+  timeout?: number;
+  hidePopup?: boolean;
+  onClick?: () => void;
+}
 
 @Injectable({providedIn: 'root'})
 export class NotificationsService {
@@ -101,13 +111,17 @@ export class NotificationsService {
     }
   }
 
-  info({title = '', message = '', link = '', timeout = 2000, hidePopup = false}) {
+  /** `onClick` is called once if the user clicks the popup, e.g. to start a suggested action. */
+  info({title = '', message = '', link = '', timeout = 2000, hidePopup = false, onClick}: NotificationOptions = {}) {
     timeout = timeout !== null && timeout !== undefined ? timeout : 2000;
     const notification = new NotificationModel(title, message, link, NotificationType.Info);
     this.notifications.unshift(notification);
     this.badgeText.emit(`${this.notifications.length}`);
     if (!hidePopup) {
-      this.toastr.info(message, title, {timeOut: timeout});
+      const toast = this.toastr.info(message, title, {timeOut: timeout});
+      if (onClick) {
+        toast?.onTap?.pipe(take(1)).subscribe(() => onClick());
+      }
     }
   }
 

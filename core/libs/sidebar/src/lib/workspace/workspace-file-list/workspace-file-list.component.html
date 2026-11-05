@@ -31,94 +31,129 @@
   </div>
 
   <div class="namespaces">
-    @for (namespace of sortNamespaces(namespaces | keyvalue); track namespace.key) {
-      @if (searched()[namespace.key]?.length) {
-        <div class="namespace-row" [attr.data-testid]="'workspace-namespace-' + namespace.key">
-          <button
-            class="namespace"
-            [matTooltip]="namespace.key"
-            [attr.aria-expanded]="!folded()[namespace.key]"
-            (click)="toggleNamespaceFold(namespace.key)"
-            (keyup.enter)="toggleNamespaceFold(namespace.key)"
-            (keyup.space)="toggleNamespaceFold(namespace.key)"
-            type="button"
-            aria-label="Toggle namespace"
-          >
-            <mat-icon [matTooltip]="folded()[namespace.key] ? t('tooltips.unfold') : t('tooltips.fold')">
-              {{ folded()[namespace.key] ? 'folder' : 'folder_open' }}
-            </mat-icon>
-            <span>{{ namespace.key }}</span>
-          </button>
-          <button
-            class="namespace-menu"
-            [matMenuTriggerFor]="namespaceMenu"
-            [attr.aria-label]="t('sidebar.fileMenu.namespaceMenu', {namespace: namespace.key})"
-            [attr.title]="t('sidebar.fileMenu.namespaceMenu', {namespace: namespace.key})"
-            (click)="prepareNamespaceMenu(namespace.key); $event.stopPropagation()"
-            mat-mini-fab
-            data-testid="openNamespaceMenu"
-          >
-            <mat-icon>more_horiz</mat-icon>
-          </button>
-        </div>
+    @for (group of groups(); track group.key) {
+      @if (showSourceHeaders()) {
+        <button
+          class="source"
+          [class.source--read-only]="group.readOnly"
+          [attr.aria-expanded]="!isSourceCollapsed(group.key)"
+          [matTooltip]="group.source?.path ?? ''"
+          [attr.data-testid]="'workspace-source-' + (group.source?.type ?? 'unknown')"
+          (click)="toggleSource(group.key)"
+          type="button"
+        >
+          <mat-icon class="source__chevron">{{ isSourceCollapsed(group.key) ? 'chevron_right' : 'expand_more' }}</mat-icon>
+          <mat-icon>{{ group.source?.type === 'github' ? 'cloud' : group.source?.defaultWorkspace ? 'home' : 'folder_special' }}</mat-icon>
+          <span class="source__name">{{ group.source?.name ?? '–' }}</span>
+          @if (group.readOnly) {
+            <span class="source__badge" data-testid="workspace-source-read-only">{{ t('modelSources.sidebar.readOnlyBadge') }}</span>
+          }
+        </button>
       }
-      @if (!folded()[namespace.key] || searchString()) {
-        @for (file of searched()[namespace.key]; track file.name) {
-          <button
-            class="file"
-            [class.selected]="selection.isSelected(namespace.key, file.name)"
-            [class.selected--linked]="selection.isSelected(namespace.key, file.name) && sidebarService.fileElements.opened()"
-            [attr.data-testid]="'workspace-file-' + file.name"
-            [class.outdated]="file.outdated"
-            [class.errored]="file.errored"
-            [class.unresolved]="hasMissingReferences(file)"
-            [matTooltip]="getFileTooltip(namespace.key, file)"
-            (click)="selectFile(namespace.key, file)"
-            (dblclick)="promptOpenFile(namespace.key, file)"
-            (contextmenu)="openContextMenu($event, namespace.key, file, menuTrigger)"
-            (keyup.enter)="selectFile(namespace.key, file)"
-            (keyup.space)="selectFile(namespace.key, file)"
-            type="button"
-            aria-label="Select file {{ file.name }}"
-          >
-            <div class="content">
-              <mat-icon>{{
-                isCurrentFile(namespace.key, file.name)
-                  ? 'arrow_right_alt'
-                  : file.outdated
-                    ? 'update'
-                    : file.errored
-                      ? 'error'
-                      : hasMissingReferences(file)
-                        ? 'warning'
-                        : 'description'
-              }}</mat-icon>
-              <span>{{ file.name }}</span>
+
+      @if (!isSourceCollapsed(group.key)) {
+        <div class="source-content" [class.source-content--indented]="showSourceHeaders()">
+          @for (namespace of group.namespaces; track namespace.key) {
+            <div class="namespace-row" [attr.data-testid]="'workspace-namespace-' + namespace.key">
+              <button
+                class="namespace"
+                [matTooltip]="namespace.key"
+                [attr.aria-expanded]="!folded()[namespace.key]"
+                (click)="toggleNamespaceFold(namespace.key)"
+                (keyup.enter)="toggleNamespaceFold(namespace.key)"
+                (keyup.space)="toggleNamespaceFold(namespace.key)"
+                type="button"
+                aria-label="Toggle namespace"
+              >
+                <mat-icon [matTooltip]="folded()[namespace.key] ? t('tooltips.unfold') : t('tooltips.fold')">
+                  {{ folded()[namespace.key] ? 'folder' : 'folder_open' }}
+                </mat-icon>
+                <span>{{ namespace.key }}</span>
+              </button>
+              @if (!group.readOnly) {
+                <button
+                  class="namespace-menu"
+                  [matMenuTriggerFor]="namespaceMenu"
+                  [attr.aria-label]="t('sidebar.fileMenu.namespaceMenu', {namespace: namespace.key})"
+                  [attr.title]="t('sidebar.fileMenu.namespaceMenu', {namespace: namespace.key})"
+                  (click)="prepareNamespaceMenu(namespace.key); $event.stopPropagation()"
+                  mat-mini-fab
+                  data-testid="openNamespaceMenu"
+                >
+                  <mat-icon>more_horiz</mat-icon>
+                </button>
+              }
             </div>
-            <button
-              #menuTrigger="matMenuTrigger"
-              [matMenuTriggerFor]="menu"
-              (click)="prepare(namespace.key, file); $event.stopPropagation()"
-              (keyup.enter)="prepare(namespace.key, file); $event.stopPropagation()"
-              mat-mini-fab
-              data-testid="openFileMenu"
-              aria-label="Open menu for {{ file.name }}"
-              title="Open menu"
-            >
-              <mat-icon>more_horiz</mat-icon>
-            </button>
-          </button>
-        }
+            @if (!folded()[namespace.key] || searchString()) {
+              @for (file of namespace.files; track file.name) {
+                <button
+                  class="file"
+                  [class.selected]="selection.isSelected(namespace.key, file.name)"
+                  [class.selected--linked]="selection.isSelected(namespace.key, file.name) && sidebarService.fileElements.opened()"
+                  [attr.data-testid]="'workspace-file-' + file.name"
+                  [class.outdated]="file.outdated"
+                  [class.errored]="file.errored"
+                  [class.unresolved]="hasMissingReferences(file)"
+                  [class.read-only-file]="file.source?.readOnly"
+                  [matTooltip]="getFileTooltip(namespace.key, file)"
+                  (click)="selectFile(namespace.key, file)"
+                  (dblclick)="promptOpenFile(namespace.key, file)"
+                  (contextmenu)="openContextMenu($event, namespace.key, file, menuTrigger)"
+                  (keyup.enter)="selectFile(namespace.key, file)"
+                  (keyup.space)="selectFile(namespace.key, file)"
+                  type="button"
+                  aria-label="Select file {{ file.name }}"
+                >
+                  <div class="content">
+                    <mat-icon>{{
+                      isCurrentFile(namespace.key, file.name)
+                        ? 'arrow_right_alt'
+                        : file.outdated
+                          ? 'update'
+                          : file.errored
+                            ? 'error'
+                            : hasMissingReferences(file)
+                              ? 'warning'
+                              : 'description'
+                    }}</mat-icon>
+                    <span>{{ file.name }}</span>
+                    @if (file.source?.readOnly) {
+                      <mat-icon class="read-only" [attr.aria-label]="sourceTooltip(file)" data-testid="workspace-file-read-only"
+                        >lock</mat-icon
+                      >
+                    }
+                  </div>
+                  <button
+                    #menuTrigger="matMenuTrigger"
+                    [matMenuTriggerFor]="menu"
+                    (click)="prepare(namespace.key, file); $event.stopPropagation()"
+                    (keyup.enter)="prepare(namespace.key, file); $event.stopPropagation()"
+                    mat-mini-fab
+                    data-testid="openFileMenu"
+                    aria-label="Open menu for {{ file.name }}"
+                    title="Open menu"
+                  >
+                    <mat-icon>more_horiz</mat-icon>
+                  </button>
+                </button>
+              }
+            }
+          } @empty {
+            <p class="source-empty" data-testid="workspace-source-empty">{{ t('modelSources.sidebar.emptySource') }}</p>
+          }
+        </div>
       }
     }
   </div>
 
   <mat-menu #menu="matMenu">
     @if (menuSelection()) {
-      <button [matMenuTriggerFor]="openSubMenu" [disabled]="!isOpenable()" mat-menu-item data-testid="fileMenuOpenSubMenuButton">
-        <mat-icon>open_in_new</mat-icon>
-        <span>{{ t('sidebar.fileMenu.open') }}</span>
-      </button>
+      <span class="menu-item-wrapper" [matTooltip]="openTooltip()" matTooltipPosition="right" data-testid="fileMenuOpenTooltip">
+        <button [matMenuTriggerFor]="openSubMenu" [disabled]="!isOpenable()" mat-menu-item data-testid="fileMenuOpenSubMenuButton">
+          <mat-icon>open_in_new</mat-icon>
+          <span>{{ t('sidebar.fileMenu.open') }}</span>
+        </button>
+      </span>
 
       <button
         [disabled]="!isOpenable() || !sidebarService.isCurrentFileLoaded()"
@@ -130,7 +165,7 @@
         <span>{{ t('sidebar.fileMenu.findElements') }}</span>
       </button>
       <button (click)="copyFilePath()" mat-menu-item data-testid="fileMenuCopyToClipboardButton">
-        {{ t('sidebar.fileMenu.copyFilePath') }}
+        {{ t(menuSelection()?.file?.source?.type === 'github' ? 'sidebar.fileMenu.copyGithubUrl' : 'sidebar.fileMenu.copyFilePath') }}
         <mat-icon>content_copy</mat-icon>
       </button>
 

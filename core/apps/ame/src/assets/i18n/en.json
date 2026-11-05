@@ -378,6 +378,8 @@
       "findElements": "Find elements",
       "copyFilePath": "Copy file path",
       "copiedFilePath": "File path copied to clipboard",
+      "copyGithubUrl": "Copy GitHub link",
+      "copiedGithubUrl": "GitHub link copied to clipboard",
       "delete": "Delete",
       "deleteNamespace": "Delete namespace version",
       "namespaceMenu": "Open menu for namespace {{namespace}}"
@@ -416,7 +418,8 @@
         "ok": "Clear workspace",
         "success": "Workspace cleared",
         "successMessage": "{{count}} file(s) deleted.",
-        "successBackup": "{{count}} file(s) deleted. A backup was created in the workspace folder."
+        "successBackup": "{{count}} file(s) deleted. A backup was created in the workspace folder.",
+        "workspace": "Workspace"
       },
       "failed": "Deletion failed",
       "checkFailed": "References could not be checked. Nothing was deleted.",
@@ -428,7 +431,8 @@
         "namespaceOpenElsewhere": "A model of this namespace version is open in another window. Close it there before deleting the namespace version",
         "clearEmpty": "The workspace is empty",
         "clearOpenHere": "Close all workspace models in this window before clearing the workspace",
-        "clearOpenElsewhere": "Workspace models are open in another window. Close them there before clearing the workspace"
+        "clearOpenElsewhere": "Workspace models are open in another window. Close them there before clearing the workspace",
+        "readOnly": "Models of GitHub sources are read-only and cannot be deleted"
       }
     }
   },
@@ -977,5 +981,118 @@
   },
   "dialog": {
     "close": "Close (Esc)"
+  },
+  "modelSources": {
+    "appliedImmediately": "Changes in this section are applied immediately.",
+    "loadError": "The model sources could not be loaded.",
+    "readOnlySave": "This model belongs to the read-only source \"{{source}}\" and cannot be changed. Models of GitHub sources can only be viewed.",
+    "workspaces": {
+      "title": "Workspaces",
+      "description": "Local folders containing your Aspect Models. The default workspace is always included.",
+      "hint": "If there are several workspaces, you choose the workspace when saving a new model. Existing models are always saved where they are.",
+      "defaultName": "{{name}} (default)",
+      "defaultLocked": "The default workspace cannot be removed",
+      "add": "Add workspace…",
+      "pickTitle": "Select a workspace folder",
+      "remove": "Remove workspace (the files stay on disk)",
+      "error": "Changing the workspaces failed",
+      "note": "The folder must follow the SAMM structure: namespace/version/model.ttl.",
+      "pendingAdd": "New",
+      "pendingRemoval": "Will be removed",
+      "undo": "Keep workspace",
+      "discard": "Discard",
+      "duplicate": "The folder \"{{name}}\" is already a workspace",
+      "applyHint": "Click Apply or OK to save the workspace changes.",
+      "applied": "Workspaces updated",
+      "desktopOnly": "Workspaces can only be added in the desktop app."
+    },
+    "github": {
+      "title": "GitHub sources",
+      "description": "Read-only Aspect Models from GitHub repositories, e.g. to reference models published by other teams.",
+      "hint": "Models from GitHub are read-only. You can see their elements in the sidebar and reference them, but not open or change them. Updates are only downloaded when you click \"Update\".",
+      "listTitle": "Repositories",
+      "empty": "No repositories added yet.",
+      "url": "Repository URL",
+      "urlHint": "Paste a link like https://github.com/owner/repo/tree/main/models",
+      "urlInvalid": "This is not a GitHub repository URL",
+      "refType": "Branch or tag",
+      "branch": "Branch",
+      "tag": "Tag",
+      "directory": "Folder in the repository",
+      "directoryHint": "Optional; the folder containing the namespaces",
+      "add": "Add",
+      "added": "GitHub source \"{{name}}\" added and downloaded",
+      "addError": "Adding the GitHub source failed",
+      "check": "Check for updates",
+      "checkError": "Checking for updates failed",
+      "sync": "Download again",
+      "synced": "\"{{name}}\" synchronized",
+      "syncError": "Synchronizing failed",
+      "updateError": "Changing the GitHub source failed",
+      "remove": "Remove source and local copy",
+      "removed": "GitHub source \"{{name}}\" removed",
+      "removeError": "Removing the GitHub source failed",
+      "upToDate": "\"{{name}}\" is up to date",
+      "updateFound": "An update is available for \"{{name}}\"",
+      "syncedInfo": "version {{sha}} from {{date}}",
+      "updateNotificationTitle": "Update available",
+      "updateNotificationMessage": "\"{{name}}\" has a newer version on GitHub. Click here to synchronize.",
+      "state": {
+        "notSynced": "not downloaded",
+        "upToDate": "up to date",
+        "updateAvailable": "update available",
+        "error": "error",
+        "disabled": "hidden"
+      },
+      "advanced": "Branch, tag and folder (branch: {{ref}})",
+      "checkAll": "Check for updates",
+      "updatesFound": "Updates available for {{count}} repositories",
+      "allUpToDate": "All repositories are up to date",
+      "more": "More actions",
+      "enable": "Show models",
+      "disable": "Hide models",
+      "action": {
+        "download": "Download",
+        "update": "Update",
+        "retry": "Try again"
+      },
+      "details": {
+        "branch": "Branch {{ref}}",
+        "tag": "Tag {{ref}}",
+        "folder": "Folder {{folder}}"
+      }
+    },
+    "token": {
+      "title": "Access token",
+      "hint": "Only needed for private repositories or many requests. It is stored in the keychain of your operating system.",
+      "label": "Personal access token",
+      "save": "Save token",
+      "delete": "Delete token",
+      "stored": "stored in keychain",
+      "session": "only for this session",
+      "none": "no token",
+      "saved": "Token for {{host}} stored in the keychain",
+      "savedSession": "Token for {{host}} is used until the application is closed (no keychain available)",
+      "saveError": "Storing the token failed",
+      "deleted": "Token for {{host}} deleted",
+      "deleteError": "Deleting the token failed",
+      "webHint": "In the browser version, set the environment variable GITHUB_TOKEN for the backend to access private repositories.",
+      "set": "Set token",
+      "replace": "Replace token",
+      "cancel": "Cancel"
+    },
+    "targetDialog": {
+      "title": "Save new model",
+      "content": "In which workspace should \"{{file}}\" be saved?",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "sidebar": {
+      "readOnlySource": "read-only, from GitHub {{name}}",
+      "workspaceSource": "workspace {{name}}",
+      "readOnlyBadge": "read-only",
+      "readOnlyOpen": "Models from GitHub can only be viewed. Click the file to see its elements.",
+      "emptySource": "No models in this source"
+    }
   }
 }

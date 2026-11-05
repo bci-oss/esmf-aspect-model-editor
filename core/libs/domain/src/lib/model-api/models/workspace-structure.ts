@@ -11,11 +11,15 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ModelSource} from './model-sources';
+
 export interface ModelData {
   name: string;
   existing: boolean;
   version: string;
   aspectModelUrn: string;
+  /** The workspace or GitHub source containing the file. */
+  source?: ModelSource;
 }
 
 export interface WorkspaceStructure {

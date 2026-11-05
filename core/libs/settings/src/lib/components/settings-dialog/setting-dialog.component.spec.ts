@@ -17,15 +17,26 @@ import {
   GraphSettingsPort,
   ModelSaverPort,
   ModelSessionFacade,
+  ModelSourcesStore,
   SammLanguageSettingsService,
 } from '@ame/domain';
-import {AlertService, LanguageTranslationService, LoadingScreenService, TauriTunnelPort, TitleService} from '@ame/shared';
+import {
+  AlertService,
+  LanguageTranslationService,
+  LoadingScreenService,
+  NotificationsService,
+  TauriTunnelPort,
+  TitleService,
+} from '@ame/shared';
+import {signal} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatDialogRef} from '@angular/material/dialog';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {TranslocoTestingModule} from '@jsverse/transloco';
+import {of} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {SettingsFormService} from '../../services';
+import {WorkspacesDraftService} from '../../services/workspaces-draft.service';
 import {SETTINGS_LAST_SECTION_KEY, SettingDialogComponent} from './setting-dialog.component';
 
 describe('SettingDialogComponent', () => {
@@ -40,6 +51,13 @@ describe('SettingDialogComponent', () => {
     updateGraph: ReturnType<typeof vi.fn>;
     removeUnnecessaryLanguages: ReturnType<typeof vi.fn>;
   };
+  let sourcesStore: {
+    workspaces: ReturnType<typeof signal>;
+    refresh: ReturnType<typeof vi.fn>;
+    addWorkspace: ReturnType<typeof vi.fn>;
+    removeWorkspace: ReturnType<typeof vi.fn>;
+  };
+  let notifications: {success: ReturnType<typeof vi.fn>; error: ReturnType<typeof vi.fn>; info: ReturnType<typeof vi.fn>};
   let loadedFilesService: {
     currentLoadedFile: any;
     updateAbsoluteName: ReturnType<typeof vi.fn>;
@@ -49,6 +67,13 @@ describe('SettingDialogComponent', () => {
     localStorage.clear();
 
     dialogRef = {close: vi.fn()};
+    sourcesStore = {
+      workspaces: signal([]),
+      refresh: vi.fn(() => of([])),
+      addWorkspace: vi.fn(() => of([])),
+      removeWorkspace: vi.fn(() => of([])),
+    };
+    notifications = {success: vi.fn(), error: vi.fn(), info: vi.fn()};
     alertService = {open: vi.fn()};
     loadingScreen = {open: vi.fn(() => ({close: vi.fn()}))};
     maxGraphSettingsService = {
@@ -145,6 +170,8 @@ describe('SettingDialogComponent', () => {
           },
         },
         {provide: TitleService, useValue: {updateTitle: vi.fn()}},
+        {provide: ModelSourcesStore, useValue: sourcesStore},
+        {provide: NotificationsService, useValue: notifications},
         {provide: TauriTunnelPort, useValue: {sendTranslationsToTauri: vi.fn()}},
         {provide: ModelSaverPort, useValue: {enableAutoSave: vi.fn()}},
         {provide: EditorValidationPort, useValue: {enableAutoValidation: vi.fn()}},
@@ -183,7 +210,7 @@ describe('SettingDialogComponent', () => {
     expect(component).toBeTruthy();
     expect(component.groups.map(group => group.id)).toEqual(['systemConfiguration', 'modelConfiguration']);
     expect(component.selectedSectionId()).toBe('automatedWorkflow');
-    expect(fixture.nativeElement.querySelectorAll('[role="treeitem"]').length).toBe(5);
+    expect(fixture.nativeElement.querySelectorAll('[role="treeitem"]').length).toBe(7);
   });
 
   it('should change the section on selectSection and remember it', () => {
@@ -224,7 +251,7 @@ describe('SettingDialogComponent', () => {
     press('ArrowDown');
     expect(component.selectedSectionId()).toBe('editorConfiguration');
     press('ArrowDown');
-    expect(component.selectedSectionId()).toBe('languageConfiguration');
+    expect(component.selectedSectionId()).toBe('workspaces');
     press('ArrowUp');
     expect(component.selectedSectionId()).toBe('editorConfiguration');
     press('End');
@@ -241,7 +268,7 @@ describe('SettingDialogComponent', () => {
     component.selectSection('languageConfiguration');
     fixture.detectChanges();
     const items = Array.from(fixture.nativeElement.querySelectorAll('[role="treeitem"]')) as HTMLElement[];
-    expect(items.map(item => item.getAttribute('tabindex'))).toEqual(['-1', '-1', '0', '-1', '-1']);
+    expect(items.map(item => item.getAttribute('tabindex'))).toEqual(['-1', '-1', '-1', '-1', '0', '-1', '-1']);
   });
 
   it('should filter the sections by labels inside the section and select the first match', () => {
@@ -278,7 +305,7 @@ describe('SettingDialogComponent', () => {
 
     component.clearSearch();
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelectorAll('[role="treeitem"]').length).toBe(5);
+    expect(fixture.nativeElement.querySelectorAll('[role="treeitem"]').length).toBe(7);
   });
 
   it('should show a section header with title, scope and description', () => {
@@ -508,5 +535,54 @@ describe('SettingDialogComponent', () => {
     expect(component.isSectionInvalid('namespaceConfiguration')).toBe(true);
     expect(component.isGroupInvalid(component.groups[1])).toBe(true);
     expect(component.isGroupInvalid(component.groups[0])).toBe(false);
+  });
+
+  describe('workspaces', () => {
+    function draft(): WorkspacesDraftService {
+      return fixture.debugElement.injector.get(WorkspacesDraftService);
+    }
+
+    it('should require Apply for workspaces, but not for GitHub sources', () => {
+      component.selectSection('workspaces');
+      fixture.detectChanges();
+      expect(element('settings-immediate-hint')).toBeNull();
+
+      expect(component.immediateSections.has('githubSources')).toBe(true);
+    });
+
+    it('should be dirty with queued workspace changes and run them only on Apply', () => {
+      draft().add('/extra', []);
+      draft().remove('/old');
+      fixture.detectChanges();
+
+      expect(component.isDirty).toBe(true);
+      expect((element('settingsDialogApplyButton') as HTMLButtonElement).disabled).toBe(false);
+      expect(sourcesStore.addWorkspace).not.toHaveBeenCalled();
+
+      component.applySettings();
+
+      expect(sourcesStore.removeWorkspace).toHaveBeenCalledWith('/old');
+      expect(sourcesStore.addWorkspace).toHaveBeenCalledWith('/extra');
+      expect(notifications.success).toHaveBeenCalled();
+      expect(component.isDirty).toBe(false);
+    });
+
+    it('should drop queued workspace changes on Cancel', () => {
+      draft().add('/extra', []);
+
+      component.onCancel();
+
+      expect(dialogRef.close).toHaveBeenCalled();
+      expect(sourcesStore.addWorkspace).not.toHaveBeenCalled();
+    });
+
+    it('should ask before discarding queued workspace changes via (x)', () => {
+      draft().add('/extra', []);
+
+      component.requestClose();
+
+      expect(alertService.open).toHaveBeenCalled();
+      expect(dialogRef.close).not.toHaveBeenCalled();
+    });
   });
 });

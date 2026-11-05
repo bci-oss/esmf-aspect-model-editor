@@ -18,6 +18,7 @@ import {
   FileInformation,
   ModelApiPort,
   ModelData,
+  ModelFileLocation,
   OpenApi,
   RdfModelUtil,
   ReferenceReport,
@@ -93,7 +94,8 @@ export class ModelApiService implements ModelApiPort {
     );
   }
 
-  saveAspectModel(rdfContent: string, aspectModelUrn: string, absoluteModelName?: string): Observable<string> {
+  /** `targetWorkspace` is only used for new files; existing files are saved where they are. */
+  saveAspectModel(rdfContent: string, aspectModelUrn: string, absoluteModelName?: string, targetWorkspace?: string): Observable<string> {
     if (absoluteModelName && RdfNamingUtil.splitRdfIntoChunks(absoluteModelName)[2] === 'new-model.ttl') {
       return throwError(() => ({
         error: {
@@ -105,7 +107,9 @@ export class ModelApiService implements ModelApiPort {
     let headers: HttpHeaders;
     if (absoluteModelName) {
       const file = RdfNamingUtil.getFileNameFromRdf(absoluteModelName);
-      headers = new HttpHeaderBuilder().withAspectModelUrn(aspectModelUrn).withFileName(file).build();
+      headers = new HttpHeaderBuilder().withAspectModelUrn(aspectModelUrn).withFileName(file).withTargetWorkspace(targetWorkspace).build();
+    } else if (targetWorkspace) {
+      headers = new HttpHeaderBuilder().withTargetWorkspace(targetWorkspace).build();
     }
 
     return this.http
@@ -163,11 +167,11 @@ export class ModelApiService implements ModelApiPort {
       );
   }
 
-  importPackage(file: File): Observable<any> {
+  importPackage(file: File, workspace?: string): Observable<any> {
     const formData = new FormData();
     formData.append('zipFile', file);
 
-    return this.http.post(`${this.serviceUrl}${this.api.package}/import`, formData);
+    return this.http.post(`${this.serviceUrl}${this.api.package}/import`, formData, {params: workspaceParam(workspace)});
   }
 
   deleteAspectModel(aspectModelUrn: string): Observable<string> {
@@ -183,20 +187,24 @@ export class ModelApiService implements ModelApiPort {
       );
   }
 
-  getReferences(namespace: string, version: string, fileName?: string): Observable<ReferenceReport> {
-    const params: Record<string, string> = fileName ? {namespace, version, fileName} : {namespace, version};
+  getReferences(namespace: string, version: string, fileName?: string, workspace?: string): Observable<ReferenceReport> {
+    const params: Record<string, string> = {namespace, version, ...(fileName ? {fileName} : {}), ...workspaceParam(workspace)};
     return this.http.get<ReferenceReport>(`${this.serviceUrl}${this.api.models}/references`, {params}).pipe(timeout(this.requestTimeout));
   }
 
-  deleteNamespace(namespace: string, version: string): Observable<ReferenceReport> {
+  deleteNamespace(namespace: string, version: string, workspace?: string): Observable<ReferenceReport> {
     return this.http
-      .delete<ReferenceReport>(`${this.serviceUrl}${this.api.models}/namespace`, {params: {namespace, version}})
+      .delete<ReferenceReport>(`${this.serviceUrl}${this.api.models}/namespace`, {
+        params: {namespace, version, ...workspaceParam(workspace)},
+      })
       .pipe(timeout(this.requestTimeout));
   }
 
-  clearWorkspace(backup: boolean): Observable<ClearWorkspaceResult> {
+  clearWorkspace(backup: boolean, workspace?: string): Observable<ClearWorkspaceResult> {
     return this.http
-      .delete<ClearWorkspaceResult>(`${this.serviceUrl}${this.api.models}/workspace`, {params: {backup: String(backup)}})
+      .delete<ClearWorkspaceResult>(`${this.serviceUrl}${this.api.models}/workspace`, {
+        params: {backup: String(backup), ...workspaceParam(workspace)},
+      })
       .pipe(timeout(this.requestTimeout));
   }
 
@@ -208,8 +216,11 @@ export class ModelApiService implements ModelApiPort {
     );
   }
 
-  getStoragePath(): Observable<StoragePathResponse> {
-    return this.http.get<StoragePathResponse>(`${this.serviceUrl}${this.api.models}/storage-path`).pipe(
+  getStoragePath(file?: ModelFileLocation): Observable<StoragePathResponse> {
+    const params: Record<string, string> = file
+      ? {namespace: file.namespace, version: file.version, fileName: file.fileName, ...workspaceParam(file.workspace)}
+      : {};
+    return this.http.get<StoragePathResponse>(`${this.serviceUrl}${this.api.models}/storage-path`, {params}).pipe(
       timeout(this.requestTimeout),
       catchError(res => throwError(() => res)),
     );
@@ -388,4 +399,9 @@ export class ModelApiService implements ModelApiPort {
     formData.append('aspectModel', aspectModel);
     return {formData, uri};
   }
+}
+
+/** The `workspace` query parameter selecting the workspace of workspace-wide operations; omitted for the default. */
+function workspaceParam(workspace?: string): Record<string, string> {
+  return workspace ? {workspace} : {};
 }

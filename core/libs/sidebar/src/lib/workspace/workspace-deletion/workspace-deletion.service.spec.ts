@@ -11,7 +11,16 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ConfirmDialogEnum, ConfirmDialogPort, ModelSessionFacade, ReferenceReport, TabsStore, WorkspaceFacade} from '@ame/domain';
+import {
+  ConfirmDialogEnum,
+  ConfirmDialogPort,
+  ModelSessionFacade,
+  ModelSource,
+  ModelSourcesStore,
+  ReferenceReport,
+  TabsStore,
+  WorkspaceFacade,
+} from '@ame/domain';
 import {LanguageTranslationService, NotificationsService, OtherWindowsModelsService, TauriSignalsService} from '@ame/shared';
 import {HttpErrorResponse} from '@angular/common/http';
 import {provideZonelessChangeDetection} from '@angular/core';
@@ -114,7 +123,7 @@ describe('WorkspaceDeletionService', () => {
 
       expect(run(service.deleteFile('org.a:1.0.0', file))).toBe(true);
 
-      expect(api.getReferences).toHaveBeenCalledWith('org.a', '1.0.0', 'A1.ttl');
+      expect(api.getReferences).toHaveBeenCalledWith('org.a', '1.0.0', 'A1.ttl', undefined);
       expect(confirm.open).toHaveBeenCalled();
       expect(api.deleteAspectModel).toHaveBeenCalledWith('urn:samm:org.a:1.0.0#A1');
       expect(session.removeFile).toHaveBeenCalledWith('org.a:1.0.0:A1.ttl');
@@ -192,11 +201,11 @@ describe('WorkspaceDeletionService', () => {
     it('checks the namespace version, warns with the file count and deletes it', () => {
       expect(run(service.deleteNamespace('org.a:1.0.0'))).toBe(true);
 
-      expect(api.getReferences).toHaveBeenCalledWith('org.a', '1.0.0');
+      expect(api.getReferences).toHaveBeenCalledWith('org.a', '1.0.0', undefined, undefined);
       const options = confirm.open.mock.calls[0][0];
       expect(options.phrases[1]).toBe('sidebar.deletion.namespace.phrase2 {"count":2}');
       expect(options.okButtonText).toBe('sidebar.deletion.namespace.ok');
-      expect(api.deleteNamespace).toHaveBeenCalledWith('org.a', '1.0.0');
+      expect(api.deleteNamespace).toHaveBeenCalledWith('org.a', '1.0.0', undefined);
       expect(session.removeFile).toHaveBeenCalledWith('org.a:1.0.0:A1.ttl');
       expect(session.removeFile).toHaveBeenCalledWith('org.a:1.0.0:A2.ttl');
       expect(notifications.success).toHaveBeenCalled();
@@ -238,8 +247,11 @@ describe('WorkspaceDeletionService', () => {
 
       expect(run(service.clearWorkspace())).toBe(true);
 
-      expect(dialog.open).toHaveBeenCalledWith(ClearWorkspaceDialogComponent, expect.objectContaining({data: {fileCount: 3}}));
-      expect(api.clearWorkspace).toHaveBeenCalledWith(true);
+      expect(dialog.open).toHaveBeenCalledWith(
+        ClearWorkspaceDialogComponent,
+        expect.objectContaining({data: {fileCount: 3, workspaces: [], selected: null}}),
+      );
+      expect(api.clearWorkspace).toHaveBeenCalledWith(true, undefined);
       expect(session.removeFile).toHaveBeenCalledTimes(3);
       expect(notifications.success).toHaveBeenCalledWith({
         title: 'sidebar.deletion.clear.success',
@@ -254,7 +266,7 @@ describe('WorkspaceDeletionService', () => {
 
       run(service.clearWorkspace());
 
-      expect(api.clearWorkspace).toHaveBeenCalledWith(false);
+      expect(api.clearWorkspace).toHaveBeenCalledWith(false, undefined);
       expect(notifications.success).toHaveBeenCalledWith(
         expect.objectContaining({message: 'sidebar.deletion.clear.successMessage {"count":3}'}),
       );
@@ -356,6 +368,103 @@ describe('WorkspaceDeletionService', () => {
       expect(service.namespaceBlockReason('org.a:1.0.0')).toBe('busy');
       expect(service.clearBlockReason()).toBe('busy');
       expect(service.blockReasonText('namespace', 'busy')).toBe('sidebar.deletion.reason.busy');
+    });
+  });
+
+  describe('model sources', () => {
+    const defaultWorkspace: ModelSource = {
+      type: 'workspace',
+      id: '/home/models',
+      name: 'models',
+      path: '/home/models',
+      readOnly: false,
+      defaultWorkspace: true,
+    };
+    const otherWorkspace: ModelSource = {
+      type: 'workspace',
+      id: '/work',
+      name: 'work',
+      path: '/work',
+      readOnly: false,
+      defaultWorkspace: false,
+    };
+    const github: ModelSource = {
+      type: 'github',
+      id: 'gh',
+      name: 'org/repo@main',
+      path: '/cache/gh',
+      readOnly: true,
+      defaultWorkspace: false,
+    };
+
+    function setSource(namespaceKey: string, fileName: string, source: ModelSource): void {
+      const file = sidebar.namespacesState.namespaces()[namespaceKey].find(entry => entry.name === fileName);
+      if (file) file.source = source;
+    }
+
+    beforeEach(() => {
+      const store = TestBed.inject(ModelSourcesStore);
+      store.sources.set([defaultWorkspace, otherWorkspace, github]);
+      store.config.set({version: 1, workspaces: ['/home/models', '/work'], githubSources: []});
+    });
+
+    it('blocks deleting files and namespaces of read-only sources', () => {
+      setSource('org.b:1.0.0', 'B1.ttl', github);
+
+      expect(service.fileBlockReason('org.b:1.0.0', 'B1.ttl')).toBe('readOnly');
+      expect(service.namespaceBlockReason('org.b:1.0.0')).toBe('readOnly');
+      expect(service.blockReasonText('file', 'readOnly')).toBe('sidebar.deletion.reason.readOnly');
+      expect(service.workspaceFileCount()).toBe(2);
+    });
+
+    it('sends the workspace of the file along', () => {
+      setSource('org.a:1.0.0', 'A1.ttl', otherWorkspace);
+      setSource('org.a:1.0.0', 'A2.ttl', otherWorkspace);
+
+      run(service.deleteFile('org.a:1.0.0', file));
+      expect(api.getReferences).toHaveBeenCalledWith('org.a', '1.0.0', 'A1.ttl', '/work');
+    });
+
+    it('sends the workspace of the namespace files along', () => {
+      setSource('org.a:1.0.0', 'A1.ttl', otherWorkspace);
+      setSource('org.a:1.0.0', 'A2.ttl', otherWorkspace);
+
+      run(service.deleteNamespace('org.a:1.0.0'));
+      expect(api.deleteNamespace).toHaveBeenCalledWith('org.a', '1.0.0', '/work');
+    });
+
+    it('leaves the choice to the backend if the files are in several workspaces', () => {
+      setSource('org.a:1.0.0', 'A1.ttl', otherWorkspace);
+      setSource('org.a:1.0.0', 'A2.ttl', defaultWorkspace);
+
+      run(service.deleteNamespace('org.a:1.0.0'));
+      expect(api.deleteNamespace).toHaveBeenCalledWith('org.a', '1.0.0', undefined);
+    });
+
+    it('offers the workspaces when clearing and only forgets the files of the cleared one', () => {
+      setSource('org.a:1.0.0', 'A1.ttl', otherWorkspace);
+      setSource('org.a:1.0.0', 'A2.ttl', defaultWorkspace);
+      setSource('org.b:1.0.0', 'B1.ttl', github);
+      dialogResult = {backup: true, workspace: '/work'};
+
+      expect(run(service.clearWorkspace())).toBe(true);
+
+      expect(dialog.open).toHaveBeenCalledWith(
+        ClearWorkspaceDialogComponent,
+        expect.objectContaining({
+          data: {
+            fileCount: 2,
+            selected: '/home/models',
+            workspaces: [
+              {path: '/home/models', name: 'models', defaultWorkspace: true, fileCount: 1},
+              {path: '/work', name: 'work', defaultWorkspace: false, fileCount: 1},
+            ],
+          },
+        }),
+      );
+      expect(api.clearWorkspace).toHaveBeenCalledWith(true, '/work');
+      expect(session.removeFile).toHaveBeenCalledTimes(1);
+      expect(session.removeFile).toHaveBeenCalledWith('org.a:1.0.0:A1.ttl');
     });
   });
 });

@@ -378,6 +378,8 @@
       "findElements": "Elemente finden",
       "copyFilePath": "Dateipfad kopieren",
       "copiedFilePath": "Dateipfad in die Zwischenablage kopiert",
+      "copyGithubUrl": "GitHub-Link kopieren",
+      "copiedGithubUrl": "GitHub-Link in die Zwischenablage kopiert",
       "delete": "Löschen",
       "deleteNamespace": "Namespace-Version löschen",
       "namespaceMenu": "Menü für Namespace {{namespace}} öffnen"
@@ -416,7 +418,8 @@
         "ok": "Workspace leeren",
         "success": "Workspace geleert",
         "successMessage": "{{count}} Datei(en) gelöscht.",
-        "successBackup": "{{count}} Datei(en) gelöscht. Im Workspace-Ordner wurde ein Backup erstellt."
+        "successBackup": "{{count}} Datei(en) gelöscht. Im Workspace-Ordner wurde ein Backup erstellt.",
+        "workspace": "Workspace"
       },
       "failed": "Löschen fehlgeschlagen",
       "checkFailed": "Die Referenzen konnten nicht geprüft werden. Es wurde nichts gelöscht.",
@@ -428,7 +431,8 @@
         "namespaceOpenElsewhere": "Ein Modell dieser Namespace-Version ist in einem anderen Fenster geöffnet. Schließe es dort, bevor du die Namespace-Version löschst",
         "clearEmpty": "Der Workspace ist leer",
         "clearOpenHere": "Schließe alle Workspace-Modelle in diesem Fenster, bevor du den Workspace leerst",
-        "clearOpenElsewhere": "In einem anderen Fenster sind Workspace-Modelle geöffnet. Schließe sie dort, bevor du den Workspace leerst"
+        "clearOpenElsewhere": "In einem anderen Fenster sind Workspace-Modelle geöffnet. Schließe sie dort, bevor du den Workspace leerst",
+        "readOnly": "Modelle aus GitHub-Quellen sind schreibgeschützt und können nicht gelöscht werden"
       }
     }
   },
@@ -977,5 +981,118 @@
   },
   "dialog": {
     "close": "Schließen (Esc)"
+  },
+  "modelSources": {
+    "appliedImmediately": "Änderungen in diesem Bereich werden sofort übernommen.",
+    "loadError": "Die Modellquellen konnten nicht geladen werden.",
+    "readOnlySave": "Dieses Modell gehört zur schreibgeschützten Quelle \"{{source}}\" und kann nicht geändert werden. Modelle aus GitHub-Quellen können nur angesehen werden.",
+    "workspaces": {
+      "title": "Workspaces",
+      "description": "Lokale Ordner mit Ihren Aspect Models. Der Standard-Workspace ist immer enthalten.",
+      "hint": "Bei mehreren Workspaces wählen Sie beim Speichern eines neuen Modells den Workspace aus. Bestehende Modelle werden immer dort gespeichert, wo sie liegen.",
+      "defaultName": "{{name}} (Standard)",
+      "defaultLocked": "Der Standard-Workspace kann nicht entfernt werden",
+      "add": "Workspace hinzufügen…",
+      "pickTitle": "Workspace-Ordner auswählen",
+      "remove": "Workspace entfernen (die Dateien bleiben erhalten)",
+      "error": "Ändern der Workspaces fehlgeschlagen",
+      "note": "Der Ordner muss der SAMM-Struktur folgen: namespace/version/model.ttl.",
+      "pendingAdd": "Neu",
+      "pendingRemoval": "Wird entfernt",
+      "undo": "Workspace behalten",
+      "discard": "Verwerfen",
+      "duplicate": "Der Ordner \"{{name}}\" ist bereits ein Workspace",
+      "applyHint": "Mit „Übernehmen“ oder „OK“ werden die Workspace-Änderungen gespeichert.",
+      "applied": "Workspaces aktualisiert",
+      "desktopOnly": "Workspaces können nur in der Desktop-App hinzugefügt werden."
+    },
+    "github": {
+      "title": "GitHub-Quellen",
+      "description": "Schreibgeschützte Aspect Models aus GitHub-Repositories, z. B. um gemeinsame Modelle zu referenzieren.",
+      "hint": "Modelle aus GitHub sind schreibgeschützt. Ihre Elemente sehen Sie in der Seitenleiste und können sie referenzieren, aber nicht öffnen oder ändern. Updates werden nur geladen, wenn Sie auf „Aktualisieren“ klicken.",
+      "listTitle": "Repositories",
+      "empty": "Noch keine Repositories hinzugefügt.",
+      "url": "Repository-URL",
+      "urlHint": "Link einfügen, z. B. https://github.com/owner/repo/tree/main/models",
+      "urlInvalid": "Das ist keine GitHub-Repository-URL",
+      "refType": "Branch oder Tag",
+      "branch": "Branch",
+      "tag": "Tag",
+      "directory": "Ordner im Repository",
+      "directoryHint": "Optional; der Ordner mit den Namespaces",
+      "add": "Hinzufügen",
+      "added": "GitHub-Quelle \"{{name}}\" hinzugefügt und heruntergeladen",
+      "addError": "Hinzufügen der GitHub-Quelle fehlgeschlagen",
+      "check": "Auf Aktualisierungen prüfen",
+      "checkError": "Prüfen auf Aktualisierungen fehlgeschlagen",
+      "sync": "Erneut herunterladen",
+      "synced": "\"{{name}}\" synchronisiert",
+      "syncError": "Synchronisieren fehlgeschlagen",
+      "updateError": "Ändern der GitHub-Quelle fehlgeschlagen",
+      "remove": "Quelle und lokale Kopie entfernen",
+      "removed": "GitHub-Quelle \"{{name}}\" entfernt",
+      "removeError": "Entfernen der GitHub-Quelle fehlgeschlagen",
+      "upToDate": "\"{{name}}\" ist aktuell",
+      "updateFound": "Für \"{{name}}\" ist eine Aktualisierung verfügbar",
+      "syncedInfo": "Version {{sha}} vom {{date}}",
+      "updateNotificationTitle": "Aktualisierung verfügbar",
+      "updateNotificationMessage": "Für \"{{name}}\" gibt es eine neuere Version auf GitHub. Hier klicken zum Synchronisieren.",
+      "state": {
+        "notSynced": "nicht geladen",
+        "upToDate": "aktuell",
+        "updateAvailable": "Update verfügbar",
+        "error": "Fehler",
+        "disabled": "ausgeblendet"
+      },
+      "advanced": "Branch, Tag und Ordner (Branch: {{ref}})",
+      "checkAll": "Nach Updates suchen",
+      "updatesFound": "Updates für {{count}} Repositories verfügbar",
+      "allUpToDate": "Alle Repositories sind aktuell",
+      "more": "Weitere Aktionen",
+      "enable": "Modelle anzeigen",
+      "disable": "Modelle ausblenden",
+      "action": {
+        "download": "Herunterladen",
+        "update": "Aktualisieren",
+        "retry": "Erneut versuchen"
+      },
+      "details": {
+        "branch": "Branch {{ref}}",
+        "tag": "Tag {{ref}}",
+        "folder": "Ordner {{folder}}"
+      }
+    },
+    "token": {
+      "title": "Zugriffstoken",
+      "hint": "Nur für private Repositories oder viele Anfragen nötig. Er wird im Schlüsselbund Ihres Betriebssystems gespeichert.",
+      "label": "Personal Access Token",
+      "save": "Token speichern",
+      "delete": "Token löschen",
+      "stored": "im Schlüsselbund gespeichert",
+      "session": "nur für diese Sitzung",
+      "none": "kein Token",
+      "saved": "Token für {{host}} im Schlüsselbund gespeichert",
+      "savedSession": "Token für {{host}} wird bis zum Schließen der Anwendung verwendet (kein Schlüsselbund verfügbar)",
+      "saveError": "Speichern des Tokens fehlgeschlagen",
+      "deleted": "Token für {{host}} gelöscht",
+      "deleteError": "Löschen des Tokens fehlgeschlagen",
+      "webHint": "In der Browser-Version die Umgebungsvariable GITHUB_TOKEN für das Backend setzen, um auf private Repositories zuzugreifen.",
+      "set": "Token setzen",
+      "replace": "Token ersetzen",
+      "cancel": "Abbrechen"
+    },
+    "targetDialog": {
+      "title": "Neues Modell speichern",
+      "content": "In welchem Workspace soll \"{{file}}\" gespeichert werden?",
+      "save": "Speichern",
+      "cancel": "Abbrechen"
+    },
+    "sidebar": {
+      "readOnlySource": "schreibgeschützt, aus GitHub {{name}}",
+      "workspaceSource": "Workspace {{name}}",
+      "readOnlyBadge": "schreibgeschützt",
+      "readOnlyOpen": "Modelle aus GitHub können nur angesehen werden. Klicken Sie auf die Datei, um ihre Elemente zu sehen.",
+      "emptySource": "Keine Modelle in dieser Quelle"
+    }
   }
 }

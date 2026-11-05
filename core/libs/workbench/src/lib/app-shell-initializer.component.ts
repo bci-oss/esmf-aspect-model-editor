@@ -15,7 +15,8 @@ import {ConfigurationService, GraphNavigatorPort, SearchStore, UiShellStore} fro
 import {EditorViewModeService, ModelHistoryService} from '@ame/editor';
 import {BackendStatusService, BindingsService, BrowserService, IPC_RENDERER, LanguageTranslationService, TitleService} from '@ame/shared';
 import {Component, inject, OnInit, signal} from '@angular/core';
-import {take} from 'rxjs';
+import {switchMap, take} from 'rxjs';
+import {GithubUpdateCheckService} from './github-update-check.service';
 import {StartupService} from './startup.service';
 import {TauriTunnelService} from './tauri-tunnel.service';
 
@@ -50,6 +51,7 @@ export class AppShellInitializer implements OnInit {
   private backendStatus = inject(BackendStatusService);
   private viewMode = inject(EditorViewModeService);
   private modelHistory = inject(ModelHistoryService);
+  private githubUpdateCheck = inject(GithubUpdateCheckService);
 
   private readonly language = signal('en');
   public readonly title = 'Aspect Model Editor';
@@ -74,7 +76,13 @@ export class AppShellInitializer implements OnInit {
       return;
     }
 
-    this.startupService.listenForLoading().pipe(take(1)).subscribe();
+    this.startupService
+      .listenForLoading()
+      .pipe(
+        take(1),
+        switchMap(() => this.githubUpdateCheck.checkOnStartup()),
+      )
+      .subscribe();
   }
 
   onDeleteKey(event: Event): void {

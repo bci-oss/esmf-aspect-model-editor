@@ -13,11 +13,13 @@
 
 pub mod backend;
 pub mod commands;
+pub mod github;
 pub mod menu;
 pub mod session;
 
 use backend::{clean_up_backend, start_backend, BackendState};
 use commands::*;
+use github::*;
 use session::{SessionState, SessionWindow, SESSION_FILE_NAME};
 use tauri::{Emitter, Manager, RunEvent, WindowEvent};
 
@@ -43,6 +45,7 @@ pub fn run() {
     .manage(AppWindowState::new())
     .manage(ContextMenuState::new())
     .manage(SessionState::new())
+    .manage(GithubTokenState::new())
     .setup(setup_app)
     .on_menu_event(|app, event| {
       // Native menu actions need the backend; ignore them until it is ready.
@@ -91,6 +94,10 @@ pub fn run() {
             set_window_title,
             update_menu_item,
             translate_menu_items,
+            github_token_set,
+            github_token_delete,
+            github_token_info,
+            github_source_action,
         ])
     .build(tauri::generate_context!())
     .expect("error while building Tauri application");

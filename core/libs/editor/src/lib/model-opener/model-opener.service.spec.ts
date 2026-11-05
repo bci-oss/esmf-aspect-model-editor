@@ -11,7 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {TauriSignalsService} from '@ame/shared';
+import {WorkspaceNamespacesService} from '@ame/domain';
+import {LanguageTranslationService, NotificationsService, TauriSignalsService} from '@ame/shared';
 import {TestBed} from '@angular/core/testing';
 import {MatDialog} from '@angular/material/dialog';
 import {MockProvider} from 'ng-mocks';
@@ -59,6 +60,9 @@ describe('ModelOpenerService', () => {
         MockProvider(SaveModelDialogService, {
           openDialog: vi.fn(() => of(true)),
         }),
+        MockProvider(WorkspaceNamespacesService, {getFile: vi.fn(() => undefined)}),
+        MockProvider(NotificationsService, {info: vi.fn()}),
+        MockProvider(LanguageTranslationService, {translateService: {translate: (key: string) => key} as any}),
         MockProvider(TabStateService, {
           findTab: vi.fn(),
           switchToTab: vi.fn(() => of(true)),
@@ -355,6 +359,31 @@ describe('ModelOpenerService', () => {
       service.checkUnsavedChanges().subscribe();
 
       expect(saveModelDialog.openDialog).toHaveBeenCalled();
+    });
+  });
+
+  describe('read-only GitHub models', () => {
+    const options = {namespace: 'org.eclipse.examples:1.0.0', file: 'Remote.ttl'};
+
+    beforeEach(() => {
+      vi.mocked(TestBed.inject(WorkspaceNamespacesService).getFile).mockReturnValue({
+        name: 'Remote.ttl',
+        source: {type: 'github', id: 'gh', name: 'repo', path: '/gh', readOnly: true, defaultWorkspace: false},
+      } as any);
+    });
+
+    it('should never open them and explain why', () => {
+      let result: boolean | undefined;
+      service.promptAndOpen(options).subscribe(value => (result = value));
+      service.openInCurrentWindow(options).subscribe();
+      service.openInNewTab(options).subscribe();
+      service.openInNewWindow(options);
+
+      expect(result).toBe(false);
+      expect(dialog.open).not.toHaveBeenCalled();
+      expect(fileHandling.loadNamespaceFile).not.toHaveBeenCalled();
+      expect(tauriSignals.call).not.toHaveBeenCalled();
+      expect(TestBed.inject(NotificationsService).info).toHaveBeenCalledTimes(4);
     });
   });
 });

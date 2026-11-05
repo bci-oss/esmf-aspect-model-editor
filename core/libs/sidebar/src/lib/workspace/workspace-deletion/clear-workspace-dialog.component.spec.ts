@@ -17,31 +17,30 @@ import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {CLEAR_WORKSPACE_CONFIRM_WORD, ClearWorkspaceDialogComponent} from './clear-workspace-dialog.component';
+import {CLEAR_WORKSPACE_CONFIRM_WORD, ClearWorkspaceDialogComponent, ClearWorkspaceDialogData} from './clear-workspace-dialog.component';
 
 describe('ClearWorkspaceDialogComponent', () => {
   let fixture: ComponentFixture<ClearWorkspaceDialogComponent>;
   let component: ClearWorkspaceDialogComponent;
   let close: ReturnType<typeof vi.fn>;
 
-  beforeEach(() => {
+  function setup(data: ClearWorkspaceDialogData): void {
     close = vi.fn();
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       imports: [
         ClearWorkspaceDialogComponent,
         NoopAnimationsModule,
         TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
       ],
-      providers: [
-        provideZonelessChangeDetection(),
-        {provide: MAT_DIALOG_DATA, useValue: {fileCount: 5}},
-        {provide: MatDialogRef, useValue: {close}},
-      ],
+      providers: [provideZonelessChangeDetection(), {provide: MAT_DIALOG_DATA, useValue: data}, {provide: MatDialogRef, useValue: {close}}],
     });
     fixture = TestBed.createComponent(ClearWorkspaceDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  });
+  }
+
+  beforeEach(() => setup({fileCount: 5}));
 
   const okButton = (): HTMLButtonElement => fixture.nativeElement.querySelector('[data-testid="clear-workspace-ok"]');
   const type = (value: string) => {
@@ -90,5 +89,38 @@ describe('ClearWorkspaceDialogComponent', () => {
   it('shows the warning and the shared (x)', () => {
     expect(fixture.nativeElement.querySelector('[data-testid="clear-workspace-warning"]')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('ame-dialog-close-button')).toBeTruthy();
+  });
+
+  describe('with several workspaces', () => {
+    beforeEach(() =>
+      setup({
+        fileCount: 5,
+        selected: '/work',
+        workspaces: [
+          {path: '/models', name: 'models', defaultWorkspace: true, fileCount: 3},
+          {path: '/work', name: 'work', defaultWorkspace: false, fileCount: 0},
+        ],
+      }),
+    );
+
+    it('preselects the given workspace and shows the selection', () => {
+      expect(component.workspace()).toBe('/work');
+      expect(fixture.nativeElement.querySelector('[data-testid="clear-workspace-select"]')).toBeTruthy();
+    });
+
+    it('does not clear an empty workspace', () => {
+      type(CLEAR_WORKSPACE_CONFIRM_WORD);
+      expect(component.fileCount()).toBe(0);
+      expect(okButton().disabled).toBe(true);
+    });
+
+    it('closes with the selected workspace', () => {
+      component.workspace.set('/models');
+      type(CLEAR_WORKSPACE_CONFIRM_WORD);
+
+      okButton().click();
+
+      expect(close).toHaveBeenCalledWith({backup: true, workspace: '/models'});
+    });
   });
 });

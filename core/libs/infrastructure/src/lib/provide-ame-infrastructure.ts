@@ -11,9 +11,17 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelApiPort, ModelInstantiatorPort, NamespacesTransferPort, RdfNodePort, RdfPort, WorkspaceFacade} from '@ame/domain';
+import {
+  ModelApiPort,
+  ModelInstantiatorPort,
+  ModelSourcesPort,
+  NamespacesTransferPort,
+  RdfNodePort,
+  RdfPort,
+  WorkspaceFacade,
+} from '@ame/domain';
 import {EnvironmentProviders, inject, makeEnvironmentProviders, provideEnvironmentInitializer} from '@angular/core';
-import {ModelApiService, WorkspaceApiFacade} from './api';
+import {ModelApiService, ModelSourcesApiService, WorkspaceApiFacade} from './api';
 import {DomainModelToRdfService, RdfNodeService} from './aspect-exporter';
 import {InstantiatorService} from './instantiator';
 import {NamespacesManagerService} from './namespace-manager';
@@ -23,6 +31,7 @@ export function provideAmeInfrastructure(): EnvironmentProviders {
   return makeEnvironmentProviders([
     {provide: WorkspaceFacade, useExisting: WorkspaceApiFacade},
     {provide: ModelApiPort, useExisting: ModelApiService},
+    {provide: ModelSourcesPort, useExisting: ModelSourcesApiService},
     {provide: RdfPort, useExisting: RdfService},
     {provide: RdfNodePort, useExisting: RdfNodeService},
     {provide: ModelInstantiatorPort, useExisting: InstantiatorService},

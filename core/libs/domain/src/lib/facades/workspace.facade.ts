@@ -18,6 +18,14 @@ export interface MigrationStatus {
   errors: string[];
 }
 
+/** Identifies a model file; `workspace` is the root of the source that contains it (searched in all sources if omitted). */
+export interface ModelFileLocation {
+  namespace: string;
+  version: string;
+  fileName: string;
+  workspace?: string;
+}
+
 export interface StoragePathResponse {
   path: string;
   storagePath: string;
@@ -59,14 +67,17 @@ export interface ClearWorkspaceResult {
  * Implemented by the infrastructure layer (backend API) and bound in provideAmeInfrastructure().
  */
 export abstract class WorkspaceFacade {
-  abstract getStoragePath(): Observable<StoragePathResponse>;
+  /** Root of the active workspace, or the absolute path of `file` in the workspace or GitHub source containing it. */
+  abstract getStoragePath(file?: ModelFileLocation): Observable<StoragePathResponse>;
   abstract fetchAspectMetaModel(aspectModelUrn: string): Observable<{content: string; sourceLocation: string | null}>;
   abstract deleteAspectModel(aspectModelUrn: string): Observable<string>;
   /** Checks a namespace version, or a single file of it if `fileName` is given. */
-  abstract getReferences(namespace: string, version: string, fileName?: string): Observable<ReferenceReport>;
+  /** `workspace` selects the workspace if the namespace exists in several ones. */
+  abstract getReferences(namespace: string, version: string, fileName?: string, workspace?: string): Observable<ReferenceReport>;
   /** Fails with HTTP 409 and the ReferenceReport as body if the namespace is still used. */
-  abstract deleteNamespace(namespace: string, version: string): Observable<ReferenceReport>;
-  abstract clearWorkspace(backup: boolean): Observable<ClearWorkspaceResult>;
+  abstract deleteNamespace(namespace: string, version: string, workspace?: string): Observable<ReferenceReport>;
+  /** Clears the given workspace, the active one if omitted. */
+  abstract clearWorkspace(backup: boolean, workspace?: string): Observable<ClearWorkspaceResult>;
   abstract hasFilesToMigrate(): Observable<boolean>;
   abstract createBackup(): Observable<string>;
   abstract migrateWorkspace(setNewVersion: boolean): Observable<MigrationStatus>;

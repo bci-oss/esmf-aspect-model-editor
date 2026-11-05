@@ -21,6 +21,7 @@ export * from './model-api.port';
 export * from './model-checker.port';
 export * from './model-loader.port';
 export * from './model-opener.port';
+export * from './model-sources.port';
 export * from './namespaces-transfer.port';
 export * from './rdf.port';
 export * from './ui.port';

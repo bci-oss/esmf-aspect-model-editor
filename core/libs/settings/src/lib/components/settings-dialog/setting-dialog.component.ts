@@ -10,8 +10,15 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {GraphSettingsPort, ModelSessionFacade, SammLanguageSettingsService} from '@ame/domain';
-import {AlertService, DialogCloseButtonComponent, DialogCloseRequestHandler, LoadingScreenService, TitleService} from '@ame/shared';
+import {describeSourceError, GraphSettingsPort, ModelSessionFacade, SammLanguageSettingsService} from '@ame/domain';
+import {
+  AlertService,
+  DialogCloseButtonComponent,
+  DialogCloseRequestHandler,
+  LoadingScreenService,
+  NotificationsService,
+  TitleService,
+} from '@ame/shared';
 import {Component, computed, ElementRef, inject, signal, viewChildren} from '@angular/core';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle} from '@angular/material/dialog';
@@ -24,14 +31,35 @@ import {TranslocoDirective, TranslocoService} from '@jsverse/transloco';
 import * as locale from 'locale-codes';
 import {NamespaceConfiguration} from '../../model';
 import {SettingsFormService} from '../../services';
+import {WorkspacesDraftService} from '../../services/workspaces-draft.service';
 import {LanguageSettingsComponent} from '../model-configuration/language-settings/language-settings.component';
 import {NamespaceSettingsComponent} from '../model-configuration/namespace-settings/namespace-settings.component';
 import {AutomatedWorkflowComponent} from '../system-configuration/automated-workflow/automated-workflow.component';
 import {EditorConfigurationComponent} from '../system-configuration/editor-configuration/editor-configuration.component';
+import {GithubSourcesSettingsComponent} from '../system-configuration/github-sources/github-sources-settings.component';
 import {HeaderCopyrightComponent} from '../system-configuration/header-copyright/header-copyright.component';
+import {WorkspacesSettingsComponent} from '../system-configuration/workspaces/workspaces-settings.component';
 
 export type SettingsSectionId =
-  'automatedWorkflow' | 'editorConfiguration' | 'languageConfiguration' | 'namespaceConfiguration' | 'copyrightHeaderConfiguration';
+  | 'automatedWorkflow'
+  | 'editorConfiguration'
+  | 'workspaces'
+  | 'githubSources'
+  | 'languageConfiguration'
+  | 'namespaceConfiguration'
+  | 'copyrightHeaderConfiguration';
+
+/** Sections without fields of the settings form. */
+export const FORMLESS_SECTIONS: ReadonlySet<SettingsSectionId> = new Set(['workspaces', 'githubSources']);
+/** Sections whose actions (add, sync, …) run immediately and do not need "Apply". */
+export const IMMEDIATE_SECTIONS: ReadonlySet<SettingsSectionId> = new Set(['githubSources']);
+/** Sections that apply to the whole application instead of the loaded model. */
+export const APPLICATION_SECTIONS: ReadonlySet<SettingsSectionId> = new Set([
+  'automatedWorkflow',
+  'editorConfiguration',
+  'workspaces',
+  'githubSources',
+]);
 
 export interface SettingsSection {
   id: SettingsSectionId;
@@ -86,6 +114,18 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
           'settingsDialog.configuration.restoreSession',
         ],
         resettable: true,
+      },
+      {
+        id: 'workspaces',
+        name: 'modelSources.workspaces.title',
+        description: 'modelSources.workspaces.description',
+        keywords: ['modelSources.workspaces.add', 'modelSources.workspaces.note'],
+      },
+      {
+        id: 'githubSources',
+        name: 'modelSources.github.title',
+        description: 'modelSources.github.description',
+        keywords: ['modelSources.github.url', 'modelSources.github.sync', 'modelSources.token.title'],
       },
     ],
   },
@@ -149,11 +189,14 @@ export const SETTINGS_LAST_SECTION_KEY = 'ame.settings.lastSection';
     LanguageSettingsComponent,
     NamespaceSettingsComponent,
     HeaderCopyrightComponent,
+    WorkspacesSettingsComponent,
+    GithubSourcesSettingsComponent,
     MatDialogActions,
     MatButton,
     MatTooltip,
     TranslocoDirective,
   ],
+  providers: [WorkspacesDraftService],
 })
 export class SettingDialogComponent implements DialogCloseRequestHandler {
   private readonly settingDialogComponentMatDialogRef = inject(MatDialogRef<SettingDialogComponent>);
@@ -165,6 +208,8 @@ export class SettingDialogComponent implements DialogCloseRequestHandler {
   private readonly titleService = inject(TitleService);
   private readonly loadedFilesService = inject(ModelSessionFacade);
   private readonly transloco = inject(TranslocoService);
+  private readonly workspacesDraft = inject(WorkspacesDraftService);
+  private readonly notifications = inject(NotificationsService);
 
   private readonly treeItems = viewChildren<ElementRef<HTMLElement>>('treeItem');
 
@@ -172,6 +217,8 @@ export class SettingDialogComponent implements DialogCloseRequestHandler {
   readonly selectedSectionId = signal<SettingsSectionId>(this.restoreLastSection());
   readonly selectedSection = computed(() => ALL_SECTIONS.find(section => section.id === this.selectedSectionId()) ?? ALL_SECTIONS[0]);
   readonly searchTerm = signal('');
+  readonly applicationSections = APPLICATION_SECTIONS;
+  readonly immediateSections = IMMEDIATE_SECTIONS;
 
   /** Groups and sections matching the search term (title, description or labels inside the section). */
   readonly visibleGroups = computed(() => {
@@ -198,7 +245,7 @@ export class SettingDialogComponent implements DialogCloseRequestHandler {
   }
 
   get isDirty(): boolean {
-    return this.formService.isDirty();
+    return this.formService.isDirty() || this.workspacesDraft.hasChanges();
   }
 
   get hasLoadedModel(): boolean {
@@ -319,6 +366,17 @@ export class SettingDialogComponent implements DialogCloseRequestHandler {
     this.handleLanguageRemoval(onConfirmed);
     this.handleNamespaceChange();
     this.formService.markPristine();
+    this.applyWorkspaceChanges();
+  }
+
+  /** Runs the queued workspace changes; they continue in the background when the dialog closes (OK). */
+  private applyWorkspaceChanges(): void {
+    if (!this.workspacesDraft.hasChanges()) return;
+    this.workspacesDraft.apply().subscribe({
+      complete: () => this.notifications.success({title: this.translate('modelSources.workspaces.applied')}),
+      error: error =>
+        this.notifications.error({title: this.translate('modelSources.workspaces.error'), message: describeSourceError(error)}),
+    });
   }
 
   handleLanguageRemoval(onConfirmed?: () => void): void {
@@ -431,7 +489,8 @@ export class SettingDialogComponent implements DialogCloseRequestHandler {
   }
 
   isSectionInvalid(id: SettingsSectionId): boolean {
-    return this.settingsForm[id]().invalid();
+    if (FORMLESS_SECTIONS.has(id)) return false;
+    return this.settingsForm[id as Exclude<SettingsSectionId, 'workspaces' | 'githubSources'>]().invalid();
   }
 
   isGroupInvalid(group: SettingsGroup): boolean {

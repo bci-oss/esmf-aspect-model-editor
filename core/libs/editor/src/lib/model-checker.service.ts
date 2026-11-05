@@ -132,10 +132,16 @@ export class ModelCheckerService implements ModelCheckerPort {
     status.loaded = currentFile?.absoluteName === absoluteName;
     status.errored = status.sammVersion === 'unknown';
     status.aspectModelUrn = aspectModelUrn;
+    status.source = this.findModelData(absoluteName, namespacesStructure)?.source;
 
     signal?.next(absoluteName);
 
     return status;
+  }
+
+  private findModelData(absoluteName: string, namespacesStructure: WorkspaceStructure): ModelData | undefined {
+    const [namespace, version, fileName] = (absoluteName || '').split(':');
+    return namespacesStructure?.[namespace]?.find(entry => entry.version === version)?.models.find(model => model.name === fileName);
   }
 
   private extractDependencies(rdfModel: RdfModel): string[] {

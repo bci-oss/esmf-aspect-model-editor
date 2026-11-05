@@ -113,7 +113,7 @@
         <header class="settings__section-header" data-testid="settings-section-header">
           <div class="settings__section-heading">
             <h3 class="settings__section-title" id="settings-section-title">{{ t(section.name) }}</h3>
-            @if (section.id === 'automatedWorkflow' || section.id === 'editorConfiguration') {
+            @if (applicationSections.has(section.id)) {
               <span class="settings__scope" data-testid="settings-scope">
                 <mat-icon>public</mat-icon>{{ t('settingsDialog.scope.application') }}
               </span>
@@ -132,6 +132,11 @@
             }
           </div>
           <p class="settings__section-description" data-testid="settings-section-description">{{ t(section.description) }}</p>
+          @if (immediateSections.has(section.id)) {
+            <p class="settings__section-description" data-testid="settings-immediate-hint">
+              <mat-icon inline>bolt</mat-icon> {{ t('modelSources.appliedImmediately') }}
+            </p>
+          }
           @if (section.resettable) {
             <button class="settings__reset" (click)="resetSelectedSection()" mat-button type="button" data-testid="settings-reset-section">
               <mat-icon>restart_alt</mat-icon>
@@ -162,6 +167,12 @@
           }
           @case ('copyrightHeaderConfiguration') {
             <ame-copyright></ame-copyright>
+          }
+          @case ('workspaces') {
+            <ame-workspaces-settings />
+          }
+          @case ('githubSources') {
+            <ame-github-sources-settings />
           }
         }
       </section>

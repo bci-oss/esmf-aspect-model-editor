@@ -1,0 +1,107 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t">
+  <div class="sources">
+    @if (loadError()) {
+      <div class="sources__error" role="alert" data-testid="workspaces-load-error">
+        <mat-icon>error</mat-icon><span>{{ loadError() }}</span>
+      </div>
+    }
+
+    <p class="sources__hint">{{ t('modelSources.workspaces.hint') }}</p>
+
+    <div class="sources__list">
+      @for (workspace of store.workspaces(); track workspace.path) {
+        @let removed = draft.isRemoved(workspace.path);
+        <div class="sources__item" [class.sources__item--removed]="removed" [attr.data-testid]="'workspace-' + $index">
+          <div class="sources__main">
+            <span class="sources__name">
+              <mat-icon>{{ workspace.defaultWorkspace ? 'home' : 'folder' }}</mat-icon>
+              {{ workspace.defaultWorkspace ? t('modelSources.workspaces.defaultName', {name: workspace.name}) : workspace.name }}
+              @if (removed) {
+                <span class="sources__badge sources__badge--removed" data-testid="workspace-pending-removal">
+                  {{ t('modelSources.workspaces.pendingRemoval') }}
+                </span>
+              }
+            </span>
+            <span class="sources__path">{{ workspace.path }}</span>
+          </div>
+          @if (workspace.defaultWorkspace) {
+            <mat-icon class="sources__locked" [matTooltip]="t('modelSources.workspaces.defaultLocked')">lock</mat-icon>
+          } @else if (removed) {
+            <button
+              [matTooltip]="t('modelSources.workspaces.undo')"
+              [attr.aria-label]="t('modelSources.workspaces.undo')"
+              (click)="draft.undoRemove(workspace.path)"
+              mat-icon-button
+              type="button"
+              data-testid="workspace-undo-remove"
+            >
+              <mat-icon>undo</mat-icon>
+            </button>
+          } @else {
+            <button
+              [matTooltip]="t('modelSources.workspaces.remove')"
+              [attr.aria-label]="t('modelSources.workspaces.remove')"
+              (click)="draft.remove(workspace.path)"
+              mat-icon-button
+              type="button"
+              data-testid="workspace-remove"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          }
+        </div>
+      }
+      @for (path of draft.added(); track path) {
+        <div class="sources__item sources__item--added" data-testid="workspace-pending">
+          <div class="sources__main">
+            <span class="sources__name">
+              <mat-icon>folder</mat-icon>
+              {{ path }}
+              <span class="sources__badge sources__badge--added">{{ t('modelSources.workspaces.pendingAdd') }}</span>
+            </span>
+          </div>
+          <button
+            [matTooltip]="t('modelSources.workspaces.discard')"
+            [attr.aria-label]="t('modelSources.workspaces.discard')"
+            (click)="draft.remove(path)"
+            mat-icon-button
+            type="button"
+            data-testid="workspace-discard-pending"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+
+    @if (canPickDirectory) {
+      <div class="sources__add">
+        <button (click)="pickDirectory()" mat-flat-button color="primary" type="button" data-testid="workspace-pick">
+          <mat-icon>create_new_folder</mat-icon>
+          {{ t('modelSources.workspaces.add') }}
+        </button>
+      </div>
+      <p class="sources__note">{{ t('modelSources.workspaces.note') }}</p>
+    } @else {
+      <p class="sources__note" data-testid="workspace-desktop-only">{{ t('modelSources.workspaces.desktopOnly') }}</p>
+    }
+    @if (draft.hasChanges()) {
+      <p class="sources__hint" data-testid="workspace-apply-hint">
+        <mat-icon inline>info</mat-icon> {{ t('modelSources.workspaces.applyHint') }}
+      </p>
+    }
+  </div>
+</ng-container>

@@ -48,6 +48,15 @@ export class HttpHeaderBuilder {
     return this;
   }
 
+  /** The workspace a new model is saved to; existing models are always saved where they are. */
+  withTargetWorkspace(workspace?: string | null): HttpHeaderBuilder {
+    if (workspace) {
+      this.httpHeaders = this.httpHeaders.append('ame-target-workspace', workspace);
+    }
+
+    return this;
+  }
+
   build(): HttpHeaders {
     return this.httpHeaders;
   }

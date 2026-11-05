@@ -24,5 +24,7 @@ export interface AppConfig {
     models: string;
     generate: string;
     package: string;
+    workspaces: string;
+    githubSources: string;
   };
 }

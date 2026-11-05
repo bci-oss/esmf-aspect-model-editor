@@ -25,9 +25,15 @@ export abstract class ModelApiPort {
    */
   abstract fetchAllAspectMetaModel(fileEntries: Array<FileEntry>): Observable<Array<FileInformation>>;
   abstract fetchFormatedAspectModel(rdfContent: string, sourceLocation?: string): Observable<string>;
-  abstract saveAspectModel(rdfContent: string, aspectModelUrn: string, absoluteModelName?: string): Observable<string>;
+  /** `targetWorkspace` selects the workspace of a new file; existing files are saved where they are. */
+  abstract saveAspectModel(
+    rdfContent: string,
+    aspectModelUrn: string,
+    absoluteModelName?: string,
+    targetWorkspace?: string,
+  ): Observable<string>;
   abstract deleteAspectModel(aspectModelUrn: string): Observable<string>;
-  abstract importPackage(file: File): Observable<any>;
+  abstract importPackage(file: File, workspace?: string): Observable<any>;
   abstract loadNamespacesStructure(onlyAspectModel?: boolean): Observable<WorkspaceStructure>;
   abstract validate(rdfContent: string, sourceLocation?: string, validInfo?: boolean): Observable<Array<ViolationError>>;
   abstract migrateAspectModel(rdfContent: string, sourceLocation?: string): Observable<string>;

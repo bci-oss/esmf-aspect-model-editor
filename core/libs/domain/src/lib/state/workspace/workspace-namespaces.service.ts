@@ -13,6 +13,7 @@
 
 import {RdfNamingUtil} from '@ame/shared';
 import {computed, inject, Injectable, signal} from '@angular/core';
+import {ModelSource} from '../../model-api';
 import {LoadedFilesService} from '../../model-session';
 import {WorkspaceStore} from './workspace.store';
 
@@ -25,6 +26,8 @@ export class FileStatus {
   public dependencies: string[] = [];
   public missingDependencies: string[] = [];
   public aspectModelUrn = '';
+  /** The workspace or GitHub source containing the file; files of read-only sources cannot be changed or deleted. */
+  public source?: ModelSource;
 
   constructor(public name: string) {}
 }

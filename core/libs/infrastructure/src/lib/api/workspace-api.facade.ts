@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ClearWorkspaceResult, MigrationStatus, ReferenceReport, StoragePathResponse, WorkspaceFacade} from '@ame/domain';
+import {ClearWorkspaceResult, MigrationStatus, ModelFileLocation, ReferenceReport, StoragePathResponse, WorkspaceFacade} from '@ame/domain';
 import {inject, Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {NamespacesManagerService} from '../namespace-manager/shared/services/namespaces-manager.service';
@@ -25,8 +25,8 @@ export class WorkspaceApiFacade implements WorkspaceFacade {
   private readonly migratorApi = inject(MigratorApiService);
   private readonly namespacesManager = inject(NamespacesManagerService);
 
-  getStoragePath(): Observable<StoragePathResponse> {
-    return this.modelApi.getStoragePath();
+  getStoragePath(file?: ModelFileLocation): Observable<StoragePathResponse> {
+    return this.modelApi.getStoragePath(file);
   }
 
   fetchAspectMetaModel(aspectModelUrn: string): Observable<{content: string; sourceLocation: string | null}> {
@@ -37,16 +37,16 @@ export class WorkspaceApiFacade implements WorkspaceFacade {
     return this.modelApi.deleteAspectModel(aspectModelUrn);
   }
 
-  getReferences(namespace: string, version: string, fileName?: string): Observable<ReferenceReport> {
-    return this.modelApi.getReferences(namespace, version, fileName);
+  getReferences(namespace: string, version: string, fileName?: string, workspace?: string): Observable<ReferenceReport> {
+    return this.modelApi.getReferences(namespace, version, fileName, workspace);
   }
 
-  deleteNamespace(namespace: string, version: string): Observable<ReferenceReport> {
-    return this.modelApi.deleteNamespace(namespace, version);
+  deleteNamespace(namespace: string, version: string, workspace?: string): Observable<ReferenceReport> {
+    return this.modelApi.deleteNamespace(namespace, version, workspace);
   }
 
-  clearWorkspace(backup: boolean): Observable<ClearWorkspaceResult> {
-    return this.modelApi.clearWorkspace(backup);
+  clearWorkspace(backup: boolean, workspace?: string): Observable<ClearWorkspaceResult> {
+    return this.modelApi.clearWorkspace(backup, workspace);
   }
 
   hasFilesToMigrate(): Observable<boolean> {

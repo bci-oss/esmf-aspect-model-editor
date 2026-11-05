@@ -20,6 +20,7 @@ import {
   ModelData,
   ModelDocumentService,
   ModelService,
+  ModelSourcesStore,
   NamespaceFile,
   RdfModelUtil,
   RdfNodePort,
@@ -115,6 +116,7 @@ export class FileHandlingService implements FileHandlingPort {
   private titleService = inject(TitleService);
   private clipboard = inject(ClipboardService);
   private rdfNodeService = inject(RdfNodePort);
+  private modelSources = inject(ModelSourcesStore);
 
   private readonly tabStateService = inject(TabStateService);
 
@@ -689,7 +691,9 @@ export class FileHandlingService implements FileHandlingPort {
   }
 
   private updateAffectedModels(models: RdfModel[], originalNamespace: string, newNamespace: string): Observable<RdfModel[]> {
-    const requests = models.map(model => {
+    // models of read-only (GitHub) sources cannot be changed
+    const writableModels = models.filter(model => !this.modelSources.isReadOnlyLocation(model.getSourceLocation()));
+    const requests = writableModels.map(model => {
       const alias = model.getAliasByNamespace(`${originalNamespace}#`);
 
       if (alias) {

@@ -45,4 +45,18 @@ export interface TauriApi {
   copyToClipboard(text: string): void;
   /** The workspace models open in each window. Optional: older shells do not report them. */
   getOpenModels?(): Promise<OpenModelsSnapshot>;
+  /** Opens the native folder picker; resolves to null if cancelled. */
+  pickDirectory?(title?: string): Promise<string | null>;
+  /** Stores a GitHub token in the OS keychain (session memory if no keychain is available). */
+  githubTokenSet?(host: string, token: string): Promise<GithubTokenInfo>;
+  githubTokenDelete?(host: string): Promise<void>;
+  githubTokenInfo?(host: string): Promise<GithubTokenInfo>;
+  /** Checks or synchronizes a GitHub source; the shell adds the stored token, so it never reaches the web view. */
+  githubSourceAction?<T = unknown>(id: string, host: string, action: 'check' | 'sync'): Promise<T>;
+}
+
+export interface GithubTokenInfo {
+  stored: boolean;
+  /** False if the token is only kept in memory for this session because no keychain is available. */
+  persistent: boolean;
 }

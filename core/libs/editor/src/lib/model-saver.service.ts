@@ -19,6 +19,7 @@ import {
   ModelDocumentService,
   ModelSaverPort,
   ModelService,
+  ModelSourcesStore,
   NamespaceFile,
   RdfPort,
   WorkspaceStore,
@@ -26,11 +27,15 @@ import {
 import {LanguageTranslationService, NotificationsService, SaveValidateErrorsCodes, unresolvedElementsOf} from '@ame/shared';
 import {DestroyRef, inject, Injectable} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {MatDialog} from '@angular/material/dialog';
 import {RdfModel} from '@esmf/aspect-model-loader';
-import {catchError, delayWhen, first, map, Observable, of, retry, Subscription, switchMap, tap, throwError, timer} from 'rxjs';
+import {catchError, defer, delayWhen, first, map, Observable, of, retry, Subscription, switchMap, tap, throwError, timer} from 'rxjs';
 import {ModelSavingTrackerService} from './model-saving-tracker.service';
+import {TargetWorkspaceDialogComponent, TargetWorkspaceDialogData} from './target-workspace-dialog/target-workspace-dialog.component';
 
 import {TabStateService} from './tabs/tab-state.service';
+
+const SAVE_CANCELLED = 'saveCancelled';
 
 @Injectable({providedIn: 'root'})
 export class ModelSaverService implements ModelSaverPort {
@@ -45,6 +50,8 @@ export class ModelSaverService implements ModelSaverPort {
   private translate = inject(LanguageTranslationService);
   private configurationService = inject(ConfigurationService);
   private modelDocumentService = inject(ModelDocumentService);
+  private modelSources = inject(ModelSourcesStore);
+  private matDialog = inject(MatDialog);
 
   private readonly tabStateService = inject(TabStateService);
 
@@ -59,6 +66,15 @@ export class ModelSaverService implements ModelSaverPort {
   }
 
   saveModel(rdfModel?: RdfModel) {
+    if (!rdfModel && this.isCurrentModelReadOnly()) {
+      const source = this.modelSources.findSource(this.currentFile?.rdfModel?.getSourceLocation());
+      this.notificationsService.error({
+        title: this.translate.language.notificationService.aspectSavedError,
+        message: this.translate.translateService.translate('modelSources.readOnlySave', {source: source?.name ?? ''}),
+      });
+      return of(null);
+    }
+
     const synchronizedModel = this.modelService.synchronizeModelToRdf();
     return (synchronizedModel || throwError(() => ({type: SaveValidateErrorsCodes.desynchronized}))).pipe(
       takeUntilDestroyed(this.destroyRef),
@@ -71,6 +87,10 @@ export class ModelSaverService implements ModelSaverPort {
         this.workspaceStore.triggerRefresh();
       }),
       catchError(error => {
+        if (error?.type === SAVE_CANCELLED) {
+          console.info('Saving was cancelled by the user');
+          return of(null);
+        }
         console.error('Error on saving aspect model', error);
         const unresolvedElements = unresolvedElementsOf(error);
         this.notificationsService.error(
@@ -96,7 +116,7 @@ export class ModelSaverService implements ModelSaverPort {
       takeUntilDestroyed(this.destroyRef),
       delayWhen(() => timer(this.settings.saveTimerSeconds * 1000)),
       switchMap(() =>
-        this.currentFile.cachedFile.getKeys().length && !this.currentFile.name.includes('empty.ttl')
+        this.currentFile.cachedFile.getKeys().length && !this.currentFile.name.includes('empty.ttl') && this.canAutoSave()
           ? this.saveModel().pipe(takeUntilDestroyed(this.destroyRef), first())
           : of(null),
       ),
@@ -128,6 +148,49 @@ export class ModelSaverService implements ModelSaverPort {
     }
   }
 
+  /** Files of GitHub sources are read-only. */
+  isCurrentModelReadOnly(): boolean {
+    return this.modelSources.isReadOnlyLocation(this.currentFile?.rdfModel?.getSourceLocation());
+  }
+
+  /**
+   * Autosave neither touches read-only files nor stores a new model before the user chose its workspace;
+   * the first save of a new model is always explicit.
+   */
+  private canAutoSave(): boolean {
+    if (this.isCurrentModelReadOnly()) return false;
+    return !(this.isNewModel() && this.modelSources.hasMultipleWorkspaces());
+  }
+
+  private isNewModel(): boolean {
+    return !!this.currentFile && !this.currentFile.fromWorkspace;
+  }
+
+  /**
+   * The workspace to save the model to. A model that already exists stays in its workspace (also when renamed);
+   * for a new model the user chooses the workspace if there are several. `undefined` lets the backend decide.
+   */
+  private resolveTargetWorkspace(currentModel: RdfModel | undefined, isCurrentFile: boolean): Observable<string | undefined> {
+    return defer(() => {
+      const existing = this.modelSources.findSource(currentModel?.getSourceLocation());
+      if (existing?.type === 'workspace') return of(existing.path);
+      if (!isCurrentFile || !this.isNewModel() || !this.modelSources.hasMultipleWorkspaces()) return of(undefined);
+
+      const data: TargetWorkspaceDialogData = {
+        workspaces: this.modelSources.workspaces(),
+        selected: this.modelSources.preferredWorkspace(),
+        fileName: this.currentFile?.name ?? '',
+      };
+      return this.matDialog
+        .open<TargetWorkspaceDialogComponent, TargetWorkspaceDialogData, string>(TargetWorkspaceDialogComponent, {data, width: '560px'})
+        .afterClosed()
+        .pipe(
+          tap(target => target && this.modelSources.rememberTargetWorkspace(target)),
+          switchMap(target => (target ? of(target) : throwError(() => ({type: SAVE_CANCELLED})))),
+        );
+    });
+  }
+
   private writeModelToWorkspace(rdfModel?: RdfModel): Observable<RdfModel> {
     const currentModel = rdfModel || this.currentFile?.rdfModel;
     const rdfContent = this.rdfSerializer.serializeModel(currentModel);
@@ -141,7 +204,11 @@ export class ModelSaverService implements ModelSaverPort {
       }));
     }
 
-    return this.modelApiService.fetchFormatedAspectModel(rdfContent, currentModel?.getSourceLocation()).pipe(
+    let targetWorkspace: string | undefined;
+    return this.modelSources.ensureLoaded().pipe(
+      switchMap(() => this.resolveTargetWorkspace(currentModel, !rdfModel)),
+      tap(target => (targetWorkspace = target)),
+      switchMap(() => this.modelApiService.fetchFormatedAspectModel(rdfContent, currentModel?.getSourceLocation())),
       takeUntilDestroyed(this.destroyRef),
       switchMap(content => {
         if (!content) {
@@ -158,7 +225,12 @@ export class ModelSaverService implements ModelSaverPort {
         const newAspectModelUrn = this.currentFile?.getAnyAspectModelUrn();
 
         const saveModel = () =>
-          this.modelApiService.saveAspectModel(contentWithCopyright, newAspectModelUrn, this.currentFile?.absoluteName || '');
+          this.modelApiService.saveAspectModel(
+            contentWithCopyright,
+            newAspectModelUrn,
+            this.currentFile?.absoluteName || '',
+            targetWorkspace,
+          );
         if (this.currentFile) {
           this.currentFile.originalAspectModelUrn = newAspectModelUrn;
         }

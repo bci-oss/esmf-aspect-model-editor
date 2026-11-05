@@ -1,0 +1,222 @@
+/*!
+ * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+ *
+ * See the AUTHORS file(s) distributed with this work for
+ * additional information regarding authorship.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  padding: 0 4px 0 0;
+}
+
+.sources {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &__hint,
+  &__note,
+  &__empty {
+    margin: 0;
+    color: var(--ame-gray-60, #616161);
+  }
+
+  &__note {
+    font-size: 12px;
+  }
+
+  &__subtitle {
+    margin: 12px 0 0;
+    font-weight: 600;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__item,
+  &__token {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    background-color: var(--ame-surface-card, var(--ame-gray-5, #f5f5f6));
+    border: 1px solid var(--ame-border-color, var(--ame-gray-10, #cfd0d1));
+    border-radius: 12px;
+
+    &--disabled {
+      opacity: 0.6;
+    }
+
+    &--removed .sources__main {
+      opacity: 0.6;
+      text-decoration: line-through;
+    }
+
+    &--added {
+      border-style: dashed;
+    }
+  }
+
+  &__token {
+    flex-wrap: wrap;
+  }
+
+  &__main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__name {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    word-break: break-all;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+  }
+
+  &__path {
+    display: block;
+    font-size: 12px;
+    opacity: 0.7;
+    word-break: break-all;
+  }
+
+  &__item-error,
+  &__invalid {
+    color: var(--ame-error, #b00020);
+    font-size: 12px;
+  }
+
+  &__badge {
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    background-color: var(--ame-gray-10, #e0e0e0);
+    white-space: nowrap;
+
+    &--upToDate {
+      background-color: #d7f0dc;
+      color: #1d5e2b;
+    }
+
+    &--updateAvailable {
+      background-color: #fff1c2;
+      color: #6b4b00;
+    }
+
+    &--error,
+    &--removed {
+      background-color: #fbdada;
+      color: #8a1010;
+    }
+
+    &--added {
+      background-color: #d7f0dc;
+      color: #1d5e2b;
+    }
+  }
+
+  &__locked {
+    margin-right: 8px;
+    color: var(--ame-gray-50, #757575);
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  &__add {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  &__grow {
+    flex: 1 1 280px;
+  }
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    border: 1px solid var(--ame-border-color, var(--ame-gray-10, #cfd0d1));
+    border-radius: 12px;
+  }
+
+  &__toggle {
+    align-self: flex-start;
+  }
+
+  &__advanced {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+    padding-top: 4px;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 8px;
+
+    .sources__subtitle {
+      margin: 0;
+    }
+  }
+
+  &__token-edit {
+    display: flex;
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__token-input {
+    flex: 1 1 240px;
+  }
+
+  &__error,
+  &__info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background-color: var(--ame-gray-5, #f5f5f6);
+  }
+
+  &__error {
+    color: var(--ame-error, #b00020);
+  }
+}

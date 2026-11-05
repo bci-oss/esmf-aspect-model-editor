@@ -16,4 +16,6 @@ export * from './model-configuration/namespace-settings/namespace-settings.compo
 export * from './settings-dialog/setting-dialog.component';
 export * from './system-configuration/automated-workflow/automated-workflow.component';
 export * from './system-configuration/editor-configuration/editor-configuration.component';
+export * from './system-configuration/github-sources/github-sources-settings.component';
 export * from './system-configuration/header-copyright/header-copyright.component';
+export * from './system-configuration/workspaces/workspaces-settings.component';

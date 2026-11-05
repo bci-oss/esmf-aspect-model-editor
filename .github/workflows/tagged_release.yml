@@ -126,7 +126,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev libdbus-1-dev patchelf
 
       # The backend is released as jpackage app image per platform. It is unpacked into backend/<os>/,
       # which `pnpm run build:tauri` (utils/tauri-build.mjs) adds as bundle resource via

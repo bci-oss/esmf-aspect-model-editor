@@ -16,10 +16,24 @@
   <ame-dialog-close-button />
 
   <mat-dialog-content>
+    @if (workspaces.length) {
+      <mat-form-field class="confirm" appearance="outline" subscriptSizing="dynamic">
+        <mat-label>{{ t('sidebar.deletion.clear.workspace') }}</mat-label>
+        <mat-select [value]="workspace()" (selectionChange)="workspace.set($event.value)" data-testid="clear-workspace-select">
+          @for (option of workspaces; track option.path) {
+            <mat-option [value]="option.path">
+              {{ option.defaultWorkspace ? t('modelSources.workspaces.defaultName', {name: option.name}) : option.name }}
+              ({{ option.fileCount }})
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
+
     <div class="warning" role="alert" data-testid="clear-workspace-warning">
       <mat-icon>warning</mat-icon>
       <div>
-        <p>{{ t('sidebar.deletion.clear.warning', {count: data.fileCount}) }}</p>
+        <p>{{ t('sidebar.deletion.clear.warning', {count: fileCount()}) }}</p>
         <p>{{ t('sidebar.deletion.clear.undo') }}</p>
       </div>
     </div>

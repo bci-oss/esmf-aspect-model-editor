@@ -20,6 +20,7 @@ import {provideRouter} from '@angular/router';
 import {BehaviorSubject, of} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {AppShellInitializer} from './app-shell-initializer.component';
+import {GithubUpdateCheckService} from './github-update-check.service';
 import {StartupService} from './startup.service';
 import {TauriTunnelService} from './tauri-tunnel.service';
 
@@ -89,6 +90,7 @@ describe('AppShellInitializer', () => {
         provideRouter([]),
         {provide: IPC_RENDERER, useValue: ipcRenderer},
         {provide: TitleService, useValue: titleService},
+        {provide: GithubUpdateCheckService, useValue: {checkOnStartup: vi.fn(() => of([]))}},
         {provide: BrowserService, useValue: browserService},
         {provide: TauriTunnelService, useValue: tauriTunnelService},
         {provide: ConfigurationService, useValue: configurationService},

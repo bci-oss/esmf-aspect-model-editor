@@ -1,0 +1,57 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t">
+  <h2 mat-dialog-title>{{ t('generateDiagramDialog.title') }}</h2>
+  <ame-dialog-close-button />
+
+  <mat-dialog-content>
+    @if (!isGenerating()) {
+      <mat-form-field appearance="fill">
+        <mat-label>{{ t('generateDiagramDialog.language') }}</mat-label>
+        <mat-select [formField]="diagramForm.language" data-testid="diagramLanguage">
+          @for (language of languages(); track language.tag) {
+            <mat-option [value]="language.tag">{{ language.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>{{ t('generateDiagramDialog.format') }}</mat-label>
+        <mat-select [formField]="diagramForm.format" data-testid="diagramFormat">
+          @for (format of formats; track format) {
+            <mat-option [value]="format" [attr.data-testid]="'diagramFormat-' + format">{{ format }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    } @else {
+      <div class="loading">
+        <h3>{{ t('generateDiagramDialog.generating') }}</h3>
+        <mat-spinner></mat-spinner>
+      </div>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-flat-button mat-dialog-close>{{ t('generateDiagramDialog.button.cancel') }}</button>
+    <button
+      [disabled]="isGenerating()"
+      (click)="downloadDiagram()"
+      type="button"
+      mat-flat-button
+      color="primary"
+      data-testid="downloadDiagram"
+    >
+      {{ t('generateDiagramDialog.button.download') }}
+    </button>
+  </mat-dialog-actions>
+</ng-container>

@@ -104,6 +104,22 @@ describe('LoadedFilesService & NamespaceFile', () => {
       expect(service.hasAspect()).toBe(true);
     });
 
+    it.each([
+      [true, true],
+      [false, false],
+      [undefined, false],
+    ])('should take over whether the file is stored in the workspace (%s)', (fromWorkspace, expected) => {
+      const added = service.addFile({
+        rdfModel,
+        cachedFile,
+        aspect,
+        absoluteName: 'org.eclipse.esmf.samm:test:1.0.0:TestAspect.ttl',
+        fromWorkspace,
+      });
+
+      expect(added.fromWorkspace).toBe(expected);
+    });
+
     it('should separate current file and external files', () => {
       const mainPayload: LoadedFilePayload = {
         rdfModel,

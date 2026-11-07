@@ -18,6 +18,7 @@ import {TestBed} from '@angular/core/testing';
 import {MatDialog} from '@angular/material/dialog';
 import {BehaviorSubject, of} from 'rxjs';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {AasImportService} from '../aas-import/aas-import.service';
 import {ShapeSettingsService} from '../editor-dialog/services/shape-settings.service';
 import {FileHandlingService} from '../editor-toolbar/services/file-handling.service';
 import {GenerateHandlingService} from '../editor-toolbar/services/generate-handling.service';
@@ -40,11 +41,22 @@ describe('EditorTauriBridge', () => {
   let editorService: any;
   let fileHandlingService: any;
   let shapeSettingsService: any;
+  let generateHandlingService: any;
+  let aasImportService: any;
 
   beforeEach(() => {
     ipcMock = createIpcMock();
     editorService = {zoomIn: vi.fn(), zoomOut: vi.fn(), fit: vi.fn(), actualSize: vi.fn(), formatModel: vi.fn()};
     fileHandlingService = {loadEmptyModel: vi.fn(() => of(true)), onValidateFile: vi.fn(), onCopyToClipboard: vi.fn()};
+    generateHandlingService = {
+      onGenerateDocumentation: vi.fn(),
+      onGenerateDiagram: vi.fn(),
+      onGenerateSql: vi.fn(),
+      onGenerateJsonLd: vi.fn(),
+      onGenerateParquetPayload: vi.fn(),
+      onGenerateJavaClasses: vi.fn(),
+    };
+    aasImportService = {onImportAas: vi.fn()};
     shapeSettingsService = {
       selectedCells$: new BehaviorSubject([]),
       hasSelection$: new BehaviorSubject(false),
@@ -59,7 +71,8 @@ describe('EditorTauriBridge', () => {
         {provide: EditorService, useValue: editorService},
         {provide: FileHandlingService, useValue: fileHandlingService},
         {provide: ShapeSettingsService, useValue: shapeSettingsService},
-        {provide: GenerateHandlingService, useValue: {onGenerateDocumentation: vi.fn()}},
+        {provide: GenerateHandlingService, useValue: generateHandlingService},
+        {provide: AasImportService, useValue: aasImportService},
         {provide: SaveModelDialogService, useValue: {openDialog: vi.fn(() => of(true))}},
         {provide: ModelSavingTrackerService, useValue: {isSaved$: of(true)}},
         {provide: LoadedFilesService, useValue: {currentLoadedFile: {cachedFile: {get: vi.fn()}}}},
@@ -88,6 +101,45 @@ describe('EditorTauriBridge', () => {
     expect(editorService.formatModel).toHaveBeenCalled();
     expect(fileHandlingService.onValidateFile).toHaveBeenCalled();
     expect(shapeSettingsService.editSelectedCell).toHaveBeenCalled();
+  });
+
+  it('delegates the SDK generator menu signals to the generate handling', () => {
+    ipcMock.handlers.get(TAURI_EVENTS.SIGNAL.GENERATE_DIAGRAM)?.();
+    ipcMock.handlers.get(TAURI_EVENTS.SIGNAL.GENERATE_SQL)?.();
+    ipcMock.handlers.get(TAURI_EVENTS.SIGNAL.GENERATE_JSON_LD)?.();
+    ipcMock.handlers.get(TAURI_EVENTS.SIGNAL.GENERATE_PARQUET_PAYLOAD)?.();
+    ipcMock.handlers.get(TAURI_EVENTS.SIGNAL.GENERATE_JAVA_CLASSES)?.();
+
+    expect(generateHandlingService.onGenerateDiagram).toHaveBeenCalled();
+    expect(generateHandlingService.onGenerateSql).toHaveBeenCalled();
+    expect(generateHandlingService.onGenerateJsonLd).toHaveBeenCalled();
+    expect(generateHandlingService.onGenerateParquetPayload).toHaveBeenCalled();
+    expect(generateHandlingService.onGenerateJavaClasses).toHaveBeenCalled();
+  });
+
+  it('imports the Asset Administration Shell chosen in the native file dialog', () => {
+    const fileInfo = {path: '/tmp/Shell.aasx', name: 'Shell.aasx', content: new Uint8Array([1, 2])};
+
+    ipcMock.handlers.get(TAURI_EVENTS.SIGNAL.IMPORT_AAS)?.(fileInfo);
+
+    expect(aasImportService.onImportAas).toHaveBeenCalledWith(fileInfo);
+  });
+
+  it('enables the generator menu items only while the editor shows a model', () => {
+    shapeSettingsService.hasCellsSubject$.next(true);
+
+    expect(ipcMock.send).toHaveBeenCalledWith(
+      TAURI_EVENTS.SIGNAL.UPDATE_MENU_ITEM,
+      expect.objectContaining({
+        ids: expect.arrayContaining([
+          'GENERATE_DIAGRAM',
+          'GENERATE_SQL',
+          'GENERATE_JSON_LD',
+          'GENERATE_PARQUET_PAYLOAD',
+          'GENERATE_JAVA_CLASSES',
+        ]),
+      }),
+    );
   });
 
   it('loads an empty model on NEW_EMPTY_MODEL when current model is saved', () => {

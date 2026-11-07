@@ -35,6 +35,7 @@ const config: AppConfig = {
     package: '/ame/api/package',
     workspaces: '/ame/api/workspaces',
     githubSources: '/ame/api/sources/github',
+    refactoring: '/ame/api/refactoring',
   },
 };
 
@@ -768,6 +769,143 @@ describe('ModelApiService', () => {
       req.flush('<xml content>');
 
       expect(result).toBe('<xml content>');
+    });
+  });
+
+  describe('previewAasImport', () => {
+    beforeEach(() => configureTestBed());
+
+    it('should send the AAS file to the selected workspace', () => {
+      const file = new File(['{}'], 'Movement.json');
+      const candidate = {
+        urn: 'urn:samm:org.example:1.0.0#Movement',
+        namespace: 'org.example',
+        version: '1.0.0',
+        fileName: 'Movement.ttl',
+        alreadyExists: false,
+      };
+      let result: unknown;
+      service.previewAasImport(file, '/home/models').subscribe(value => (result = value));
+
+      const req = httpMock.expectOne(req => req.url === `${packageUrl}/import-aas/preview`);
+      expect(req.request.params.get('workspace')).toBe('/home/models');
+      expect((req.request.body as FormData).get('aasFile')).toBe(file);
+      req.flush([candidate]);
+
+      expect(result).toEqual([candidate]);
+    });
+  });
+
+  describe('importAas', () => {
+    beforeEach(() => configureTestBed());
+
+    it('should import into the default workspace without a workspace parameter', () => {
+      service.importAas(new File(['{}'], 'Movement.json')).subscribe();
+
+      const req = httpMock.expectOne(req => req.url === `${packageUrl}/import-aas`);
+      expect(req.request.params.has('workspace')).toBe(false);
+      req.flush({});
+    });
+  });
+
+  describe('getElementUsage', () => {
+    beforeEach(() => configureTestBed());
+
+    it('should pass the element in the aspect-model-urn header', () => {
+      const report = {urn: 'urn:samm:org.example:1.0.0#speed', usages: [], unreadable: []};
+      let result: unknown;
+      service.getElementUsage(report.urn).subscribe(value => (result = value));
+
+      const req = httpMock.expectOne(`${modelsUrl}/usage`);
+      expect(req.request.method).toBe('GET');
+      expect(req.request.headers.get('aspect-model-urn')).toBe(report.urn);
+      req.flush(report);
+
+      expect(result).toEqual(report);
+    });
+  });
+
+  describe('generateDiagram', () => {
+    beforeEach(() => configureTestBed());
+
+    it('should request the diagram as blob in the given format and language', () => {
+      let result: Blob | undefined;
+      service.generateDiagram('<ttl content>', 'de', 'PNG', 'file:///source.ttl').subscribe(value => (result = value));
+
+      const req = httpMock.expectOne(req => req.url === `${generateUrl}/diagram`);
+      expect(req.request.params.get('language')).toBe('de');
+      expect(req.request.params.get('format')).toBe('PNG');
+      expect(req.request.responseType).toBe('blob');
+      expect(req.request.headers.get('uri')).toBe('file:///source.ttl');
+      req.flush(new Blob(['png']));
+
+      expect(result).toBeInstanceOf(Blob);
+    });
+  });
+
+  describe('generateSql', () => {
+    beforeEach(() => configureTestBed());
+
+    it('should generate the sql script for the given dialect', () => {
+      let result: string | undefined;
+      service.generateSql('<ttl content>', 'en', 'POSTGRESQL').subscribe(value => (result = value));
+
+      const req = httpMock.expectOne(req => req.url === `${generateUrl}/sql`);
+      expect(req.request.params.get('dialect')).toBe('POSTGRESQL');
+      expect(req.request.params.get('language')).toBe('en');
+      req.flush('CREATE TABLE movement');
+
+      expect(result).toBe('CREATE TABLE movement');
+    });
+  });
+
+  describe('generateJsonLd', () => {
+    beforeEach(() => configureTestBed());
+
+    it('should generate the json-ld document', () => {
+      let result: string | undefined;
+      service.generateJsonLd('<ttl content>').subscribe(value => (result = value));
+
+      const req = httpMock.expectOne(`${generateUrl}/json-ld`);
+      req.flush('{"@context": {}}');
+
+      expect(result).toBe('{"@context": {}}');
+    });
+  });
+
+  describe('generateJavaClasses', () => {
+    beforeEach(() => configureTestBed());
+
+    it('should request the java classes as zip with the chosen options', () => {
+      let result: Blob | undefined;
+      const options = {packageName: 'com.example', staticMetaModel: true, jacksonAnnotations: false};
+      service.generateJavaClasses('<ttl content>', options, 'file:///source.ttl').subscribe(value => (result = value));
+
+      const req = httpMock.expectOne(req => req.url === `${generateUrl}/java`);
+      expect(req.request.params.get('packageName')).toBe('com.example');
+      expect(req.request.params.get('staticMetaModel')).toBe('true');
+      expect(req.request.params.get('jacksonAnnotations')).toBe('false');
+      expect(req.request.responseType).toBe('blob');
+      expect(req.request.headers.get('uri')).toBe('file:///source.ttl');
+      req.flush(new Blob(['zip']));
+
+      expect(result).toBeInstanceOf(Blob);
+    });
+  });
+
+  describe('generateParquetPayload', () => {
+    beforeEach(() => configureTestBed());
+
+    it('should request the parquet payload as blob', () => {
+      let result: Blob | undefined;
+      service.generateParquetPayload('<ttl content>', 'file:///source.ttl').subscribe(value => (result = value));
+
+      const req = httpMock.expectOne(`${generateUrl}/parquet-payload`);
+      expect(req.request.responseType).toBe('blob');
+      expect(req.request.headers.get('uri')).toBe('file:///source.ttl');
+      req.flush(new Blob(['PAR1']));
+
+      expect(result).toBeInstanceOf(Blob);
     });
   });
 });

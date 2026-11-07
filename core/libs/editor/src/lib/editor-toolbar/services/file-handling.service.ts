@@ -160,8 +160,8 @@ export class FileHandlingService implements FileHandlingPort {
     if (!modelContent) return of(null);
 
     const loadingScreenOptions: LoadingScreenOptions = {
-      title: this.translate.language?.notificationDialog?.LOADING,
-      content: this.translate.language?.notificationDialog?.CONTENT,
+      title: this.translate.language?.notificationDialog?.loading,
+      content: this.translate.language?.notificationDialog?.content,
       hasCloseButton: true,
     };
     this.loadingScreenService.open(loadingScreenOptions);
@@ -205,7 +205,7 @@ export class FileHandlingService implements FileHandlingPort {
         first(),
         tap(() => {
           const loadingScreenOptions: LoadingScreenOptions = {
-            title: this.translate.language?.notificationDialog?.LOADING,
+            title: this.translate.language?.notificationDialog?.loading,
             hasCloseButton: true,
           };
           this.loadingScreenService.open(loadingScreenOptions);
@@ -349,8 +349,8 @@ export class FileHandlingService implements FileHandlingPort {
     }
 
     this.loadingScreenService.open({
-      title: this.translate.language?.notificationDialog?.SAVING,
-      content: this.translate.language?.notificationDialog?.CONTENT,
+      title: this.translate.language?.notificationDialog?.saving,
+      content: this.translate.language?.notificationDialog?.content,
       hasCloseButton: false,
     });
 
@@ -541,7 +541,7 @@ export class FileHandlingService implements FileHandlingPort {
   onValidateFile() {
     if (!this.currentLoadedFile.cachedFile.getKeys().length) {
       this.notificationsService.info({
-        title: this.translate.language?.notificationDialog?.NO_ASPECT_TITLE,
+        title: this.translate.language?.notificationDialog?.noAspectTitle,
         timeout: 5000,
       });
       return;
@@ -552,8 +552,8 @@ export class FileHandlingService implements FileHandlingPort {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   validateFile(callback?: Function) {
     const loadingScreenOptions: LoadingScreenOptions = {
-      title: this.translate.language?.notificationDialog?.VALIDATING,
-      content: this.translate.language?.notificationDialog?.CONTENT,
+      title: this.translate.language?.notificationDialog?.validating,
+      content: this.translate.language?.notificationDialog?.content,
       hasCloseButton: true,
     };
     this.loadingScreenService.open(loadingScreenOptions);

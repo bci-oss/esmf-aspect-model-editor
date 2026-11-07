@@ -16,9 +16,12 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {TranslocoTestingModule} from '@jsverse/transloco';
+import {saveAs} from 'file-saver';
 import {of, Subject, throwError} from 'rxjs';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {PreviewDialogComponent, PreviewDialogOptions} from './preview-dialog.component';
+
+vi.mock('file-saver', () => ({saveAs: vi.fn()}));
 
 describe('PreviewDialogComponent', () => {
   let component: PreviewDialogComponent;
@@ -164,12 +167,48 @@ describe('PreviewDialogComponent', () => {
       expect(component.regenerating()).toBe(false);
     });
 
+    it('should show the caller specific hint for the language switch', async () => {
+      await create({
+        ...baseData,
+        languages: ['en', 'de'],
+        language: 'en',
+        regenerate: vi.fn(),
+        languageHint: 'Language of the SQL comments',
+      });
+      expect(fixture.nativeElement.textContent).toContain('Language of the SQL comments');
+    });
+
     it('should ignore selecting the current language', async () => {
       const regenerate = vi.fn(() => of('{}'));
       await create({...baseData, languages: ['en', 'de'], language: 'en', regenerate});
       component.changeLanguage('en');
       component.changeLanguage('');
       expect(regenerate).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('download', () => {
+    afterEach(() => vi.mocked(saveAs).mockClear());
+
+    it('should download the edited content as JSON by default', async () => {
+      await create();
+      component.content.set('{"edited": true}');
+
+      component.onDownload();
+
+      const [blob, fileName] = vi.mocked(saveAs).mock.calls[0] as [Blob, string];
+      expect(fileName).toBe('sample.json');
+      expect(blob.type).toBe('application/json;charset=utf-8');
+      expect(await blob.text()).toBe('{"edited": true}');
+    });
+
+    it('should download with the media type of the generated artifact', async () => {
+      await create({...baseData, fileName: 'Aspect.sql', mimeType: 'application/sql;charset=utf-8'});
+
+      component.onDownload();
+
+      const [blob] = vi.mocked(saveAs).mock.calls[0] as [Blob, string];
+      expect(blob.type).toBe('application/sql;charset=utf-8');
     });
   });
 });

@@ -419,6 +419,69 @@ describe('ModelHistoryService', () => {
     expect(store.histories()['tab-1'].undo).toEqual([]);
   });
 
+  describe('applyModelChange', () => {
+    const changeContent = (newContent: string) => vi.fn(() => ((content = newContent), true));
+
+    it('renders the changed model again and records it as one step which can be undone', () => {
+      const result = vi.fn();
+      service.applyModelChange(changeContent('v1')).subscribe(result);
+
+      expect(result).toHaveBeenCalledWith(true);
+      expect(loader.restoreModel).toHaveBeenCalledWith('v1', {order: 'v1'});
+      expect(renderer.renderAgain).toHaveBeenCalled();
+      expect(shapeSettings.closeShapeSettings).toHaveBeenCalled();
+      expect(store.activeHistory().current?.rdf).toBe('v1');
+
+      service.undo();
+      expect(restoredContent()).toBe('v0');
+    });
+
+    it('records pending changes of the graph as a step of their own first', () => {
+      change('v1');
+      service.applyModelChange(changeContent('v2')).subscribe();
+
+      expect(store.undoCount()).toBe(2);
+      expect(store.histories()['tab-1'].undo.map(step => step.rdf)).toEqual(['v0', 'v1']);
+    });
+
+    it('keeps the view of the graph', () => {
+      position = 30;
+      service.applyModelChange(changeContent('v1')).subscribe();
+      expect(viewState.apply).toHaveBeenCalledWith(view(30));
+    });
+
+    it('does nothing when the change leaves the model as it is', () => {
+      const result = vi.fn();
+      service.applyModelChange(() => false).subscribe(result);
+
+      expect(result).toHaveBeenCalledWith(false);
+      expect(loader.restoreModel).not.toHaveBeenCalled();
+      expect(store.undoCount()).toBe(0);
+    });
+
+    it('does nothing without an active tab or loaded model', () => {
+      const modelChange = changeContent('v1');
+      tabsStore.setActiveTabId(null);
+      service.applyModelChange(modelChange).subscribe();
+      activate('tab-1');
+      (TestBed.inject(LoadedFilesService) as {currentLoadedFile: unknown}).currentLoadedFile = null;
+      service.applyModelChange(modelChange).subscribe();
+
+      expect(modelChange).not.toHaveBeenCalled();
+      expect(loader.restoreModel).not.toHaveBeenCalled();
+    });
+
+    it('restores the previous version and passes the error on when the changed model cannot be loaded', () => {
+      loader.restoreModel.mockReturnValueOnce(throwError(() => new Error('broken')));
+      const error = vi.fn();
+      service.applyModelChange(changeContent('v1')).subscribe({error});
+
+      expect(error).toHaveBeenCalledWith(new Error('broken'));
+      expect(restoredContent()).toBe('v0');
+      expect(service.isRestoring()).toBe(false);
+    });
+  });
+
   describe('keyboard', () => {
     const key = (init: KeyboardEventInit, target?: HTMLElement) => {
       const event = new KeyboardEvent('keydown', {cancelable: true, ...init});

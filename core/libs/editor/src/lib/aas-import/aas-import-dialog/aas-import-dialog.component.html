@@ -1,0 +1,92 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t; prefix: 'aasImport'">
+  <h2 mat-dialog-title>{{ t('title') }}</h2>
+  <ame-dialog-close-button />
+
+  <mat-dialog-content>
+    <p class="file" data-testid="aas-import-file">
+      <mat-icon>description</mat-icon>
+      <span>{{ data.file.name }}</span>
+    </p>
+
+    @if (hasMultipleWorkspaces()) {
+      <h3>{{ t('workspace') }}</h3>
+      <mat-radio-group
+        class="workspaces"
+        [value]="workspace()"
+        [disabled]="importing()"
+        [attr.aria-label]="t('workspace')"
+        (change)="selectWorkspace($event.value)"
+      >
+        @for (source of workspaces(); track source.path) {
+          <mat-radio-button [value]="source.path" [attr.data-testid]="'aas-import-workspace-' + $index">
+            <span class="name">
+              <mat-icon>{{ source.defaultWorkspace ? 'home' : 'folder' }}</mat-icon>
+              {{ source.name }}
+            </span>
+            <span class="path">{{ source.path }}</span>
+          </mat-radio-button>
+        }
+      </mat-radio-group>
+    }
+
+    <h3>{{ t('models') }}</h3>
+    @if (candidates.isLoading()) {
+      <mat-progress-bar mode="indeterminate" data-testid="aas-import-loading" />
+    } @else if (candidates.error()) {
+      <p class="message error" data-testid="aas-import-preview-error">
+        <mat-icon>error</mat-icon>
+        <span>{{ t('previewFailed') }}</span>
+      </p>
+    } @else if (candidates.hasValue() && candidates.value().length) {
+      <ul class="candidates" data-testid="aas-import-candidates">
+        @for (candidate of candidates.value(); track candidate.urn) {
+          <li [class.exists]="candidate.alreadyExists" data-testid="aas-import-candidate">
+            <mat-icon>{{ candidate.alreadyExists ? 'block' : 'add_circle_outline' }}</mat-icon>
+            <span class="name">{{ fileLabel(candidate) }}</span>
+            @if (candidate.alreadyExists) {
+              <span class="hint">{{ t('exists') }}</span>
+            }
+          </li>
+        }
+      </ul>
+      @if (conflicts().length) {
+        <p class="message warning" data-testid="aas-import-conflicts">
+          <mat-icon>warning</mat-icon>
+          <span>{{ t('conflictHint') }}</span>
+        </p>
+      }
+    } @else {
+      <p data-testid="aas-import-empty">{{ t('empty') }}</p>
+    }
+
+    @if (importing()) {
+      <mat-progress-bar mode="indeterminate" data-testid="aas-import-importing" />
+    }
+    @if (importError(); as error) {
+      <p class="message error" data-testid="aas-import-error">
+        <mat-icon>error</mat-icon>
+        <span>{{ t(error === 'conflict' ? 'conflict' : 'importFailed') }}</span>
+      </p>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close data-testid="aas-import-cancel">{{ t('cancel') }}</button>
+    <button [disabled]="!canImport()" (click)="import()" mat-flat-button color="primary" data-testid="aas-import-confirm">
+      {{ t('import') }}
+    </button>
+  </mat-dialog-actions>
+</ng-container>

@@ -16,6 +16,7 @@ import {MaxGraphService} from '@ame/graph';
 import {LanguageTranslationService, NotificationsService} from '@ame/shared';
 import {inject, Injectable, Injector} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {RdfModel} from '@esmf/aspect-model-loader';
 import {
   CollapseChange,
   EventObject,
@@ -27,7 +28,7 @@ import {
   VisibleChange,
 } from '@maxgraph/core';
 import {environment} from 'environments/environment';
-import {catchError, EMPTY, filter, finalize, map, Observable, switchMap, take, tap} from 'rxjs';
+import {catchError, EMPTY, filter, finalize, map, Observable, of, switchMap, take, tap, throwError} from 'rxjs';
 import {ShapeSettingsStateService} from '../editor-dialog/services/shape-settings-state.service';
 import {ModelLoaderService} from '../model-loader.service';
 import {ModelRendererService} from '../model-renderer.service';
@@ -142,6 +143,34 @@ export class ModelHistoryService {
 
     const snapshot = this.capture();
     if (snapshot) this.store.record(tabId, snapshot);
+  }
+
+  /**
+   * Changes the RDF model of the current file directly (instead of the graph), renders it again and records the change
+   * as one step, so it can be undone like every other change. The change returns `false` when it changed nothing.
+   * When the changed model cannot be loaded, the previous version is restored and the error is passed on.
+   */
+  applyModelChange(change: (rdfModel: RdfModel) => boolean): Observable<boolean> {
+    const tabId = this.tabsStore.activeTabId();
+    if (!tabId || this.store.restoring()) return of(false);
+
+    this.flush();
+    const before = this.capture();
+    const rdfModel = this.loadedFilesService.currentLoadedFile?.rdfModel;
+    if (!before || !rdfModel || !change(rdfModel)) return of(false);
+
+    this.store.record(tabId, before);
+    const changed: ModelSnapshot = {
+      rdf: this.rdfService.serializeModel(rdfModel),
+      metadata: rdfModel.serializationMetadata.exportState(),
+      view: before.view,
+    };
+
+    return this.restore(changed).pipe(
+      tap(() => this.store.record(tabId, this.capture() ?? changed)),
+      map(() => true),
+      catchError(error => this.restore(before).pipe(switchMap(() => throwError(() => error)))),
+    );
   }
 
   /** Undo with Cmd/Ctrl+Z, redo with Cmd/Ctrl+Shift+Z (and Ctrl+Y on Windows/Linux). Text fields keep their own undo. */

@@ -63,3 +63,12 @@ mat-icon {
     color: var(--ame-primary);
   }
 }
+
+.menu-item-wrapper {
+  display: block;
+
+  /* Disabled buttons swallow pointer events, which would keep the tooltip with the reason hidden */
+  button:disabled {
+    pointer-events: none;
+  }
+}

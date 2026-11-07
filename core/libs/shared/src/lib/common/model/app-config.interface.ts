@@ -26,5 +26,6 @@ export interface AppConfig {
     package: string;
     workspaces: string;
     githubSources: string;
+    refactoring: string;
   };
 }

@@ -19,6 +19,7 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatDialog} from '@angular/material/dialog';
 import {NamedElement} from '@esmf/aspect-model-loader';
 import {Observable, distinctUntilChanged, filter, map, of, switchMap, take, tap} from 'rxjs';
+import {AasImportService} from '../aas-import/aas-import.service';
 import {ShapeSettingsService} from '../editor-dialog/services/shape-settings.service';
 import {TextModelLoaderModalComponent} from '../editor-toolbar/components/text-model-loader-modal/text-model-loader-modal.component';
 import {FileHandlingService, FileInfo} from '../editor-toolbar/services/file-handling.service';
@@ -46,6 +47,11 @@ const HAS_CELLS_MENU_IDS = [
   'GENERATE_AASX_XML',
   'GENERATE_JSON_PAYLOAD',
   'GENERATE_JSON_SCHEMA',
+  'GENERATE_DIAGRAM',
+  'GENERATE_SQL',
+  'GENERATE_JSON_LD',
+  'GENERATE_PARQUET_PAYLOAD',
+  'GENERATE_JAVA_CLASSES',
   'SEARCH_ELEMENTS',
 ];
 
@@ -63,6 +69,7 @@ export class EditorTauriBridge implements ITauriIpcBridge {
   private maxgraphService = inject(MaxGraphService);
   private shapeSettingsService = inject(ShapeSettingsService);
   private namespacesManagerService = inject(NamespacesTransferPort);
+  private aasImportService = inject(AasImportService);
   private fileHandlingService = inject(FileHandlingService);
   private generateHandlingService = inject(GenerateHandlingService);
   private editorService = inject(EditorService);
@@ -194,6 +201,7 @@ export class EditorTauriBridge implements ITauriIpcBridge {
     ipc.on(TAURI_EVENTS.SIGNAL.LOAD_SPECIFIC_FILE, (fileInfo: FileInfo) => this.fileHandlingService.onLoadModel(fileInfo));
     ipc.on(TAURI_EVENTS.SIGNAL.IMPORT_TO_WORKSPACE, (fileInfo: FileInfo) => this.fileHandlingService.onAddFileToNamespace(fileInfo));
     ipc.on(TAURI_EVENTS.SIGNAL.IMPORT_NAMESPACES, (fileInfo: FileInfo) => this.namespacesManagerService.onImportNamespaces(fileInfo));
+    ipc.on(TAURI_EVENTS.SIGNAL.IMPORT_AAS, (fileInfo: FileInfo) => this.aasImportService.onImportAas(fileInfo));
     ipc.on(TAURI_EVENTS.SIGNAL.COPY_TO_CLIPBOARD, () => this.fileHandlingService.onCopyToClipboard());
     ipc.on(TAURI_EVENTS.SIGNAL.SAVE_TO_WORKSPACE, () => this.fileHandlingService.onSaveAspectModelToWorkspace());
     ipc.on(TAURI_EVENTS.SIGNAL.EXPORT_MODEL, () => this.fileHandlingService.onExportAsAspectModelFile());
@@ -215,5 +223,10 @@ export class EditorTauriBridge implements ITauriIpcBridge {
     ipc.on(TAURI_EVENTS.SIGNAL.GENERATE_AASX_XML, () => this.generateHandlingService.onGenerateAASXFile());
     ipc.on(TAURI_EVENTS.SIGNAL.GENERATE_JSON_PAYLOAD, () => this.generateHandlingService.onGenerateJsonSample());
     ipc.on(TAURI_EVENTS.SIGNAL.GENERATE_JSON_SCHEMA, () => this.generateHandlingService.onGenerateJsonSchema());
+    ipc.on(TAURI_EVENTS.SIGNAL.GENERATE_DIAGRAM, () => this.generateHandlingService.onGenerateDiagram());
+    ipc.on(TAURI_EVENTS.SIGNAL.GENERATE_SQL, () => this.generateHandlingService.onGenerateSql());
+    ipc.on(TAURI_EVENTS.SIGNAL.GENERATE_JSON_LD, () => this.generateHandlingService.onGenerateJsonLd());
+    ipc.on(TAURI_EVENTS.SIGNAL.GENERATE_PARQUET_PAYLOAD, () => this.generateHandlingService.onGenerateParquetPayload());
+    ipc.on(TAURI_EVENTS.SIGNAL.GENERATE_JAVA_CLASSES, () => this.generateHandlingService.onGenerateJavaClasses());
   }
 }

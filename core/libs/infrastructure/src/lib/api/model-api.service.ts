@@ -12,16 +12,21 @@
  */
 
 import {
+  AasImportCandidate,
   AsyncApi,
   ClearWorkspaceResult,
+  DiagramFormat,
+  ElementUsageReport,
   FileEntry,
   FileInformation,
+  JavaClassesOptions,
   ModelApiPort,
   ModelData,
   ModelFileLocation,
   OpenApi,
   RdfModelUtil,
   ReferenceReport,
+  SqlDialect,
   StoragePathResponse,
   ViolationError,
   WorkspaceStructure,
@@ -172,6 +177,30 @@ export class ModelApiService implements ModelApiPort {
     formData.append('zipFile', file);
 
     return this.http.post(`${this.serviceUrl}${this.api.package}/import`, formData, {params: workspaceParam(workspace)});
+  }
+
+  previewAasImport(file: File, workspace?: string): Observable<AasImportCandidate[]> {
+    return this.http
+      .post<AasImportCandidate[]>(`${this.serviceUrl}${this.api.package}/import-aas/preview`, createAasFormData(file), {
+        params: workspaceParam(workspace),
+      })
+      .pipe(timeout(this.requestTimeout));
+  }
+
+  importAas(file: File, workspace?: string): Observable<WorkspaceStructure> {
+    return this.http
+      .post<WorkspaceStructure>(`${this.serviceUrl}${this.api.package}/import-aas`, createAasFormData(file), {
+        params: workspaceParam(workspace),
+      })
+      .pipe(timeout(this.requestTimeout));
+  }
+
+  getElementUsage(aspectModelUrn: string): Observable<ElementUsageReport> {
+    return this.http
+      .get<ElementUsageReport>(`${this.serviceUrl}${this.api.models}/usage`, {
+        headers: new HttpHeaderBuilder().withAspectModelUrn(aspectModelUrn).build(),
+      })
+      .pipe(timeout(this.requestTimeout));
   }
 
   deleteAspectModel(aspectModelUrn: string): Observable<string> {
@@ -392,6 +421,59 @@ export class ModelApiService implements ModelApiPort {
     });
   }
 
+  generateDiagram(rdfContent: string, language: string, format: DiagramFormat, sourceLocation?: string): Observable<Blob> {
+    const {formData, uri} = this.createAspectModelFormData(rdfContent);
+    return this.http
+      .post(`${this.serviceUrl}${this.api.generate}/diagram`, formData, {
+        headers: new HttpHeaderBuilder().withFileUri(sourceLocation || uri).build(),
+        params: {language, format},
+        responseType: 'blob',
+      })
+      .pipe(timeout(this.requestTimeout));
+  }
+
+  generateSql(rdfContent: string, language: string, dialect: SqlDialect, sourceLocation?: string): Observable<string> {
+    const {formData, uri} = this.createAspectModelFormData(rdfContent);
+    return this.http
+      .post(`${this.serviceUrl}${this.api.generate}/sql`, formData, {
+        headers: new HttpHeaderBuilder().withFileUri(sourceLocation || uri).build(),
+        params: {language, dialect},
+        responseType: 'text',
+      })
+      .pipe(timeout(this.requestTimeout));
+  }
+
+  generateJsonLd(rdfContent: string, sourceLocation?: string): Observable<string> {
+    const {formData, uri} = this.createAspectModelFormData(rdfContent);
+    return this.http
+      .post(`${this.serviceUrl}${this.api.generate}/json-ld`, formData, {
+        headers: new HttpHeaderBuilder().withFileUri(sourceLocation || uri).build(),
+        responseType: 'text',
+      })
+      .pipe(timeout(this.requestTimeout));
+  }
+
+  generateJavaClasses(rdfContent: string, options: JavaClassesOptions, sourceLocation?: string): Observable<Blob> {
+    const {formData, uri} = this.createAspectModelFormData(rdfContent);
+    return this.http
+      .post(`${this.serviceUrl}${this.api.generate}/java`, formData, {
+        headers: new HttpHeaderBuilder().withFileUri(sourceLocation || uri).build(),
+        params: {...options},
+        responseType: 'blob',
+      })
+      .pipe(timeout(this.requestTimeout));
+  }
+
+  generateParquetPayload(rdfContent: string, sourceLocation?: string): Observable<Blob> {
+    const {formData, uri} = this.createAspectModelFormData(rdfContent);
+    return this.http
+      .post(`${this.serviceUrl}${this.api.generate}/parquet-payload`, formData, {
+        headers: new HttpHeaderBuilder().withFileUri(sourceLocation || uri).build(),
+        responseType: 'blob',
+      })
+      .pipe(timeout(this.requestTimeout));
+  }
+
   private createAspectModelFormData(rdfContent: string): {formData: FormData; uri: string} {
     const aspectModel = new File([new Blob([rdfContent], {type: 'text/turtle'})], '', {type: 'text/turtle'});
     const uri = URL.createObjectURL(aspectModel);
@@ -399,6 +481,12 @@ export class ModelApiService implements ModelApiPort {
     formData.append('aspectModel', aspectModel);
     return {formData, uri};
   }
+}
+
+function createAasFormData(file: File): FormData {
+  const formData = new FormData();
+  formData.append('aasFile', file);
+  return formData;
 }
 
 /** The `workspace` query parameter selecting the workspace of workspace-wide operations; omitted for the default. */

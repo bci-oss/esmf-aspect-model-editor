@@ -11,20 +11,24 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {LoadedFilesService, ModelService, SammLanguageSettingsService} from '@ame/domain';
+import {LoadedFilesService, ModelService, SammLanguageSettingsService, SqlDialect} from '@ame/domain';
 import {LanguageTranslationService, LoadingScreenOptions, LoadingScreenService, NotificationsService} from '@ame/shared';
 import {DestroyRef, inject, Injectable} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {environment} from 'environments/environment';
+import {saveAs} from 'file-saver';
 import {catchError, map, Observable, throwError} from 'rxjs';
-import {finalize, first} from 'rxjs/operators';
+import {filter, finalize, first, switchMap, tap} from 'rxjs/operators';
 import {EditorService} from '../../editor.service';
 import {PreviewDialogComponent, PreviewDialogOptions} from '../../preview-dialog';
 import {AASXGenerationModalComponent} from '../components/aasx-generation-modal/aasx-generation-modal.component';
 import {GenerateAsyncApiComponent} from '../components/generate-async-api/generate-async-api.component';
+import {GenerateDiagramComponent} from '../components/generate-diagram/generate-diagram.component';
 import {GenerateDocumentationComponent} from '../components/generate-documentation/generate-documentation.component';
+import {GenerateJavaComponent} from '../components/generate-java/generate-java.component';
 import {GenerateOpenApiComponent} from '../components/generate-open-api/generate-open-api.component';
+import {GenerateSqlComponent} from '../components/generate-sql/generate-sql.component';
 import {FileHandlingService} from './file-handling.service';
 
 @Injectable({providedIn: 'root'})
@@ -86,6 +90,95 @@ export class GenerateHandlingService {
     return this.matDialog.open(AASXGenerationModalComponent, {disableClose: true});
   }
 
+  onGenerateDiagram() {
+    const cb = () => this.openGenerationDiagram();
+    this.validateFile(cb);
+  }
+
+  openGenerationDiagram(): MatDialogRef<GenerateDiagramComponent> {
+    return this.matDialog.open(GenerateDiagramComponent, {disableClose: true});
+  }
+
+  onGenerateSql() {
+    const cb = () => this.generateSql().pipe(takeUntilDestroyed(this.destroyRef), first()).subscribe();
+    this.validateFile(cb);
+  }
+
+  /** Asks for the SQL dialect, then previews the table definition with a switch for the language of its comments. */
+  generateSql(): Observable<void> {
+    return this.matDialog
+      .open<GenerateSqlComponent, void, SqlDialect>(GenerateSqlComponent)
+      .afterClosed()
+      .pipe(
+        filter((dialect): dialect is SqlDialect => !!dialect),
+        switchMap(dialect => {
+          const languages = this.sammLanguageSettingsService.getSammLanguageCodes();
+          const language = this.defaultSchemaLanguage(languages);
+          const regenerate = (lang: string) => this.requestSql(lang, dialect);
+
+          return this.withLoadingScreen(this.translate.language.notificationDialog?.generateSql, regenerate(language)).pipe(
+            map(content =>
+              this.openPreview(this.translate.language.generateHandling.sqlPreview, content, this.fileNameWithSuffix('.sql'), {
+                languages,
+                language,
+                regenerate,
+                languageHint: this.translate.language.generateHandling.sqlLanguageHint,
+                mimeType: 'application/sql;charset=utf-8',
+              }),
+            ),
+          );
+        }),
+        map(() => undefined),
+      );
+  }
+
+  onGenerateJsonLd() {
+    const cb = () => this.generateJsonLd().pipe(takeUntilDestroyed(this.destroyRef), first()).subscribe();
+    this.validateFile(cb);
+  }
+
+  /** Previews the Aspect Model as JSON-LD; it contains all languages, so there is nothing to choose. */
+  generateJsonLd(): Observable<void> {
+    const request = this.editorService.generateJsonLd(this.currentFile?.rdfModel).pipe(
+      first(),
+      catchError(() => this.failGeneration(this.translate.language.generateHandling.failGenerateJsonLd)),
+    );
+
+    return this.withLoadingScreen(this.translate.language.notificationDialog?.generateJsonLd, request).pipe(
+      map(content => {
+        this.openPreview(this.translate.language.generateHandling.jsonLdPreview, content, this.fileNameWithSuffix('.jsonld'), {
+          mimeType: 'application/ld+json;charset=utf-8',
+        });
+      }),
+    );
+  }
+
+  onGenerateJavaClasses() {
+    const cb = () => this.openGenerationJavaClasses();
+    this.validateFile(cb);
+  }
+
+  openGenerationJavaClasses(): MatDialogRef<GenerateJavaComponent> {
+    return this.matDialog.open(GenerateJavaComponent, {disableClose: true});
+  }
+
+  onGenerateParquetPayload() {
+    const cb = () => this.generateParquetPayload().pipe(takeUntilDestroyed(this.destroyRef), first()).subscribe();
+    this.validateFile(cb);
+  }
+
+  /** Downloads a sample payload in the binary Apache Parquet format; there is nothing to preview or choose. */
+  generateParquetPayload(): Observable<void> {
+    const request = this.editorService.generateParquetPayload(this.currentFile?.rdfModel).pipe(
+      first(),
+      catchError(() => this.failGeneration(this.translate.language.generateHandling.failGenerateParquetPayload)),
+    );
+
+    return this.withLoadingScreen(this.translate.language.notificationDialog?.generateParquetPayload, request).pipe(
+      map(payload => saveAs(payload, this.fileNameWithSuffix('-sample.parquet'))),
+    );
+  }
+
   onGenerateJsonSample() {
     const cb = () => this.generateJsonSample().pipe(takeUntilDestroyed(this.destroyRef), first()).subscribe();
     this.validateFile(cb);
@@ -93,8 +186,8 @@ export class GenerateHandlingService {
 
   generateJsonSample(): Observable<any> {
     const loadingScreenOptions: LoadingScreenOptions = {
-      title: this.translate.language.notificationDialog?.GENERATE_JSON_PAYLOAD,
-      content: this.translate.language.notificationDialog?.CONTENT,
+      title: this.translate.language.notificationDialog?.generateJsonPayload,
+      content: this.translate.language.notificationDialog?.content,
       hasCloseButton: true,
     };
 
@@ -134,8 +227,8 @@ export class GenerateHandlingService {
    */
   generateJsonSchema(): Observable<void> {
     const loadingScreenOptions: LoadingScreenOptions = {
-      title: this.translate.language.notificationDialog?.GENERATE_JSON_SCHEMA,
-      content: this.translate.language.notificationDialog?.CONTENT,
+      title: this.translate.language.notificationDialog?.generateJsonSchema,
+      content: this.translate.language.notificationDialog?.content,
       hasCloseButton: true,
     };
     const languages = this.sammLanguageSettingsService.getSammLanguageCodes();
@@ -176,6 +269,25 @@ export class GenerateHandlingService {
       }),
       map(data => this.formatStringToJson(data)),
     );
+  }
+
+  private requestSql(language: string, dialect: SqlDialect): Observable<string> {
+    return this.editorService.generateSql(this.currentFile?.rdfModel, language, dialect).pipe(
+      first(),
+      catchError(() => this.failGeneration(this.translate.language.generateHandling.failGenerateSql)),
+    );
+  }
+
+  private failGeneration(title: string): Observable<never> {
+    this.notificationsService.error({title, message: this.translate.language.generateHandling.invalidModel, timeout: 5000});
+    return throwError(() => title);
+  }
+
+  /** Shows the loading screen while the request runs and closes it as soon as the result arrives, before a preview opens. */
+  private withLoadingScreen<T>(title: string, request: Observable<T>): Observable<T> {
+    const close = () => this.loadingScreenService.close();
+    this.loadingScreenService.open({title, content: this.translate.language.notificationDialog?.content, hasCloseButton: true});
+    return request.pipe(tap({next: close}), finalize(close));
   }
 
   private fileNameWithSuffix(suffix: string): string {

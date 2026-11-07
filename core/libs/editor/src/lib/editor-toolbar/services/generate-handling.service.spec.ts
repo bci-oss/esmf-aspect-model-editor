@@ -16,6 +16,7 @@ import {LanguageTranslationService, LoadingScreenService, NotificationsService} 
 import {TestBed} from '@angular/core/testing';
 import {MatDialog} from '@angular/material/dialog';
 import {DefaultAspect, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
+import {saveAs} from 'file-saver';
 import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {firstValueFrom, of, throwError} from 'rxjs';
@@ -24,10 +25,15 @@ import {EditorService} from '../../editor.service';
 import {PreviewDialogComponent, PreviewDialogOptions} from '../../preview-dialog';
 import {AASXGenerationModalComponent} from '../components/aasx-generation-modal/aasx-generation-modal.component';
 import {GenerateAsyncApiComponent} from '../components/generate-async-api/generate-async-api.component';
+import {GenerateDiagramComponent} from '../components/generate-diagram/generate-diagram.component';
 import {GenerateDocumentationComponent} from '../components/generate-documentation/generate-documentation.component';
+import {GenerateJavaComponent} from '../components/generate-java/generate-java.component';
 import {GenerateOpenApiComponent} from '../components/generate-open-api/generate-open-api.component';
+import {GenerateSqlComponent} from '../components/generate-sql/generate-sql.component';
 import {FileHandlingService} from './file-handling.service';
 import {GenerateHandlingService} from './generate-handling.service';
+
+vi.mock('file-saver', () => ({saveAs: vi.fn()}));
 
 describe('GenerateHandlingService', () => {
   let service: GenerateHandlingService;
@@ -36,6 +42,7 @@ describe('GenerateHandlingService', () => {
   let sammLanguages: string[];
   let uiLanguage: string;
 
+  const parquet = new Blob(['PAR1'], {type: 'application/vnd.apache.parquet'});
   const aspect = new DefaultAspect({
     aspectModelUrn: 'urn:test:1.0.0#MyAspect',
     name: 'MyAspect',
@@ -43,6 +50,7 @@ describe('GenerateHandlingService', () => {
   });
 
   beforeEach(() => {
+    vi.mocked(saveAs).mockClear();
     sammLanguages = ['en'];
     uiLanguage = 'en';
     TestBed.configureTestingModule({
@@ -54,6 +62,9 @@ describe('GenerateHandlingService', () => {
         MockProvider(EditorService, {
           generateJsonSample: vi.fn(() => of('{"test": true}')),
           generateJsonSchema: vi.fn(() => of('{"type": "object"}')),
+          generateSql: vi.fn(() => of('CREATE TABLE movement;')),
+          generateJsonLd: vi.fn(() => of('{"@context": {}}')),
+          generateParquetPayload: vi.fn(() => of(parquet)),
         }),
         MockProvider(ModelService, {
           synchronizeModelToRdf: vi.fn(() => of(undefined)),
@@ -78,6 +89,12 @@ describe('GenerateHandlingService', () => {
               jsonPayloadPreview: 'JSON Payload',
               failGenerateJsonSchema: 'Fail schema',
               jsonSchemaPreview: 'JSON Schema',
+              failGenerateSql: 'Fail SQL',
+              sqlPreview: 'SQL',
+              sqlLanguageHint: 'Language of the SQL comments',
+              failGenerateJsonLd: 'Fail JSON-LD',
+              jsonLdPreview: 'JSON-LD',
+              failGenerateParquetPayload: 'Fail Parquet',
               noAspectTitle: 'No Aspect',
             },
           } as any,
@@ -111,6 +128,11 @@ describe('GenerateHandlingService', () => {
     expect(dialog.open).toHaveBeenCalledWith(GenerateDocumentationComponent, {disableClose: true});
   });
 
+  it('onGenerateJavaClasses should validate and open the dialog for the options', () => {
+    service.onGenerateJavaClasses();
+    expect(dialog.open).toHaveBeenCalledWith(GenerateJavaComponent, {disableClose: true});
+  });
+
   it('onGenerateAASXFile should validate and open modal', () => {
     service.onGenerateAASXFile();
     expect(dialog.open).toHaveBeenCalledWith(AASXGenerationModalComponent, {disableClose: true});
@@ -127,7 +149,7 @@ describe('GenerateHandlingService', () => {
 
     beforeEach(() => {
       loadingScreen = TestBed.inject(LoadingScreenService);
-      (service as any).translate.language.notificationDialog = {GENERATE_JSON_SCHEMA: 'Generate', CONTENT: 'Wait'};
+      (service as any).translate.language.notificationDialog = {generateJsonSchema: 'Generate', content: 'Wait'};
     });
 
     function run(): Promise<'completed'> {
@@ -211,6 +233,132 @@ describe('GenerateHandlingService', () => {
 
       expect(loadingScreen.close).toHaveBeenCalled();
       expect(dialog.open).not.toHaveBeenCalled();
+    });
+  });
+
+  it('onGenerateDiagram should validate and open the diagram dialog', () => {
+    service.onGenerateDiagram();
+    expect(dialog.open).toHaveBeenCalledWith(GenerateDiagramComponent, {disableClose: true});
+  });
+
+  describe('generateSql', () => {
+    let dialect: string | undefined;
+
+    beforeEach(() => {
+      dialect = 'DATABRICKS';
+      (dialog.open as ReturnType<typeof vi.fn>).mockImplementation(component => ({
+        afterClosed: () => of(component === GenerateSqlComponent ? dialect : null),
+      }));
+    });
+
+    function run(): Promise<'completed'> {
+      return new Promise((resolve, reject) => service.generateSql().subscribe({error: reject, complete: () => resolve('completed')}));
+    }
+
+    function previewData(): PreviewDialogOptions {
+      const call = (dialog.open as ReturnType<typeof vi.fn>).mock.calls.find(([component]) => component === PreviewDialogComponent);
+      return call?.[1]?.data;
+    }
+
+    it('should ask for the dialect and preview the table definition as SQL file', async () => {
+      sammLanguages = ['en', 'de'];
+
+      await run();
+
+      expect(editorService.generateSql).toHaveBeenCalledWith(expect.any(RdfModel), 'en', 'DATABRICKS');
+      expect(previewData()).toEqual(
+        expect.objectContaining({
+          title: 'SQL',
+          content: 'CREATE TABLE movement;',
+          fileName: 'MyAspect.sql',
+          languages: ['en', 'de'],
+          language: 'en',
+          languageHint: 'Language of the SQL comments',
+          mimeType: 'application/sql;charset=utf-8',
+        }),
+      );
+    });
+
+    it('should regenerate in another language with the same dialect', async () => {
+      await run();
+
+      (editorService.generateSql as ReturnType<typeof vi.fn>).mockReturnValue(of('-- Deutsch'));
+      expect(await firstValueFrom(previewData().regenerate('de'))).toBe('-- Deutsch');
+      expect(editorService.generateSql).toHaveBeenLastCalledWith(expect.any(RdfModel), 'de', 'DATABRICKS');
+    });
+
+    it('should do nothing if the dialect dialog is cancelled', async () => {
+      dialect = undefined;
+
+      await run();
+
+      expect(editorService.generateSql).not.toHaveBeenCalled();
+      expect(previewData()).toBeUndefined();
+    });
+
+    it('should report a failed generation and open no preview', async () => {
+      (editorService.generateSql as ReturnType<typeof vi.fn>).mockReturnValue(throwError(() => new Error('422')));
+
+      await expect(run()).rejects.toBe('Fail SQL');
+
+      expect(TestBed.inject(NotificationsService).error).toHaveBeenCalledWith(expect.objectContaining({title: 'Fail SQL'}));
+      expect(TestBed.inject(LoadingScreenService).close).toHaveBeenCalled();
+      expect(previewData()).toBeUndefined();
+    });
+  });
+
+  describe('generateJsonLd', () => {
+    it('should close the loading screen and preview the JSON-LD without a language switch', async () => {
+      const order: string[] = [];
+      const loadingScreen = TestBed.inject(LoadingScreenService);
+      (loadingScreen.close as ReturnType<typeof vi.fn>).mockImplementation(() => order.push('loading-close'));
+      (dialog.open as ReturnType<typeof vi.fn>).mockImplementation(() => {
+        order.push('preview');
+        return {afterClosed: () => of(null)};
+      });
+
+      await firstValueFrom(service.generateJsonLd());
+
+      expect(order[0]).toBe('loading-close');
+      expect(order).toContain('preview');
+      const data: PreviewDialogOptions = (dialog.open as ReturnType<typeof vi.fn>).mock.calls[0][1].data;
+      expect(data).toEqual(
+        expect.objectContaining({
+          title: 'JSON-LD',
+          content: '{"@context": {}}',
+          fileName: 'MyAspect.jsonld',
+          mimeType: 'application/ld+json;charset=utf-8',
+        }),
+      );
+      expect(data.regenerate).toBeUndefined();
+    });
+
+    it('should report a failed generation', async () => {
+      (editorService.generateJsonLd as ReturnType<typeof vi.fn>).mockReturnValue(throwError(() => new Error('422')));
+
+      await expect(firstValueFrom(service.generateJsonLd())).rejects.toBe('Fail JSON-LD');
+
+      expect(dialog.open).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('generateParquetPayload', () => {
+    it('should download the payload named after the Aspect without a preview', async () => {
+      await firstValueFrom(service.generateParquetPayload());
+
+      expect(editorService.generateParquetPayload).toHaveBeenCalledWith(expect.any(RdfModel));
+      expect(saveAs).toHaveBeenCalledWith(parquet, 'MyAspect-sample.parquet');
+      expect(dialog.open).not.toHaveBeenCalled();
+      expect(TestBed.inject(LoadingScreenService).close).toHaveBeenCalled();
+    });
+
+    it('should report a failed generation', async () => {
+      (editorService.generateParquetPayload as ReturnType<typeof vi.fn>).mockReturnValue(throwError(() => new Error('422')));
+
+      await expect(firstValueFrom(service.generateParquetPayload())).rejects.toBe('Fail Parquet');
+
+      expect(saveAs).not.toHaveBeenCalled();
+      expect(TestBed.inject(NotificationsService).error).toHaveBeenCalledWith(expect.objectContaining({title: 'Fail Parquet'}));
     });
   });
 });

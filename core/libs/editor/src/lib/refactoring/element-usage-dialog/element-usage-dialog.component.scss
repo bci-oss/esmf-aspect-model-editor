@@ -1,0 +1,140 @@
+/*!
+ * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+ *
+ * See the AUTHORS file(s) distributed with this work for
+ * additional information regarding authorship.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+mat-dialog-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  max-height: none;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+
+  .summary {
+    font-size: 13px;
+    opacity: 0.8;
+  }
+
+  .filter {
+    width: min(320px, 50%);
+  }
+}
+
+.groups {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.group {
+  margin-bottom: 8px;
+
+  &__header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--mat-sys-surface-container, #f5f5f5);
+    border-radius: 4px;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  &__file {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__badge {
+    font-size: 11px;
+    font-weight: 400;
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: var(--ame-primary);
+    color: #fff;
+  }
+
+  &__count {
+    min-width: 24px;
+    text-align: right;
+    opacity: 0.7;
+  }
+}
+
+.usages {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 16px;
+}
+
+.usage {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+
+  .name {
+    font-weight: 500;
+  }
+}
+
+.message {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 12px 0 0;
+
+  span {
+    display: flex;
+    flex-direction: column;
+  }
+
+  small {
+    opacity: 0.8;
+  }
+
+  &.error mat-icon {
+    color: var(--ame-error);
+  }
+
+  &.warning mat-icon {
+    color: var(--ame-orange);
+  }
+
+  &.info mat-icon {
+    color: var(--ame-primary);
+  }
+}

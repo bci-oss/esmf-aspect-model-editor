@@ -1,0 +1,134 @@
+/*!
+ * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+ *
+ * See the AUTHORS file(s) distributed with this work for
+ * additional information regarding authorship.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-width: min(560px, 90vw);
+}
+
+.subject {
+  margin-top: 0;
+  opacity: 0.8;
+  word-break: break-all;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.namespace {
+  display: flex;
+  gap: 12px;
+
+  .version {
+    max-width: 160px;
+  }
+}
+
+.increases {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+mat-progress-bar {
+  margin-top: 12px;
+}
+
+.progress small {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
+.preview {
+  margin-top: 16px;
+
+  h3 {
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0 0 8px;
+  }
+
+  h4 {
+    font-size: 13px;
+    font-weight: 500;
+    margin: 12px 0 4px;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 160px;
+    overflow: auto;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    word-break: break-all;
+  }
+
+  mat-icon {
+    flex-shrink: 0;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.created {
+  color: var(--ame-primary);
+}
+
+.removed,
+.blocked {
+  color: var(--ame-error);
+}
+
+.message {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 12px 0 0;
+
+  span {
+    display: flex;
+    flex-direction: column;
+  }
+
+  small {
+    opacity: 0.8;
+    word-break: break-word;
+  }
+
+  &.error mat-icon {
+    color: var(--ame-error);
+  }
+
+  &.warning mat-icon {
+    color: var(--ame-orange);
+  }
+}

@@ -74,8 +74,8 @@ describe('MigrationDialogComponent', () => {
           useValue: {
             language: {
               sammMigration: {
-                MIGRATION_DIALOG: {
-                  MIGRATION_FAILED_TITLE: 'Migration Failed',
+                migrationDialog: {
+                  migrationFailedTitle: 'Migration Failed',
                 },
               },
             },

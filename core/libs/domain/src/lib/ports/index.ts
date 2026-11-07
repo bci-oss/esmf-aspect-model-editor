@@ -24,4 +24,6 @@ export * from './model-opener.port';
 export * from './model-sources.port';
 export * from './namespaces-transfer.port';
 export * from './rdf.port';
+export * from './refactoring-dialog.port';
+export * from './refactoring.port';
 export * from './ui.port';

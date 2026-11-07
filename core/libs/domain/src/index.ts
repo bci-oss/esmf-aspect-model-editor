@@ -21,6 +21,8 @@ export * from './lib/state/features/with-request-status';
 export * from './lib/state/history/model-history.models';
 export * from './lib/state/history/model-history.store';
 export * from './lib/state/model-sources/model-sources.store';
+export * from './lib/state/refactoring/element-refactoring.guard';
+export * from './lib/state/refactoring/refactoring.store';
 export * from './lib/state/search/search.store';
 export * from './lib/state/settings/configuration.service';
 export * from './lib/state/settings/samm-language-settings.service';

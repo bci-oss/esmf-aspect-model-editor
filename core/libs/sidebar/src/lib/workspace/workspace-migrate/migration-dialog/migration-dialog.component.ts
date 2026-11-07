@@ -81,7 +81,7 @@ export class MigrationDialogComponent {
         next: () => this.stepper()?.next(),
         error: err =>
           this.notificationsService.error({
-            title: this.translate.language.sammMigration?.MIGRATION_DIALOG?.MIGRATION_FAILED_TITLE,
+            title: this.translate.language.sammMigration?.migrationDialog?.migrationFailedTitle,
             message: err,
           }),
       });

@@ -16,4 +16,5 @@ export * from './migrator-api.service';
 export * from './model-api.service';
 export * from './model-sources-api.service';
 export * from './model-validator.service';
+export * from './refactoring-api.service';
 export * from './workspace-api.facade';

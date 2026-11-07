@@ -35,6 +35,7 @@ const config: AppConfig = {
     package: '/ame/api/package',
     workspaces: '/ame/api/workspaces',
     githubSources: '/ame/api/sources/github',
+    refactoring: '/ame/api/refactoring',
   },
 };
 

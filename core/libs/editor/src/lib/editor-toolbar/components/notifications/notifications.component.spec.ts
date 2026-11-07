@@ -11,13 +11,16 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {QuickFix} from '@ame/domain';
 import {ClipboardService, IPC_RENDERER, NotificationModel, NotificationsService, NotificationType} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatDialogRef} from '@angular/material/dialog';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslocoTestingModule} from '@jsverse/transloco';
 import {MockProvider} from 'ng-mocks';
+import {of, Subject} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {QuickFixService} from '../../../quick-fix/quick-fix.service';
 import {NotificationsComponent} from './notifications.component';
 
 describe('NotificationsComponent', () => {
@@ -27,12 +30,23 @@ describe('NotificationsComponent', () => {
   let dialogRef: MatDialogRef<NotificationsComponent>;
   let router: Router;
   let copyToClipboardMock: ReturnType<typeof vi.fn>;
+  let quickFixService: QuickFixService;
+  let fixes: QuickFix[];
+
+  const fix: QuickFix = {
+    description: 'Add the language tag',
+    element: 'urn:samm:org.example:1.0.0#Aspect',
+    property: 'urn:samm:org.eclipse.esmf.samm:meta-model:2.2.0#description',
+    oldValue: {value: 'text', datatype: 'http://www.w3.org/2001/XMLSchema#string', language: ''},
+    newValue: {value: 'text', datatype: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#langString', language: 'en'},
+  };
 
   const mockNotification = new NotificationModel('Warning Title', 'Warning Message', undefined, NotificationType.Warning);
   mockNotification.expanded = true;
 
   beforeEach(async () => {
     copyToClipboardMock = vi.fn();
+    fixes = [];
     dialogRef = {
       close: vi.fn(),
     } as unknown as MatDialogRef<NotificationsComponent>;
@@ -53,11 +67,16 @@ describe('NotificationsComponent', () => {
           navigate: vi.fn(),
         }),
         MockProvider(ActivatedRoute),
+        MockProvider(QuickFixService, {
+          fixesOf: vi.fn(notification => (notification ? fixes : [])),
+          apply: vi.fn(() => of(true)),
+        }),
       ],
     }).compileComponents();
 
     notificationsService = TestBed.inject(NotificationsService);
     router = TestBed.inject(Router);
+    quickFixService = TestBed.inject(QuickFixService);
     fixture = TestBed.createComponent(NotificationsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -103,5 +122,44 @@ describe('NotificationsComponent', () => {
   it('copyToClipboard should do nothing if text is empty', () => {
     component.copyToClipboard('');
     expect(copyToClipboardMock).not.toHaveBeenCalled();
+  });
+
+  describe('quick fixes', () => {
+    const quickFixButton = () => fixture.nativeElement.querySelector('[data-testid="quick-fix-button"]');
+
+    it('offers the quick fixes only for notifications of violations which have some', () => {
+      expect(quickFixButton()).toBeNull();
+      expect(component.currentQuickFixes()).toEqual([]);
+
+      fixes = [fix];
+      fixture = TestBed.createComponent(NotificationsComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+      component.currentItem.set(mockNotification);
+
+      expect(quickFixButton()).not.toBeNull();
+      expect(component.hasQuickFixes(mockNotification)).toBe(true);
+      expect(component.currentQuickFixes()).toEqual([fix]);
+    });
+
+    it('applies the quick fix for the current notification', () => {
+      component.currentItem.set(mockNotification);
+      component.applyQuickFix(fix);
+
+      expect(quickFixService.apply).toHaveBeenCalledWith(fix, mockNotification);
+      expect(component.applyingQuickFix()).toBe(false);
+    });
+
+    it('is busy while the quick fix is applied', () => {
+      const result = new Subject<boolean>();
+      vi.mocked(quickFixService.apply).mockReturnValue(result);
+
+      component.applyQuickFix(fix);
+      expect(component.applyingQuickFix()).toBe(true);
+
+      result.next(true);
+      result.complete();
+      expect(component.applyingQuickFix()).toBe(false);
+    });
   });
 });

@@ -17,6 +17,7 @@ import {BindingsService, ModelFilter, NotificationsService} from '@ame/shared';
 import {signal} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatDialog} from '@angular/material/dialog';
+import {DefaultProperty, NamedElement} from '@esmf/aspect-model-loader';
 import {TranslocoTestingModule} from '@jsverse/transloco';
 import {MockProvider} from 'ng-mocks';
 import {BehaviorSubject, of} from 'rxjs';
@@ -25,6 +26,7 @@ import {ShapeSettingsService} from '../editor-dialog';
 import {EditorService} from '../editor.service';
 import {ModelHistoryService} from '../history/model-history.service';
 import {PrefixManagementService} from '../prefixes/prefix-management.service';
+import {ElementRefactoringService} from '../refactoring/element-refactoring.service';
 import {EditorToolbarComponent} from './editor-toolbar.component';
 import {FileHandlingService} from './services';
 
@@ -39,6 +41,8 @@ describe('EditorToolbarComponent', () => {
   let isModelEmpty: ReturnType<typeof signal<boolean>>;
   let canUndo: ReturnType<typeof signal<boolean>>;
   let canRedo: ReturnType<typeof signal<boolean>>;
+  let refactoringElement: ReturnType<typeof signal<NamedElement | null>>;
+  let elementRefactoring: ElementRefactoringService;
 
   const filterButton = (): HTMLElement => fixture.nativeElement.querySelector('[data-testid="tbPropertyFilterButton"]');
 
@@ -47,6 +51,7 @@ describe('EditorToolbarComponent', () => {
     isModelEmpty = signal(false);
     canUndo = signal(false);
     canRedo = signal(false);
+    refactoringElement = signal(null);
     await TestBed.configureTestingModule({
       imports: [
         EditorToolbarComponent,
@@ -100,6 +105,14 @@ describe('EditorToolbarComponent', () => {
         MockProvider(NotificationsService),
         MockProvider(PrefixManagementService, {openManagement: vi.fn()}),
         MockProvider(ModelHistoryService, {canUndo, canRedo, undo: vi.fn(), redo: vi.fn()}),
+        MockProvider(ElementRefactoringService, {
+          selectedElement: refactoringElement,
+          registerContextMenuActions: vi.fn(),
+          blocker: vi.fn(() => null),
+          canShowUsages: vi.fn(() => true),
+          refactor: vi.fn(),
+          showUsages: vi.fn(),
+        }),
       ],
     }).compileComponents();
 
@@ -107,6 +120,7 @@ describe('EditorToolbarComponent', () => {
     fileHandlingService = TestBed.inject(FileHandlingService);
     shapeSettingsService = TestBed.inject(ShapeSettingsService);
     filtersService = TestBed.inject(FiltersService);
+    elementRefactoring = TestBed.inject(ElementRefactoringService);
     fixture = TestBed.createComponent(EditorToolbarComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -209,6 +223,61 @@ describe('EditorToolbarComponent', () => {
       expect(filterButton().classList).toContain('disabled');
       filterButton().click();
       expect(filtersService.renderByFilter).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('refactoring', () => {
+    const speed = new DefaultProperty({aspectModelUrn: 'urn:samm:org.example:1.0.0#speed', name: 'speed', metaModelVersion: '2.2.0'});
+    const refactoringButton = (): HTMLElement => fixture.nativeElement.querySelector('[data-testid="tbRefactoringButton"]');
+    const menuItem = (testId: string): HTMLButtonElement => document.querySelector(`[data-testid="${testId}"]`);
+
+    const openMenu = async () => {
+      refactoringElement.set(speed);
+      fixture.detectChanges();
+      refactoringButton().click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+    };
+
+    it('registers the refactorings of the graph context menu', () => {
+      expect(elementRefactoring.registerContextMenuActions).toHaveBeenCalled();
+    });
+
+    it('is disabled without a single selected element', () => {
+      expect(refactoringButton().classList).toContain('disabled');
+
+      refactoringButton().click();
+      fixture.detectChanges();
+
+      expect(menuItem('tbRefactoringRename')).toBeNull();
+    });
+
+    it.each([
+      ['tbRefactoringRename', 'RENAME_ELEMENT'],
+      ['tbRefactoringMove', 'MOVE_ELEMENT'],
+    ])('starts %s for the selected element', async (testId, type) => {
+      await openMenu();
+
+      menuItem(testId).click();
+
+      expect(elementRefactoring.refactor).toHaveBeenCalledWith(type, speed);
+    });
+
+    it('shows the usages of the selected element', async () => {
+      await openMenu();
+
+      menuItem('tbRefactoringUsages').click();
+
+      expect(elementRefactoring.showUsages).toHaveBeenCalledWith(speed);
+    });
+
+    it('disables rename and move if the element cannot be refactored', async () => {
+      vi.mocked(elementRefactoring.blocker).mockReturnValue('external');
+      await openMenu();
+
+      expect(menuItem('tbRefactoringRename').disabled).toBe(true);
+      expect(menuItem('tbRefactoringMove').disabled).toBe(true);
+      expect(menuItem('tbRefactoringUsages').disabled).toBe(false);
     });
   });
 });

@@ -217,7 +217,10 @@
     "generateJsonPayload": "Generate JSON payload",
     "generateJsonSchema": "Generate JSON Schema",
     "waitAction": "Please wait until the action is finished!",
-    "noAspectTitle": "Load or create an Aspect Model before validating"
+    "noAspectTitle": "Load or create an Aspect Model before validating",
+    "generateSql": "Generate SQL",
+    "generateJsonLd": "Generate JSON-LD",
+    "generateParquetPayload": "Generate Parquet payload"
   },
   "helpDialog": {
     "startModeling": "Start modeling",
@@ -325,7 +328,13 @@
     "jsonPayloadPreview": "Sample JSON Payload preview",
     "failGenerateJsonSchema": "Failed to generate JSON Schema",
     "jsonSchemaPreview": "JSON Schema preview",
-    "noAspectTitle": "Load or create an Aspect Model before generating artefacts"
+    "noAspectTitle": "Load or create an Aspect Model before generating artefacts",
+    "failGenerateSql": "Failed to generate the SQL table definition",
+    "sqlPreview": "SQL table definition preview",
+    "sqlLanguageHint": "Language of the column comments",
+    "failGenerateJsonLd": "Failed to generate JSON-LD",
+    "jsonLdPreview": "JSON-LD preview",
+    "failGenerateParquetPayload": "Failed to generate the Parquet payload"
   },
   "previewDialog": {
     "cancel": "Cancel",
@@ -382,7 +391,11 @@
       "copiedGithubUrl": "GitHub link copied to clipboard",
       "delete": "Delete",
       "deleteNamespace": "Delete namespace version",
-      "namespaceMenu": "Open menu for namespace {{namespace}}"
+      "namespaceMenu": "Open menu for namespace {{namespace}}",
+      "renameFile": "Rename file…",
+      "newVersion": "Create new version…",
+      "renameNamespace": "Rename namespace…",
+      "newNamespaceVersion": "Create new namespace version…"
     },
     "elementList": {
       "title": "Element list",
@@ -892,7 +905,8 @@
       "saveToWorkspace": "Save to Workspace",
       "exportModel": "Export Model",
       "exportPackage": "Export Package",
-      "settings": "Settings..."
+      "settings": "Settings...",
+      "importAas": "Import Asset Administration Shell"
     },
     "view": {
       "label": "View",
@@ -929,7 +943,12 @@
       "asyncApiSpecification": "AsyncAPI Specification",
       "aasxXml": "AASX / XML",
       "sampleJsonPayload": "Sample JSON Payload",
-      "jsonSchema": "JSON Schema"
+      "jsonSchema": "JSON Schema",
+      "diagram": "Diagram (SVG / PNG)",
+      "sql": "SQL Table Definition",
+      "jsonLd": "JSON-LD",
+      "sampleParquetPayload": "Sample Parquet Payload",
+      "javaClasses": "Java Classes"
     },
     "search": {
       "label": "Search",
@@ -1094,5 +1113,165 @@
       "readOnlyOpen": "Models from GitHub can only be viewed. Click the file to see its elements.",
       "emptySource": "No models in this source"
     }
+  },
+  "refactoring": {
+    "elementMenu": {
+      "title": "Refactor",
+      "tooltip": "Refactor across all files",
+      "noSelection": "Select a single element to refactor it.",
+      "rename": "Rename everywhere…",
+      "move": "Move to another file…",
+      "usages": "Where is it used?",
+      "blocked": {
+        "notSaved": "Save the model in a workspace first.",
+        "readOnly": "Models of read-only sources cannot be changed.",
+        "external": "The element is defined in another file. Open that file to change it.",
+        "predefined": "Elements of the SAMM meta model cannot be changed."
+      }
+    },
+    "dialog": {
+      "title": {
+        "RENAME_ELEMENT": "Rename element",
+        "MOVE_ELEMENT": "Move element",
+        "RENAME_NAMESPACE": "Rename namespace",
+        "NEW_VERSION": "Create new version",
+        "RENAME_FILE": "Rename file"
+      },
+      "subject": {
+        "element": "Element {{name}} in {{namespace}}",
+        "file": "File {{name}} in {{namespace}}",
+        "namespace": "Namespace {{namespace}}"
+      },
+      "field": {
+        "newElementName": "New name",
+        "newFileName": "New file name",
+        "namespace": "Namespace",
+        "version": "Version",
+        "targetFile": "Target file",
+        "targetFileHint": "An existing or a new file of the target namespace",
+        "targetWorkspace": "Target workspace",
+        "sourceWorkspace": "Same workspace"
+      },
+      "validation": {
+        "required": "This field is required",
+        "pattern": "The value has an invalid format",
+        "unchanged": "The value is unchanged",
+        "casing": "The first letter must keep its casing"
+      },
+      "increase": {
+        "MAJOR": "Major",
+        "MINOR": "Minor",
+        "MICRO": "Micro"
+      },
+      "preview": {
+        "button": "Preview",
+        "noChanges": "No files are affected.",
+        "created": "Created files ({{count}})",
+        "modified": "Changed files ({{count}})",
+        "removed": "Removed files ({{count}})",
+        "blocked": "Blocking files ({{count}})",
+        "notApplicable": "The refactoring cannot be applied.",
+        "unsaved": "Save or discard the changes of {{files}} first."
+      },
+      "progress": {
+        "step": "Step {{step}} of {{steps}}",
+        "LOADING": "Loading {{files}} files…",
+        "PLANNING": "Calculating the changes in {{files}} files…",
+        "WRITING": "Writing {{files}} files…"
+      },
+      "error": {
+        "conflict": "The refactoring conflicts with existing files.",
+        "locked": "Another refactoring is currently running.",
+        "notFound": "The element or file no longer exists.",
+        "failed": "The refactoring failed."
+      },
+      "cancel": "Cancel",
+      "apply": "Apply"
+    },
+    "usage": {
+      "title": "Usages of {{name}}",
+      "error": "The usages could not be loaded.",
+      "notSaved": "{{name}} is not saved in any workspace file yet. Save the model to see where it is used.",
+      "summary": "{{count}} usages in {{files}} files",
+      "filter": "Filter by element or file",
+      "noMatch": "No usage matches the filter.",
+      "otherFile": "Other file",
+      "open": "Open and select the element",
+      "readOnly": "Read-only source",
+      "none": "The element is not used anywhere.",
+      "unreadable": "Some files could not be read and were skipped.",
+      "close": "Close"
+    },
+    "notification": {
+      "applied": "{{description}}",
+      "undoHint": "Click here to undo.",
+      "reverted": "Undone: {{description}}",
+      "revertConflict": {
+        "title": "Files changed in the meantime",
+        "phrase": "Some files of \"{{description}}\" were changed afterwards. Undoing overwrites these changes.",
+        "ok": "Undo anyway",
+        "cancel": "Cancel"
+      },
+      "revertFailed": "The refactoring could not be undone."
+    }
+  },
+  "quickFix": {
+    "action": "Quick fix",
+    "applied": "Quick fix applied",
+    "outdated": "The quick fix no longer matches the model. Validate the model again.",
+    "failed": "The quick fix could not be applied."
+  },
+  "generateDiagramDialog": {
+    "title": "Generate Diagram",
+    "language": "Language",
+    "format": "Format",
+    "generating": "Generate",
+    "failed": "Failed to generate the diagram",
+    "button": {
+      "cancel": "Cancel",
+      "download": "Download Diagram"
+    }
+  },
+  "generateJavaDialog": {
+    "title": "Generate Java Classes",
+    "packageName": "Java package",
+    "packageNameHint": "Leave empty to derive the package from the namespace",
+    "packageNameError": "Enter dot-separated Java identifiers, e.g. com.example.movement",
+    "jacksonAnnotations": "Jackson annotations",
+    "jacksonAnnotationsTooltip": "Annotates the classes for JSON (de-)serialization with Jackson",
+    "staticMetaModel": "Static meta model",
+    "staticMetaModelTooltip": "Adds Meta classes for type-safe access to the structure of the model",
+    "generating": "Generating Java classes",
+    "failed": "Failed to generate the Java classes",
+    "button": {
+      "cancel": "Cancel",
+      "download": "Download ZIP"
+    }
+  },
+  "generateSqlDialog": {
+    "title": "Generate SQL Table Definition",
+    "dialect": "SQL dialect",
+    "dialects": {
+      "POSTGRESQL": "PostgreSQL",
+      "DATABRICKS": "Databricks"
+    },
+    "button": {
+      "cancel": "Cancel",
+      "generate": "Generate"
+    }
+  },
+  "aasImport": {
+    "title": "Import Asset Administration Shell",
+    "workspace": "Workspace",
+    "models": "Aspect Models",
+    "exists": "exists already",
+    "conflictHint": "Existing files are not overwritten. Choose another workspace or remove the files first.",
+    "empty": "The file contains no Aspect Models.",
+    "previewFailed": "The file could not be read as an Asset Administration Shell.",
+    "conflict": "Some files were created in the meantime. Nothing was imported.",
+    "importFailed": "The import failed.",
+    "cancel": "Cancel",
+    "import": "Import",
+    "imported": "{{count}} Aspect Model(s) imported"
   }
 }

@@ -11,9 +11,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {QuickFix} from '@ame/domain';
 import {ClipboardService, DialogCloseButtonComponent, NotificationModel, NotificationsService, NotificationType} from '@ame/shared';
 import {CommonModule} from '@angular/common';
-import {Component, inject, OnInit, signal} from '@angular/core';
+import {Component, computed, inject, OnInit, signal} from '@angular/core';
 import {MatButtonModule} from '@angular/material/button';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {MatIconModule} from '@angular/material/icon';
@@ -22,6 +23,8 @@ import {MatTableModule} from '@angular/material/table';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslocoDirective} from '@jsverse/transloco';
+import {finalize} from 'rxjs';
+import {QuickFixService} from '../../../quick-fix/quick-fix.service';
 
 @Component({
   selector: 'ame-notifications',
@@ -43,11 +46,14 @@ export class NotificationsComponent implements OnInit {
   private dialogRef = inject(MatDialogRef<NotificationsComponent>);
   private activatedRoute = inject(ActivatedRoute);
   private clipboard = inject(ClipboardService);
+  private quickFixService = inject(QuickFixService);
 
   public notificationsService = inject(NotificationsService);
   public router = inject(Router);
 
-  currentItem = signal(null);
+  currentItem = signal<NotificationModel | null>(null);
+  currentQuickFixes = computed(() => this.quickFixService.fixesOf(this.currentItem()));
+  applyingQuickFix = signal(false);
   copiedElement = signal<any>(null);
   displayedColumns = signal(['expand', 'date', 'type', 'message', 'options']);
 
@@ -91,6 +97,18 @@ export class NotificationsComponent implements OnInit {
         }
       }, 2000);
     }
+  }
+
+  hasQuickFixes(notification: NotificationModel): boolean {
+    return this.quickFixService.fixesOf(notification).length > 0;
+  }
+
+  applyQuickFix(fix: QuickFix): void {
+    this.applyingQuickFix.set(true);
+    this.quickFixService
+      .apply(fix, this.currentItem() ?? undefined)
+      .pipe(finalize(() => this.applyingQuickFix.set(false)))
+      .subscribe();
   }
 
   clearNotification(notification: NotificationModel) {

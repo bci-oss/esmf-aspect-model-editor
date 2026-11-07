@@ -220,7 +220,10 @@
     "generateJsonPayload": "生成JSON payload",
     "generateJsonSchema": "生成JSON Schema",
     "waitAction": "请等待操作完成！",
-    "noAspectTitle": "在验证之前加载或创建Aspect Model"
+    "noAspectTitle": "在验证之前加载或创建Aspect Model",
+    "generateSql": "生成 SQL",
+    "generateJsonLd": "生成 JSON-LD",
+    "generateParquetPayload": "生成 Parquet 负载"
   },
   "helpDialog": {
     "startModeling": "开始建模",
@@ -328,7 +331,13 @@
     "jsonPayloadPreview": "Sample JSON Payload预览",
     "failGenerateJsonSchema": "生成JSON Schema失败",
     "jsonSchemaPreview": "JSON Schema预览",
-    "noAspectTitle": "在生成工件之前加载或创建一个Aspect Model"
+    "noAspectTitle": "在生成工件之前加载或创建一个Aspect Model",
+    "failGenerateSql": "生成 SQL 表定义失败",
+    "sqlPreview": "SQL 表定义预览",
+    "sqlLanguageHint": "列注释的语言",
+    "failGenerateJsonLd": "生成 JSON-LD 失败",
+    "jsonLdPreview": "JSON-LD 预览",
+    "failGenerateParquetPayload": "生成 Parquet 负载失败"
   },
   "previewDialog": {
     "cancel": "取消",
@@ -385,7 +394,11 @@
       "copiedGithubUrl": "GitHub 链接已复制到剪贴板",
       "delete": "删除",
       "deleteNamespace": "删除命名空间版本",
-      "namespaceMenu": "打开命名空间 {{namespace}} 的菜单"
+      "namespaceMenu": "打开命名空间 {{namespace}} 的菜单",
+      "renameFile": "重命名文件…",
+      "newVersion": "创建新版本…",
+      "renameNamespace": "重命名命名空间…",
+      "newNamespaceVersion": "创建新的命名空间版本…"
     },
     "elementList": {
       "title": "元素列表",
@@ -895,7 +908,8 @@
       "saveToWorkspace": "保存至Workspace",
       "exportModel": "导出Model",
       "exportPackage": "导出Package",
-      "settings": "设置..."
+      "settings": "设置...",
+      "importAas": "导入资产管理壳"
     },
     "view": {
       "label": "视图",
@@ -932,7 +946,12 @@
       "asyncApiSpecification": "",
       "aasxXml": "AASX / XML",
       "sampleJsonPayload": "JSON Payload示例",
-      "jsonSchema": "JSON格式"
+      "jsonSchema": "JSON格式",
+      "diagram": "图表 (SVG / PNG)",
+      "sql": "SQL 表定义",
+      "jsonLd": "JSON-LD",
+      "sampleParquetPayload": "示例 Parquet 负载",
+      "javaClasses": "Java 类"
     },
     "search": {
       "label": "搜索",
@@ -1011,7 +1030,7 @@
     },
     "github": {
       "title": "GitHub 源",
-      "description": "来自 GitHub 仓库的只读 Aspect Model，例如用于引用共享模型。",
+      "description": "来自 GitHub 仓库的只读 Aspect Model，例如用于引用公共模型。",
       "hint": "来自 GitHub 的模型为只读。您可以在侧边栏中查看并引用其元素，但不能打开或修改。只有点击“更新”时才会下载更新。",
       "listTitle": "仓库",
       "empty": "尚未添加仓库。",
@@ -1097,5 +1116,165 @@
       "readOnlyOpen": "来自 GitHub 的模型只能查看。点击文件以查看其元素。",
       "emptySource": "此来源中没有模型"
     }
+  },
+  "refactoring": {
+    "elementMenu": {
+      "title": "重构",
+      "tooltip": "跨文件重构",
+      "noSelection": "请仅选择一个元素进行重构。",
+      "rename": "全局重命名…",
+      "move": "移动到其他文件…",
+      "usages": "在哪里使用？",
+      "blocked": {
+        "notSaved": "请先将模型保存到工作区。",
+        "readOnly": "只读源中的模型无法更改。",
+        "external": "该元素在另一个文件中定义。请打开该文件进行更改。",
+        "predefined": "无法更改 SAMM 元模型的元素。"
+      }
+    },
+    "dialog": {
+      "title": {
+        "RENAME_ELEMENT": "重命名元素",
+        "MOVE_ELEMENT": "移动元素",
+        "RENAME_NAMESPACE": "重命名命名空间",
+        "NEW_VERSION": "创建新版本",
+        "RENAME_FILE": "重命名文件"
+      },
+      "subject": {
+        "element": "{{namespace}} 中的元素 {{name}}",
+        "file": "{{namespace}} 中的文件 {{name}}",
+        "namespace": "命名空间 {{namespace}}"
+      },
+      "field": {
+        "newElementName": "新名称",
+        "newFileName": "新文件名",
+        "namespace": "命名空间",
+        "version": "版本",
+        "targetFile": "目标文件",
+        "targetFileHint": "目标命名空间中的现有文件或新文件",
+        "targetWorkspace": "目标工作区",
+        "sourceWorkspace": "相同工作区"
+      },
+      "validation": {
+        "required": "此字段为必填项",
+        "pattern": "值的格式无效",
+        "unchanged": "值未更改",
+        "casing": "首字母必须保持大小写"
+      },
+      "increase": {
+        "MAJOR": "主版本",
+        "MINOR": "次版本",
+        "MICRO": "微版本"
+      },
+      "preview": {
+        "button": "预览",
+        "noChanges": "没有受影响的文件。",
+        "created": "新建文件（{{count}}）",
+        "modified": "已更改文件（{{count}}）",
+        "removed": "已删除文件（{{count}}）",
+        "blocked": "阻止的文件（{{count}}）",
+        "notApplicable": "无法应用此重构。",
+        "unsaved": "请先保存或放弃 {{files}} 中的更改。"
+      },
+      "progress": {
+        "step": "第 {{step}} 步，共 {{steps}} 步",
+        "LOADING": "正在加载 {{files}} 个文件…",
+        "PLANNING": "正在计算 {{files}} 个文件中的更改…",
+        "WRITING": "正在写入 {{files}} 个文件…"
+      },
+      "error": {
+        "conflict": "重构与现有文件冲突。",
+        "locked": "另一个重构正在运行。",
+        "notFound": "元素或文件已不存在。",
+        "failed": "重构失败。"
+      },
+      "cancel": "取消",
+      "apply": "应用"
+    },
+    "usage": {
+      "title": "{{name}} 的使用位置",
+      "error": "无法加载使用位置。",
+      "notSaved": "{{name}} 尚未保存到任何工作区文件中。保存模型后即可查看其使用位置。",
+      "summary": "{{files}} 个文件中有 {{count}} 处使用",
+      "filter": "按元素或文件筛选",
+      "noMatch": "没有符合筛选条件的使用位置。",
+      "otherFile": "其他文件",
+      "open": "打开并选中该元素",
+      "readOnly": "只读来源",
+      "none": "该元素未在任何地方使用。",
+      "unreadable": "部分文件无法读取，已跳过。",
+      "close": "关闭"
+    },
+    "notification": {
+      "applied": "{{description}}",
+      "undoHint": "点击此处撤销。",
+      "reverted": "已撤销：{{description}}",
+      "revertConflict": {
+        "title": "文件在此期间已更改",
+        "phrase": "“{{description}}”的部分文件随后被更改。撤销将覆盖这些更改。",
+        "ok": "仍然撤销",
+        "cancel": "取消"
+      },
+      "revertFailed": "无法撤销重构。"
+    }
+  },
+  "quickFix": {
+    "action": "快速修复",
+    "applied": "已应用快速修复",
+    "outdated": "快速修复与模型不再匹配。请重新验证模型。",
+    "failed": "无法应用快速修复。"
+  },
+  "generateDiagramDialog": {
+    "title": "生成图表",
+    "language": "语言",
+    "format": "格式",
+    "generating": "生成",
+    "failed": "生成图表失败",
+    "button": {
+      "cancel": "取消",
+      "download": "下载图表"
+    }
+  },
+  "generateJavaDialog": {
+    "title": "生成 Java 类",
+    "packageName": "Java 包",
+    "packageNameHint": "留空则根据命名空间推导包名",
+    "packageNameError": "请输入以点分隔的 Java 标识符，例如 com.example.movement",
+    "jacksonAnnotations": "Jackson 注解",
+    "jacksonAnnotationsTooltip": "为类添加 Jackson JSON 序列化与反序列化注解",
+    "staticMetaModel": "静态元模型",
+    "staticMetaModelTooltip": "添加 Meta 类，以类型安全的方式访问模型结构",
+    "generating": "正在生成 Java 类",
+    "failed": "生成 Java 类失败",
+    "button": {
+      "cancel": "取消",
+      "download": "下载 ZIP"
+    }
+  },
+  "generateSqlDialog": {
+    "title": "生成 SQL 表定义",
+    "dialect": "SQL 方言",
+    "dialects": {
+      "POSTGRESQL": "PostgreSQL",
+      "DATABRICKS": "Databricks"
+    },
+    "button": {
+      "cancel": "取消",
+      "generate": "生成"
+    }
+  },
+  "aasImport": {
+    "title": "导入资产管理壳",
+    "workspace": "工作区",
+    "models": "Aspect 模型",
+    "exists": "已存在",
+    "conflictHint": "不会覆盖现有文件。请选择其他工作区或先删除这些文件。",
+    "empty": "该文件不包含 Aspect 模型。",
+    "previewFailed": "无法将该文件读取为资产管理壳。",
+    "conflict": "部分文件已在此期间创建，未导入任何内容。",
+    "importFailed": "导入失败。",
+    "cancel": "取消",
+    "import": "导入",
+    "imported": "已导入 {{count}} 个 Aspect 模型"
   }
 }

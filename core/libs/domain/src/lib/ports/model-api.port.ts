@@ -13,7 +13,19 @@
 
 import {FileContentModel} from '@ame/shared';
 import {Observable} from 'rxjs';
-import {AsyncApi, FileEntry, FileInformation, OpenApi, ViolationError, WorkspaceStructure} from '../model-api';
+import {
+  AasImportCandidate,
+  AsyncApi,
+  DiagramFormat,
+  ElementUsageReport,
+  FileEntry,
+  FileInformation,
+  JavaClassesOptions,
+  OpenApi,
+  SqlDialect,
+  ViolationError,
+  WorkspaceStructure,
+} from '../model-api';
 
 /** Backend aspect model API (persistence, validation, generators). Implemented by infrastructure. */
 export abstract class ModelApiPort {
@@ -34,6 +46,12 @@ export abstract class ModelApiPort {
   ): Observable<string>;
   abstract deleteAspectModel(aspectModelUrn: string): Observable<string>;
   abstract importPackage(file: File, workspace?: string): Observable<any>;
+  /** The Aspect Models an Asset Administration Shell file (AASX, XML or JSON) would be imported as. */
+  abstract previewAasImport(file: File, workspace?: string): Observable<AasImportCandidate[]>;
+  /** Imports the Aspect Models of an Asset Administration Shell file; fails with 409 if a file exists already. */
+  abstract importAas(file: File, workspace?: string): Observable<WorkspaceStructure>;
+  /** The elements of all sources referring to the element. */
+  abstract getElementUsage(aspectModelUrn: string): Observable<ElementUsageReport>;
   abstract loadNamespacesStructure(onlyAspectModel?: boolean): Observable<WorkspaceStructure>;
   abstract validate(rdfContent: string, sourceLocation?: string, validInfo?: boolean): Observable<Array<ViolationError>>;
   abstract migrateAspectModel(rdfContent: string, sourceLocation?: string): Observable<string>;
@@ -45,4 +63,11 @@ export abstract class ModelApiPort {
   abstract generateAsyncApiSpec(rdfContent: string, asyncApi: AsyncApi, sourceLocation?: string): Observable<any>;
   abstract generateAASX(rdfContent: string, sourceLocation?: string): Observable<string>;
   abstract generatetAASasXML(rdfContent: string, sourceLocation?: string): Observable<string>;
+  abstract generateDiagram(rdfContent: string, language: string, format: DiagramFormat, sourceLocation?: string): Observable<Blob>;
+  abstract generateSql(rdfContent: string, language: string, dialect: SqlDialect, sourceLocation?: string): Observable<string>;
+  abstract generateJsonLd(rdfContent: string, sourceLocation?: string): Observable<string>;
+  /** Resolves to a ZIP archive with the Java source files. */
+  abstract generateJavaClasses(rdfContent: string, options: JavaClassesOptions, sourceLocation?: string): Observable<Blob>;
+  /** Resolves to a sample payload in the Apache Parquet format. */
+  abstract generateParquetPayload(rdfContent: string, sourceLocation?: string): Observable<Blob>;
 }

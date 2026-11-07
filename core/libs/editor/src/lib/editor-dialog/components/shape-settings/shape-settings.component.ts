@@ -19,6 +19,7 @@ import {MatDialog} from '@angular/material/dialog';
 import {MatIconModule} from '@angular/material/icon';
 import {DefaultCharacteristic, DefaultConstraint, NamedElement, Unit} from '@esmf/aspect-model-loader';
 import {TranslocoDirective} from '@jsverse/transloco';
+import {ElementRefactoringMenuComponent} from '../../../refactoring/element-refactoring-menu/element-refactoring-menu.component';
 import {EditorModelService} from '../../editor-model.service';
 import {EditorFormModel, EditorSignalFormContext} from '../../forms/editor-signal-form-context';
 import {AbstractEntityComponent} from '../abstract-entities/abstract-entity.component';
@@ -48,6 +49,7 @@ import {SharedSettingsTitleComponent} from './shared-settings-title/shared-setti
   imports: [
     SharedSettingsTitleComponent,
     LocateElementComponent,
+    ElementRefactoringMenuComponent,
     MatIconButton,
     MatIconModule,
     AspectComponent,

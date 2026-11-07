@@ -169,6 +169,17 @@
         <mat-icon>content_copy</mat-icon>
       </button>
 
+      @if (isRefactorable(menuSelection()?.file)) {
+        <button (click)="renameFile()" mat-menu-item data-testid="fileMenuRenameFileButton">
+          <mat-icon>drive_file_rename_outline</mat-icon>
+          <span>{{ t('sidebar.fileMenu.renameFile') }}</span>
+        </button>
+        <button (click)="newFileVersion()" mat-menu-item data-testid="fileMenuNewVersionButton">
+          <mat-icon>difference</mat-icon>
+          <span>{{ t('sidebar.fileMenu.newVersion') }}</span>
+        </button>
+      }
+
       <span class="menu-item-wrapper" [matTooltip]="deleteTooltip()" matTooltipPosition="right" data-testid="fileMenuDeleteTooltip">
         <button [disabled]="isDeleteDisabled()" (click)="deleteFile()" mat-menu-item data-testid="fileMenuDeleteButton">
           <mat-icon>delete</mat-icon>
@@ -180,6 +191,16 @@
 
   <mat-menu #namespaceMenu="matMenu">
     @if (namespaceMenuSelection()) {
+      @if (refactoringAvailable) {
+        <button (click)="renameNamespace()" mat-menu-item data-testid="namespaceMenuRenameButton">
+          <mat-icon>drive_file_rename_outline</mat-icon>
+          <span>{{ t('sidebar.fileMenu.renameNamespace') }}</span>
+        </button>
+        <button (click)="newNamespaceVersion()" mat-menu-item data-testid="namespaceMenuNewVersionButton">
+          <mat-icon>difference</mat-icon>
+          <span>{{ t('sidebar.fileMenu.newNamespaceVersion') }}</span>
+        </button>
+      }
       <span
         class="menu-item-wrapper"
         [matTooltip]="namespaceDeleteTooltip()"

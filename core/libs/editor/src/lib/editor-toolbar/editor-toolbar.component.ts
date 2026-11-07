@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {FilterAttributesService, FiltersService} from '@ame/domain';
+import {ElementRefactoringBlocker, FilterAttributesService, FiltersService} from '@ame/domain';
 import {MaxGraphService, MaxGraphShapeSelectorService, ShapeConnectorService} from '@ame/graph';
 import {BarItemComponent, BindingsService, ModelFilter, NotificationsService} from '@ame/shared';
 import {CommonModule} from '@angular/common';
@@ -19,7 +19,9 @@ import {AfterViewInit, Component, computed, DestroyRef, inject, OnDestroy} from 
 import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
 import {MatDialog} from '@angular/material/dialog';
 import {MatIconModule} from '@angular/material/icon';
+import {MatMenuModule} from '@angular/material/menu';
 import {MatTooltipModule} from '@angular/material/tooltip';
+import {NamedElement} from '@esmf/aspect-model-loader';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {first} from 'rxjs/operators';
 import {ConnectWithDialogComponent} from '../connect-with-dialog/connect-with-dialog.component';
@@ -27,6 +29,7 @@ import {ShapeSettingsService} from '../editor-dialog/services/shape-settings.ser
 import {EditorService} from '../editor.service';
 import {ModelHistoryService} from '../history/model-history.service';
 import {PrefixManagementService} from '../prefixes/prefix-management.service';
+import {ElementRefactoringService, ElementRefactoringType} from '../refactoring/element-refactoring.service';
 import {EditorViewModeService} from '../text-view/editor-view-mode.service';
 import {FileHandlingService} from './services';
 
@@ -34,7 +37,7 @@ import {FileHandlingService} from './services';
   selector: 'ame-editor-toolbar',
   templateUrl: './editor-toolbar.component.html',
   styleUrls: ['./editor-toolbar.component.scss'],
-  imports: [BarItemComponent, CommonModule, MatTooltipModule, TranslocoDirective, MatIconModule],
+  imports: [BarItemComponent, CommonModule, MatTooltipModule, TranslocoDirective, MatIconModule, MatMenuModule],
 })
 export class EditorToolbarComponent implements AfterViewInit, OnDestroy {
   private destroyRef = inject(DestroyRef);
@@ -50,6 +53,7 @@ export class EditorToolbarComponent implements AfterViewInit, OnDestroy {
   private filtersService = inject(FiltersService);
   private filterAttributesService = inject(FilterAttributesService);
   private modelHistory = inject(ModelHistoryService);
+  private elementRefactoring = inject(ElementRefactoringService);
 
   public notificationsService = inject(NotificationsService);
 
@@ -65,6 +69,7 @@ export class EditorToolbarComponent implements AfterViewInit, OnDestroy {
     initialValue: this.filterAttributesService.activeFilter,
   });
   protected readonly isPropertyFilterActive = computed(() => this.activeFilter() === ModelFilter.PROPERTIES);
+  protected readonly refactoringElement = this.elementRefactoring.selectedElement;
 
   private checkChangesInterval: NodeJS.Timeout;
 
@@ -74,6 +79,7 @@ export class EditorToolbarComponent implements AfterViewInit, OnDestroy {
     this.bindingsService.registerAction('copy-to-clipboard', () => this.fileHandlingService.onCopyToClipboard());
     this.bindingsService.registerAction('connect-with', () => this.openConnectWithDialog());
     this.bindingsService.registerAction('select-tree', () => this.maxgraphShapeSelectorService.selectTree());
+    this.elementRefactoring.registerContextMenuActions();
   }
 
   ngOnDestroy() {
@@ -139,6 +145,22 @@ export class EditorToolbarComponent implements AfterViewInit, OnDestroy {
           this.shapeConnectorService.connectSelectedElements([selectedCell, result.cell]);
         }
       });
+  }
+
+  refactoringBlocker(element: NamedElement): ElementRefactoringBlocker | null {
+    return this.elementRefactoring.blocker(element);
+  }
+
+  canShowUsages(element: NamedElement): boolean {
+    return this.elementRefactoring.canShowUsages(element);
+  }
+
+  refactor(type: ElementRefactoringType, element: NamedElement) {
+    this.elementRefactoring.refactor(type, element);
+  }
+
+  showUsages(element: NamedElement) {
+    this.elementRefactoring.showUsages(element);
   }
 
   onFormat() {

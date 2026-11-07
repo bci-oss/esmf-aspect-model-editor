@@ -130,6 +130,45 @@
       <ame-bar-item
         [matTooltipShowDelay]="0"
         [matTooltipHideDelay]="0"
+        [disabled]="isTextView() || !refactoringElement()"
+        [matTooltip]="refactoringElement() ? t('refactoring.elementMenu.tooltip') : t('refactoring.elementMenu.noSelection')"
+        [matMenuTriggerFor]="isTextView() || !refactoringElement() ? null : refactoringMenu"
+        [matMenuTriggerData]="{element: refactoringElement()}"
+        [matMenuTriggerRestoreFocus]="false"
+        data-testid="tbRefactoringButton"
+      >
+        <mat-icon class="material-icons">drive_file_rename_outline</mat-icon>
+      </ame-bar-item>
+
+      <mat-menu #refactoringMenu="matMenu">
+        <ng-template let-element="element" matMenuContent>
+          @let blocker = refactoringBlocker(element);
+          <!-- A disabled menu item does not receive pointer events, so its tooltip sits on a wrapper. -->
+          <span
+            class="menu-item-wrapper"
+            [matTooltip]="blocker ? t('refactoring.elementMenu.blocked.' + blocker) : ''"
+            matTooltipPosition="right"
+            data-testid="tbRefactoringBlocked"
+          >
+            <button [disabled]="!!blocker" (click)="refactor('RENAME_ELEMENT', element)" mat-menu-item data-testid="tbRefactoringRename">
+              <mat-icon>drive_file_rename_outline</mat-icon>
+              <span>{{ t('refactoring.elementMenu.rename') }}</span>
+            </button>
+            <button [disabled]="!!blocker" (click)="refactor('MOVE_ELEMENT', element)" mat-menu-item data-testid="tbRefactoringMove">
+              <mat-icon>drive_file_move</mat-icon>
+              <span>{{ t('refactoring.elementMenu.move') }}</span>
+            </button>
+          </span>
+          <button [disabled]="!canShowUsages(element)" (click)="showUsages(element)" mat-menu-item data-testid="tbRefactoringUsages">
+            <mat-icon>account_tree</mat-icon>
+            <span>{{ t('refactoring.elementMenu.usages') }}</span>
+          </button>
+        </ng-template>
+      </mat-menu>
+
+      <ame-bar-item
+        [matTooltipShowDelay]="0"
+        [matTooltipHideDelay]="0"
         [disabled]="isModelEmpty()"
         [matTooltip]="t('toolbar.validate')"
         (itemClick)="validateFile()"

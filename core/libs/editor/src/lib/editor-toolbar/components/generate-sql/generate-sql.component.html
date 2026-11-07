@@ -1,0 +1,37 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t">
+  <h2 mat-dialog-title>{{ t('generateSqlDialog.title') }}</h2>
+  <ame-dialog-close-button />
+
+  <mat-dialog-content>
+    <mat-form-field appearance="fill">
+      <mat-label>{{ t('generateSqlDialog.dialect') }}</mat-label>
+      <mat-select [formField]="sqlForm.dialect" data-testid="sqlDialect">
+        @for (dialect of dialects; track dialect) {
+          <mat-option [value]="dialect" [attr.data-testid]="'sqlDialect-' + dialect">{{
+            t('generateSqlDialog.dialects.' + dialect)
+          }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-flat-button mat-dialog-close>{{ t('generateSqlDialog.button.cancel') }}</button>
+    <button (click)="generate()" type="button" mat-flat-button color="primary" data-testid="generateSql">
+      {{ t('generateSqlDialog.button.generate') }}
+    </button>
+  </mat-dialog-actions>
+</ng-container>

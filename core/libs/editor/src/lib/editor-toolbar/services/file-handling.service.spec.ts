@@ -87,7 +87,7 @@ describe('FileHandlingService', () => {
         }),
         MockProvider(LanguageTranslationService, {
           language: {
-            notificationDialog: {LOADING: 'Loading', CONTENT: 'Wait', VALIDATING: 'Validating'},
+            notificationDialog: {loading: 'Loading', content: 'Wait', validating: 'Validating'},
             notificationService: {loadingError: 'Error'},
             loadingScreenDialog: {aspectModelLoading: 'Loading', generalWaitMessage: 'Wait'},
           } as any,

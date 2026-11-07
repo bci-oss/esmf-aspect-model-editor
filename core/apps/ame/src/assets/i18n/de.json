@@ -217,7 +217,10 @@
     "generateJsonPayload": "JSON-Payload generieren",
     "generateJsonSchema": "JSON Schema generieren",
     "waitAction": "Bitte warten, bis die Aktion abgeschlossen ist!",
-    "noAspectTitle": "Lade oder erstelle ein Aspect Model, bevor du validierst"
+    "noAspectTitle": "Lade oder erstelle ein Aspect Model, bevor du validierst",
+    "generateSql": "SQL generieren",
+    "generateJsonLd": "JSON-LD generieren",
+    "generateParquetPayload": "Parquet-Payload generieren"
   },
   "helpDialog": {
     "startModeling": "Modellierung starten",
@@ -325,7 +328,13 @@
     "jsonPayloadPreview": "Vorschau des Beispiel-JSON-Payloads",
     "failGenerateJsonSchema": "Das JSON Schema konnte nicht generiert werden",
     "jsonSchemaPreview": "Vorschau des JSON Schemas",
-    "noAspectTitle": "Lade oder erstelle ein Aspect Model, bevor du Artefakte generierst"
+    "noAspectTitle": "Lade oder erstelle ein Aspect Model, bevor du Artefakte generierst",
+    "failGenerateSql": "Die SQL-Tabellendefinition konnte nicht generiert werden",
+    "sqlPreview": "Vorschau der SQL-Tabellendefinition",
+    "sqlLanguageHint": "Sprache der Spaltenkommentare",
+    "failGenerateJsonLd": "JSON-LD konnte nicht generiert werden",
+    "jsonLdPreview": "JSON-LD-Vorschau",
+    "failGenerateParquetPayload": "Die Parquet-Payload konnte nicht generiert werden"
   },
   "previewDialog": {
     "cancel": "Abbrechen",
@@ -382,7 +391,11 @@
       "copiedGithubUrl": "GitHub-Link in die Zwischenablage kopiert",
       "delete": "Löschen",
       "deleteNamespace": "Namespace-Version löschen",
-      "namespaceMenu": "Menü für Namespace {{namespace}} öffnen"
+      "namespaceMenu": "Menü für Namespace {{namespace}} öffnen",
+      "renameFile": "Datei umbenennen…",
+      "newVersion": "Neue Version erstellen…",
+      "renameNamespace": "Namespace umbenennen…",
+      "newNamespaceVersion": "Neue Namespace-Version erstellen…"
     },
     "elementList": {
       "title": "Elementliste",
@@ -892,7 +905,8 @@
       "saveToWorkspace": "Im Workspace speichern",
       "exportModel": "Modell exportieren",
       "exportPackage": "Paket exportieren",
-      "settings": "Einstellungen..."
+      "settings": "Einstellungen...",
+      "importAas": "Asset Administration Shell importieren"
     },
     "view": {
       "label": "Ansicht",
@@ -929,7 +943,12 @@
       "asyncApiSpecification": "AsyncAPI-Spezifikation",
       "aasxXml": "AASX / XML",
       "sampleJsonPayload": "Beispiel-JSON-Payload",
-      "jsonSchema": "JSON Schema"
+      "jsonSchema": "JSON Schema",
+      "diagram": "Diagramm (SVG / PNG)",
+      "sql": "SQL-Tabellendefinition",
+      "jsonLd": "JSON-LD",
+      "sampleParquetPayload": "Beispiel-Parquet-Payload",
+      "javaClasses": "Java-Klassen"
     },
     "search": {
       "label": "Suchen",
@@ -1094,5 +1113,165 @@
       "readOnlyOpen": "Modelle aus GitHub können nur angesehen werden. Klicken Sie auf die Datei, um ihre Elemente zu sehen.",
       "emptySource": "Keine Modelle in dieser Quelle"
     }
+  },
+  "refactoring": {
+    "elementMenu": {
+      "title": "Refaktorisieren",
+      "tooltip": "Dateiübergreifend refaktorisieren",
+      "noSelection": "Wähle genau ein Element aus, um es zu refaktorisieren.",
+      "rename": "Überall umbenennen…",
+      "move": "In andere Datei verschieben…",
+      "usages": "Wo wird es verwendet?",
+      "blocked": {
+        "notSaved": "Speichere das Modell zuerst in einem Workspace.",
+        "readOnly": "Modelle aus schreibgeschützten Quellen können nicht geändert werden.",
+        "external": "Das Element ist in einer anderen Datei definiert. Öffne diese Datei, um es zu ändern.",
+        "predefined": "Elemente des SAMM-Metamodells können nicht geändert werden."
+      }
+    },
+    "dialog": {
+      "title": {
+        "RENAME_ELEMENT": "Element umbenennen",
+        "MOVE_ELEMENT": "Element verschieben",
+        "RENAME_NAMESPACE": "Namespace umbenennen",
+        "NEW_VERSION": "Neue Version erstellen",
+        "RENAME_FILE": "Datei umbenennen"
+      },
+      "subject": {
+        "element": "Element {{name}} in {{namespace}}",
+        "file": "Datei {{name}} in {{namespace}}",
+        "namespace": "Namespace {{namespace}}"
+      },
+      "field": {
+        "newElementName": "Neuer Name",
+        "newFileName": "Neuer Dateiname",
+        "namespace": "Namespace",
+        "version": "Version",
+        "targetFile": "Zieldatei",
+        "targetFileHint": "Eine bestehende oder neue Datei des Ziel-Namespace",
+        "targetWorkspace": "Ziel-Workspace",
+        "sourceWorkspace": "Gleicher Workspace"
+      },
+      "validation": {
+        "required": "Dieses Feld ist erforderlich",
+        "pattern": "Der Wert hat ein ungültiges Format",
+        "unchanged": "Der Wert ist unverändert",
+        "casing": "Der erste Buchstabe muss seine Groß-/Kleinschreibung behalten"
+      },
+      "increase": {
+        "MAJOR": "Major",
+        "MINOR": "Minor",
+        "MICRO": "Micro"
+      },
+      "preview": {
+        "button": "Vorschau",
+        "noChanges": "Keine Dateien betroffen.",
+        "created": "Neue Dateien ({{count}})",
+        "modified": "Geänderte Dateien ({{count}})",
+        "removed": "Entfernte Dateien ({{count}})",
+        "blocked": "Blockierende Dateien ({{count}})",
+        "notApplicable": "Das Refactoring kann nicht angewendet werden.",
+        "unsaved": "Speichere oder verwirf zuerst die Änderungen in {{files}}."
+      },
+      "progress": {
+        "step": "Schritt {{step}} von {{steps}}",
+        "LOADING": "{{files}} Dateien werden geladen…",
+        "PLANNING": "Änderungen in {{files}} Dateien werden berechnet…",
+        "WRITING": "{{files}} Dateien werden geschrieben…"
+      },
+      "error": {
+        "conflict": "Das Refactoring steht im Konflikt mit bestehenden Dateien.",
+        "locked": "Ein anderes Refactoring läuft gerade.",
+        "notFound": "Das Element oder die Datei existiert nicht mehr.",
+        "failed": "Das Refactoring ist fehlgeschlagen."
+      },
+      "cancel": "Abbrechen",
+      "apply": "Anwenden"
+    },
+    "usage": {
+      "title": "Verwendungen von {{name}}",
+      "error": "Die Verwendungen konnten nicht geladen werden.",
+      "notSaved": "{{name}} ist noch in keiner Workspace-Datei gespeichert. Speichere das Modell, um zu sehen, wo es verwendet wird.",
+      "summary": "{{count}} Verwendungen in {{files}} Dateien",
+      "filter": "Nach Element oder Datei filtern",
+      "noMatch": "Keine Verwendung passt zum Filter.",
+      "otherFile": "Andere Datei",
+      "open": "Öffnen und Element auswählen",
+      "readOnly": "Schreibgeschützte Quelle",
+      "none": "Das Element wird nirgends verwendet.",
+      "unreadable": "Einige Dateien konnten nicht gelesen werden und wurden übersprungen.",
+      "close": "Schließen"
+    },
+    "notification": {
+      "applied": "{{description}}",
+      "undoHint": "Zum Rückgängigmachen hier klicken.",
+      "reverted": "Rückgängig gemacht: {{description}}",
+      "revertConflict": {
+        "title": "Dateien wurden zwischenzeitlich geändert",
+        "phrase": "Einige Dateien von „{{description}}“ wurden danach geändert. Rückgängigmachen überschreibt diese Änderungen.",
+        "ok": "Trotzdem rückgängig machen",
+        "cancel": "Abbrechen"
+      },
+      "revertFailed": "Das Refactoring konnte nicht rückgängig gemacht werden."
+    }
+  },
+  "quickFix": {
+    "action": "Schnellkorrektur",
+    "applied": "Schnellkorrektur angewendet",
+    "outdated": "Die Schnellkorrektur passt nicht mehr zum Modell. Validiere das Modell erneut.",
+    "failed": "Die Schnellkorrektur konnte nicht angewendet werden."
+  },
+  "generateDiagramDialog": {
+    "title": "Diagramm generieren",
+    "language": "Sprache",
+    "format": "Format",
+    "generating": "Generieren",
+    "failed": "Das Diagramm konnte nicht generiert werden",
+    "button": {
+      "cancel": "Abbrechen",
+      "download": "Diagramm herunterladen"
+    }
+  },
+  "generateJavaDialog": {
+    "title": "Java-Klassen generieren",
+    "packageName": "Java-Package",
+    "packageNameHint": "Leer lassen, um das Package aus dem Namespace abzuleiten",
+    "packageNameError": "Durch Punkte getrennte Java-Bezeichner eingeben, z. B. com.example.movement",
+    "jacksonAnnotations": "Jackson-Annotationen",
+    "jacksonAnnotationsTooltip": "Annotiert die Klassen für die JSON-(De-)Serialisierung mit Jackson",
+    "staticMetaModel": "Statisches Metamodell",
+    "staticMetaModelTooltip": "Fügt Meta-Klassen für den typsicheren Zugriff auf die Modellstruktur hinzu",
+    "generating": "Java-Klassen werden generiert",
+    "failed": "Die Java-Klassen konnten nicht generiert werden",
+    "button": {
+      "cancel": "Abbrechen",
+      "download": "ZIP herunterladen"
+    }
+  },
+  "generateSqlDialog": {
+    "title": "SQL-Tabellendefinition generieren",
+    "dialect": "SQL-Dialekt",
+    "dialects": {
+      "POSTGRESQL": "PostgreSQL",
+      "DATABRICKS": "Databricks"
+    },
+    "button": {
+      "cancel": "Abbrechen",
+      "generate": "Generieren"
+    }
+  },
+  "aasImport": {
+    "title": "Asset Administration Shell importieren",
+    "workspace": "Workspace",
+    "models": "Aspect Models",
+    "exists": "existiert bereits",
+    "conflictHint": "Vorhandene Dateien werden nicht überschrieben. Wähle einen anderen Workspace oder entferne die Dateien zuerst.",
+    "empty": "Die Datei enthält keine Aspect Models.",
+    "previewFailed": "Die Datei konnte nicht als Asset Administration Shell gelesen werden.",
+    "conflict": "Einige Dateien wurden zwischenzeitlich angelegt. Es wurde nichts importiert.",
+    "importFailed": "Der Import ist fehlgeschlagen.",
+    "cancel": "Abbrechen",
+    "import": "Importieren",
+    "imported": "{{count}} Aspect Model(s) importiert"
   }
 }

@@ -44,6 +44,7 @@ pub(crate) const MENU_SHORTCUTS: &[(&str, &str)] = &[
     ("NEW_WINDOW", "CmdOrCtrl+Shift+N"),
     ("IMPORT_MODEL", "CmdOrCtrl+Shift+O"),
     ("IMPORT_PACKAGE", "CmdOrCtrl+Shift+P"),
+    ("IMPORT_AAS", "CmdOrCtrl+Shift+U"),
     ("COPY_TO_CLIPBOARD", "CmdOrCtrl+Shift+C"),
     ("SAVE_TO_WORKSPACE", "CmdOrCtrl+S"),
     ("EXPORT_MODEL", "CmdOrCtrl+Shift+E"),
@@ -76,6 +77,11 @@ pub(crate) const MENU_SHORTCUTS: &[(&str, &str)] = &[
     ("GENERATE_AASX_XML", "CmdOrCtrl+6"),
     ("GENERATE_JSON_PAYLOAD", "CmdOrCtrl+7"),
     ("GENERATE_JSON_SCHEMA", "CmdOrCtrl+8"),
+    ("GENERATE_DIAGRAM", "CmdOrCtrl+Shift+6"),
+    ("GENERATE_SQL", "CmdOrCtrl+Shift+7"),
+    ("GENERATE_JSON_LD", "CmdOrCtrl+Shift+8"),
+    ("GENERATE_PARQUET_PAYLOAD", "CmdOrCtrl+Shift+9"),
+    ("GENERATE_JAVA_CLASSES", "CmdOrCtrl+Shift+J"),
     // Search
     ("SEARCH_ELEMENTS", "CmdOrCtrl+F"),
     ("SEARCH_FILES", "CmdOrCtrl+Shift+F"),
@@ -129,6 +135,7 @@ fn build_file_submenu<R: Runtime>(app: &AppHandle<R>) -> Result<Submenu<R>, taur
     let new_window = item(app, "NEW_WINDOW", "New Window", true)?;
     let import_model = item(app, "IMPORT_MODEL", "Import Model", true)?;
     let import_package = item(app, "IMPORT_PACKAGE", "Import Package", true)?;
+    let import_aas = item(app, "IMPORT_AAS", "Import Asset Administration Shell", true)?;
     let sep = PredefinedMenuItem::separator(app)?;
     let copy_clipboard = item(app, "COPY_TO_CLIPBOARD", "Copy to Clipboard", false)?;
     let save_workspace = item(app, "SAVE_TO_WORKSPACE", "Save to Workspace", false)?;
@@ -150,6 +157,7 @@ fn build_file_submenu<R: Runtime>(app: &AppHandle<R>) -> Result<Submenu<R>, taur
                 &new_window,
                 &import_model,
                 &import_package,
+                &import_aas,
                 &sep,
                 &copy_clipboard,
                 &save_workspace,
@@ -173,6 +181,7 @@ fn build_file_submenu<R: Runtime>(app: &AppHandle<R>) -> Result<Submenu<R>, taur
                 &new_window,
                 &import_model,
                 &import_package,
+                &import_aas,
                 &sep,
                 &copy_clipboard,
                 &save_workspace,
@@ -296,6 +305,16 @@ fn build_generate_submenu<R: Runtime>(app: &AppHandle<R>) -> Result<Submenu<R>, 
     let sep = PredefinedMenuItem::separator(app)?;
     let gen_json_sample = item(app, "GENERATE_JSON_PAYLOAD", "Sample JSON Payload", false)?;
     let gen_json_schema = item(app, "GENERATE_JSON_SCHEMA", "JSON Schema", false)?;
+    let gen_json_ld = item(app, "GENERATE_JSON_LD", "JSON-LD", false)?;
+    let gen_sql = item(app, "GENERATE_SQL", "SQL Table Definition", false)?;
+    let gen_diagram = item(app, "GENERATE_DIAGRAM", "Diagram (SVG / PNG)", false)?;
+    let gen_parquet = item(
+        app,
+        "GENERATE_PARQUET_PAYLOAD",
+        "Sample Parquet Payload",
+        false,
+    )?;
+    let gen_java = item(app, "GENERATE_JAVA_CLASSES", "Java Classes", false)?;
 
     Submenu::with_id_and_items(
         app,
@@ -307,9 +326,14 @@ fn build_generate_submenu<R: Runtime>(app: &AppHandle<R>) -> Result<Submenu<R>, 
             &gen_openapi,
             &gen_asyncapi,
             &gen_aasx,
+            &gen_diagram,
             &sep,
             &gen_json_sample,
             &gen_json_schema,
+            &gen_json_ld,
+            &gen_sql,
+            &gen_parquet,
+            &gen_java,
         ],
     )
 }
@@ -410,6 +434,14 @@ pub fn handle_menu_click<R: Runtime>(app: &AppHandle<R>, menu_id: &str) {
         }
         "IMPORT_PACKAGE" => {
             open_file_dialog_and_emit(app, "ZIP Files", &["zip"], "IMPORT_NAMESPACES");
+        }
+        "IMPORT_AAS" => {
+            open_file_dialog_and_emit(
+                app,
+                "Asset Administration Shell",
+                &["aasx", "xml", "json"],
+                "IMPORT_AAS",
+            );
         }
         "LOAD_DEFAULT_EXAMPLE" => {
             load_example_and_emit(app, "SimpleAspect.ttl");
@@ -626,6 +658,7 @@ pub fn translate_menu<R: Runtime>(app: &AppHandle<R>, translation: &serde_json::
             "IMPORT_PACKAGE",
             file.get("importPackage").and_then(|v| v.as_str()),
         ));
+        mappings.push(("IMPORT_AAS", file.get("importAas").and_then(|v| v.as_str())));
         mappings.push((
             "COPY_TO_CLIPBOARD",
             file.get("copyToClipboard").and_then(|v| v.as_str()),
@@ -750,6 +783,23 @@ pub fn translate_menu<R: Runtime>(app: &AppHandle<R>, translation: &serde_json::
         mappings.push((
             "GENERATE_JSON_SCHEMA",
             gen.get("jsonSchema").and_then(|v| v.as_str()),
+        ));
+        mappings.push((
+            "GENERATE_DIAGRAM",
+            gen.get("diagram").and_then(|v| v.as_str()),
+        ));
+        mappings.push(("GENERATE_SQL", gen.get("sql").and_then(|v| v.as_str())));
+        mappings.push((
+            "GENERATE_JSON_LD",
+            gen.get("jsonLd").and_then(|v| v.as_str()),
+        ));
+        mappings.push((
+            "GENERATE_PARQUET_PAYLOAD",
+            gen.get("sampleParquetPayload").and_then(|v| v.as_str()),
+        ));
+        mappings.push((
+            "GENERATE_JAVA_CLASSES",
+            gen.get("javaClasses").and_then(|v| v.as_str()),
         ));
     }
 
@@ -951,6 +1001,7 @@ mod tests {
             "NEW_WINDOW",
             "IMPORT_MODEL",
             "IMPORT_PACKAGE",
+            "IMPORT_AAS",
             "COPY_TO_CLIPBOARD",
             "SAVE_TO_WORKSPACE",
             "EXPORT_MODEL",
@@ -976,6 +1027,11 @@ mod tests {
             "GENERATE_AASX_XML",
             "GENERATE_JSON_PAYLOAD",
             "GENERATE_JSON_SCHEMA",
+            "GENERATE_DIAGRAM",
+            "GENERATE_SQL",
+            "GENERATE_JSON_LD",
+            "GENERATE_PARQUET_PAYLOAD",
+            "GENERATE_JAVA_CLASSES",
             "SEARCH_ELEMENTS",
             "SEARCH_FILES",
         ];

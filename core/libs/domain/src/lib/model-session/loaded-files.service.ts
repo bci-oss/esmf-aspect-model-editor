@@ -240,6 +240,7 @@ export class LoadedFilesService {
     }
 
     newFile.rendered = Boolean(fileInfo.rendered);
+    newFile.fromWorkspace = Boolean(fileInfo.fromWorkspace);
     newFile.originalName = newFile.name;
     newFile.originalNamespace = newFile.namespace;
     newFile.originalAspectModelUrn = fileInfo.aspectModelUrn;

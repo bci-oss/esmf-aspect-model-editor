@@ -21,6 +21,7 @@ import {
   ModelLoaderPort,
   ModelOpenerPort,
   ModelSaverPort,
+  RefactoringDialogPort,
   RenameModelDialogPort,
   ShapeSettingsPort,
   ShapeSettingsStatePort,
@@ -39,6 +40,7 @@ import {ModelCheckerService} from './model-checker.service';
 import {ModelLoaderService} from './model-loader.service';
 import {ModelOpenerService} from './model-opener/model-opener.service';
 import {ModelSaverService} from './model-saver.service';
+import {RefactoringDialogService} from './refactoring/refactoring-dialog.service';
 import {RenameModelDialogService} from './rename-model/rename-model.service';
 import {EditorTauriBridge} from './tauri/editor-tauri-bridge.service';
 
@@ -48,6 +50,7 @@ export function provideEditor(): EnvironmentProviders {
     provideAmeGraph(),
     {provide: ConfirmDialogPort, useExisting: ConfirmDialogService},
     {provide: RenameModelDialogPort, useExisting: RenameModelDialogService},
+    {provide: RefactoringDialogPort, useExisting: RefactoringDialogService},
     {provide: EntityInstancePort, useExisting: EntityInstanceService},
     {provide: ModelOpenerPort, useExisting: ModelOpenerService},
     {provide: ModelLoaderPort, useExisting: ModelLoaderService},

@@ -99,6 +99,17 @@ td.mxPopupMenuIcon .geIcon {
   _height: 26px;
 }
 
+td.mxPopupMenuItem.mxDisabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+td.mxPopupMenuItem > img {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
+
 tr.mxPopupMenuItemHxover {
   background-color: var(--ame-surface-hover, #eeeeee);
   color: var(--ame-font, black);

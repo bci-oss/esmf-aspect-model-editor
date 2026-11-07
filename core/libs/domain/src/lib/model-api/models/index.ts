@@ -11,9 +11,13 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+export * from './aas-import';
 export * from './api-specs';
+export * from './element-usage';
 export * from './file-information';
+export * from './generators';
 export * from './model-sources';
 export * from './named-rdf-model';
+export * from './refactoring';
 export * from './violation-error';
 export * from './workspace-structure';

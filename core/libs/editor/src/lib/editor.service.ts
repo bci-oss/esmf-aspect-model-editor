@@ -26,6 +26,7 @@ import {
   OpenApi,
   RdfPort,
   SammLanguageSettingsService,
+  SqlDialect,
   ViolationError,
 } from '@ame/domain';
 import {
@@ -179,6 +180,21 @@ export class EditorService implements DraggablePort, EditorValidationPort {
   generateJsonSchema(rdfModel: RdfModel, language: string): Observable<string> {
     const serializedModel = this.rdfService.serializeModel(rdfModel);
     return this.modelApiService.generateJsonSchema(serializedModel, language, rdfModel.getSourceLocation());
+  }
+
+  generateSql(rdfModel: RdfModel, language: string, dialect: SqlDialect): Observable<string> {
+    const serializedModel = this.rdfService.serializeModel(rdfModel);
+    return this.modelApiService.generateSql(serializedModel, language, dialect, rdfModel.getSourceLocation());
+  }
+
+  generateJsonLd(rdfModel: RdfModel): Observable<string> {
+    const serializedModel = this.rdfService.serializeModel(rdfModel);
+    return this.modelApiService.generateJsonLd(serializedModel, rdfModel.getSourceLocation());
+  }
+
+  generateParquetPayload(rdfModel: RdfModel): Observable<Blob> {
+    const serializedModel = this.rdfService.serializeModel(rdfModel);
+    return this.modelApiService.generateParquetPayload(serializedModel, rdfModel.getSourceLocation());
   }
 
   generateOpenApiSpec(rdfModel: RdfModel, openApi: OpenApi): Observable<string> {

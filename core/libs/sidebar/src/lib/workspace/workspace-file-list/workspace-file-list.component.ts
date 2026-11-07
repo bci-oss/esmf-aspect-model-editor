@@ -11,7 +11,15 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ModelOpenerPort, ModelSource, ModelSourcesStore, WorkspaceFacade, WorkspaceStore} from '@ame/domain';
+import {
+  ModelOpenerPort,
+  ModelSource,
+  ModelSourcesStore,
+  RefactoringDialogPort,
+  RefactoringRequest,
+  WorkspaceFacade,
+  WorkspaceStore,
+} from '@ame/domain';
 import {ClipboardService, LanguageTranslationService, NotificationsService} from '@ame/shared';
 import {Component, computed, DestroyRef, effect, inject, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
@@ -56,6 +64,9 @@ export class WorkspaceFileListComponent {
   private readonly notificationService = inject(NotificationsService);
   private readonly modelApiService = inject(WorkspaceFacade);
   private readonly modelOpener = inject(ModelOpenerPort, {optional: true});
+  private readonly refactoringDialog = inject(RefactoringDialogPort, {optional: true});
+  /** Refactorings are offered by the editor; without it (e.g. in isolated views) the menu entries are hidden. */
+  public readonly refactoringAvailable = !!this.refactoringDialog;
   private readonly translate = inject(LanguageTranslationService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly clipboard = inject(ClipboardService);
@@ -293,6 +304,51 @@ export class WorkspaceFileListComponent {
     this.deletion.deleteNamespace(namespace).pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
+  /** Renaming and new versions change files of writable workspaces only; broken files cannot be loaded by the backend. */
+  public isRefactorable(file: FileStatus | undefined): boolean {
+    return this.refactoringAvailable && !!file && !this.isReadOnly(file) && !file.outdated && !file.errored;
+  }
+
+  public renameFile() {
+    this.refactorFile('RENAME_FILE');
+  }
+
+  public newFileVersion() {
+    this.refactorFile('NEW_VERSION');
+  }
+
+  public renameNamespace() {
+    this.refactorNamespace('RENAME_NAMESPACE');
+  }
+
+  public newNamespaceVersion() {
+    this.refactorNamespace('NEW_VERSION');
+  }
+
+  private refactorFile(type: 'RENAME_FILE' | 'NEW_VERSION') {
+    const selection = this.menuSelection();
+    if (!selection || !this.isRefactorable(selection.file)) return;
+
+    this.openRefactoring({
+      type,
+      ...splitNamespaceKey(selection.namespace),
+      fileName: selection.file.name,
+      source: selection.file.source?.path,
+    });
+  }
+
+  private refactorNamespace(type: 'RENAME_NAMESPACE' | 'NEW_VERSION') {
+    const namespace = this.namespaceMenuSelection();
+    if (!namespace || !this.refactoringAvailable) return;
+
+    this.openRefactoring({type, ...splitNamespaceKey(namespace)});
+  }
+
+  private openRefactoring(request: RefactoringRequest) {
+    // Not bound to this component: applying refreshes the workspace, which re-creates this list before the dialog closes
+    this.refactoringDialog?.open(request).subscribe();
+  }
+
   public promptOpenFile(namespace: string, file: FileStatus) {
     if (this.isReadOnly(file)) {
       this.selectFile(namespace, file);
@@ -490,4 +546,10 @@ export class WorkspaceFileListComponent {
 function rank(source: ModelSource): number {
   if (source.defaultWorkspace) return 0;
   return source.type === 'workspace' ? 1 : 2;
+}
+
+/** Splits the key `namespace:version` of the namespace map. */
+function splitNamespaceKey(key: string): {namespace: string; version: string} {
+  const separator = key.lastIndexOf(':');
+  return separator < 0 ? {namespace: key, version: ''} : {namespace: key.substring(0, separator), version: key.substring(separator + 1)};
 }

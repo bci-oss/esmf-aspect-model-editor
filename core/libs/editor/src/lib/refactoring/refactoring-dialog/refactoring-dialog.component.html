@@ -1,0 +1,186 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t; prefix: 'refactoring.dialog'">
+  <h2 mat-dialog-title>{{ t('title.' + type) }}</h2>
+  <ame-dialog-close-button [disabled]="busy()" />
+
+  <mat-dialog-content>
+    <p class="subject" data-testid="refactoring-subject">
+      @if (element) {
+        {{ t('subject.element', {name: element.name, namespace: element.namespace + ':' + element.version}) }}
+      } @else if (data.request.fileName) {
+        {{ t('subject.file', {name: data.request.fileName, namespace: data.request.namespace + ':' + data.request.version}) }}
+      } @else {
+        {{ t('subject.namespace', {namespace: data.request.namespace + ':' + data.request.version}) }}
+      }
+    </p>
+
+    <div class="fields">
+      @switch (type) {
+        @case ('RENAME_ELEMENT') {
+          <mat-form-field appearance="fill" subscriptSizing="dynamic">
+            <mat-label>{{ t('field.newElementName') }}</mat-label>
+            <input [formField]="refactoringForm.newName" (keydown.enter)="runPreview()" matInput data-testid="refactoring-new-name" />
+            @for (error of refactoringForm.newName().errors(); track error.kind) {
+              <mat-error>{{ t('validation.' + error.kind) }}</mat-error>
+            }
+          </mat-form-field>
+        }
+        @case ('RENAME_FILE') {
+          <mat-form-field appearance="fill" subscriptSizing="dynamic">
+            <mat-label>{{ t('field.newFileName') }}</mat-label>
+            <input [formField]="refactoringForm.newName" (keydown.enter)="runPreview()" matInput data-testid="refactoring-new-name" />
+            <span matSuffix>.ttl</span>
+            @for (error of refactoringForm.newName().errors(); track error.kind) {
+              <mat-error>{{ t('validation.' + error.kind) }}</mat-error>
+            }
+          </mat-form-field>
+        }
+        @case ('NEW_VERSION') {
+          <mat-radio-group class="increases" [formField]="refactoringForm.increase" data-testid="refactoring-increase">
+            @for (increase of increases; track increase) {
+              <mat-radio-button [value]="increase" [attr.data-testid]="'refactoring-increase-' + increase">
+                {{ t('increase.' + increase) }}
+              </mat-radio-button>
+            }
+          </mat-radio-group>
+        }
+      }
+
+      @if (type === 'MOVE_ELEMENT' || type === 'RENAME_NAMESPACE') {
+        <div class="namespace">
+          <mat-form-field appearance="fill" subscriptSizing="dynamic">
+            <mat-label>{{ t('field.namespace') }}</mat-label>
+            <input [formField]="refactoringForm.targetNamespace" matInput data-testid="refactoring-target-namespace" />
+            @for (error of refactoringForm.targetNamespace().errors(); track error.kind) {
+              <mat-error>{{ t('validation.' + error.kind) }}</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field class="version" appearance="fill" subscriptSizing="dynamic">
+            <mat-label>{{ t('field.version') }}</mat-label>
+            <input [formField]="refactoringForm.targetVersion" matInput data-testid="refactoring-target-version" />
+            @for (error of refactoringForm.targetVersion().errors(); track error.kind) {
+              <mat-error>{{ t('validation.' + error.kind) }}</mat-error>
+            }
+          </mat-form-field>
+        </div>
+      }
+
+      @if (type === 'MOVE_ELEMENT') {
+        <mat-form-field appearance="fill" subscriptSizing="dynamic">
+          <mat-label>{{ t('field.targetFile') }}</mat-label>
+          <input
+            [formField]="refactoringForm.targetFileName"
+            (keydown.enter)="runPreview()"
+            matInput
+            data-testid="refactoring-target-file"
+          />
+          <span matSuffix>.ttl</span>
+          <mat-hint>{{ t('field.targetFileHint') }}</mat-hint>
+          @for (error of refactoringForm.targetFileName().errors(); track error.kind) {
+            <mat-error>{{ t('validation.' + error.kind) }}</mat-error>
+          }
+        </mat-form-field>
+
+        @if (modelSources.hasMultipleWorkspaces()) {
+          <mat-form-field appearance="fill" subscriptSizing="dynamic">
+            <mat-label>{{ t('field.targetWorkspace') }}</mat-label>
+            <mat-select [formField]="refactoringForm.targetWorkspace" data-testid="refactoring-target-workspace">
+              <mat-option value="">{{ t('field.sourceWorkspace') }}</mat-option>
+              @for (workspace of modelSources.workspaces(); track workspace.path) {
+                <mat-option [value]="workspace.path">{{ workspace.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+      }
+    </div>
+
+    @if (busy()) {
+      @if (progress(); as progress) {
+        <div class="progress" data-testid="refactoring-progress">
+          <mat-progress-bar [value]="progressPercent()" mode="determinate" />
+          <small>
+            <span data-testid="refactoring-progress-step">{{ t('progress.step', {step: progress.step, steps: progress.steps}) }}</span>
+            @if (progress.phase) {
+              <span data-testid="refactoring-progress-phase">{{ t('progress.' + progress.phase, {files: progress.files}) }}</span>
+            }
+          </small>
+        </div>
+      } @else {
+        <mat-progress-bar mode="indeterminate" data-testid="refactoring-busy" />
+      }
+    }
+
+    @if (error(); as error) {
+      <p class="message error" data-testid="refactoring-error">
+        <mat-icon>error</mat-icon>
+        <span>
+          {{ t(error.key) }}
+          @if (error.message) {
+            <small>{{ error.message }}</small>
+          }
+        </span>
+      </p>
+    }
+
+    @if (preview(); as preview) {
+      <section class="preview" data-testid="refactoring-preview">
+        <h3>{{ preview.description }}</h3>
+        @if (!preview.created.length && !preview.modified.length && !preview.removed.length) {
+          <p>{{ t('preview.noChanges') }}</p>
+        }
+        @for (group of previewGroups(); track group.key) {
+          <h4 [class]="group.key">{{ t('preview.' + group.key, {count: group.files.length}) }}</h4>
+          <ul [attr.data-testid]="'refactoring-preview-' + group.key">
+            @for (file of group.files; track file.path) {
+              <li [title]="file.path">
+                <mat-icon [class]="group.key">{{ group.icon }}</mat-icon>
+                {{ fileLabel(file) }}
+              </li>
+            }
+          </ul>
+        }
+
+        @if (!preview.applicable) {
+          <p class="message warning" data-testid="refactoring-blocked">
+            <mat-icon>lock</mat-icon>
+            <span>{{ t('preview.notApplicable') }}</span>
+          </p>
+        }
+        @if (unsavedFiles()) {
+          <p class="message warning" data-testid="refactoring-unsaved">
+            <mat-icon>warning</mat-icon>
+            <span>{{ t('preview.unsaved', {files: unsavedFiles()}) }}</span>
+          </p>
+        }
+      </section>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button [disabled]="busy()" (click)="requestClose()" mat-button data-testid="refactoring-cancel">{{ t('cancel') }}</button>
+    <button
+      [disabled]="busy() || refactoringForm().invalid() || !!preview()"
+      (click)="runPreview()"
+      mat-stroked-button
+      data-testid="refactoring-preview-button"
+    >
+      {{ t('preview.button') }}
+    </button>
+    <button [disabled]="!canApply()" (click)="apply()" mat-flat-button color="primary" data-testid="refactoring-apply">
+      {{ t('apply') }}
+    </button>
+  </mat-dialog-actions>
+</ng-container>

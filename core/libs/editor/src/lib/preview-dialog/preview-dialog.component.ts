@@ -35,7 +35,13 @@ export interface PreviewDialogOptions {
   language?: string;
   /** Generates the content again in another language. */
   regenerate?: (language: string) => Observable<string>;
+  /** Explains what the language switch changes; defaults to the JSON Schema descriptions. */
+  languageHint?: string;
+  /** Media type of the downloaded file; defaults to JSON. */
+  mimeType?: string;
 }
+
+const DEFAULT_MIME_TYPE = 'application/json;charset=utf-8';
 
 @Component({
   selector: 'ame-preview-dialog',
@@ -68,6 +74,7 @@ export class PreviewDialogComponent {
   public language = signal('');
   public regenerating = signal(false);
   public readonly languages: {tag: string; name: string}[];
+  public readonly languageHint: string | undefined;
 
   constructor() {
     this.title.set(this.data.title);
@@ -76,6 +83,7 @@ export class PreviewDialogComponent {
 
     this.initialContent = this.data.content;
     this.fileName = this.data.fileName;
+    this.languageHint = this.data.languageHint;
     this.languages = this.data.regenerate ? (this.data.languages ?? []).map(tag => ({tag, name: locale.getByTag(tag)?.name ?? tag})) : [];
   }
 
@@ -108,7 +116,7 @@ export class PreviewDialogComponent {
   onDownload() {
     saveAs(
       new Blob([this.content()], {
-        type: 'application/json;charset=utf-8',
+        type: this.data.mimeType ?? DEFAULT_MIME_TYPE,
       }),
       this.fileName,
     );

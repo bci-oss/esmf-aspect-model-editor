@@ -18,6 +18,7 @@ import {
   ModelSessionFacade,
   ModelSource,
   ModelSourcesStore,
+  RefactoringDialogPort,
   TabsStore,
   WorkspaceFacade,
 } from '@ame/domain';
@@ -32,7 +33,7 @@ import {provideZonelessChangeDetection} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {TranslocoTestingModule} from '@jsverse/transloco';
-import {of, throwError} from 'rxjs';
+import {of, Subject, throwError} from 'rxjs';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {FileStatus, SidebarStateService} from '../../sidebar-state.service';
 import {WorkspaceFileListComponent} from './workspace-file-list.component';
@@ -57,6 +58,7 @@ describe('WorkspaceFileListComponent', () => {
     openInNewTab: ReturnType<typeof vi.fn>;
     openInNewWindow: ReturnType<typeof vi.fn>;
   };
+  let refactoringDialogMock: {open: ReturnType<typeof vi.fn>; showUsages: ReturnType<typeof vi.fn>};
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -82,6 +84,7 @@ describe('WorkspaceFileListComponent', () => {
       openInNewTab: vi.fn(() => of(true)),
       openInNewWindow: vi.fn(),
     };
+    refactoringDialogMock = {open: vi.fn(() => of(null)), showUsages: vi.fn()};
 
     TestBed.configureTestingModule({
       imports: [
@@ -98,6 +101,7 @@ describe('WorkspaceFileListComponent', () => {
         {provide: WorkspaceFacade, useValue: modelApiMock},
         {provide: ModelSessionFacade, useValue: loadedFilesMock},
         {provide: ModelOpenerPort, useValue: modelOpenerMock},
+        {provide: RefactoringDialogPort, useValue: refactoringDialogMock},
         {
           provide: LanguageTranslationService,
           useValue: {
@@ -411,6 +415,74 @@ describe('WorkspaceFileListComponent', () => {
 
     it('is disabled without a selected namespace', () => {
       expect(component.isNamespaceDeleteDisabled()).toBe(true);
+    });
+  });
+
+  describe('refactorings', () => {
+    const file = () => sidebarService.namespacesState.getFile('org.eclipse.esmf:1.0.0', 'File1.ttl') as FileStatus;
+
+    it('renames a file of its workspace', () => {
+      file().source = {type: 'workspace', id: 'ws', name: 'Work', path: '/home/ame/work', readOnly: false, defaultWorkspace: false};
+      component.prepare('org.eclipse.esmf:1.0.0', file());
+
+      component.renameFile();
+
+      expect(refactoringDialogMock.open).toHaveBeenCalledWith({
+        type: 'RENAME_FILE',
+        namespace: 'org.eclipse.esmf',
+        version: '1.0.0',
+        fileName: 'File1.ttl',
+        source: '/home/ame/work',
+      });
+    });
+
+    it('creates a new version of a file', () => {
+      component.prepare('org.eclipse.esmf:1.0.0', file());
+
+      component.newFileVersion();
+
+      expect(refactoringDialogMock.open).toHaveBeenCalledWith(expect.objectContaining({type: 'NEW_VERSION', fileName: 'File1.ttl'}));
+    });
+
+    it.each([
+      [
+        'read-only',
+        (f: FileStatus) => (f.source = {type: 'github', id: 'gh', name: 'GitHub', path: '/gh', readOnly: true, defaultWorkspace: false}),
+      ],
+      ['outdated', (f: FileStatus) => (f.outdated = true)],
+      ['errored', (f: FileStatus) => (f.errored = true)],
+    ])('does not refactor %s files', (_case, arrange) => {
+      arrange(file());
+      component.prepare('org.eclipse.esmf:1.0.0', file());
+
+      expect(component.isRefactorable(file())).toBe(false);
+      component.renameFile();
+      expect(refactoringDialogMock.open).not.toHaveBeenCalled();
+    });
+
+    it('renames a namespace version and creates a new one', () => {
+      component.prepareNamespaceMenu('org.eclipse.esmf:1.0.0');
+
+      component.renameNamespace();
+      component.newNamespaceVersion();
+
+      expect(refactoringDialogMock.open).toHaveBeenNthCalledWith(1, {
+        type: 'RENAME_NAMESPACE',
+        namespace: 'org.eclipse.esmf',
+        version: '1.0.0',
+      });
+      expect(refactoringDialogMock.open).toHaveBeenNthCalledWith(2, {type: 'NEW_VERSION', namespace: 'org.eclipse.esmf', version: '1.0.0'});
+    });
+
+    it('keeps waiting for the dialog when the list is re-created by the workspace refresh', () => {
+      const closed = new Subject<null>();
+      refactoringDialogMock.open.mockReturnValue(closed);
+      component.prepare('org.eclipse.esmf:1.0.0', file());
+
+      component.renameFile();
+      fixture.destroy();
+
+      expect(closed.observed).toBe(true);
     });
   });
 

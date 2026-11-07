@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {LoadedFilesService, ModelApiPort, NamespaceFile, RdfPort, SammLanguageSettingsService} from '@ame/domain';
+import {LoadedFilesService, ModelApiPort, NamespaceFile, RdfPort, RefactoringDialogPort, SammLanguageSettingsService} from '@ame/domain';
 import {MaxGraphService} from '@ame/graph';
 import {NotificationsService, SearchService} from '@ame/shared';
 import {signal} from '@angular/core';
@@ -70,6 +70,7 @@ describe('ShapeSettingsComponent', () => {
         }),
         MockProvider(EditorDialogValidators),
         MockProvider(ModelApiPort),
+        MockProvider(RefactoringDialogPort),
         MockProvider(TabStateService),
         MockProvider(OpenReferencedElementService),
         MockProvider(MaxGraphService),

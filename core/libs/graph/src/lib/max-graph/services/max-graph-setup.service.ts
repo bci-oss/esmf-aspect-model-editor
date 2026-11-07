@@ -11,10 +11,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ConfigurationService, LoadedFilesService} from '@ame/domain';
+import {ConfigurationService, ElementRefactoringAction, ElementRefactoringGuard, LoadedFilesService} from '@ame/domain';
 import {AssetsPath, BindingsService, BrowserService, LanguageTranslationService} from '@ame/shared';
 import {inject, Injectable} from '@angular/core';
-import {DefaultAspect, DefaultEntityInstance, DefaultTrait} from '@esmf/aspect-model-loader';
+import {DefaultAspect, DefaultEntityInstance, DefaultTrait, NamedElement} from '@esmf/aspect-model-loader';
 import {
   Cell,
   CellState,
@@ -53,6 +53,7 @@ export class MaxGraphSetupService {
   private readonly maxgraphAttributeService = inject(MaxGraphAttributeService);
   private readonly translate = inject(LanguageTranslationService);
   private readonly loadedFiles = inject(LoadedFilesService);
+  private readonly refactoringGuard = inject(ElementRefactoringGuard);
 
   private scrollTileSize: Rectangle;
   private graph: Graph;
@@ -423,6 +424,10 @@ export class MaxGraphSetupService {
       menu.addItem(this.translate.language.editorCanvas.graphSetup.selectAllReferences, this.resolveAssetsIcon(AssetsPath.Tree), () => {
         this.bindingsService.fireAction('select-tree');
       });
+
+      if (selectedCells.length === 1) {
+        this.addRefactoringSubmenu(menu, modelElement);
+      }
     }
 
     menu.addItem(this.translate.language.editorCanvas.graphSetup.format, this.resolveAssetsIcon(AssetsPath.FormatIcon), () => {
@@ -443,6 +448,47 @@ export class MaxGraphSetupService {
       menu.addItem(this.translate.language.editorCanvas.graphSetup.copyToClipboard, this.resolveAssetsIcon(AssetsPath.Copy), () => {
         this.bindingsService.fireAction('copy-to-clipboard');
       });
+    }
+  }
+
+  /** Rename, move and usages of the element across all files, in the same way as in the element editor. */
+  private addRefactoringSubmenu(menu: MaxPopupMenu, element: NamedElement): void {
+    if (!this.refactoringGuard.canShowUsages(element)) return;
+
+    const text = (key: string) => this.translate.translateService.translate(`refactoring.elementMenu.${key}`);
+    const blocker = this.refactoringGuard.blocker(element);
+    menu.submenuImage = this.resolveAssetsIcon(AssetsPath.SubmenuIcon);
+    // Opens the submenu on hover like native context menus instead of only on click
+    menu.autoExpand = true;
+
+    const submenu = menu.addItem(text('title'), this.resolveAssetsIcon(AssetsPath.RefactorIcon), null);
+    submenu.setAttribute('data-testid', 'context-menu-refactoring');
+
+    const rename = menu.addItem(
+      text('rename'),
+      null,
+      () => this.bindingsService.fireAction(ElementRefactoringAction.rename),
+      submenu,
+      null,
+      !blocker,
+    );
+    const move = menu.addItem(
+      text('move'),
+      null,
+      () => this.bindingsService.fireAction(ElementRefactoringAction.move),
+      submenu,
+      null,
+      !blocker,
+    );
+    const usages = menu.addItem(text('usages'), null, () => this.bindingsService.fireAction(ElementRefactoringAction.usages), submenu);
+
+    rename.setAttribute('data-testid', 'context-menu-refactoring-rename');
+    move.setAttribute('data-testid', 'context-menu-refactoring-move');
+    usages.setAttribute('data-testid', 'context-menu-refactoring-usages');
+    if (blocker) {
+      const reason = text(`blocked.${blocker}`);
+      rename.title = reason;
+      move.title = reason;
     }
   }
 }

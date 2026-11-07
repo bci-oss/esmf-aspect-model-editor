@@ -118,6 +118,9 @@ describe('EditorService', () => {
         MockProvider(ModelApiPort, {
           generateJsonSample: vi.fn(() => of('{}')),
           generateJsonSchema: vi.fn(() => of('{}')),
+          generateSql: vi.fn(() => of('CREATE TABLE aspect;')),
+          generateJsonLd: vi.fn(() => of('{}')),
+          generateParquetPayload: vi.fn(() => of(new Blob(['PAR1']))),
           generateOpenApiSpec: vi.fn(() => of('')),
           generateAsyncApiSpec: vi.fn(() => of('')),
           validate: vi.fn(() => of([])),
@@ -182,6 +185,39 @@ describe('EditorService', () => {
 
     expect(rdfService.serializeModel).toHaveBeenCalledWith(rdfModel);
     expect(modelApiService.generateJsonSample).toHaveBeenCalled();
+  });
+
+  it('generateSql should serialize the model and pass language, dialect and source location', async () => {
+    const rdfModel = new RdfModel(new Store());
+    vi.spyOn(rdfModel, 'getSourceLocation').mockReturnValue('workspace/org.example/1.0.0/Aspect.ttl');
+
+    const sql = await new Promise(resolve => service.generateSql(rdfModel, 'de', 'DATABRICKS').subscribe(resolve));
+
+    expect(sql).toBe('CREATE TABLE aspect;');
+    expect(modelApiService.generateSql).toHaveBeenCalledWith(
+      'turtle content',
+      'de',
+      'DATABRICKS',
+      'workspace/org.example/1.0.0/Aspect.ttl',
+    );
+  });
+
+  it('generateJsonLd should serialize the model and pass the source location', async () => {
+    const rdfModel = new RdfModel(new Store());
+    vi.spyOn(rdfModel, 'getSourceLocation').mockReturnValue('workspace/org.example/1.0.0/Aspect.ttl');
+
+    await new Promise(resolve => service.generateJsonLd(rdfModel).subscribe(resolve));
+
+    expect(modelApiService.generateJsonLd).toHaveBeenCalledWith('turtle content', 'workspace/org.example/1.0.0/Aspect.ttl');
+  });
+
+  it('generateParquetPayload should serialize the model and pass the source location', async () => {
+    const rdfModel = new RdfModel(new Store());
+    vi.spyOn(rdfModel, 'getSourceLocation').mockReturnValue('workspace/org.example/1.0.0/Aspect.ttl');
+
+    await new Promise(resolve => service.generateParquetPayload(rdfModel).subscribe(resolve));
+
+    expect(modelApiService.generateParquetPayload).toHaveBeenCalledWith('turtle content', 'workspace/org.example/1.0.0/Aspect.ttl');
   });
 
   it('validate should synchronize and call validate on api', async () => {

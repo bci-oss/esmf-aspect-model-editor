@@ -33,7 +33,7 @@
             }
           </mat-select>
         </mat-form-field>
-        <span class="preview__hint">{{ t('previewDialog.languageHint') }}</span>
+        <span class="preview__hint">{{ languageHint ?? t('previewDialog.languageHint') }}</span>
       </div>
     }
     @if (regenerating()) {

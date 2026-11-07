@@ -78,6 +78,18 @@
       <ng-container matColumnDef="options">
         <th *matHeaderCellDef mat-header-cell>{{ t('notificationsTableDialog.options') }}</th>
         <td *matCellDef="let element" mat-cell>
+          @if (hasQuickFixes(element)) {
+            <button
+              [matMenuTriggerFor]="quickFixMenu"
+              [matTooltip]="t('quickFix.action')"
+              [disabled]="applyingQuickFix()"
+              (click)="currentItem.set(element)"
+              data-testid="quick-fix-button"
+              mat-icon-button
+            >
+              <mat-icon>auto_fix_high</mat-icon>
+            </button>
+          }
           <button [matMenuTriggerFor]="menu" (click)="currentItem.set(element)" mat-icon-button>
             <mat-icon>more_vertical</mat-icon>
           </button>
@@ -103,5 +115,13 @@
     <button (click)="clearNotification(currentItem())" mat-menu-item>
       <mat-icon>delete</mat-icon>{{ t('notificationsTableDialog.clear') }}
     </button>
+  </mat-menu>
+
+  <mat-menu #quickFixMenu="matMenu">
+    @for (fix of currentQuickFixes(); track $index) {
+      <button (click)="applyQuickFix(fix)" data-testid="quick-fix-option" mat-menu-item>
+        <mat-icon>auto_fix_high</mat-icon>{{ fix.description }}
+      </button>
+    }
   </mat-menu>
 </ng-container>

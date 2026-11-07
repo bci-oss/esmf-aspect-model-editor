@@ -1129,18 +1129,24 @@
         "predefined": "Elemente des SAMM-Metamodells können nicht geändert werden."
       }
     },
+    "nameHint": {
+      "usedElsewhere": "Andere Dateien verwenden dieses Element. Eine Umbenennung nur hier macht sie ungültig.",
+      "renameEverywhere": "Stattdessen überall umbenennen…"
+    },
     "dialog": {
       "title": {
         "RENAME_ELEMENT": "Element umbenennen",
         "MOVE_ELEMENT": "Element verschieben",
         "RENAME_NAMESPACE": "Namespace umbenennen",
         "NEW_VERSION": "Neue Version erstellen",
-        "RENAME_FILE": "Datei umbenennen"
+        "RENAME_FILE": "Datei umbenennen",
+        "MOVE_FILE": "Datei verschieben"
       },
       "subject": {
         "element": "Element {{name}} in {{namespace}}",
         "file": "Datei {{name}} in {{namespace}}",
-        "namespace": "Namespace {{namespace}}"
+        "namespace": "Namespace {{namespace}}",
+        "movedFile": "Datei {{name}} von {{namespace}} nach {{target}}"
       },
       "field": {
         "newElementName": "Neuer Name",
@@ -1213,6 +1219,19 @@
         "cancel": "Abbrechen"
       },
       "revertFailed": "Das Refactoring konnte nicht rückgängig gemacht werden."
+    },
+    "history": {
+      "title": "Refactoring-Verlauf",
+      "tooltip": "Refactoring-Verlauf",
+      "empty": "Es wurden noch keine Refactorings durchgeführt.",
+      "error": "Der Refactoring-Verlauf konnte nicht geladen werden.",
+      "files": "{{created}} erstellt, {{modified}} geändert, {{removed}} entfernt",
+      "undo": "Rückgängig",
+      "undoTooltip": "Stellt alle durch dieses Refactoring geänderten Dateien wieder her",
+      "close": "Schließen"
+    },
+    "sync": {
+      "dirtyTabs": "Ein anderes Fenster hat ein Refactoring durchgeführt, das Dateien mit ungespeicherten Änderungen betrifft: {{files}}. Speichern oder laden Sie diese neu, um ein Überschreiben zu vermeiden."
     }
   },
   "quickFix": {

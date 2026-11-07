@@ -56,8 +56,9 @@ describe('RefactoringDialogComponent', () => {
   };
   let dialogRef: {close: ReturnType<typeof vi.fn>};
   let unsavedTabs: EditorTab[];
+  let unsavedTabsAmong: ReturnType<typeof vi.fn>;
 
-  const create = (request: RefactoringRequest) => {
+  const create = (request: RefactoringRequest, pendingSaveTabId?: string) => {
     TestBed.configureTestingModule({
       imports: [
         RefactoringDialogComponent,
@@ -66,10 +67,10 @@ describe('RefactoringDialogComponent', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideNoopAnimations(),
-        {provide: MAT_DIALOG_DATA, useValue: {request}},
+        {provide: MAT_DIALOG_DATA, useValue: {request, pendingSaveTabId}},
         {provide: MatDialogRef, useValue: dialogRef},
         {provide: RefactoringStore, useValue: store},
-        {provide: RefactoringTabSyncService, useValue: {unsavedTabsAmong: () => unsavedTabs}},
+        {provide: RefactoringTabSyncService, useValue: {unsavedTabsAmong}},
         {provide: ModelSourcesStore, useValue: {hasMultipleWorkspaces: signal(false), workspaces: signal([])}},
       ],
     });
@@ -89,6 +90,7 @@ describe('RefactoringDialogComponent', () => {
     store = {busy: signal(false), progress: signal(null), preview: vi.fn(() => of(preview())), apply: vi.fn(() => of(entry))};
     dialogRef = {close: vi.fn()};
     unsavedTabs = [];
+    unsavedTabsAmong = vi.fn(() => unsavedTabs);
   });
 
   describe('renaming an element', () => {
@@ -243,5 +245,45 @@ describe('RefactoringDialogComponent', () => {
     component.runPreview();
 
     expect(store.preview).toHaveBeenCalledWith(expect.objectContaining({type: 'NEW_VERSION', fileName: 'Movement.ttl', increase: 'MAJOR'}));
+  });
+
+  it('starts renaming an element with a proposed name', () => {
+    create({type: 'RENAME_ELEMENT', urn: SPEED, newName: 'velocity'});
+
+    expect(component.model().newName).toBe('velocity');
+    expect(component.refactoringForm().valid()).toBe(true);
+  });
+
+  describe('moving a file', () => {
+    const request: RefactoringRequest = {
+      type: 'MOVE_FILE',
+      namespace: 'org.example',
+      version: '1.0.0',
+      fileName: 'Movement.ttl',
+      targetNamespace: 'com.example',
+      targetVersion: '2.0.0',
+    };
+
+    it('previews the complete request right away', () => {
+      create(request, 'org.example:1.0.0:Movement.ttl');
+
+      expect(store.preview).toHaveBeenCalledWith(request);
+      expect(component.canApply()).toBe(true);
+    });
+
+    it('ignores the unsaved changes of the tab saved afterwards', () => {
+      create(request, 'org.example:1.0.0:Movement.ttl');
+      const keep = unsavedTabsAmong.mock.calls[0][1];
+
+      expect(keep({id: 'org.example:1.0.0:Movement.ttl'})).toBe(true);
+      expect(keep({id: 'org.example:1.0.0:Other.ttl'})).toBe(false);
+    });
+
+    it('applies the request unchanged', () => {
+      create(request);
+      component.apply();
+
+      expect(store.apply).toHaveBeenCalledWith(request);
+    });
   });
 });

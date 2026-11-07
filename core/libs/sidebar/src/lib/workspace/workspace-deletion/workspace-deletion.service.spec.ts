@@ -31,7 +31,7 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {FileStatus, SidebarStateService} from '../../sidebar-state.service';
 import {ClearWorkspaceDialogComponent} from './clear-workspace-dialog.component';
 import {ReferencesDialogComponent} from './references-dialog.component';
-import {splitNamespaceKey, WorkspaceDeletionService} from './workspace-deletion.service';
+import {WorkspaceDeletionService} from './workspace-deletion.service';
 
 const OK: ReferenceReport = {deletable: true, references: [], unreadableFiles: []};
 const BLOCKED: ReferenceReport = {
@@ -39,16 +39,6 @@ const BLOCKED: ReferenceReport = {
   references: [{namespace: 'org.b', version: '1.0.0', fileName: 'B1.ttl', referencedElements: ['urn:samm:org.a:1.0.0#p']}],
   unreadableFiles: [],
 };
-
-describe('splitNamespaceKey', () => {
-  it('splits at the last colon', () => {
-    expect(splitNamespaceKey('org.example:1.0.0')).toEqual({namespace: 'org.example', version: '1.0.0'});
-  });
-
-  it('keeps a key without version', () => {
-    expect(splitNamespaceKey('org.example')).toEqual({namespace: 'org.example', version: ''});
-  });
-});
 
 describe('WorkspaceDeletionService', () => {
   let service: WorkspaceDeletionService;

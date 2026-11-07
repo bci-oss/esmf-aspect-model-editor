@@ -31,10 +31,10 @@ export function elementUrn({namespace, version, name}: ElementUrn): string {
   return `urn:samm:${namespace}:${version}#${name}`;
 }
 
-/** The URN an element has after the refactoring; unchanged if the refactoring does not affect it. */
-export function relocatedUrn(urn: string, request: RefactoringRequest): string {
+/** The URN an element has after the refactoring; unchanged if the refactoring does not affect it or is unknown. */
+export function relocatedUrn(urn: string, request: RefactoringRequest | undefined): string {
   const element = parseElementUrn(urn);
-  if (!element) return urn;
+  if (!element || !request) return urn;
 
   switch (request.type) {
     case 'RENAME_ELEMENT':
@@ -85,9 +85,34 @@ export function inverseRequest(request: RefactoringRequest): RefactoringRequest 
         targetNamespace: request.namespace,
         targetVersion: request.version,
       };
+    case 'MOVE_FILE':
+      return {
+        type: request.type,
+        namespace: request.targetNamespace,
+        version: request.targetVersion,
+        fileName: request.targetFileName || request.fileName,
+        targetNamespace: request.namespace,
+        targetVersion: request.version,
+        targetFileName: request.fileName,
+      };
     default:
       return request;
   }
+}
+
+/**
+ * The URN of an element of a file that moved to another namespace version; unchanged for elements of other namespaces.
+ * Covers moved files whose elements are not known from the request, e.g. `MOVE_FILE`.
+ */
+export function urnOfMovedFile(
+  urn: string,
+  from: Pick<ElementUrn, 'namespace' | 'version'>,
+  to: Pick<ElementUrn, 'namespace' | 'version'>,
+): string {
+  const element = parseElementUrn(urn);
+  return element && element.namespace === from.namespace && element.version === from.version
+    ? elementUrn({...element, namespace: to.namespace, version: to.version})
+    : urn;
 }
 
 /** A revert removes the created files and restores the removed ones. */

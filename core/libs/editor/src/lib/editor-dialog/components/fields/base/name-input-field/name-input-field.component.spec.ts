@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {LoadedFilesService, NamespaceFile} from '@ame/domain';
+import {ElementUsageReport, LoadedFilesService, ModelApiPort, NamespaceFile} from '@ame/domain';
 import {MaxGraphService} from '@ame/graph';
 import {SearchService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
@@ -22,6 +22,7 @@ import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {of} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {ElementRefactoringService} from '../../../../../refactoring/element-refactoring.service';
 import {EditorModelService} from '../../../../editor-model.service';
 import {EditorSignalFormContext} from '../../../../forms/editor-signal-form-context';
 import {EditorDialogValidators} from '../../../../validators';
@@ -32,8 +33,38 @@ describe('NameInputFieldComponent', () => {
   let fixture: ComponentFixture<NameInputFieldComponent>;
   let signalForm: EditorSignalFormContext;
   let property: DefaultProperty;
+  let elementRefactoring: {blocker: ReturnType<typeof vi.fn>; urnOf: ReturnType<typeof vi.fn>; refactor: ReturnType<typeof vi.fn>};
+  let modelApi: {getElementUsage: ReturnType<typeof vi.fn>};
+
+  const usageReport = (external: boolean): ElementUsageReport => ({
+    urn: 'urn:test:1.0.0#testProp',
+    usages: [
+      {
+        urn: 'urn:test:1.0.0#Aspect',
+        namespace: 'test',
+        version: '1.0.0',
+        fileName: 'Other.ttl',
+        path: 'Other.ttl',
+        readOnly: false,
+        external,
+      },
+    ],
+    unreadable: [],
+  });
+
+  const query = (testId: string): HTMLElement | null => fixture.nativeElement.querySelector(`[data-testid="${testId}"]`);
+
+  const rename = async (name: string) => {
+    component.field().value.set(name);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+  };
 
   beforeEach(() => {
+    elementRefactoring = {blocker: vi.fn(() => null), urnOf: vi.fn(() => 'urn:test:1.0.0#testProp'), refactor: vi.fn()};
+    modelApi = {getElementUsage: vi.fn(() => of(usageReport(true)))};
+
     property = new DefaultProperty({
       aspectModelUrn: 'urn:test:1.0.0#testProp',
       name: 'testProp',
@@ -63,6 +94,8 @@ describe('NameInputFieldComponent', () => {
           getAllCells: vi.fn(() => []),
         }),
         MockProvider(SearchService),
+        {provide: ElementRefactoringService, useValue: elementRefactoring},
+        {provide: ModelApiPort, useValue: modelApi},
         MockProvider(EditorDialogValidators, {
           duplicateNameValue: vi.fn(value => (value === 'duplicate' ? of({checkShapeName: true}) : of(null))),
         }),
@@ -107,5 +140,53 @@ describe('NameInputFieldComponent', () => {
   it('should unregister name field on destroy', () => {
     fixture.destroy();
     expect(signalForm.value()).not.toHaveProperty('name');
+  });
+
+  describe('usage hint', () => {
+    it('does not load the usages while the name is unchanged', () => {
+      expect(modelApi.getElementUsage).not.toHaveBeenCalled();
+      expect(component.usedInOtherFiles()).toBe(false);
+    });
+
+    it('warns about a rename breaking other files and offers to rename everywhere', async () => {
+      await rename('speed');
+
+      expect(modelApi.getElementUsage).toHaveBeenCalledWith('urn:test:1.0.0#testProp');
+      expect(query('name-usage-hint')).not.toBeNull();
+
+      query('name-usage-hint-rename')?.click();
+      expect(elementRefactoring.refactor).toHaveBeenCalledWith('RENAME_ELEMENT', property, 'speed');
+    });
+
+    it('stays silent if only the own file uses the element', async () => {
+      modelApi.getElementUsage.mockReturnValue(of(usageReport(false)));
+
+      await rename('speed');
+
+      expect(component.usedInOtherFiles()).toBe(false);
+      expect(query('name-usage-hint')).toBeNull();
+    });
+
+    it('is hidden again when the old name is restored', async () => {
+      await rename('speed');
+      await rename('testProp');
+
+      expect(query('name-usage-hint')).toBeNull();
+    });
+
+    it('is not offered for elements that cannot be refactored', async () => {
+      elementRefactoring.blocker.mockReturnValue('notSaved');
+      fixture = TestBed.createComponent(NameInputFieldComponent);
+      component = fixture.componentInstance;
+      fixture.componentRef.setInput(
+        'signalForm',
+        TestBed.runInInjectionContext(() => EditorSignalFormContext.create()),
+      );
+      fixture.detectChanges();
+
+      await rename('speed');
+
+      expect(modelApi.getElementUsage).not.toHaveBeenCalled();
+    });
   });
 });

@@ -23,6 +23,7 @@ import {MockProvider} from 'ng-mocks';
 import {of} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {OpenReferencedElementService} from '../../../open-element-window/open-element-window.service';
+import {ElementRefactoringService} from '../../../refactoring/element-refactoring.service';
 import {EditorModelService} from '../../editor-model.service';
 import {ShapeSettingsService} from '../../services/shape-settings.service';
 import {EditorDialogValidators} from '../../validators';
@@ -58,6 +59,7 @@ describe('UnitComponent', () => {
           isElementExtern: vi.fn(() => false),
         }),
         EditorDialogValidators,
+        MockProvider(ElementRefactoringService),
         MockProvider(ModelApiPort, {
           checkElementExists: vi.fn(() => of(false)),
         }),

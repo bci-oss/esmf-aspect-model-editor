@@ -23,8 +23,10 @@ import {
   ModelSourcesStore,
   NamespaceFile,
   RdfModelUtil,
-  RdfNodePort,
   RdfPort,
+  RefactoringDialogPort,
+  RefactoringRequest,
+  splitNamespaceKey,
   UiShellStore,
   WorkspaceStore,
 } from '@ame/domain';
@@ -50,7 +52,7 @@ import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {environment} from 'environments/environment';
 import {saveAs} from 'file-saver';
-import {BlankNode, NamedNode, Store} from 'n3';
+import {Store} from 'n3';
 import {forkJoin, Observable, of, throwError} from 'rxjs';
 import {catchError, finalize, first, map, switchMap, tap} from 'rxjs/operators';
 import {ConfirmDialogService, DialogOptions} from '../../confirm-dialog/confirm-dialog.service';
@@ -115,7 +117,7 @@ export class FileHandlingService implements FileHandlingPort {
   private modelSaverService = inject(ModelSaverService);
   private titleService = inject(TitleService);
   private clipboard = inject(ClipboardService);
-  private rdfNodeService = inject(RdfNodePort);
+  private refactoringDialog = inject(RefactoringDialogPort);
   private modelSources = inject(ModelSourcesStore);
 
   private readonly tabStateService = inject(TabStateService);
@@ -645,66 +647,44 @@ export class FileHandlingService implements FileHandlingPort {
       content: this.translate.language.loadingScreenDialog.savingToWorkspaceContent,
     };
 
+    // The loading screen opens after the refactoring dialog, which must stay usable
     return this.confirmDialogService.open(confirmationDialogConfig).pipe(
+      switchMap(confirm =>
+        confirm === ConfirmDialogEnum.ok
+          ? this.moveFileToNewNamespace(modelState).pipe(map(moved => (moved ? confirm : ConfirmDialogEnum.cancel)))
+          : of(confirm),
+      ),
       tap(confirm => {
         if (confirm === ConfirmDialogEnum.ok || confirm === ConfirmDialogEnum.action) this.loadingScreenService.open(loadingDialogConfig);
-      }),
-      switchMap(confirm => {
-        if (confirm === ConfirmDialogEnum.ok) {
-          return this.migrateAffectedModels(modelState.originalModelName, modelState.newModelName).pipe(map(() => confirm));
-        }
-
-        return of(confirm);
       }),
     );
   }
 
-  private migrateAffectedModels(originalModelName: string, newModelName: string): Observable<RdfModel[]> {
-    const originalNamespace = RdfModelUtil.getUrnFromFileName(originalModelName);
-    const newNamespace = RdfModelUtil.getUrnFromFileName(newModelName);
-    const affectedModels = this.updateAffectedQuads(originalModelName, originalNamespace, newNamespace);
-    return this.updateAffectedModels(affectedModels, originalNamespace, newNamespace);
-  }
+  /**
+   * Moves the saved file into the new namespace with the backend refactoring, which updates all models using its elements in
+   * every workspace. The following save writes the edited model to the new location.
+   *
+   * @returns whether the file was moved or does not have to be moved; `false` if the user cancelled the refactoring
+   */
+  private moveFileToNewNamespace(modelState: ModelLoaderState): Observable<boolean> {
+    if (!modelState.loadedFromWorkspace) return of(true);
 
-  public updateAffectedQuads(originalModelName: string, originalNamespace: string, newNamespace: string): RdfModel[] {
-    const subjects = this.currentLoadedFile.rdfModel.store.getSubjects(null, null, null);
-    const models: RdfModel[] = Object.values(this.loadedFilesService.files)
-      .filter(model => model.absoluteName !== originalModelName)
-      .map(file => file.rdfModel);
+    const file = this.currentLoadedFile;
+    const {namespace, version} = splitNamespaceKey(file.originalNamespace);
+    const target = splitNamespaceKey(file.namespace);
+    const source = this.modelSources.findSource(file.rdfModel?.getSourceLocation());
+    const request: RefactoringRequest = {
+      type: 'MOVE_FILE',
+      namespace,
+      version,
+      fileName: file.originalName,
+      targetNamespace: target.namespace,
+      targetVersion: target.version,
+      ...(file.isNameChanged ? {targetFileName: file.name} : {}),
+      ...(source?.type === 'workspace' ? {source: source.path} : {}),
+    };
 
-    const affectedModels: RdfModel[] = [];
-
-    subjects.forEach(subject => {
-      if (subject instanceof BlankNode) return;
-      if (!subject.value.startsWith(newNamespace)) return;
-      const subjectName = subject.value.split('#').pop();
-      const originalSubject = new NamedNode(`${originalNamespace}#${subjectName}`);
-
-      models.forEach(model => {
-        const updatedPredicateQuadsCount = this.rdfNodeService.updateQuads({predicate: originalSubject}, {predicate: subject}, model);
-        const updatedObjectQuadsCount = this.rdfNodeService.updateQuads({object: originalSubject}, {object: subject}, model);
-        if (updatedPredicateQuadsCount || updatedObjectQuadsCount) affectedModels.push(model);
-      });
-    });
-
-    return affectedModels;
-  }
-
-  private updateAffectedModels(models: RdfModel[], originalNamespace: string, newNamespace: string): Observable<RdfModel[]> {
-    // models of read-only (GitHub) sources cannot be changed
-    const writableModels = models.filter(model => !this.modelSources.isReadOnlyLocation(model.getSourceLocation()));
-    const requests = writableModels.map(model => {
-      const alias = model.getAliasByNamespace(`${originalNamespace}#`);
-
-      if (alias) {
-        model.updatePrefix(alias, originalNamespace, newNamespace);
-      } else {
-        model.addPrefix('ext-namespace', `${newNamespace}#`);
-      }
-
-      return this.modelSaverService.saveModel(model);
-    });
-    return requests.length ? forkJoin(requests) : of([]);
+    return this.refactoringDialog.open(request, {pendingSaveTabId: this.tabStateService.activeTabId()}).pipe(map(entry => !!entry));
   }
 
   private handleRdfModel(rdfModel: RdfModel, modelState: ModelLoaderState): void {

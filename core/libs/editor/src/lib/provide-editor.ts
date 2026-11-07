@@ -41,6 +41,7 @@ import {ModelLoaderService} from './model-loader.service';
 import {ModelOpenerService} from './model-opener/model-opener.service';
 import {ModelSaverService} from './model-saver.service';
 import {RefactoringDialogService} from './refactoring/refactoring-dialog.service';
+import {RefactoringWindowSyncService} from './refactoring/refactoring-window-sync.service';
 import {RenameModelDialogService} from './rename-model/rename-model.service';
 import {EditorTauriBridge} from './tauri/editor-tauri-bridge.service';
 
@@ -63,5 +64,6 @@ export function provideEditor(): EnvironmentProviders {
     {provide: ModelSaverPort, useExisting: ModelSaverService},
     {provide: FileHandlingPort, useExisting: FileHandlingService},
     {provide: TAURI_IPC_BRIDGES, useExisting: EditorTauriBridge, multi: true},
+    {provide: TAURI_IPC_BRIDGES, useExisting: RefactoringWindowSyncService, multi: true},
   ]);
 }

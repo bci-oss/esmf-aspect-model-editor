@@ -11,18 +11,20 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ConfirmDialogEnum, ConfirmDialogPort, RefactoringHistoryEntry, RefactoringRequest, RefactoringStore} from '@ame/domain';
+import {RefactoringHistoryEntry, RefactoringRequest} from '@ame/domain';
 import {LanguageTranslationService, NotificationsService} from '@ame/shared';
-import {HttpErrorResponse} from '@angular/common/http';
 import {provideZonelessChangeDetection} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {MatDialog} from '@angular/material/dialog';
-import {of, throwError} from 'rxjs';
+import {of} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {ElementUsageDialogComponent} from './element-usage-dialog/element-usage-dialog.component';
 import {RefactoringDialogService} from './refactoring-dialog.service';
 import {RefactoringDialogComponent, RefactoringDialogResult} from './refactoring-dialog/refactoring-dialog.component';
+import {RefactoringHistoryDialogComponent} from './refactoring-history-dialog/refactoring-history-dialog.component';
+import {RefactoringRevertService} from './refactoring-revert.service';
 import {RefactoringTabSyncService} from './refactoring-tab-sync.service';
+import {RefactoringWindowSyncService} from './refactoring-window-sync.service';
 
 const SPEED = 'urn:samm:org.example:1.0.0#speed';
 /** What the dialog is opened with; the user enters the new name in the dialog. */
@@ -41,28 +43,28 @@ const entry: RefactoringHistoryEntry = {
 describe('RefactoringDialogService', () => {
   let service: RefactoringDialogService;
   let matDialog: {open: ReturnType<typeof vi.fn>};
-  let store: {revert: ReturnType<typeof vi.fn>};
   let tabSync: {synchronize: ReturnType<typeof vi.fn>};
-  let confirmDialog: {open: ReturnType<typeof vi.fn>};
-  let notifications: Record<'info' | 'success' | 'error', ReturnType<typeof vi.fn>>;
+  let windowSync: {publish: ReturnType<typeof vi.fn>};
+  let reverter: {revert: ReturnType<typeof vi.fn>};
+  let notifications: {info: ReturnType<typeof vi.fn>};
 
   const dialogClosingWith = (result: RefactoringDialogResult | undefined) =>
     matDialog.open.mockReturnValue({afterClosed: () => of(result)});
 
   beforeEach(() => {
     matDialog = {open: vi.fn()};
-    store = {revert: vi.fn(() => of(entry))};
     tabSync = {synchronize: vi.fn()};
-    confirmDialog = {open: vi.fn(() => of(ConfirmDialogEnum.ok))};
-    notifications = {info: vi.fn(), success: vi.fn(), error: vi.fn()};
+    windowSync = {publish: vi.fn()};
+    reverter = {revert: vi.fn(() => of(entry))};
+    notifications = {info: vi.fn()};
 
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
         {provide: MatDialog, useValue: matDialog},
-        {provide: RefactoringStore, useValue: store},
         {provide: RefactoringTabSyncService, useValue: tabSync},
-        {provide: ConfirmDialogPort, useValue: confirmDialog},
+        {provide: RefactoringRevertService, useValue: reverter},
+        {provide: RefactoringWindowSyncService, useValue: windowSync},
         {provide: NotificationsService, useValue: notifications},
         {provide: LanguageTranslationService, useValue: {translateService: {translate: (key: string) => key}}},
       ],
@@ -76,10 +78,28 @@ describe('RefactoringDialogService', () => {
     let result: RefactoringHistoryEntry | null | undefined;
     service.open(openedWith).subscribe(value => (result = value));
 
-    expect(matDialog.open).toHaveBeenCalledWith(RefactoringDialogComponent, expect.objectContaining({data: {request: openedWith}}));
+    expect(matDialog.open).toHaveBeenCalledWith(
+      RefactoringDialogComponent,
+      expect.objectContaining({data: {request: openedWith, pendingSaveTabId: undefined}}),
+    );
     expect(result).toBe(entry);
-    expect(tabSync.synchronize).toHaveBeenCalledWith(request, entry);
+    expect(tabSync.synchronize).toHaveBeenCalledWith(request, entry, expect.any(Function));
+    expect(windowSync.publish).toHaveBeenCalledWith(request, entry);
     expect(notifications.info).toHaveBeenCalledWith(expect.objectContaining({onClick: expect.any(Function)}));
+  });
+
+  it('leaves the tab saved after the refactoring alone', () => {
+    dialogClosingWith({request, entry});
+
+    service.open(openedWith, {pendingSaveTabId: 'tab-1'}).subscribe();
+
+    expect(matDialog.open).toHaveBeenCalledWith(
+      RefactoringDialogComponent,
+      expect.objectContaining({data: {request: openedWith, pendingSaveTabId: 'tab-1'}}),
+    );
+    const keep = tabSync.synchronize.mock.calls[0][2];
+    expect(keep({id: 'tab-1'})).toBe(true);
+    expect(keep({id: 'tab-2'})).toBe(false);
   });
 
   it('does nothing when the dialog is cancelled', () => {
@@ -93,54 +113,24 @@ describe('RefactoringDialogService', () => {
     expect(notifications.info).not.toHaveBeenCalled();
   });
 
-  it('undoes the refactoring from the notification and moves the tabs back', () => {
+  it('undoes the refactoring from the notification', () => {
     dialogClosingWith({request, entry});
     service.open(openedWith).subscribe();
 
     notifications.info.mock.calls[0][0].onClick();
 
-    expect(store.revert).toHaveBeenCalledWith('1');
-    expect(tabSync.synchronize).toHaveBeenLastCalledWith(
-      {type: 'RENAME_ELEMENT', urn: 'urn:samm:org.example:1.0.0#velocity', newName: 'speed'},
-      expect.objectContaining({created: entry.removed, removed: entry.created}),
-    );
-    expect(notifications.success).toHaveBeenCalled();
-  });
-
-  it('asks before overwriting files changed after the refactoring', () => {
-    store.revert.mockImplementation((_id: string, force?: boolean) =>
-      force ? of(entry) : throwError(() => new HttpErrorResponse({status: 409})),
-    );
-
-    service.revert(request, entry).subscribe();
-
-    expect(confirmDialog.open).toHaveBeenCalled();
-    expect(store.revert).toHaveBeenLastCalledWith('1', true);
-    expect(notifications.success).toHaveBeenCalled();
-  });
-
-  it('keeps the files if the forced undo is declined', () => {
-    store.revert.mockReturnValue(throwError(() => new HttpErrorResponse({status: 409})));
-    confirmDialog.open.mockReturnValue(of(ConfirmDialogEnum.cancel));
-
-    service.revert(request, entry).subscribe();
-
-    expect(store.revert).toHaveBeenCalledTimes(1);
-    expect(tabSync.synchronize).not.toHaveBeenCalled();
-  });
-
-  it('reports a failed undo', () => {
-    store.revert.mockReturnValue(throwError(() => new HttpErrorResponse({status: 500, error: {message: 'Disk full'}})));
-
-    service.revert(request, entry).subscribe();
-
-    expect(notifications.error).toHaveBeenCalledWith(expect.objectContaining({message: 'Disk full'}));
-    expect(tabSync.synchronize).not.toHaveBeenCalled();
+    expect(reverter.revert).toHaveBeenCalledWith(request, entry);
   });
 
   it('shows the usages of an element', () => {
     service.showUsages(SPEED);
 
     expect(matDialog.open).toHaveBeenCalledWith(ElementUsageDialogComponent, expect.objectContaining({data: {urn: SPEED}}));
+  });
+
+  it('shows the refactoring history', () => {
+    service.showHistory();
+
+    expect(matDialog.open).toHaveBeenCalledWith(RefactoringHistoryDialogComponent, expect.objectContaining({height: expect.any(String)}));
   });
 });

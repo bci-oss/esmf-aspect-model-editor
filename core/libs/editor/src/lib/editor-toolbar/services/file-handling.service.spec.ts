@@ -11,7 +11,16 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ConfigurationService, LoadedFilesService, ModelApiPort, ModelService, NamespaceFile, RdfNodePort, RdfPort} from '@ame/domain';
+import {
+  ConfigurationService,
+  LoadedFilesService,
+  ModelApiPort,
+  ModelService,
+  ModelSourcesStore,
+  NamespaceFile,
+  RdfPort,
+  RefactoringDialogPort,
+} from '@ame/domain';
 import {MaxGraphService} from '@ame/graph';
 import {
   IPC_RENDERER,
@@ -21,6 +30,7 @@ import {
   TauriSignalsService,
   TitleService,
 } from '@ame/shared';
+import {signal} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {DefaultAspect, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {Store} from 'n3';
@@ -118,10 +128,11 @@ describe('FileHandlingService', () => {
         }),
         MockProvider(ModelSaverService),
         MockProvider(TitleService, {updateTitle: vi.fn()}),
-        {provide: RdfNodePort, useValue: {updateQuads: vi.fn()}},
+        {provide: RefactoringDialogPort, useValue: {open: vi.fn()}},
         MockProvider(TabStateService, {
           onModelLoaded: vi.fn(),
           isActiveTabCleanEmpty: vi.fn(() => true),
+          activeTabId: signal<string | null>('tab-1'),
         }),
         MockProvider(ModelOpenerService, {
           promptForUpload: vi.fn(() => of(true)),
@@ -219,17 +230,17 @@ describe('FileHandlingService', () => {
     let modelSaverService: ModelSaverService;
     let savingTracker: ModelSavingTrackerService;
     let handleRdfModel: ReturnType<typeof vi.spyOn>;
-    let migrateAffectedModels: ReturnType<typeof vi.spyOn>;
+    let refactoringDialog: RefactoringDialogPort;
     const savedModel = new RdfModel(new Store(), '2.0.0', 'urn:test:1.0.0#');
 
-    function mockState(isNamespaceChanged: boolean): void {
+    function mockState(isNamespaceChanged: boolean, loadedFromWorkspace = true): void {
       vi.spyOn(service as any, 'getModelLoaderState').mockReturnValue(
         of({
           originalModelName: 'org.old:1.0.0:Model.ttl',
           newModelName: 'org.new:1.0.0:Model.ttl',
           oldFileName: 'Model.ttl',
           newFileName: 'Model.ttl',
-          loadedFromWorkspace: true,
+          loadedFromWorkspace,
           isNameChanged: false,
           isNamespaceChanged,
         }),
@@ -266,7 +277,14 @@ describe('FileHandlingService', () => {
       savingTracker = TestBed.inject(ModelSavingTrackerService);
       modelSaverService.saveModel = vi.fn(() => of(savedModel)) as any;
       handleRdfModel = vi.spyOn(service as any, 'handleRdfModel').mockImplementation(() => undefined);
-      migrateAffectedModels = vi.spyOn(service as any, 'migrateAffectedModels').mockReturnValue(of(null));
+      refactoringDialog = TestBed.inject(RefactoringDialogPort);
+      refactoringDialog.open = vi.fn(() => of({id: 'r1'} as any));
+
+      const file = loadedFilesService.currentLoadedFile;
+      file.namespace = 'org.new:1.0.0';
+      file.name = 'Model.ttl';
+      file.originalNamespace = 'org.old:1.0.0';
+      file.originalName = 'Model.ttl';
     });
 
     it('should save directly without a namespace change', async () => {
@@ -281,26 +299,72 @@ describe('FileHandlingService', () => {
       expect(loadingScreenService.close).toHaveBeenCalled();
     });
 
-    it('should migrate and save when the namespace change is confirmed with OK', async () => {
+    it('should move the file with the refactoring and save when the namespace change is confirmed with OK', async () => {
       mockState(true);
       confirmDialogService.open = vi.fn(() => of(ConfirmDialogEnum.ok)) as any;
 
       await save();
 
+      expect(refactoringDialog.open).toHaveBeenCalledWith(
+        {
+          type: 'MOVE_FILE',
+          namespace: 'org.old',
+          version: '1.0.0',
+          fileName: 'Model.ttl',
+          targetNamespace: 'org.new',
+          targetVersion: '1.0.0',
+        },
+        {pendingSaveTabId: 'tab-1'},
+      );
       expect(loadingScreenService.open).toHaveBeenCalledTimes(1);
-      expect(migrateAffectedModels).toHaveBeenCalledWith('org.old:1.0.0:Model.ttl', 'org.new:1.0.0:Model.ttl');
       expect(modelSaverService.saveModel).toHaveBeenCalledTimes(1);
       expect(savingTracker.updateSavedModel).toHaveBeenCalledTimes(1);
     });
 
-    it('should save without migration on the "keep" action', async () => {
+    it('should pass the new file name and the workspace of the file to the refactoring', async () => {
+      mockState(true);
+      confirmDialogService.open = vi.fn(() => of(ConfirmDialogEnum.ok)) as any;
+      loadedFilesService.currentLoadedFile.name = 'Renamed.ttl';
+      vi.spyOn(TestBed.inject(ModelSourcesStore), 'findSource').mockReturnValue({type: 'workspace', path: '/ws/b'} as any);
+
+      await save();
+
+      expect(refactoringDialog.open).toHaveBeenCalledWith(
+        expect.objectContaining({fileName: 'Model.ttl', targetFileName: 'Renamed.ttl', source: '/ws/b'}),
+        expect.anything(),
+      );
+    });
+
+    it('should neither save nor open the loading screen if the refactoring is cancelled', async () => {
+      mockState(true);
+      confirmDialogService.open = vi.fn(() => of(ConfirmDialogEnum.ok)) as any;
+      refactoringDialog.open = vi.fn(() => of(null));
+
+      await save();
+
+      expect(loadingScreenService.open).not.toHaveBeenCalled();
+      expect(modelSaverService.saveModel).not.toHaveBeenCalled();
+      expect(savingTracker.updateSavedModel).not.toHaveBeenCalled();
+    });
+
+    it('should save a model that is not in a workspace yet without refactoring', async () => {
+      mockState(true, false);
+      confirmDialogService.open = vi.fn(() => of(ConfirmDialogEnum.ok)) as any;
+
+      await save();
+
+      expect(refactoringDialog.open).not.toHaveBeenCalled();
+      expect(modelSaverService.saveModel).toHaveBeenCalledTimes(1);
+    });
+
+    it('should save without refactoring on the "keep" action', async () => {
       mockState(true);
       confirmDialogService.open = vi.fn(() => of(ConfirmDialogEnum.action)) as any;
 
       await save();
 
       expect(loadingScreenService.open).toHaveBeenCalledTimes(1);
-      expect(migrateAffectedModels).not.toHaveBeenCalled();
+      expect(refactoringDialog.open).not.toHaveBeenCalled();
       expect(modelSaverService.saveModel).toHaveBeenCalledTimes(1);
     });
 
@@ -315,7 +379,7 @@ describe('FileHandlingService', () => {
       await save();
 
       expect(loadingScreenService.open).not.toHaveBeenCalled();
-      expect(migrateAffectedModels).not.toHaveBeenCalled();
+      expect(refactoringDialog.open).not.toHaveBeenCalled();
       expect(modelSaverService.saveModel).not.toHaveBeenCalled();
       expect(savingTracker.updateSavedModel).not.toHaveBeenCalled();
       expect(handleRdfModel).toHaveBeenCalledWith(null, expect.anything());

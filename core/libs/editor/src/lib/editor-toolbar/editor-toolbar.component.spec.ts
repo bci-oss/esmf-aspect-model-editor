@@ -112,6 +112,7 @@ describe('EditorToolbarComponent', () => {
           canShowUsages: vi.fn(() => true),
           refactor: vi.fn(),
           showUsages: vi.fn(),
+          showHistory: vi.fn(),
         }),
       ],
     }).compileComponents();
@@ -278,6 +279,15 @@ describe('EditorToolbarComponent', () => {
       expect(menuItem('tbRefactoringRename').disabled).toBe(true);
       expect(menuItem('tbRefactoringMove').disabled).toBe(true);
       expect(menuItem('tbRefactoringUsages').disabled).toBe(false);
+    });
+
+    it('shows the refactoring history without a selected element', () => {
+      const historyButton = fixture.nativeElement.querySelector('[data-testid="tbRefactoringHistoryButton"]') as HTMLElement;
+
+      historyButton.click();
+
+      expect(historyButton.classList).not.toContain('disabled');
+      expect(elementRefactoring.showHistory).toHaveBeenCalled();
     });
   });
 });

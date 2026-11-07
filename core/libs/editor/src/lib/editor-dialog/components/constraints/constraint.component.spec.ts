@@ -23,6 +23,7 @@ import {MockProvider} from 'ng-mocks';
 import {BehaviorSubject} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {OpenReferencedElementService} from '../../../open-element-window/open-element-window.service';
+import {ElementRefactoringService} from '../../../refactoring/element-refactoring.service';
 import {TabStateService} from '../../../tabs/tab-state.service';
 import {EditorModelService} from '../../editor-model.service';
 import {EditorDialogValidators} from '../../validators';
@@ -55,6 +56,7 @@ describe('ConstraintComponent', () => {
         TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
       ],
       providers: [
+        MockProvider(ElementRefactoringService),
         MockProvider(ModelApiPort),
         MockProvider(EditorModelService, {
           getMetaModelElement: vi.fn(() => elementSubject.asObservable()),

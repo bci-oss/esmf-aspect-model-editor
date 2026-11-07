@@ -30,3 +30,11 @@ export interface WorkspaceSelection {
   file: string;
   aspectModelUrn: string;
 }
+
+/** Splits a workspace namespace key `org.example:1.0.0` into namespace and version. */
+export function splitNamespaceKey(namespaceKey: string): {namespace: string; version: string} {
+  const index = namespaceKey.lastIndexOf(':');
+  return index < 0
+    ? {namespace: namespaceKey, version: ''}
+    : {namespace: namespaceKey.substring(0, index), version: namespaceKey.substring(index + 1)};
+}

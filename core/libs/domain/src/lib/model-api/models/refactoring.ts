@@ -12,7 +12,7 @@
  */
 
 /** The structural changes the backend applies to all affected files of the writable workspaces. */
-export type RefactoringType = 'RENAME_ELEMENT' | 'MOVE_ELEMENT' | 'RENAME_NAMESPACE' | 'NEW_VERSION' | 'RENAME_FILE';
+export type RefactoringType = 'RENAME_ELEMENT' | 'MOVE_ELEMENT' | 'RENAME_NAMESPACE' | 'NEW_VERSION' | 'RENAME_FILE' | 'MOVE_FILE';
 
 export type VersionIncrease = 'MAJOR' | 'MINOR' | 'MICRO';
 
@@ -31,6 +31,7 @@ export interface RefactoringRequest {
   source?: string;
   targetNamespace?: string;
   targetVersion?: string;
+  /** The file an element is moved to, or the new name of a moved file (its current name if omitted). */
   targetFileName?: string;
   /** The workspace path a new target file is created in; the source file's workspace if omitted. */
   targetWorkspace?: string;
@@ -66,6 +67,8 @@ export interface RefactoringHistoryEntry {
   created: ChangedFile[];
   modified: ChangedFile[];
   removed: ChangedFile[];
+  /** The request the refactoring was applied with; missing for refactorings recorded by older versions. */
+  request?: RefactoringRequest;
 }
 
 /** The phases a running refactoring passes, in this order; a preview ends after planning. */

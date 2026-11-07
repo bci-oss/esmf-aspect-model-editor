@@ -23,6 +23,7 @@ import {MockProvider} from 'ng-mocks';
 import {of} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {OpenReferencedElementService} from '../../../open-element-window/open-element-window.service';
+import {ElementRefactoringService} from '../../../refactoring/element-refactoring.service';
 import {TabStateService} from '../../../tabs/tab-state.service';
 import {EditorModelService} from '../../editor-model.service';
 import {EditorDialogValidators} from '../../validators';
@@ -55,6 +56,7 @@ describe('EventComponent', () => {
           isElementExtern: vi.fn(() => false),
         }),
         EditorDialogValidators,
+        MockProvider(ElementRefactoringService),
         MockProvider(ModelApiPort, {
           checkElementExists: vi.fn(() => of(false)),
         }),

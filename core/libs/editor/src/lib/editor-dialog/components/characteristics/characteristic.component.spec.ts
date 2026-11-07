@@ -23,6 +23,7 @@ import {MockProvider} from 'ng-mocks';
 import {BehaviorSubject} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {OpenReferencedElementService} from '../../../open-element-window/open-element-window.service';
+import {ElementRefactoringService} from '../../../refactoring/element-refactoring.service';
 import {EditorModelService} from '../../editor-model.service';
 import {EditorSignalFormContext} from '../../forms/editor-signal-form-context';
 import {ShapeSettingsService} from '../../services/shape-settings.service';
@@ -66,6 +67,7 @@ describe('CharacteristicComponent', () => {
           isElementExtern: vi.fn(() => false),
         }),
         MockProvider(EditorDialogValidators),
+        MockProvider(ElementRefactoringService),
         MockProvider(ModelApiPort),
         MockProvider(MaxGraphService),
         MockProvider(OpenReferencedElementService),

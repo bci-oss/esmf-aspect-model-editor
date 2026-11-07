@@ -25,6 +25,22 @@ mat-form-field {
   }
 }
 
+.name-usage-hint {
+  color: var(--ame-orange);
+  opacity: 1;
+
+  &__action {
+    padding: 0;
+    margin-left: 0.25rem;
+    border: none;
+    background: none;
+    color: var(--ame-primary);
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}
+
 .ellipsis {
   overflow: hidden;
   white-space: nowrap;

@@ -17,6 +17,7 @@ import {
   ModelSourcesStore,
   RefactoringDialogPort,
   RefactoringRequest,
+  splitNamespaceKey,
   WorkspaceFacade,
   WorkspaceStore,
 } from '@ame/domain';
@@ -546,10 +547,4 @@ export class WorkspaceFileListComponent {
 function rank(source: ModelSource): number {
   if (source.defaultWorkspace) return 0;
   return source.type === 'workspace' ? 1 : 2;
-}
-
-/** Splits the key `namespace:version` of the namespace map. */
-function splitNamespaceKey(key: string): {namespace: string; version: string} {
-  const separator = key.lastIndexOf(':');
-  return separator < 0 ? {namespace: key, version: ''} : {namespace: key.substring(0, separator), version: key.substring(separator + 1)};
 }

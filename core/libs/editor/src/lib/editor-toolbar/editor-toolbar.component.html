@@ -169,6 +169,16 @@
       <ame-bar-item
         [matTooltipShowDelay]="0"
         [matTooltipHideDelay]="0"
+        [matTooltip]="t('refactoring.history.tooltip')"
+        (itemClick)="showRefactoringHistory()"
+        data-testid="tbRefactoringHistoryButton"
+      >
+        <mat-icon class="material-icons">history</mat-icon>
+      </ame-bar-item>
+
+      <ame-bar-item
+        [matTooltipShowDelay]="0"
+        [matTooltipHideDelay]="0"
         [disabled]="isModelEmpty()"
         [matTooltip]="t('toolbar.validate')"
         (itemClick)="validateFile()"

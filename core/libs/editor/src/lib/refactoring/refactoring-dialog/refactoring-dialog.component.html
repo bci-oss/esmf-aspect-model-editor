@@ -19,6 +19,19 @@
     <p class="subject" data-testid="refactoring-subject">
       @if (element) {
         {{ t('subject.element', {name: element.name, namespace: element.namespace + ':' + element.version}) }}
+      } @else if (type === 'MOVE_FILE') {
+        {{
+          t('subject.movedFile', {
+            name: data.request.fileName,
+            namespace: data.request.namespace + ':' + data.request.version,
+            target:
+              data.request.targetNamespace +
+              ':' +
+              data.request.targetVersion +
+              '/' +
+              (data.request.targetFileName || data.request.fileName),
+          })
+        }}
       } @else if (data.request.fileName) {
         {{ t('subject.file', {name: data.request.fileName, namespace: data.request.namespace + ':' + data.request.version}) }}
       } @else {

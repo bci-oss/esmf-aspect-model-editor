@@ -11,11 +11,12 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {Component, inject, OnDestroy, OnInit, signal, Signal} from '@angular/core';
+import {isUsedExternally, ModelApiPort} from '@ame/domain';
+import {Component, computed, inject, OnDestroy, OnInit, signal, Signal} from '@angular/core';
 import {rxResource, takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {disabled, form, FormField, required, validate, validateAsync} from '@angular/forms/signals';
 import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatError, MatInput, MatLabel} from '@angular/material/input';
+import {MatError, MatHint, MatInput, MatLabel} from '@angular/material/input';
 import {
   DefaultAspect,
   DefaultCharacteristic,
@@ -28,7 +29,8 @@ import {
   NamedElement,
 } from '@esmf/aspect-model-loader';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {of} from 'rxjs';
+import {catchError, of} from 'rxjs';
+import {ElementRefactoringService} from '../../../../../refactoring/element-refactoring.service';
 import {EditorDialogValidators} from '../../../../validators';
 import {InputFieldComponent} from '../../input-field.component';
 
@@ -36,12 +38,17 @@ import {InputFieldComponent} from '../../input-field.component';
   selector: 'ame-name-input-field',
   templateUrl: './name-input-field.component.html',
   styleUrls: ['../../field.scss'],
-  imports: [MatFormFieldModule, MatLabel, FormField, MatInput, MatError, TranslocoDirective],
+  imports: [MatFormFieldModule, MatLabel, FormField, MatInput, MatError, MatHint, TranslocoDirective],
 })
 export class NameInputFieldComponent extends InputFieldComponent<NamedElement> implements OnInit, OnDestroy {
   private readonly editorDialogValidators = inject(EditorDialogValidators);
+  private readonly elementRefactoring = inject(ElementRefactoringService);
+  private readonly modelApi = inject(ModelApiPort);
   private readonly model = signal('');
+  private readonly savedName = signal('');
   private readonly disabledState = signal(false);
+  /** The saved element, if it can be renamed in all files; set once the element is loaded. */
+  private readonly refactorableUrn = signal<string | null>(null);
   private unregisterField = () => undefined;
 
   private readonly createDuplicateNameResource = (name: Signal<string>) =>
@@ -83,6 +90,18 @@ export class NameInputFieldComponent extends InputFieldComponent<NamedElement> i
 
   public fieldName = 'name';
 
+  // Loaded only once the name is changed, so opening the element editor stays cheap
+  private readonly usages = rxResource({
+    params: () => (this.model() !== this.savedName() ? (this.refactorableUrn() ?? undefined) : undefined),
+    stream: ({params}) => this.modelApi.getElementUsage(params).pipe(catchError(() => of(null))),
+  });
+
+  /** A local rename breaks the files using the element; the user is offered to rename it everywhere instead. */
+  readonly usedInOtherFiles = computed(() => {
+    const report = this.usages.hasValue() ? this.usages.value() : null;
+    return !!report && this.model() !== this.savedName() && isUsedExternally(report);
+  });
+
   ngOnInit(): void {
     this.getMetaModelData()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -100,6 +119,10 @@ export class NameInputFieldComponent extends InputFieldComponent<NamedElement> i
       .some(error => error.kind === kind);
   }
 
+  renameEverywhere(): void {
+    this.elementRefactoring.refactor('RENAME_ELEMENT', this.metaModelElement, this.model());
+  }
+
   public isDisabled() {
     return (
       (this.metaModelElement instanceof DefaultProperty && !!this.metaModelElement?.getExtends()) ||
@@ -115,6 +138,10 @@ export class NameInputFieldComponent extends InputFieldComponent<NamedElement> i
       this.metaModelDialogService.isReadOnly() || this.loadedFiles.isElementExtern(this.metaModelElement) || this.isDisabled(),
     );
     const currentValue = this.getCurrentValue('name');
+    this.savedName.set(currentValue);
+    this.refactorableUrn.set(
+      this.elementRefactoring.blocker(this.metaModelElement) === null ? this.elementRefactoring.urnOf(this.metaModelElement) : null,
+    );
     this.model.set(currentValue);
     this.field().value.set(currentValue);
     this.unregisterField = this.signalForm().register('name', this.field);

@@ -1129,18 +1129,24 @@
         "predefined": "Elements of the SAMM meta model cannot be changed."
       }
     },
+    "nameHint": {
+      "usedElsewhere": "Other files use this element. Renaming it here breaks them.",
+      "renameEverywhere": "Rename everywhere instead…"
+    },
     "dialog": {
       "title": {
         "RENAME_ELEMENT": "Rename element",
         "MOVE_ELEMENT": "Move element",
         "RENAME_NAMESPACE": "Rename namespace",
         "NEW_VERSION": "Create new version",
-        "RENAME_FILE": "Rename file"
+        "RENAME_FILE": "Rename file",
+        "MOVE_FILE": "Move file"
       },
       "subject": {
         "element": "Element {{name}} in {{namespace}}",
         "file": "File {{name}} in {{namespace}}",
-        "namespace": "Namespace {{namespace}}"
+        "namespace": "Namespace {{namespace}}",
+        "movedFile": "File {{name}} from {{namespace}} to {{target}}"
       },
       "field": {
         "newElementName": "New name",
@@ -1213,6 +1219,19 @@
         "cancel": "Cancel"
       },
       "revertFailed": "The refactoring could not be undone."
+    },
+    "history": {
+      "title": "Refactoring history",
+      "tooltip": "Refactoring history",
+      "empty": "No refactorings have been applied yet.",
+      "error": "The refactoring history could not be loaded.",
+      "files": "{{created}} created, {{modified}} modified, {{removed}} removed",
+      "undo": "Undo",
+      "undoTooltip": "Restores all files touched by this refactoring",
+      "close": "Close"
+    },
+    "sync": {
+      "dirtyTabs": "Another window applied a refactoring that affects files with unsaved changes: {{files}}. Save or reload them to avoid overwriting the changes."
     }
   },
   "quickFix": {

@@ -1132,18 +1132,24 @@
         "predefined": "无法更改 SAMM 元模型的元素。"
       }
     },
+    "nameHint": {
+      "usedElsewhere": "其他文件使用了此元素。仅在此处重命名会破坏这些文件。",
+      "renameEverywhere": "改为在所有位置重命名…"
+    },
     "dialog": {
       "title": {
         "RENAME_ELEMENT": "重命名元素",
         "MOVE_ELEMENT": "移动元素",
         "RENAME_NAMESPACE": "重命名命名空间",
         "NEW_VERSION": "创建新版本",
-        "RENAME_FILE": "重命名文件"
+        "RENAME_FILE": "重命名文件",
+        "MOVE_FILE": "移动文件"
       },
       "subject": {
         "element": "{{namespace}} 中的元素 {{name}}",
         "file": "{{namespace}} 中的文件 {{name}}",
-        "namespace": "命名空间 {{namespace}}"
+        "namespace": "命名空间 {{namespace}}",
+        "movedFile": "将文件 {{name}} 从 {{namespace}} 移动到 {{target}}"
       },
       "field": {
         "newElementName": "新名称",
@@ -1216,6 +1222,19 @@
         "cancel": "取消"
       },
       "revertFailed": "无法撤销重构。"
+    },
+    "history": {
+      "title": "重构历史",
+      "tooltip": "重构历史",
+      "empty": "尚未执行任何重构。",
+      "error": "无法加载重构历史。",
+      "files": "创建 {{created}} 个，修改 {{modified}} 个，删除 {{removed}} 个",
+      "undo": "撤销",
+      "undoTooltip": "恢复此重构涉及的所有文件",
+      "close": "关闭"
+    },
+    "sync": {
+      "dirtyTabs": "另一个窗口执行了重构，影响了包含未保存更改的文件：{{files}}。请保存或重新加载这些文件，以免覆盖更改。"
     }
   },
   "quickFix": {

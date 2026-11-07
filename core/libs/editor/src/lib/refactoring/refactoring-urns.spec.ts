@@ -13,7 +13,7 @@
 
 import {RefactoringHistoryEntry} from '@ame/domain';
 import {describe, expect, it} from 'vitest';
-import {elementUrn, inverseChange, inverseRequest, parseElementUrn, relocatedUrn} from './refactoring-urns';
+import {elementUrn, inverseChange, inverseRequest, parseElementUrn, relocatedUrn, urnOfMovedFile} from './refactoring-urns';
 
 const SPEED = 'urn:samm:org.example:1.0.0#speed';
 
@@ -93,6 +93,41 @@ describe('refactoring URNs', () => {
         targetNamespace: 'org.example',
         targetVersion: '1.0.0',
       });
+    });
+
+    it('moves the file back under its old name', () => {
+      expect(
+        inverseRequest({
+          type: 'MOVE_FILE',
+          namespace: 'org.example',
+          version: '1.0.0',
+          fileName: 'Movement.ttl',
+          targetNamespace: 'com.example',
+          targetVersion: '2.0.0',
+          targetFileName: 'Motion.ttl',
+        }),
+      ).toEqual({
+        type: 'MOVE_FILE',
+        namespace: 'com.example',
+        version: '2.0.0',
+        fileName: 'Motion.ttl',
+        targetNamespace: 'org.example',
+        targetVersion: '1.0.0',
+        targetFileName: 'Movement.ttl',
+      });
+    });
+  });
+
+  describe('urnOfMovedFile', () => {
+    const from = {namespace: 'org.example', version: '1.0.0'};
+    const to = {namespace: 'com.example', version: '2.0.0'};
+
+    it('moves URNs of the old namespace version into the new one', () => {
+      expect(urnOfMovedFile(SPEED, from, to)).toBe('urn:samm:com.example:2.0.0#speed');
+    });
+
+    it('keeps URNs of other namespaces', () => {
+      expect(urnOfMovedFile('urn:samm:org.other:1.0.0#speed', from, to)).toBe('urn:samm:org.other:1.0.0#speed');
     });
   });
 

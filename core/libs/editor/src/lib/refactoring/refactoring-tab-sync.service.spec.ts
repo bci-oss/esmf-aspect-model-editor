@@ -153,4 +153,53 @@ describe('RefactoringTabSyncService', () => {
     expect(tabState.closeTab).toHaveBeenCalledExactlyOnceWith('org.example:1.0.0:Movement.ttl');
     expect(tabState.tabsStore.renameTab).not.toHaveBeenCalled();
   });
+
+  it('ignores the unsaved changes of kept tabs', () => {
+    tabs.set([tab('Movement.ttl', {isDirty: true})]);
+
+    const unsaved = service.unsavedTabsAmong({...noChange, removed: [file('Movement.ttl')]}, t => t.file === 'Movement.ttl');
+
+    expect(unsaved).toEqual([]);
+  });
+
+  it('does not touch kept tabs', () => {
+    tabs.set([tab('Movement.ttl')]);
+    activeTabId.set('org.example:1.0.0:Movement.ttl');
+
+    service.synchronize(
+      {type: 'RENAME_ELEMENT', urn: 'urn:samm:org.example:1.0.0#Movement', newName: 'Motion'},
+      {...noChange, modified: [file('Movement.ttl')]},
+      t => t.id === 'org.example:1.0.0:Movement.ttl',
+    );
+
+    expect(fileHandling.loadNamespaceFile).not.toHaveBeenCalled();
+    expect(tabState.tabsStore.renameTab).not.toHaveBeenCalled();
+  });
+
+  it('lets tabs follow a file moved into another namespace', () => {
+    tabs.set([tab('Movement.ttl')]);
+
+    service.synchronize(
+      {
+        type: 'MOVE_FILE',
+        namespace: 'org.example',
+        version: '1.0.0',
+        fileName: 'Movement.ttl',
+        targetNamespace: 'com.example',
+        targetVersion: '2.0.0',
+        targetFileName: 'Motion.ttl',
+      },
+      {...noChange, created: [file('Motion.ttl', 'com.example', '2.0.0')], removed: [file('Movement.ttl')]},
+    );
+
+    expect(tabState.tabsStore.renameTab).toHaveBeenCalledWith(
+      'org.example:1.0.0:Movement.ttl',
+      expect.objectContaining({
+        id: 'com.example:2.0.0:Motion.ttl',
+        namespace: 'com.example:2.0.0',
+        file: 'Motion.ttl',
+        aspectModelUrn: 'urn:samm:com.example:2.0.0#Movement',
+      }),
+    );
+  });
 });

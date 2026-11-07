@@ -17,6 +17,7 @@ import {
   ModelSessionFacade,
   ModelSourcesStore,
   ReferenceReport,
+  splitNamespaceKey,
   TabsStore,
   WorkspaceFacade,
 } from '@ame/domain';
@@ -39,14 +40,6 @@ import {
   ClearWorkspaceOption,
 } from './clear-workspace-dialog.component';
 import {ReferencesDialogComponent, ReferencesDialogData} from './references-dialog.component';
-
-/** Splits a workspace namespace key `org.example:1.0.0` into namespace and version. */
-export function splitNamespaceKey(namespaceKey: string): {namespace: string; version: string} {
-  const index = namespaceKey.lastIndexOf(':');
-  return index < 0
-    ? {namespace: namespaceKey, version: ''}
-    : {namespace: namespaceKey.substring(0, index), version: namespaceKey.substring(index + 1)};
-}
 
 /** Why a file, a namespace version or the workspace cannot be deleted right now. */
 export type DeletionBlockReason = 'busy' | 'empty' | 'openHere' | 'openElsewhere' | 'readOnly';

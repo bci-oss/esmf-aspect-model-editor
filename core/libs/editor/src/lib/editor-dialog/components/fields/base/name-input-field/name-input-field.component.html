@@ -33,5 +33,13 @@
     @if (hasError('whitespace')) {
       <mat-error>{{ t('editorCanvas.shapeSetting.field.name.noContainWhitespaces') }}</mat-error>
     }
+    @if (usedInOtherFiles()) {
+      <mat-hint class="name-usage-hint" data-testid="name-usage-hint">
+        <span>{{ t('refactoring.nameHint.usedElsewhere') }}</span>
+        <button class="name-usage-hint__action" (click)="renameEverywhere()" type="button" data-testid="name-usage-hint-rename">
+          {{ t('refactoring.nameHint.renameEverywhere') }}
+        </button>
+      </mat-hint>
+    }
   </mat-form-field>
 </ng-container>

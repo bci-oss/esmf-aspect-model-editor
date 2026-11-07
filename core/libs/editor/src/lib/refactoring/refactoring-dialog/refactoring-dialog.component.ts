@@ -18,6 +18,7 @@ import {
   RefactoringPreview,
   RefactoringRequest,
   RefactoringStore,
+  RefactoringType,
   VersionIncrease,
 } from '@ame/domain';
 import {DialogCloseButtonComponent} from '@ame/shared';
@@ -41,6 +42,8 @@ import {parseElementUrn} from '../refactoring-urns';
 export interface RefactoringDialogData {
   /** The type and the source of the refactoring; the dialog asks for the target. */
   request: RefactoringRequest;
+  /** The tab saved right after the refactoring; its unsaved changes do not block it. */
+  pendingSaveTabId?: string;
 }
 
 /** The refactoring the dialog applied: the request completed with the target the user entered, and its outcome. */
@@ -71,6 +74,9 @@ const PREVIEW_GROUPS: {key: 'created' | 'modified' | 'removed' | 'blocked'; icon
   {key: 'removed', icon: 'remove_circle'},
   {key: 'blocked', icon: 'lock'},
 ];
+
+/** Refactorings whose target is part of the request; they are previewed right away. */
+const COMPLETE_REQUESTS: RefactoringType[] = ['MOVE_FILE'];
 
 export const VERSION_INCREASES: VersionIncrease[] = ['MAJOR', 'MINOR', 'MICRO'];
 
@@ -185,7 +191,7 @@ export class RefactoringDialogComponent {
   /** Open tabs with unsaved changes in files the refactoring changes. */
   readonly unsavedTabs = computed<EditorTab[]>(() => {
     const preview = this.preview();
-    return preview ? this.tabSync.unsavedTabsAmong(preview) : [];
+    return preview ? this.tabSync.unsavedTabsAmong(preview, tab => tab.id === this.data.pendingSaveTabId) : [];
   });
   readonly unsavedFiles = computed(() =>
     this.unsavedTabs()
@@ -198,6 +204,10 @@ export class RefactoringDialogComponent {
   });
   readonly canApply = computed(() => !this.busy() && !!this.preview()?.applicable && this.unsavedTabs().length === 0);
   readonly error = signal<{key: string; message?: string} | null>(null);
+
+  constructor() {
+    if (COMPLETE_REQUESTS.includes(this.type)) this.runPreview();
+  }
 
   requestClose(): void {
     if (!this.busy()) this.dialogRef.close();
@@ -240,7 +250,7 @@ export class RefactoringDialogComponent {
 function initialModel(request: RefactoringRequest, elementName = ''): RefactoringFormModel {
   const element = parseElementUrn(request.urn);
   return {
-    newName: request.type === 'RENAME_FILE' ? withoutTtl(request.fileName ?? '') : elementName,
+    newName: request.type === 'RENAME_FILE' ? withoutTtl(request.fileName ?? '') : (request.newName ?? elementName),
     targetFileName: '',
     targetNamespace: element?.namespace ?? request.namespace ?? '',
     targetVersion: element?.version ?? request.version ?? '',
@@ -267,6 +277,8 @@ function completeRequest(request: RefactoringRequest, model: RefactoringFormMode
       return {...request, targetNamespace: model.targetNamespace.trim(), targetVersion: model.targetVersion.trim()};
     case 'NEW_VERSION':
       return {...request, increase: model.increase};
+    case 'MOVE_FILE':
+      return request;
   }
 }
 

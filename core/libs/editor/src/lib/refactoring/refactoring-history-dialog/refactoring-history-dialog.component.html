@@ -1,0 +1,60 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t; prefix: 'refactoring.history'">
+  <h2 mat-dialog-title>{{ t('title') }}</h2>
+  <ame-dialog-close-button />
+
+  <mat-dialog-content>
+    @if (loading.isLoading() || busy()) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+
+    @if (loading.error()) {
+      <p class="message error" data-testid="refactoring-history-error">
+        <mat-icon>error</mat-icon>
+        <span>{{ t('error') }}</span>
+      </p>
+    } @else if (!loading.isLoading()) {
+      <ul class="entries" data-testid="refactoring-history-list">
+        @for (entry of history(); track entry.id) {
+          <li class="entry" data-testid="refactoring-history-entry">
+            <div class="entry__text">
+              <span class="entry__description">{{ entry.description }}</span>
+              <small class="entry__details">
+                {{ entry.timestamp | date: 'short' }} ·
+                {{ t('files', {created: entry.created.length, modified: entry.modified.length, removed: entry.removed.length}) }}
+              </small>
+            </div>
+            <button
+              [disabled]="busy()"
+              [matTooltip]="t('undoTooltip')"
+              (click)="revert(entry)"
+              mat-stroked-button
+              data-testid="refactoring-history-undo"
+            >
+              <mat-icon>undo</mat-icon>
+              {{ t('undo') }}
+            </button>
+          </li>
+        } @empty {
+          <p data-testid="refactoring-history-empty">{{ t('empty') }}</p>
+        }
+      </ul>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-flat-button mat-dialog-close data-testid="refactoring-history-close">{{ t('close') }}</button>
+  </mat-dialog-actions>
+</ng-container>

@@ -35,7 +35,7 @@ describe('ElementRefactoringService', () => {
     canRefactor: ReturnType<typeof vi.fn>;
     canShowUsages: ReturnType<typeof vi.fn>;
   };
-  let refactoringDialog: {open: ReturnType<typeof vi.fn>; showUsages: ReturnType<typeof vi.fn>};
+  let refactoringDialog: {open: ReturnType<typeof vi.fn>; showUsages: ReturnType<typeof vi.fn>; showHistory: ReturnType<typeof vi.fn>};
   let shapeSettingsState: {closeShapeSettings: ReturnType<typeof vi.fn>; setSelectedShapeForUpdate: ReturnType<typeof vi.fn>};
   let actions: Map<string, () => void>;
 
@@ -47,7 +47,7 @@ describe('ElementRefactoringService', () => {
       canRefactor: vi.fn(() => true),
       canShowUsages: vi.fn(() => true),
     };
-    refactoringDialog = {open: vi.fn(() => of(null)), showUsages: vi.fn()};
+    refactoringDialog = {open: vi.fn(() => of(null)), showUsages: vi.fn(), showHistory: vi.fn()};
     shapeSettingsState = {closeShapeSettings: vi.fn(), setSelectedShapeForUpdate: vi.fn()};
     actions = new Map();
     vi.spyOn(MaxGraphHelper, 'getModelElement').mockImplementation(cell => (cell as unknown as {element: never}).element);
@@ -103,6 +103,11 @@ describe('ElementRefactoringService', () => {
     guard.canShowUsages.mockReturnValue(false);
     service.showUsages(speed);
     expect(refactoringDialog.showUsages).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the refactoring history', () => {
+    service.showHistory();
+    expect(refactoringDialog.showHistory).toHaveBeenCalled();
   });
 
   it('runs the actions of the graph context menu on the selected element', () => {

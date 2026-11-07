@@ -16,9 +16,12 @@ import {inject, Injectable, Injector} from '@angular/core';
 import {FileHandlingService} from '../editor-toolbar/services/file-handling.service';
 import {TabStateService} from '../tabs/tab-state.service';
 import {EditorTab} from '../tabs/tab.model';
-import {relocatedUrn} from './refactoring-urns';
+import {relocatedUrn, urnOfMovedFile} from './refactoring-urns';
 
 type FileChange = Pick<RefactoringHistoryEntry, 'created' | 'modified' | 'removed'>;
+
+/** Tabs to leave as they are, e.g. the tab saved right after the refactoring or tabs with unsaved changes. */
+export type KeepTab = (tab: EditorTab) => boolean;
 
 /** Keeps the open tabs in line with the files a refactoring (or its revert) changed on disk. */
 @Injectable({providedIn: 'root'})
@@ -32,18 +35,22 @@ export class RefactoringTabSyncService {
   }
 
   /** Open tabs with unsaved changes the refactoring would overwrite; it must not be applied then. */
-  unsavedTabsAmong(change: FileChange): EditorTab[] {
-    return this.tabState.tabs().filter(tab => tab.isDirty && this.isAffected(tab, change));
+  unsavedTabsAmong(change: FileChange, keep: KeepTab = () => false): EditorTab[] {
+    return this.tabState.tabs().filter(tab => tab.isDirty && !keep(tab) && this.isAffected(tab, change));
   }
 
   /**
    * Reloads the active tab if its file changed and lets the other affected tabs reload when they are shown next.
    * Tabs of a renamed or moved file follow it; tabs of a deleted file without successor are closed.
+   *
+   * @param request moves the opened elements along; without it, the tabs only follow their files
    */
-  synchronize(request: RefactoringRequest, change: FileChange): void {
+  synchronize(request: RefactoringRequest | undefined, change: FileChange, keep: KeepTab = () => false): void {
     for (const tab of this.tabState.tabs()) {
+      if (keep(tab)) continue;
+
       if (change.modified.some(file => isFileOf(tab, file))) {
-        this.reload(tab, {namespace: tab.namespace, file: tab.file}, request);
+        this.reload(tab, {namespace: tab.namespace, file: tab.file}, urn => relocatedUrn(urn, request));
         continue;
       }
 
@@ -52,16 +59,18 @@ export class RefactoringTabSyncService {
 
       const successor = successorOf(removed, change);
       if (successor) {
-        this.reload(tab, {namespace: namespaceKey(successor), file: successor.fileName}, request);
+        this.reload(tab, {namespace: namespaceKey(successor), file: successor.fileName}, urn =>
+          urnOfMovedFile(relocatedUrn(urn, request), removed, successor),
+        );
       } else {
         this.tabState.closeTab(tab.id).subscribe();
       }
     }
   }
 
-  private reload(tab: EditorTab, target: {namespace: string; file: string}, request: RefactoringRequest): void {
+  private reload(tab: EditorTab, target: {namespace: string; file: string}, relocate: (urn: string) => string): void {
     const id = `${target.namespace}:${target.file}`;
-    const aspectModelUrn = tab.aspectModelUrn && relocatedUrn(tab.aspectModelUrn, request);
+    const aspectModelUrn = tab.aspectModelUrn && relocate(tab.aspectModelUrn);
 
     if (tab.id === this.tabState.activeTabId()) {
       if (aspectModelUrn) this.fileHandling.loadNamespaceFile(id, aspectModelUrn, tab.id);
@@ -75,7 +84,7 @@ export class RefactoringTabSyncService {
       namespace: target.namespace,
       file: target.file,
       aspectModelUrn,
-      editElementUrn: tab.editElementUrn && relocatedUrn(tab.editElementUrn, request),
+      editElementUrn: tab.editElementUrn && relocate(tab.editElementUrn),
       filesSnapshot: undefined,
       savedModelBaseline: undefined,
     });

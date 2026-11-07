@@ -163,6 +163,10 @@ export class EditorToolbarComponent implements AfterViewInit, OnDestroy {
     this.elementRefactoring.showUsages(element);
   }
 
+  showRefactoringHistory() {
+    this.elementRefactoring.showHistory();
+  }
+
   onFormat() {
     this.editorService.formatModel();
   }

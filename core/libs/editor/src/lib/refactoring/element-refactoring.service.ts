@@ -58,13 +58,17 @@ export class ElementRefactoringService {
     return this.guard.blocker(element);
   }
 
-  /** Closes the element editor first; its content would be outdated once the files have changed. */
-  refactor(type: ElementRefactoringType, element: NamedElement | null | undefined): void {
+  /**
+   * Closes the element editor first; its content would be outdated once the files have changed.
+   *
+   * @param newName proposed in the dialog of a rename, e.g. the name already typed in the element editor
+   */
+  refactor(type: ElementRefactoringType, element: NamedElement | null | undefined, newName?: string): void {
     const urn = this.guard.urnOf(element);
     if (!urn || !this.guard.canRefactor(element)) return;
 
     this.closeElementEditor();
-    this.refactoringDialog.open({type, urn}).subscribe();
+    this.refactoringDialog.open({type, urn, ...(newName ? {newName} : {})}).subscribe();
   }
 
   canShowUsages(element: NamedElement | null | undefined): boolean {
@@ -74,6 +78,10 @@ export class ElementRefactoringService {
   /** Also available for elements that cannot be refactored, e.g. to see who uses an element of another file. */
   showUsages(element: NamedElement | null | undefined): void {
     if (this.guard.canShowUsages(element)) this.refactoringDialog.showUsages(element.aspectModelUrn);
+  }
+
+  showHistory(): void {
+    this.refactoringDialog.showHistory();
   }
 
   private closeElementEditor(): void {

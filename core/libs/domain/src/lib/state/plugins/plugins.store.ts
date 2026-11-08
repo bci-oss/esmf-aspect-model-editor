@@ -12,8 +12,8 @@
  */
 
 import {BackendStatusService} from '@ame/shared';
-import {computed, inject, Injectable, signal} from '@angular/core';
-import {toObservable} from '@angular/core/rxjs-interop';
+import {computed, inject, Injectable, linkedSignal, Signal, signal} from '@angular/core';
+import {rxResource, toObservable} from '@angular/core/rxjs-interop';
 import {defer, filter, first, from, map, Observable, switchMap, tap} from 'rxjs';
 import {PluginsOverview, PluginStatus} from '../../model-api';
 import {PluginsPort} from '../../ports/plugins.port';
@@ -25,8 +25,26 @@ export class PluginsStore {
   private readonly backendStatus = inject(BackendStatusService);
   private readonly backendStatus$ = toObservable(this.backendStatus.status);
 
-  readonly overview = signal<PluginsOverview | null>(null);
-  readonly loaded = signal(false);
+  /** Set once the plugins are needed; from then on they are loaded with every start of the backend. */
+  private readonly requested = signal(false);
+  /** Revision of the last start of the backend; plugins are started with the backend. */
+  private readonly readyRevision = computed(() => {
+    const status = this.backendStatus.status();
+    return status.state === 'ready' ? status.revision : undefined;
+  });
+  private readonly overviewResource = rxResource({
+    params: () => (this.requested() ? this.readyRevision() : undefined),
+    stream: () => this.requireApi().getOverview(),
+  });
+
+  /** The last loaded plugins; kept while the backend restarts or the plugins cannot be loaded. */
+  readonly overview: Signal<PluginsOverview | null> = linkedSignal<PluginsOverview | undefined, PluginsOverview | null>({
+    source: () => (this.overviewResource.hasValue() ? this.overviewResource.value() : undefined),
+    computation: (overview, previous) => overview ?? previous?.value ?? null,
+  });
+  readonly loaded = computed(() => this.overview() !== null);
+  /** Why the plugins could not be loaded, e.g. because the backend does not support plugins. */
+  readonly loadError = computed(() => this.overviewResource.error() ?? null);
   /** Ids of the plugins currently changed. */
   readonly busyIds = signal<ReadonlySet<string>>(new Set());
   readonly installing = signal(false);
@@ -35,6 +53,12 @@ export class PluginsStore {
   readonly restartRequired = computed(() => !!this.overview()?.restartRequired);
   readonly canRestartBackend = this.backendStatus.canRestart;
   readonly restarting = this.backendStatus.restarting;
+
+  /** Loads the plugins, and from then on again with every start of the backend. */
+  load(): void {
+    if (this.requested()) this.overviewResource.reload();
+    else this.requested.set(true);
+  }
 
   refresh(): Observable<PluginsOverview> {
     return this.requireApi()
@@ -90,8 +114,7 @@ export class PluginsStore {
   }
 
   private setOverview(overview: PluginsOverview): void {
-    this.overview.set(overview);
-    this.loaded.set(true);
+    this.overviewResource.set(overview);
   }
 
   private runBusy<T>(id: string, request: () => Observable<T>): Observable<T> {

@@ -23,7 +23,6 @@ import {
 } from '@ame/domain';
 import {MaxGraphService} from '@ame/graph';
 import {
-  BackendStatusService,
   IPC_RENDERER,
   ITauriIpcBridge,
   NotificationsService,
@@ -32,11 +31,11 @@ import {
   READABLE_NOTIFICATION_TIMEOUT,
   TAURI_EVENTS,
 } from '@ame/shared';
-import {computed, effect, inject, Injectable, Injector, runInInjectionContext, untracked} from '@angular/core';
+import {computed, effect, inject, Injectable, Injector, runInInjectionContext} from '@angular/core';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {MatDialog} from '@angular/material/dialog';
 import {TranslocoService} from '@jsverse/transloco';
-import {catchError, EMPTY, map, switchMap} from 'rxjs';
+import {map, switchMap} from 'rxjs';
 import {ElementRefactoringService} from '../refactoring/element-refactoring.service';
 import {PluginHostDialogComponent, PluginHostDialogData} from './plugin-host-dialog/plugin-host-dialog.component';
 import {PluginModelSnapshotService} from './plugin-model-snapshot.service';
@@ -49,7 +48,6 @@ import {PluginModelSnapshotService} from './plugin-model-snapshot.service';
 export class PluginRuntimeService implements ITauriIpcBridge {
   private readonly ipcRenderer = inject(IPC_RENDERER);
   private readonly store = inject(PluginsStore);
-  private readonly backendStatus = inject(BackendStatusService);
   private readonly transloco = inject(TranslocoService);
   private readonly matDialog = inject(MatDialog);
   private readonly notifications = inject(NotificationsService);
@@ -68,10 +66,9 @@ export class PluginRuntimeService implements ITauriIpcBridge {
     if (!this.ipcRenderer?.setPluginMenu) return;
 
     this.ipcRenderer.on(TAURI_EVENTS.SIGNAL.PLUGIN_MENU_ACTION, ({pluginId, entryId}: PluginMenuAction) => this.run(pluginId, entryId));
-    runInInjectionContext(this.injector, () => {
-      this.loadOnBackendStart();
-      this.syncMenu();
-    });
+    // Plugins are started with the backend, so every start of the backend may bring other plugins.
+    this.store.load();
+    runInInjectionContext(this.injector, () => this.syncMenu());
   }
 
   /**
@@ -109,24 +106,6 @@ export class PluginRuntimeService implements ITauriIpcBridge {
 
   private warn(title: string): void {
     this.notifications.warning({title, timeout: READABLE_NOTIFICATION_TIMEOUT});
-  }
-
-  /** Plugins are started with the backend, so every start of the backend may bring other plugins. */
-  private loadOnBackendStart(): void {
-    const readyRevision = computed(() => {
-      const status = this.backendStatus.status();
-      return status.state === 'ready' ? status.revision : null;
-    });
-    effect(() => {
-      if (readyRevision() === null) return;
-      // A backend without plugin support keeps the menu without plugin entries.
-      untracked(() =>
-        this.store
-          .refresh()
-          .pipe(catchError(() => EMPTY))
-          .subscribe(),
-      );
-    });
   }
 
   private syncMenu(): void {

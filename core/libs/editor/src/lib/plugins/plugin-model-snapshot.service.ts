@@ -13,7 +13,7 @@
 
 import {LoadedFilesService, ModelService, PluginModel, RdfPort} from '@ame/domain';
 import {inject, Injectable} from '@angular/core';
-import {firstValueFrom, take} from 'rxjs';
+import {firstValueFrom} from 'rxjs';
 
 /** Creates the read-only copy of the open Aspect Model that generator commands of plugins work on. */
 @Injectable({providedIn: 'root'})
@@ -29,7 +29,7 @@ export class PluginModelSnapshotService {
 
     try {
       // Applies the changes of the graph to the RDF model, like before saving.
-      await firstValueFrom(this.modelService.synchronizeModelToRdf().pipe(take(1)), {defaultValue: undefined});
+      await firstValueFrom(this.modelService.synchronizeModelToRdf(), {defaultValue: undefined});
     } catch {
       return null;
     }

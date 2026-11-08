@@ -44,6 +44,10 @@ const backend = (state: BackendStatus['state'], revision: number, message: strin
   revision,
 });
 const flush = () => new Promise(resolve => setTimeout(resolve));
+const settle = async () => {
+  TestBed.tick();
+  await flush();
+};
 
 describe('PluginsStore', () => {
   let store: PluginsStore;
@@ -74,6 +78,8 @@ describe('PluginsStore', () => {
     store = TestBed.inject(PluginsStore);
   });
 
+  const ids = () => store.plugins().map(p => p.id);
+
   it('loads the plugins', async () => {
     expect(store.loaded()).toBe(false);
 
@@ -82,6 +88,47 @@ describe('PluginsStore', () => {
     expect(store.loaded()).toBe(true);
     expect(store.plugins().map(p => p.id)).toEqual(['example']);
     expect(store.plugin('example')?.state).toBe('ACTIVE');
+  });
+
+  it('loads the plugins once they are needed and again with every start of the backend', async () => {
+    await settle();
+    expect(api['getOverview']).not.toHaveBeenCalled();
+
+    store.load();
+    await settle();
+    expect(ids()).toEqual(['example']);
+
+    api['getOverview'].mockReturnValue(of(overview([plugin('example'), plugin('other')])));
+    backendStatus.set(backend('starting', 2));
+    await settle();
+    expect(ids()).toEqual(['example']);
+
+    backendStatus.set(backend('ready', 3));
+    await settle();
+    expect(ids()).toEqual(['example', 'other']);
+    expect(api['getOverview']).toHaveBeenCalledTimes(2);
+  });
+
+  it('reloads the plugins when they are needed again', async () => {
+    store.load();
+    await settle();
+    store.load();
+    await settle();
+
+    expect(api['getOverview']).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps the last plugins and reports why they could not be reloaded', async () => {
+    store.load();
+    await settle();
+    expect(ids()).toEqual(['example']);
+    api['getOverview'].mockReturnValue(throwError(() => new Error('404')));
+
+    store.load();
+    await settle();
+
+    expect(store.loadError()?.message).toBe('404');
+    expect(ids()).toEqual(['example']);
   });
 
   it('stays unloaded if the backend does not know plugins', async () => {

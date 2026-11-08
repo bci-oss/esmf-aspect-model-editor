@@ -66,7 +66,8 @@ describe('PluginsSettingsComponent', () => {
       restarting: signal(false),
       canRestartBackend: true,
       isBusy: () => false,
-      refresh: vi.fn(() => of({pluginApiVersion: 1, plugins: plugins(), restartRequired: false})),
+      load: vi.fn(),
+      loadError: signal<unknown>(null),
       install: vi.fn(() => of(plugin({state: 'INACTIVE', restartRequired: true}))),
       setEnabled: vi.fn(() => of(plugin())),
       uninstall: vi.fn(() => of({pluginApiVersion: 1, plugins: [], restartRequired: true})),
@@ -94,7 +95,7 @@ describe('PluginsSettingsComponent', () => {
   it('loads and lists the installed plugins', () => {
     render();
 
-    expect(store['refresh']).toHaveBeenCalled();
+    expect(store['load']).toHaveBeenCalled();
     expect(query('plugin-example-import')?.textContent).toContain('Example import');
     expect(query('plugin-state-active')).toBeTruthy();
     expect(query('plugins-empty')).toBeNull();
@@ -102,10 +103,14 @@ describe('PluginsSettingsComponent', () => {
   });
 
   it('shows why the plugins could not be loaded', () => {
-    store['refresh'].mockReturnValue(throwError(() => ({error: {error: {message: 'Not found'}}})));
+    store['loadError'].set({error: {error: {message: 'Not found'}}});
     render();
 
     expect(query('plugins-load-error')?.textContent).toContain('Not found');
+
+    store['loadError'].set(null);
+    fixture.detectChanges();
+    expect(query('plugins-load-error')).toBeNull();
   });
 
   it('shows the empty state and the error of a failed plugin', () => {

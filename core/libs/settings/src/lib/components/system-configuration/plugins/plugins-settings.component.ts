@@ -13,7 +13,7 @@
 
 import {describeSourceError, PluginDisplayState, pluginDisplayState, PluginsStore, PluginStatus} from '@ame/domain';
 import {NotificationsService} from '@ame/shared';
-import {ChangeDetectionStrategy, Component, inject, OnInit, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, OnInit, signal} from '@angular/core';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatIcon} from '@angular/material/icon';
 import {MatMenu, MatMenuItem, MatMenuTrigger} from '@angular/material/menu';
@@ -42,15 +42,15 @@ export class PluginsSettingsComponent implements OnInit {
   private readonly transloco = inject(TranslocoService);
 
   readonly archiveExtension = PLUGIN_ARCHIVE_EXTENSION;
-  readonly loadError = signal('');
+  readonly loadError = computed(() => {
+    const error = this.store.loadError();
+    return error ? describeSourceError(error) || this.transloco.translate('plugins.settings.loadError') : '';
+  });
   /** Why the backend could not be restarted, e.g. because it was started externally. */
   readonly restartError = signal('');
 
   ngOnInit(): void {
-    this.store.refresh().subscribe({
-      next: () => this.loadError.set(''),
-      error: error => this.loadError.set(describeSourceError(error) || this.transloco.translate('plugins.settings.loadError')),
-    });
+    this.store.load();
   }
 
   install(input: HTMLInputElement): void {

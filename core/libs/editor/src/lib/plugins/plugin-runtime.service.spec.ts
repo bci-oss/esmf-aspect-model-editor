@@ -13,7 +13,7 @@
 
 import {ElementRefactoringGuard, PluginModel, PluginsStore, PluginStatus} from '@ame/domain';
 import {MaxGraphService} from '@ame/graph';
-import {BackendStatus, BackendStatusService, IPC_RENDERER, NotificationsService, PluginMenuPayload, TAURI_EVENTS} from '@ame/shared';
+import {IPC_RENDERER, NotificationsService, PluginMenuPayload, TAURI_EVENTS} from '@ame/shared';
 import {provideZonelessChangeDetection, signal} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {MatDialog} from '@angular/material/dialog';
@@ -79,13 +79,12 @@ describe('PluginRuntimeService', () => {
   let store: {
     plugins: typeof plugins;
     loaded: typeof loaded;
-    refresh: ReturnType<typeof vi.fn>;
+    load: ReturnType<typeof vi.fn>;
     plugin: (id: string) => PluginStatus | undefined;
   };
   let dialog: {open: ReturnType<typeof vi.fn>};
   let notifications: {warning: ReturnType<typeof vi.fn>};
   let lang: BehaviorSubject<string>;
-  let backendStatus: ReturnType<typeof signal<BackendStatus>>;
   let modelEmpty: ReturnType<typeof signal<boolean>>;
   let snapshots: {snapshot: ReturnType<typeof vi.fn<() => Promise<PluginModel | null>>>};
   let selectedElement: ReturnType<typeof signal<{aspectModelUrn: string} | null>>;
@@ -96,7 +95,6 @@ describe('PluginRuntimeService', () => {
         provideZonelessChangeDetection(),
         {provide: IPC_RENDERER, useValue: ipcRenderer},
         {provide: PluginsStore, useValue: store},
-        {provide: BackendStatusService, useValue: {status: backendStatus}},
         {provide: MatDialog, useValue: dialog},
         {provide: NotificationsService, useValue: notifications},
         {provide: MaxGraphService, useValue: {isModelEmpty: modelEmpty}},
@@ -127,11 +125,10 @@ describe('PluginRuntimeService', () => {
     ipc = createIpcMock();
     plugins = signal([examplePlugin]);
     loaded = signal(true);
-    store = {plugins, loaded, refresh: vi.fn(() => of({})), plugin: id => plugins().find(plugin => plugin.id === id)};
+    store = {plugins, loaded, load: vi.fn(), plugin: id => plugins().find(plugin => plugin.id === id)};
     dialog = {open: vi.fn()};
     notifications = {warning: vi.fn()};
     lang = new BehaviorSubject('en');
-    backendStatus = signal<BackendStatus>({state: 'ready', port: '9090', message: null, revision: 1});
     modelEmpty = signal(false);
     snapshots = {snapshot: vi.fn<() => Promise<PluginModel | null>>(() => Promise.resolve(model))};
     selectedElement = signal<{aspectModelUrn: string} | null>(null);
@@ -180,19 +177,10 @@ describe('PluginRuntimeService', () => {
     expect(ipc.setPluginMenu).toHaveBeenLastCalledWith(expect.objectContaining({entries: []}));
   });
 
-  it('loads the plugins with every start of the backend', () => {
-    backendStatus.set({state: 'starting', port: '9090', message: null, revision: 1});
+  it('loads the plugins', () => {
     create();
-    expect(store.refresh).not.toHaveBeenCalled();
 
-    backendStatus.set({state: 'ready', port: '9090', message: null, revision: 2});
-    TestBed.tick();
-    backendStatus.set({state: 'starting', port: '9090', message: null, revision: 3});
-    TestBed.tick();
-    backendStatus.set({state: 'ready', port: '9090', message: null, revision: 4});
-    TestBed.tick();
-
-    expect(store.refresh).toHaveBeenCalledTimes(2);
+    expect(store.load).toHaveBeenCalledTimes(1);
   });
 
   it('keeps the menu until the plugins are known', () => {
@@ -272,6 +260,6 @@ describe('PluginRuntimeService', () => {
   it('does nothing outside the desktop application', () => {
     create(null);
 
-    expect(store.refresh).not.toHaveBeenCalled();
+    expect(store.load).not.toHaveBeenCalled();
   });
 });

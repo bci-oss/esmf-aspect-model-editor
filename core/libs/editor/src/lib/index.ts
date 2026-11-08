@@ -29,6 +29,7 @@ export * from './model-saving-tracker.service';
 export * from './models/confirm-dialog.enum';
 export * from './open-element-window/open-element-window.component';
 export * from './open-element-window/open-element-window.service';
+export * from './plugins';
 export * from './prefixes';
 export * from './provide-editor';
 export * from './rename-model/rename-model.component';

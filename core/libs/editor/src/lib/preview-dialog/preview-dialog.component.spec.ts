@@ -11,17 +11,16 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ClipboardService, NotificationsService} from '@ame/shared';
+import {ClipboardService, FileSaverService, NotificationsService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {TranslocoTestingModule} from '@jsverse/transloco';
-import {saveAs} from 'file-saver';
 import {of, Subject, throwError} from 'rxjs';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {PreviewDialogComponent, PreviewDialogOptions} from './preview-dialog.component';
 
-vi.mock('file-saver', () => ({saveAs: vi.fn()}));
+const fileSaver = {download: vi.fn()};
 
 describe('PreviewDialogComponent', () => {
   let component: PreviewDialogComponent;
@@ -51,6 +50,7 @@ describe('PreviewDialogComponent', () => {
         }),
       ],
       providers: [
+        {provide: FileSaverService, useValue: fileSaver},
         {provide: MatDialogRef, useValue: dialogRef},
         {provide: MAT_DIALOG_DATA, useValue: data},
         {provide: ClipboardService, useValue: clipboard},
@@ -188,7 +188,7 @@ describe('PreviewDialogComponent', () => {
   });
 
   describe('download', () => {
-    afterEach(() => vi.mocked(saveAs).mockClear());
+    afterEach(() => fileSaver.download.mockClear());
 
     it('should download the edited content as JSON by default', async () => {
       await create();
@@ -196,7 +196,7 @@ describe('PreviewDialogComponent', () => {
 
       component.onDownload();
 
-      const [blob, fileName] = vi.mocked(saveAs).mock.calls[0] as [Blob, string];
+      const [blob, fileName] = fileSaver.download.mock.calls[0] as [Blob, string];
       expect(fileName).toBe('sample.json');
       expect(blob.type).toBe('application/json;charset=utf-8');
       expect(await blob.text()).toBe('{"edited": true}');
@@ -207,7 +207,7 @@ describe('PreviewDialogComponent', () => {
 
       component.onDownload();
 
-      const [blob] = vi.mocked(saveAs).mock.calls[0] as [Blob, string];
+      const [blob] = fileSaver.download.mock.calls[0] as [Blob, string];
       expect(blob.type).toBe('application/sql;charset=utf-8');
     });
   });

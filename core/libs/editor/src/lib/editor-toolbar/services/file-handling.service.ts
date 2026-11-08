@@ -34,6 +34,7 @@ import {MaxGraphService} from '@ame/graph';
 import {
   ClipboardService,
   decodeText,
+  FileSaverService,
   FileTypes,
   FileUploadService,
   GeneralConfig,
@@ -51,7 +52,6 @@ import {DestroyRef, inject, Injectable} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {environment} from 'environments/environment';
-import {saveAs} from 'file-saver';
 import {Store} from 'n3';
 import {forkJoin, Observable, of, throwError} from 'rxjs';
 import {catchError, finalize, first, map, switchMap, tap} from 'rxjs/operators';
@@ -96,6 +96,7 @@ interface ModelLoaderState {
 @Injectable({providedIn: 'root'})
 export class FileHandlingService implements FileHandlingPort {
   private destroyRef = inject(DestroyRef);
+  private fileSaver = inject(FileSaverService);
   private editorService = inject(EditorService);
   private modelService = inject(ModelService);
   private rdfService = inject(RdfPort);
@@ -362,7 +363,7 @@ export class FileHandlingService implements FileHandlingPort {
         const rdfModelTtl = this.rdfService.serializeModel(rdfModel);
         return this.modelApiService.fetchFormatedAspectModel(rdfModelTtl, rdfModel.getSourceLocation()).pipe(
           tap(formattedModel => {
-            saveAs(
+            this.fileSaver.download(
               new Blob([this.modelDocumentService.toDocument(formattedModel, rdfModel)], {type: 'text/turtle;charset=utf-8'}),
               fileName,
             );

@@ -18,6 +18,7 @@ export * from './file-information';
 export * from './generators';
 export * from './model-sources';
 export * from './named-rdf-model';
+export * from './plugins';
 export * from './refactoring';
 export * from './violation-error';
 export * from './workspace-structure';

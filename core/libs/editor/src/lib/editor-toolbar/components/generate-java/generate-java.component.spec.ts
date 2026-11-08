@@ -12,13 +12,12 @@
  */
 
 import {LoadedFilesService, ModelApiPort, NamespaceFile} from '@ame/domain';
-import {LanguageTranslationService, NotificationsService} from '@ame/shared';
+import {FileSaverService, LanguageTranslationService, NotificationsService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatDialogRef} from '@angular/material/dialog';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DefaultAspect, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {TranslocoTestingModule} from '@jsverse/transloco';
-import {saveAs} from 'file-saver';
 import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {of, throwError} from 'rxjs';
@@ -26,7 +25,7 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {EditorService} from '../../../editor.service';
 import {GenerateJavaComponent, JAVA_PACKAGE_PATTERN} from './generate-java.component';
 
-vi.mock('file-saver', () => ({saveAs: vi.fn()}));
+const fileSaver = {download: vi.fn()};
 
 describe('GenerateJavaComponent', () => {
   let component: GenerateJavaComponent;
@@ -54,6 +53,7 @@ describe('GenerateJavaComponent', () => {
         TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
       ],
       providers: [
+        {provide: FileSaverService, useValue: fileSaver},
         {provide: MatDialogRef, useValue: dialogRef},
         MockProvider(ModelApiPort, {generateJavaClasses: vi.fn(() => of(archive))}),
         MockProvider(EditorService, {getSerializedModel: vi.fn(() => 'turtle model')}),
@@ -70,7 +70,7 @@ describe('GenerateJavaComponent', () => {
     fixture.detectChanges();
   });
 
-  afterEach(() => vi.mocked(saveAs).mockClear());
+  afterEach(() => fileSaver.download.mockClear());
 
   it('should propose the namespace as package and generate POJOs with Jackson annotations by default', () => {
     expect(component.defaultPackageName).toBe('org.example_company');
@@ -88,7 +88,7 @@ describe('GenerateJavaComponent', () => {
       {packageName: 'com.example', staticMetaModel: true, jacksonAnnotations: false},
       'workspace/org.example-company/1.0.0/Movement.ttl',
     );
-    expect(saveAs).toHaveBeenCalledWith(archive, 'Movement-java.zip');
+    expect(fileSaver.download).toHaveBeenCalledWith(archive, 'Movement-java.zip');
     expect(dialogRef.close).toHaveBeenCalled();
     expect(component.isGenerating()).toBe(false);
   });
@@ -112,7 +112,7 @@ describe('GenerateJavaComponent', () => {
 
     component.downloadJavaClasses();
 
-    expect(saveAs).not.toHaveBeenCalled();
+    expect(fileSaver.download).not.toHaveBeenCalled();
     expect(dialogRef.close).not.toHaveBeenCalled();
     expect(notifications.error).toHaveBeenCalledWith(expect.objectContaining({title: 'generateJavaDialog.failed'}));
     expect(component.isGenerating()).toBe(false);

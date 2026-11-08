@@ -33,6 +33,7 @@ export const config: AppConfig = {
     workspaces: '/ame/api/workspaces',
     githubSources: '/ame/api/sources/github',
     refactoring: '/ame/api/refactoring',
+    plugins: '/ame/api/plugins',
   },
 };
 

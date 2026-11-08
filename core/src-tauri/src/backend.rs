@@ -338,6 +338,22 @@ pub fn restart_backend(app: &AppHandle, state: &BackendState) -> BackendStatus {
     state.status()
 }
 
+/// Stops the running backend and starts a new one, e.g. so that it loads changed plugins.
+/// A backend started externally during development cannot be restarted from here.
+pub fn reload_backend(app: &AppHandle, state: &BackendState) -> Result<BackendStatus, String> {
+    if cfg!(debug_assertions) {
+        return Err(format!(
+            "The backend was started externally on port {DEV_PORT}. Restart it manually."
+        ));
+    }
+    if state.status().state == BackendPhase::Starting {
+        return Ok(state.status());
+    }
+    clean_up_backend(state);
+    start_backend(app, state);
+    Ok(state.status())
+}
+
 /// Port `-1` lets the operating system pick a free port, avoiding a race between choosing and binding it.
 /// The backend stops by itself once its stdin is closed ([`clean_up_backend`]) or the process `parent_pid`
 /// has ended, so it does not outlive the app after a crash or a hard kill.

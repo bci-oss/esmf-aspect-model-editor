@@ -53,6 +53,37 @@ export interface TauriApi {
   githubTokenInfo?(host: string): Promise<GithubTokenInfo>;
   /** Checks or synchronizes a GitHub source; the shell adds the stored token, so it never reaches the web view. */
   githubSourceAction?<T = unknown>(id: string, host: string, action: 'check' | 'sync'): Promise<T>;
+  /** Asks the user where to save the file and writes it; resolves to its path, or null if cancelled. */
+  saveFile?(fileName: string, content: Blob): Promise<string | null>;
+  /** Restarts the backend started by the shell, e.g. to load installed plugins. Rejects if it was started externally. */
+  reloadBackend?(): Promise<BackendStatus>;
+  /** Replaces the plugin entries of the application menu. */
+  setPluginMenu?(menu: PluginMenuPayload): Promise<void>;
+}
+
+/** Where a plugin entry appears in the application menu. */
+export type PluginMenuLocation = 'file/import' | 'generate' | 'plugins';
+
+export interface PluginMenuPayload {
+  /** Title of the "Plugins" menu in the current language. */
+  title: string;
+  entries: PluginMenuPayloadEntry[];
+}
+
+export interface PluginMenuPayloadEntry {
+  pluginId: string;
+  entryId: string;
+  /** Label in the current language. */
+  label: string;
+  location: PluginMenuLocation;
+  /** Whether the entry can be clicked; generator entries are disabled while no Aspect Model is open. */
+  enabled: boolean;
+}
+
+/** Sent by the shell with the `PLUGIN_MENU_ACTION` event when a plugin menu entry is clicked. */
+export interface PluginMenuAction {
+  pluginId: string;
+  entryId: string;
 }
 
 export interface GithubTokenInfo {

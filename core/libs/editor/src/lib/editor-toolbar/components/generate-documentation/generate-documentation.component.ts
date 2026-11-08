@@ -15,14 +15,13 @@ import {Component, DestroyRef, inject, signal} from '@angular/core';
 import {form, FormField} from '@angular/forms/signals';
 import {MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {saveAs} from 'file-saver';
 import * as locale from 'locale-codes';
 import {from, map, Observable, throwError} from 'rxjs';
 import {catchError, finalize, first} from 'rxjs/operators';
 import {EditorService} from '../../../editor.service';
 
 import {LoadedFilesService, ModelApiPort, SammLanguageSettingsService} from '@ame/domain';
-import {BrowserService, DialogCloseButtonComponent, IPC_RENDERER} from '@ame/shared';
+import {BrowserService, DialogCloseButtonComponent, FileSaverService, IPC_RENDERER} from '@ame/shared';
 import {HttpErrorResponse} from '@angular/common/http';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatButtonModule} from '@angular/material/button';
@@ -53,6 +52,7 @@ export interface GenerateDocumentationData {
 })
 export class GenerateDocumentationComponent {
   private ipcRenderer = inject(IPC_RENDERER);
+  private fileSaver = inject(FileSaverService);
   private destroyRef = inject(DestroyRef);
   private dialogRef = inject(MatDialogRef<GenerateDocumentationComponent>);
   private languageService = inject(SammLanguageSettingsService);
@@ -107,7 +107,7 @@ export class GenerateDocumentationComponent {
         takeUntilDestroyed(this.destroyRef),
         first(),
         map(data =>
-          saveAs(
+          this.fileSaver.download(
             new Blob([data], {
               type: 'text/html',
             }),

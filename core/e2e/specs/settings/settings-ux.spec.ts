@@ -51,7 +51,7 @@ test.describe('Settings dialog UX', () => {
     test('shows both groups with all sections and selects the first section', async ({page}) => {
       await expect(page.getByTestId('settings-group-systemConfiguration')).toBeVisible();
       await expect(page.getByTestId('settings-group-modelConfiguration')).toBeVisible();
-      await expect(page.locator('[role="treeitem"]')).toHaveCount(7);
+      await expect(page.locator('[role="treeitem"]')).toHaveCount(8);
       await expect(node(page, 'automatedWorkflow')).toHaveAttribute('aria-selected', 'true');
       await expect(page.getByTestId('settings-section-header')).toContainText(/automated workflow/i);
       await expect(page.getByTestId('settings-section-description')).not.toBeEmpty();
@@ -63,6 +63,7 @@ test.describe('Settings dialog UX', () => {
         'editorConfiguration',
         'workspaces',
         'githubSources',
+        'plugins',
         'languageConfiguration',
         'namespaceConfiguration',
         'copyrightHeaderConfiguration',
@@ -191,7 +192,7 @@ test.describe('Settings dialog UX', () => {
 
       await page.getByTestId('settings-search-clear').click();
       await expect(search).toHaveValue('');
-      await expect(page.locator('[role="treeitem"]')).toHaveCount(7);
+      await expect(page.locator('[role="treeitem"]')).toHaveCount(8);
     });
 
     test('the sections can be navigated with the keyboard', async ({page}) => {

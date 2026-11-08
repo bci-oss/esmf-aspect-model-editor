@@ -162,6 +162,41 @@ describe('BackendStatusService', () => {
     expect(service.authToken()).toBe('secret');
   });
 
+  it('restarts the backend through the shell and follows the new status', async () => {
+    ipcRenderer.reloadBackend = vi.fn(() => Promise.resolve(status('starting', 7, '30003')));
+    const service = create();
+    await flush();
+    expect(service.canRestart).toBe(true);
+
+    const restart = service.restart();
+    expect(service.restarting()).toBe(true);
+    await restart;
+
+    expect(service.restarting()).toBe(false);
+    expect(service.status().state).toBe('starting');
+    listeners.get(TAURI_EVENTS.RESPONSE.BACKEND_STATUS)(status('ready', 8, '30003'));
+    expect(service.serviceUrl()).toBe('http://localhost:30003');
+  });
+
+  it('passes on why the shell cannot restart the backend', async () => {
+    ipcRenderer.reloadBackend = vi.fn(() => Promise.reject('The backend was started externally'));
+    const service = create();
+
+    await expect(service.restart()).rejects.toBe('The backend was started externally');
+    expect(service.restarting()).toBe(false);
+  });
+
+  it('cannot restart the backend in the browser or with an older shell', async () => {
+    expect(create().canRestart).toBe(false);
+    TestBed.resetTestingModule();
+    isTauri = false;
+    ipcRenderer.reloadBackend = vi.fn();
+    const service = create();
+
+    expect(service.canRestart).toBe(false);
+    await expect(service.restart()).rejects.toThrow();
+  });
+
   it('has no backend token in the browser', () => {
     isTauri = false;
     expect(create().authToken()).toBeNull();

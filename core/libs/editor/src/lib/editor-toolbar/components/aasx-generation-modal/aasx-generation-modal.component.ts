@@ -12,7 +12,7 @@
  */
 
 import {LoadedFilesService, ModelApiPort, RdfPort} from '@ame/domain';
-import {DialogCloseButtonComponent} from '@ame/shared';
+import {DialogCloseButtonComponent, FileSaverService} from '@ame/shared';
 import {Component, DestroyRef, inject, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {form, FormField} from '@angular/forms/signals';
@@ -23,7 +23,6 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSelectModule} from '@angular/material/select';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {saveAs} from 'file-saver';
 import {finalize, first, tap} from 'rxjs';
 
 @Component({
@@ -43,6 +42,7 @@ import {finalize, first, tap} from 'rxjs';
 })
 export class AASXGenerationModalComponent {
   private destroyRef = inject(DestroyRef);
+  private fileSaver = inject(FileSaverService);
   private modelApiService = inject(ModelApiPort);
   private rdfService = inject(RdfPort);
   private dialogRef = inject(MatDialogRef<AASXGenerationModalComponent>);
@@ -77,7 +77,7 @@ export class AASXGenerationModalComponent {
 
           const aspectName = currentFile.name.endsWith('.ttl') ? currentFile.name.slice(0, -4) : currentFile.name;
           const fileName = `${aspectName}${selectedFormat === 'aasx' ? '.aasx' : '-aas.xml'}`;
-          saveAs(file, fileName);
+          this.fileSaver.download(file, fileName);
         }),
         finalize(() => {
           this.isGenerating.set(false);

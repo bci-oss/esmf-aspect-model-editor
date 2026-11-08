@@ -46,6 +46,13 @@ You can also toggle the theme directly with the sun/moon icon in the left sideba
 
 * *Restore open models on start* (desktop app only): reopens the workspace models of the last session with their window size and position. See xref:getting-started/session-restore.adoc[Restore the last session].
 
+[[plugin-settings]]
+=== Plugins
+
+Install, enable, disable and remove plugins and restart the backend to apply the changes.
+The menu entries of plugins are available in the desktop app.
+See xref:plugins/plugins.adoc[Plugins].
+
 [[model-configuration]]
 == Model Configuration
 

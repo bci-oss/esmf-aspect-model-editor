@@ -197,6 +197,33 @@
       >
         <mat-icon class="material-icons">alternate_email</mat-icon>
       </ame-bar-item>
+
+      @if (pluginCommands().length) {
+        <ame-bar-item
+          [matTooltipShowDelay]="0"
+          [matTooltipHideDelay]="0"
+          [matTooltip]="t('plugins.toolbar.tooltip')"
+          [matMenuTriggerFor]="pluginMenu"
+          [matMenuTriggerRestoreFocus]="false"
+          data-testid="tbPluginsButton"
+        >
+          <mat-icon class="material-icons">extension</mat-icon>
+        </ame-bar-item>
+
+        <mat-menu #pluginMenu="matMenu">
+          @for (command of pluginCommands(); track command.pluginId + '/' + command.commandId) {
+            <button
+              [disabled]="!isPluginCommandEnabled(command.kind, isModelEmpty())"
+              [attr.data-testid]="'tbPluginCommand-' + command.pluginId + '-' + command.commandId"
+              (click)="runPluginCommand(command)"
+              mat-menu-item
+            >
+              <mat-icon>{{ command.icon }}</mat-icon>
+              <span>{{ command.label }}</span>
+            </button>
+          }
+        </mat-menu>
+      }
     </div>
 
     <div class="menu-items__group">

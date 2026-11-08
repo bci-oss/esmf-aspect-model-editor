@@ -53,6 +53,7 @@
     }
   },
   "notificationService": {
+    "fileSaveFailed": "无法保存 {{fileName}}",
     "cannotDeleteEdgeTitle": "无法删除连接",
     "cannotDeleteEdgeMessage": "无法删除来自外部命名空间的元素的连接。",
     "cannotDeleteEdgeFilteredMessage": "只有在模型未被筛选时才能删除连接。",
@@ -1295,5 +1296,51 @@
     "cancel": "取消",
     "import": "导入",
     "imported": "已导入 {{count}} 个 Aspect 模型"
+  },
+  "plugins": {
+    "menuTitle": "插件",
+    "settings": {
+      "title": "插件",
+      "description": "使用插件扩展编辑器，例如用于其他格式的导入器。",
+      "trustHint": "插件以与编辑器相同的权限运行，可以读取和更改您的所有文件。请仅安装来自可信来源的插件。",
+      "installHint": "选择插件压缩包 (.zip)。已安装的插件将在下次启动后端时启动。",
+      "install": "安装插件…",
+      "installed": "插件 \"{{name}}\" {{version}} 已安装",
+      "installError": "安装插件失败",
+      "notAnArchive": "\"{{name}}\" 不是插件压缩包 (.zip)",
+      "loadError": "无法加载插件。",
+      "listTitle": "已安装的插件",
+      "empty": "尚未安装插件。",
+      "more": "更多操作",
+      "enable": "启用",
+      "disable": "禁用",
+      "remove": "移除",
+      "removed": "插件 \"{{name}}\" 已移除",
+      "removeError": "移除插件失败",
+      "updateError": "更改插件失败",
+      "restartHint": "重新启动后端以应用插件更改。未保存的模型将保持打开状态。",
+      "restartManualHint": "重新启动后端以应用插件更改。",
+      "restart": "重新启动后端",
+      "restarted": "后端已重新启动，插件已更新",
+      "restartError": "无法重新启动后端。",
+      "state": {
+        "active": "已启用",
+        "failed": "失败",
+        "inactive": "未运行",
+        "disabled": "已禁用",
+        "pending": "需要重新启动"
+      }
+    },
+    "toolbar": {
+      "tooltip": "已安装插件的命令"
+    },
+    "runtime": {
+      "notRunning": "插件 \"{{name}}\" 未运行。请在设置的插件中检查。",
+      "loadError": "无法打开插件 \"{{name}}\"",
+      "versionChanged": "请重新启动应用程序以使用插件 \"{{name}}\" 的版本 {{version}}。",
+      "openError": "无法打开插件的模型",
+      "noModel": "请先打开一个 Aspect Model 再使用此命令。",
+      "saveError": "无法保存插件的文件"
+    }
   }
 }

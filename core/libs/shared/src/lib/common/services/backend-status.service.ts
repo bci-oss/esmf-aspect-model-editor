@@ -39,6 +39,7 @@ export class BackendStatusService {
   });
   private readonly _hasBeenReady = signal(!this.isDesktop);
   private readonly _retrying = signal(false);
+  private readonly _restarting = signal(false);
 
   readonly status = this._status.asReadonly();
   readonly isReady = computed(() => this._status().state === 'ready');
@@ -47,6 +48,9 @@ export class BackendStatusService {
   /** Stays true once the backend was ready, so a later crash does not tear down the loaded editor. */
   readonly hasBeenReady = this._hasBeenReady.asReadonly();
   readonly retrying = this._retrying.asReadonly();
+  readonly restarting = this._restarting.asReadonly();
+  /** The shell can restart the backend, e.g. to load installed plugins. */
+  readonly canRestart = this.isDesktop && typeof this.ipcRenderer?.reloadBackend === 'function';
   readonly serviceUrl = computed(() => {
     const port = this._status().port;
     return this.isDesktop && !this.isE2e && port ? this.config.serviceUrl.replace(this.config.defaultPort, port) : this.config.serviceUrl;
@@ -69,6 +73,22 @@ export class BackendStatusService {
       .then(status => this.apply(status))
       .catch(error => this.fail(error))
       .finally(() => this._retrying.set(false));
+  }
+
+  /**
+   * Restarts the backend started by the shell. Resolves once the shell started the new process; the status turns to
+   * ready via the regular status events. Rejects with the reason of the shell, e.g. when the backend was started externally.
+   */
+  async restart(): Promise<void> {
+    if (!this.canRestart) throw new Error('The backend cannot be restarted from this application.');
+    if (this._restarting()) return;
+
+    this._restarting.set(true);
+    try {
+      this.apply(await this.ipcRenderer.reloadBackend!());
+    } finally {
+      this._restarting.set(false);
+    }
   }
 
   quit(): void {

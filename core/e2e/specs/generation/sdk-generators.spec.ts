@@ -18,7 +18,7 @@ import {TauriHelper} from '../../support/tauri-helper';
 /**
  * The generators of the ESMF SDK offered in the Generate menu: SQL table definition, JSON-LD, diagram, Parquet payload
  * and Java classes.
- * The backend is mocked; the tests check the requests and what the user sees and downloads.
+ * The backend is mocked; the tests check the requests and what the user sees and saves.
  */
 
 const SQL = "CREATE TABLE IF NOT EXISTS aspect_default (\n  property1 STRING NOT NULL COMMENT 'Property1'\n);";
@@ -78,16 +78,27 @@ test.describe('SDK generators', () => {
       expect(requests[0].contentType).toContain('multipart/form-data');
     });
 
-    test('downloads the statement as SQL file', async ({page}) => {
+    test('saves the statement as SQL file', async ({page}) => {
       await mockGenerator(page, 'sql', SQL, 'text/plain');
 
       await tauri.emitSignal('GENERATE_SQL');
       await page.getByTestId('generateSql').click();
       await expect(preview(page, /SQL table definition preview/i)).toBeVisible();
 
-      const download = page.waitForEvent('download');
       await page.getByTestId('downloadFileButton').click();
-      expect((await download).suggestedFilename()).toBe('AspectDefault.sql');
+      expect((await tauri.savedFile('AspectDefault.sql')).text).toBe(SQL);
+    });
+
+    test('tells the user when the file could not be saved', async ({page}) => {
+      await mockGenerator(page, 'sql', SQL, 'text/plain');
+      await tauri.failSavingFiles('Permission denied');
+
+      await tauri.emitSignal('GENERATE_SQL');
+      await page.getByTestId('generateSql').click();
+      await page.getByTestId('downloadFileButton').click();
+
+      await expect(page.locator('.toast-error')).toContainText('Could not save AspectDefault.sql');
+      await expect(page.locator('.toast-error')).toContainText('Permission denied');
     });
 
     test('cancelling the dialect dialog generates nothing', async ({page}) => {
@@ -115,7 +126,7 @@ test.describe('SDK generators', () => {
   });
 
   test.describe('JSON-LD', () => {
-    test('previews and downloads the model as JSON-LD', async ({page}) => {
+    test('previews and saves the model as JSON-LD', async ({page}) => {
       const requests = await mockGenerator(page, 'json-ld', JSON_LD, 'application/ld+json');
 
       await tauri.emitSignal('GENERATE_JSON_LD');
@@ -123,9 +134,8 @@ test.describe('SDK generators', () => {
       await expect(page.getByTestId('dialogContent')).toHaveValue(/"@id": "AspectDefault"|"@id":"AspectDefault"/);
       expect(requests).toHaveLength(1);
 
-      const download = page.waitForEvent('download');
       await page.getByTestId('downloadFileButton').click();
-      expect((await download).suggestedFilename()).toBe('AspectDefault.jsonld');
+      await tauri.savedFile('AspectDefault.jsonld');
     });
 
     test('reports a failing generation', async ({page}) => {
@@ -139,7 +149,7 @@ test.describe('SDK generators', () => {
   });
 
   test.describe('Diagram', () => {
-    test('downloads the diagram in the chosen format', async ({page}) => {
+    test('saves the diagram in the chosen format', async ({page}) => {
       const requests = await mockGenerator(page, 'diagram', Buffer.from([0x89, 0x50, 0x4e, 0x47]), 'image/png');
 
       await tauri.emitSignal('GENERATE_DIAGRAM');
@@ -148,10 +158,9 @@ test.describe('SDK generators', () => {
       await page.getByTestId('diagramFormat').click();
       await page.getByTestId('diagramFormat-PNG').click();
 
-      const download = page.waitForEvent('download');
       await page.getByTestId('downloadDiagram').click();
 
-      expect((await download).suggestedFilename()).toBe('AspectDefault.png');
+      await tauri.savedFile('AspectDefault.png');
       await expect(dialog).toHaveCount(0);
       expect(requests[0].params.get('format')).toBe('PNG');
       expect(requests[0].params.get('language')).toBe('en');
@@ -170,13 +179,12 @@ test.describe('SDK generators', () => {
   });
 
   test.describe('Parquet payload', () => {
-    test('downloads the sample payload without asking anything', async ({page}) => {
+    test('saves the sample payload without asking anything', async ({page}) => {
       const requests = await mockGenerator(page, 'parquet-payload', PARQUET, 'application/vnd.apache.parquet');
 
-      const download = page.waitForEvent('download');
       await tauri.emitSignal('GENERATE_PARQUET_PAYLOAD');
 
-      expect((await download).suggestedFilename()).toBe('AspectDefault-sample.parquet');
+      await tauri.savedFile('AspectDefault-sample.parquet');
       expect(requests).toHaveLength(1);
       expect(requests[0].contentType).toContain('multipart/form-data');
       await expect(page.locator('ame-loading-screen')).toHaveCount(0);
@@ -195,7 +203,7 @@ test.describe('SDK generators', () => {
   test.describe('Java classes', () => {
     const javaDialog = (page: Page) => page.getByRole('dialog', {name: 'Generate Java Classes'});
 
-    test('downloads the classes as ZIP with the chosen options', async ({page}) => {
+    test('saves the classes as ZIP with the chosen options', async ({page}) => {
       const requests = await mockGenerator(page, 'java', ZIP, 'application/zip');
 
       await tauri.emitSignal('GENERATE_JAVA_CLASSES');
@@ -204,10 +212,9 @@ test.describe('SDK generators', () => {
       await page.getByTestId('javaStaticMetaModel').getByRole('checkbox').check();
       await page.getByTestId('javaJacksonAnnotations').getByRole('checkbox').uncheck();
 
-      const download = page.waitForEvent('download');
       await page.getByTestId('downloadJavaClasses').click();
 
-      expect((await download).suggestedFilename()).toBe('AspectDefault-java.zip');
+      expect((await tauri.savedFile('AspectDefault-java.zip')).size).toBe(ZIP.length);
       await expect(javaDialog(page)).toHaveCount(0);
       expect(requests[0].params.get('packageName')).toBe('com.example.movement');
       expect(requests[0].params.get('staticMetaModel')).toBe('true');

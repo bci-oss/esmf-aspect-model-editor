@@ -12,7 +12,7 @@
  */
 
 import {JavaClassesOptions, LoadedFilesService, ModelApiPort} from '@ame/domain';
-import {DialogCloseButtonComponent, LanguageTranslationService, NotificationsService} from '@ame/shared';
+import {DialogCloseButtonComponent, FileSaverService, LanguageTranslationService, NotificationsService} from '@ame/shared';
 import {Component, DestroyRef, inject, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {form, FormField, pattern} from '@angular/forms/signals';
@@ -24,7 +24,6 @@ import {MatInputModule} from '@angular/material/input';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {saveAs} from 'file-saver';
 import {finalize, first} from 'rxjs/operators';
 import {EditorService} from '../../../editor.service';
 
@@ -50,6 +49,7 @@ export const JAVA_PACKAGE_PATTERN = /^$|^[a-zA-Z_$][\w$]*(\.[a-zA-Z_$][\w$]*)*$/
 })
 export class GenerateJavaComponent {
   private destroyRef = inject(DestroyRef);
+  private fileSaver = inject(FileSaverService);
   private dialogRef = inject(MatDialogRef<GenerateJavaComponent>);
   private modelApiService = inject(ModelApiPort);
   private editorService = inject(EditorService);
@@ -79,7 +79,7 @@ export class GenerateJavaComponent {
       )
       .subscribe({
         next: archive => {
-          saveAs(archive, `${currentFile?.aspect?.name ?? 'aspect'}-java.zip`);
+          this.fileSaver.download(archive, `${currentFile?.aspect?.name ?? 'aspect'}-java.zip`);
           this.dialogRef.close();
         },
         error: () =>

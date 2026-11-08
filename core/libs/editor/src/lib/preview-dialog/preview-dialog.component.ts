@@ -10,7 +10,13 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {ClipboardService, DialogCloseButtonComponent, LanguageTranslationService, NotificationsService} from '@ame/shared';
+import {
+  ClipboardService,
+  DialogCloseButtonComponent,
+  FileSaverService,
+  LanguageTranslationService,
+  NotificationsService,
+} from '@ame/shared';
 import {Component, DestroyRef, inject, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatButtonModule} from '@angular/material/button';
@@ -20,7 +26,6 @@ import {MatInputModule} from '@angular/material/input';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatSelectModule} from '@angular/material/select';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {saveAs} from 'file-saver';
 import * as locale from 'locale-codes';
 import {Observable} from 'rxjs';
 import {finalize, first} from 'rxjs/operators';
@@ -61,6 +66,7 @@ const DEFAULT_MIME_TYPE = 'application/json;charset=utf-8';
 export class PreviewDialogComponent {
   private data = inject<PreviewDialogOptions>(MAT_DIALOG_DATA);
   private dialogRef = inject(MatDialogRef<PreviewDialogComponent>);
+  private fileSaver = inject(FileSaverService);
   private destroyRef = inject(DestroyRef);
   private clipboard = inject(ClipboardService);
   private notificationsService = inject(NotificationsService);
@@ -114,7 +120,7 @@ export class PreviewDialogComponent {
   }
 
   onDownload() {
-    saveAs(
+    this.fileSaver.download(
       new Blob([this.content()], {
         type: this.data.mimeType ?? DEFAULT_MIME_TYPE,
       }),

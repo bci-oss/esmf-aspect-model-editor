@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {DialogCloseButtonComponent} from '@ame/shared';
+import {DialogCloseButtonComponent, FileSaverService} from '@ame/shared';
 import {Component, DestroyRef, inject, OnInit, signal} from '@angular/core';
 import {form, FormField, pattern} from '@angular/forms/signals';
 import {MatButtonModule} from '@angular/material/button';
@@ -21,7 +21,6 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSelectModule} from '@angular/material/select';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {saveAs} from 'file-saver';
 import * as locale from 'locale-codes';
 import {finalize, map} from 'rxjs';
 import {first} from 'rxjs/operators';
@@ -56,6 +55,7 @@ export type {AsyncApi};
 })
 export class GenerateAsyncApiComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
+  private fileSaver = inject(FileSaverService);
   private languageService = inject(SammLanguageSettingsService);
   private editorService = inject(EditorService);
   private dialogRef = inject(MatDialogRef<GenerateAsyncApiComponent>);
@@ -115,6 +115,6 @@ export class GenerateAsyncApiComponent implements OnInit {
     const aspectName = this.loadedFilesService.currentLoadedFile.name.slice(0, -4);
     const formattedAspectName = `${aspectName}-async-api`;
     const fileName = `${formattedAspectName}.${spec.writeSeparateFiles ? 'zip' : spec.output}`;
-    saveAs(new Blob([fileData], {type: fileType}), fileName);
+    this.fileSaver.download(new Blob([fileData], {type: fileType}), fileName);
   }
 }

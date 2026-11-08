@@ -14,7 +14,7 @@
 import {InjectionToken} from '@angular/core';
 import {TAURI_EVENTS} from './enums';
 import {OpenModelsSnapshot, OpenWindowModels} from './model/startup-options';
-import {BackendStatus, GithubTokenInfo, TauriApi, TauriContextMenuPayload} from './model/tauri-api.model';
+import {BackendStatus, GithubTokenInfo, PluginMenuPayload, TauriApi, TauriContextMenuPayload} from './model/tauri-api.model';
 
 declare global {
   interface Window {
@@ -235,6 +235,23 @@ function createTauriBridge(): TauriApi {
     async githubSourceAction<T = unknown>(id: string, host: string, action: 'check' | 'sync'): Promise<T> {
       const {invoke} = await import('@tauri-apps/api/core');
       return await invoke<T>('github_source_action', {id, host, action});
+    },
+
+    async saveFile(fileName: string, content: Blob): Promise<string | null> {
+      const {invoke} = await import('@tauri-apps/api/core');
+      // Raw bytes avoid serializing large files as JSON; the name travels in a header.
+      const bytes = new Uint8Array(await content.arrayBuffer());
+      return await invoke<string | null>('save_file', bytes, {headers: {'X-File-Name': encodeURIComponent(fileName)}});
+    },
+
+    async reloadBackend(): Promise<BackendStatus> {
+      const {invoke} = await import('@tauri-apps/api/core');
+      return await invoke<BackendStatus>('reload_backend');
+    },
+
+    async setPluginMenu(menu: PluginMenuPayload): Promise<void> {
+      const {invoke} = await import('@tauri-apps/api/core');
+      await invoke('set_plugin_menu', {menu});
     },
 
     showContextMenu(payload: TauriContextMenuPayload): void {

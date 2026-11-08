@@ -1,0 +1,125 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t">
+  <div class="sources">
+    @if (loadError()) {
+      <div class="sources__error" role="alert" data-testid="plugins-load-error">
+        <mat-icon>error</mat-icon><span>{{ loadError() }}</span>
+      </div>
+    }
+
+    <div class="sources__info" role="note" data-testid="plugins-trust-hint">
+      <mat-icon>gpp_maybe</mat-icon>
+      <span>{{ t('plugins.settings.trustHint') }}</span>
+    </div>
+
+    <!-- 1. Install a plugin archive -->
+    <section class="sources__card" data-testid="plugins-install-card">
+      <div class="sources__add">
+        <span class="sources__grow sources__note">{{ t('plugins.settings.installHint') }}</span>
+        <input #fileInput [accept]="archiveExtension" (change)="install(fileInput)" type="file" hidden data-testid="plugins-file-input" />
+        <button
+          [disabled]="store.installing()"
+          (click)="fileInput.click()"
+          mat-flat-button
+          color="primary"
+          type="button"
+          data-testid="plugins-install"
+        >
+          @if (store.installing()) {
+            <mat-progress-spinner diameter="18" mode="indeterminate" />
+          } @else {
+            <mat-icon>upload_file</mat-icon>
+          }
+          {{ t('plugins.settings.install') }}
+        </button>
+      </div>
+    </section>
+
+    <!-- 2. Plugin changes only take effect with the next start of the backend -->
+    @if (store.restartRequired()) {
+      <div class="sources__info" role="status" data-testid="plugins-restart-banner">
+        <mat-icon>restart_alt</mat-icon>
+        <span class="sources__grow">
+          {{ store.canRestartBackend ? t('plugins.settings.restartHint') : t('plugins.settings.restartManualHint') }}
+          @if (restartError()) {
+            <span class="sources__item-error" data-testid="plugins-restart-error">{{ restartError() }}</span>
+          }
+        </span>
+        @if (store.canRestartBackend) {
+          <button [disabled]="store.restarting()" (click)="restartBackend()" mat-stroked-button type="button" data-testid="plugins-restart">
+            @if (store.restarting()) {
+              <mat-progress-spinner diameter="18" mode="indeterminate" />
+            }
+            {{ t('plugins.settings.restart') }}
+          </button>
+        }
+      </div>
+    }
+
+    <!-- 3. The installed plugins -->
+    <h4 class="sources__subtitle">{{ t('plugins.settings.listTitle') }}</h4>
+    <div class="sources__list">
+      @for (plugin of store.plugins(); track plugin.id) {
+        @let state = this.state(plugin);
+        @let busy = store.isBusy(plugin.id);
+        <div class="sources__item" [class.sources__item--disabled]="!plugin.enabled" [attr.data-testid]="'plugin-' + plugin.id">
+          <div class="sources__main">
+            <span class="sources__name">
+              <mat-icon>extension</mat-icon>
+              {{ plugin.name }}
+              <span class="sources__path">{{ plugin.version }}</span>
+              <span class="sources__badge sources__badge--{{ state }}" [attr.data-testid]="'plugin-state-' + state">
+                {{ t('plugins.settings.state.' + state) }}
+              </span>
+            </span>
+            @if (plugin.description) {
+              <span class="sources__path">{{ plugin.description }}</span>
+            }
+            @if (plugin.error) {
+              <span class="sources__item-error" data-testid="plugin-error">{{ plugin.error }}</span>
+            }
+          </div>
+          <div class="sources__actions">
+            @if (busy) {
+              <mat-progress-spinner diameter="20" mode="indeterminate" />
+            }
+            <button
+              [disabled]="busy"
+              [matMenuTriggerFor]="pluginMenu"
+              [matTooltip]="t('plugins.settings.more')"
+              [attr.aria-label]="t('plugins.settings.more')"
+              mat-icon-button
+              type="button"
+              data-testid="plugin-menu"
+            >
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #pluginMenu="matMenu">
+              <button (click)="toggleEnabled(plugin)" mat-menu-item data-testid="plugin-enabled">
+                <mat-icon>{{ plugin.enabled ? 'toggle_off' : 'toggle_on' }}</mat-icon>
+                {{ plugin.enabled ? t('plugins.settings.disable') : t('plugins.settings.enable') }}
+              </button>
+              <button (click)="remove(plugin)" mat-menu-item data-testid="plugin-remove">
+                <mat-icon>delete</mat-icon>{{ t('plugins.settings.remove') }}
+              </button>
+            </mat-menu>
+          </div>
+        </div>
+      } @empty {
+        <p class="sources__empty" data-testid="plugins-empty">{{ t('plugins.settings.empty') }}</p>
+      }
+    </div>
+  </div>
+</ng-container>

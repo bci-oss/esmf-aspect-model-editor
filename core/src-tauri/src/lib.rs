@@ -13,8 +13,10 @@
 
 pub mod backend;
 pub mod commands;
+pub mod files;
 pub mod github;
 pub mod menu;
+pub mod plugin_menu;
 pub mod session;
 
 use backend::{clean_up_backend, start_backend, BackendState};
@@ -75,6 +77,7 @@ pub fn run() {
             get_backend_port,
             get_backend_status,
             retry_backend_start,
+            reload_backend,
             quit_app,
             open_external_link,
             open_in_vscode_or_default,
@@ -94,6 +97,8 @@ pub fn run() {
             set_window_title,
             update_menu_item,
             translate_menu_items,
+            plugin_menu::set_plugin_menu,
+            files::save_file,
             github_token_set,
             github_token_delete,
             github_token_info,

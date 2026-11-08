@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ConfigurationService, FilterAttributesService, FiltersService} from '@ame/domain';
+import {ConfigurationService, FilterAttributesService, FiltersService, PluginCommandEntry} from '@ame/domain';
 import {MaxGraphService, MaxGraphShapeSelectorService, ShapeConnectorService} from '@ame/graph';
 import {BindingsService, ModelFilter, NotificationsService} from '@ame/shared';
 import {signal} from '@angular/core';
@@ -25,6 +25,7 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {ShapeSettingsService} from '../editor-dialog';
 import {EditorService} from '../editor.service';
 import {ModelHistoryService} from '../history/model-history.service';
+import {PluginRuntimeService} from '../plugins/plugin-runtime.service';
 import {PrefixManagementService} from '../prefixes/prefix-management.service';
 import {ElementRefactoringService} from '../refactoring/element-refactoring.service';
 import {EditorToolbarComponent} from './editor-toolbar.component';
@@ -43,6 +44,8 @@ describe('EditorToolbarComponent', () => {
   let canRedo: ReturnType<typeof signal<boolean>>;
   let refactoringElement: ReturnType<typeof signal<NamedElement | null>>;
   let elementRefactoring: ElementRefactoringService;
+  let pluginCommands: ReturnType<typeof signal<PluginCommandEntry[]>>;
+  let pluginRuntime: PluginRuntimeService;
 
   const filterButton = (): HTMLElement => fixture.nativeElement.querySelector('[data-testid="tbPropertyFilterButton"]');
 
@@ -52,6 +55,7 @@ describe('EditorToolbarComponent', () => {
     canUndo = signal(false);
     canRedo = signal(false);
     refactoringElement = signal(null);
+    pluginCommands = signal<PluginCommandEntry[]>([]);
     await TestBed.configureTestingModule({
       imports: [
         EditorToolbarComponent,
@@ -105,6 +109,7 @@ describe('EditorToolbarComponent', () => {
         MockProvider(NotificationsService),
         MockProvider(PrefixManagementService, {openManagement: vi.fn()}),
         MockProvider(ModelHistoryService, {canUndo, canRedo, undo: vi.fn(), redo: vi.fn()}),
+        MockProvider(PluginRuntimeService, {toolbarCommands: pluginCommands, run: vi.fn(() => Promise.resolve())}),
         MockProvider(ElementRefactoringService, {
           selectedElement: refactoringElement,
           registerContextMenuActions: vi.fn(),
@@ -122,6 +127,7 @@ describe('EditorToolbarComponent', () => {
     shapeSettingsService = TestBed.inject(ShapeSettingsService);
     filtersService = TestBed.inject(FiltersService);
     elementRefactoring = TestBed.inject(ElementRefactoringService);
+    pluginRuntime = TestBed.inject(PluginRuntimeService);
     fixture = TestBed.createComponent(EditorToolbarComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -288,6 +294,56 @@ describe('EditorToolbarComponent', () => {
 
       expect(historyButton.classList).not.toContain('disabled');
       expect(elementRefactoring.showHistory).toHaveBeenCalled();
+    });
+  });
+
+  describe('plugins', () => {
+    const command = (overrides: Partial<PluginCommandEntry>): PluginCommandEntry => ({
+      pluginId: 'example',
+      commandId: 'export',
+      kind: 'generate',
+      label: 'Generate as JSON description...',
+      icon: 'output',
+      placements: ['toolbar'],
+      menu: 'generate',
+      ...overrides,
+    });
+    const pluginsButton = (): HTMLElement => fixture.nativeElement.querySelector('[data-testid="tbPluginsButton"]');
+    const menuItem = (testId: string): HTMLButtonElement => document.querySelector(`[data-testid="${testId}"]`);
+
+    const openMenu = async () => {
+      fixture.detectChanges();
+      pluginsButton().click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+    };
+
+    it('is hidden without toolbar commands', () => {
+      expect(pluginsButton()).toBeNull();
+    });
+
+    it('runs the commands of the plugins', async () => {
+      pluginCommands.set([
+        command({commandId: 'import', kind: 'import', label: 'Import from JSON description...', icon: 'upload_file'}),
+        command({}),
+      ]);
+      await openMenu();
+
+      const exportItem = menuItem('tbPluginCommand-example-export');
+      expect(exportItem.textContent).toContain('Generate as JSON description...');
+      expect(exportItem.textContent).toContain('output');
+      exportItem.click();
+
+      expect(pluginRuntime.run).toHaveBeenCalledWith('example', 'export');
+    });
+
+    it('disables generators while the model is empty', async () => {
+      isModelEmpty.set(true);
+      pluginCommands.set([command({commandId: 'import', kind: 'import'}), command({})]);
+      await openMenu();
+
+      expect(menuItem('tbPluginCommand-example-import').disabled).toBe(false);
+      expect(menuItem('tbPluginCommand-example-export').disabled).toBe(true);
     });
   });
 });

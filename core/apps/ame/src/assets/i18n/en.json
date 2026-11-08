@@ -48,6 +48,7 @@
     }
   },
   "notificationService": {
+    "fileSaveFailed": "Could not save {{fileName}}",
     "cannotDeleteEdgeTitle": "Cannot remove connection",
     "cannotDeleteEdgeMessage": "Connections of elements from an external namespace cannot be removed.",
     "cannotDeleteEdgeFilteredMessage": "Connections can only be removed while the model is not filtered.",
@@ -1292,5 +1293,51 @@
     "cancel": "Cancel",
     "import": "Import",
     "imported": "{{count}} Aspect Model(s) imported"
+  },
+  "plugins": {
+    "menuTitle": "Plugins",
+    "settings": {
+      "title": "Plugins",
+      "description": "Extend the editor with plugins, e.g. importers for other formats.",
+      "trustHint": "Plugins run with the same rights as the editor and can read and change all your files. Only install plugins from sources you trust.",
+      "installHint": "Select the plugin archive (.zip). Installed plugins are started with the next start of the backend.",
+      "install": "Install plugin…",
+      "installed": "Plugin \"{{name}}\" {{version}} installed",
+      "installError": "Installing the plugin failed",
+      "notAnArchive": "\"{{name}}\" is not a plugin archive (.zip)",
+      "loadError": "The plugins could not be loaded.",
+      "listTitle": "Installed plugins",
+      "empty": "No plugins installed yet.",
+      "more": "More actions",
+      "enable": "Enable",
+      "disable": "Disable",
+      "remove": "Remove",
+      "removed": "Plugin \"{{name}}\" removed",
+      "removeError": "Removing the plugin failed",
+      "updateError": "Changing the plugin failed",
+      "restartHint": "Restart the backend to apply the plugin changes. Unsaved models stay open.",
+      "restartManualHint": "Restart the backend to apply the plugin changes.",
+      "restart": "Restart backend",
+      "restarted": "Backend restarted, the plugins are up to date",
+      "restartError": "The backend could not be restarted.",
+      "state": {
+        "active": "Active",
+        "failed": "Failed",
+        "inactive": "Not running",
+        "disabled": "Disabled",
+        "pending": "Restart required"
+      }
+    },
+    "toolbar": {
+      "tooltip": "Commands of the installed plugins"
+    },
+    "runtime": {
+      "notRunning": "The plugin \"{{name}}\" is not running. Check it in the settings under Plugins.",
+      "loadError": "The plugin \"{{name}}\" could not be opened",
+      "versionChanged": "Restart the application to use version {{version}} of the plugin \"{{name}}\".",
+      "openError": "The model of the plugin could not be opened",
+      "noModel": "Open an Aspect Model to use this command.",
+      "saveError": "The file of the plugin could not be saved"
+    }
   }
 }

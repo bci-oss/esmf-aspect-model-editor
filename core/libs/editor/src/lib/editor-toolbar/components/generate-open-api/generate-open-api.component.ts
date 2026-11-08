@@ -12,7 +12,7 @@
  */
 
 import {LoadedFilesService, OpenApi, OpenApiModel, SammLanguageSettingsService} from '@ame/domain';
-import {DialogCloseButtonComponent, LanguageTranslationService, NotificationsService} from '@ame/shared';
+import {DialogCloseButtonComponent, FileSaverService, LanguageTranslationService, NotificationsService} from '@ame/shared';
 import {CommonModule} from '@angular/common';
 import {Component, DestroyRef, effect, ElementRef, inject, OnInit, signal, untracked, viewChild} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
@@ -29,7 +29,6 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSelectModule} from '@angular/material/select';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {saveAs} from 'file-saver';
 import * as locale from 'locale-codes';
 import {map} from 'rxjs';
 import {finalize, first} from 'rxjs/operators';
@@ -67,6 +66,7 @@ export class GenerateOpenApiComponent implements OnInit {
   readonly dropArea = viewChild<ElementRef>('dropArea');
 
   private destroyRef = inject(DestroyRef);
+  private fileSaver = inject(FileSaverService);
   private dialogRef = inject(MatDialogRef<GenerateOpenApiComponent>);
   private languageService = inject(SammLanguageSettingsService);
   private editorService = inject(EditorService);
@@ -264,7 +264,7 @@ export class GenerateOpenApiComponent implements OnInit {
 
     const aspectName = this.loadedFilesService.currentLoadedFile.name.slice(0, -4);
     const fileName = `${aspectName}-open-api.${spec.output}`;
-    saveAs(new Blob([fileData], {type: fileType}), fileName);
+    this.fileSaver.download(new Blob([fileData], {type: fileType}), fileName);
   }
 
   onFileBrowseHandler($event: Event): void {

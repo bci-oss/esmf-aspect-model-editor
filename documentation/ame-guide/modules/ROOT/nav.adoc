@@ -44,6 +44,8 @@
 ** xref:generate/generate-asyncapi-doc.adoc[]
 ** xref:generate/generate-aasx.adoc[]
 ** xref:generate/generate-json.adoc[Generate JSON]
+* xref:plugins/plugins.adoc[]
+** xref:plugins/develop-plugins.adoc[]
 * xref:support/support.adoc[]
 ** xref:support/known-issues.adoc[]
 ** xref:support/known-limitations.adoc[]

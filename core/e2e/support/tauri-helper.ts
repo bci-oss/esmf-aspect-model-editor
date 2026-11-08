@@ -36,6 +36,15 @@ export interface TauriMockOptions {
   openModels?: MockOpenWindowModels[];
 }
 
+/** A file the frontend asked the shell to save. */
+export interface MockSavedFile {
+  fileName: string;
+  /** The content decoded as UTF-8. */
+  text: string;
+  size: number;
+  type: string;
+}
+
 export interface MockOpenWindowModels {
   label: string;
   models: {namespace: string; file: string; aspectModelUrn?: string}[];
@@ -49,7 +58,12 @@ export class TauriHelper {
    */
   async initTauriMock(options: TauriMockOptions = {}): Promise<void> {
     const backendStatus: MockBackendStatus = options.backendStatus ?? {state: 'ready', port: '9090', message: null, revision: 0};
-    const responses = {windowData: options.windowData, isFirstWindow: options.isFirstWindow ?? true, openModels: options.openModels ?? []};
+    const responses = {
+      windowData: options.windowData,
+      isFirstWindow: options.isFirstWindow ?? true,
+      openModels: options.openModels ?? [],
+      saveFileError: undefined as string | undefined,
+    };
 
     await this.page.addInitScript(
       ({initialBackendStatus, initialResponses}) => {
@@ -128,6 +142,22 @@ export class TauriHelper {
             mock.backendStatus = {...mock.backendStatus, state: 'starting', message: null, revision: mock.backendStatus.revision + 1};
             return mock.backendStatus;
           },
+          async reloadBackend() {
+            const mock = (window as any).__tauriMock;
+            sentEvents.push({channel: 'reloadBackend', args: []});
+            mock.backendStatus = {...mock.backendStatus, state: 'ready', message: null, revision: mock.backendStatus.revision + 1};
+            return mock.backendStatus;
+          },
+          async saveFile(fileName: string, content: Blob) {
+            const mock = (window as any).__tauriMock;
+            const file = {fileName, text: await content.text(), size: content.size, type: content.type};
+            sentEvents.push({channel: 'saveFile', args: [file]});
+            if (mock.responses.saveFileError) throw mock.responses.saveFileError;
+            return `/Users/e2e/Documents/${fileName}`;
+          },
+          async setPluginMenu(menu: any) {
+            sentEvents.push({channel: 'setPluginMenu', args: [menu]});
+          },
           async quitApp() {
             sentEvents.push({channel: 'quitApp', args: []});
           },
@@ -179,6 +209,13 @@ export class TauriHelper {
   }
 
   /**
+   * Lets the following native save dialogs fail with the given error, e.g. because the file cannot be written.
+   */
+  async failSavingFiles(error: string): Promise<void> {
+    await this.page.evaluate(next => ((window as any).__tauriMock.responses.saveFileError = next), error);
+  }
+
+  /**
    * Emits a signal/event from Tauri backend into the frontend application.
    */
   async emitSignal(channel: string, payload?: any): Promise<void> {
@@ -197,6 +234,18 @@ export class TauriHelper {
     return await this.page.evaluate(ch => {
       return (window as any).__tauriMock?.getSentEvents(ch) || [];
     }, channel);
+  }
+
+  /**
+   * Waits until the frontend asked the shell to save a file with the given name (the native save dialog).
+   */
+  async savedFile(fileName: string): Promise<MockSavedFile> {
+    await this.page.waitForFunction(
+      name => (window as any).__tauriMock?.getSentEvents('saveFile').some((event: any) => event.args[0].fileName === name),
+      fileName,
+    );
+    const events = await this.getSentEvents('saveFile');
+    return events.map(event => event.args[0] as MockSavedFile).find(file => file.fileName === fileName)!;
   }
 
   /**

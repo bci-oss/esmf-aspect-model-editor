@@ -16,13 +16,14 @@ import {
   ModelInstantiatorPort,
   ModelSourcesPort,
   NamespacesTransferPort,
+  PluginsPort,
   RdfNodePort,
   RdfPort,
   RefactoringPort,
   WorkspaceFacade,
 } from '@ame/domain';
 import {EnvironmentProviders, inject, makeEnvironmentProviders, provideEnvironmentInitializer} from '@angular/core';
-import {ModelApiService, ModelSourcesApiService, RefactoringApiService, WorkspaceApiFacade} from './api';
+import {ModelApiService, ModelSourcesApiService, PluginsApiService, RefactoringApiService, WorkspaceApiFacade} from './api';
 import {DomainModelToRdfService, RdfNodeService} from './aspect-exporter';
 import {InstantiatorService} from './instantiator';
 import {NamespacesManagerService} from './namespace-manager';
@@ -34,6 +35,7 @@ export function provideAmeInfrastructure(): EnvironmentProviders {
     {provide: ModelApiPort, useExisting: ModelApiService},
     {provide: ModelSourcesPort, useExisting: ModelSourcesApiService},
     {provide: RefactoringPort, useExisting: RefactoringApiService},
+    {provide: PluginsPort, useExisting: PluginsApiService},
     {provide: RdfPort, useExisting: RdfService},
     {provide: RdfNodePort, useExisting: RdfNodeService},
     {provide: ModelInstantiatorPort, useExisting: InstantiatorService},

@@ -40,6 +40,7 @@ import {ModelCheckerService} from './model-checker.service';
 import {ModelLoaderService} from './model-loader.service';
 import {ModelOpenerService} from './model-opener/model-opener.service';
 import {ModelSaverService} from './model-saver.service';
+import {PluginRuntimeService} from './plugins/plugin-runtime.service';
 import {RefactoringDialogService} from './refactoring/refactoring-dialog.service';
 import {RefactoringWindowSyncService} from './refactoring/refactoring-window-sync.service';
 import {RenameModelDialogService} from './rename-model/rename-model.service';
@@ -65,5 +66,6 @@ export function provideEditor(): EnvironmentProviders {
     {provide: FileHandlingPort, useExisting: FileHandlingService},
     {provide: TAURI_IPC_BRIDGES, useExisting: EditorTauriBridge, multi: true},
     {provide: TAURI_IPC_BRIDGES, useExisting: RefactoringWindowSyncService, multi: true},
+    {provide: TAURI_IPC_BRIDGES, useExisting: PluginRuntimeService, multi: true},
   ]);
 }

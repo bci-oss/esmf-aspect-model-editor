@@ -12,6 +12,7 @@
  */
 
 import {LoadedFilesService, ModelApiPort, NamespaceFile, RdfPort} from '@ame/domain';
+import {FileSaverService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatDialogRef} from '@angular/material/dialog';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
@@ -47,6 +48,7 @@ describe('AASXGenerationModalComponent', () => {
         TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
       ],
       providers: [
+        {provide: FileSaverService, useValue: {download: vi.fn()}},
         {provide: MatDialogRef, useValue: dialogRef},
         MockProvider(ModelApiPort, {
           generateAASX: vi.fn(() => of('aasx blob content')),

@@ -26,6 +26,9 @@ export interface NotificationOptions {
   onClick?: () => void;
 }
 
+/** Display time for messages that are longer than a short confirmation, e.g. errors with a cause or messages of plugins. */
+export const READABLE_NOTIFICATION_TIMEOUT = 5000;
+
 @Injectable({providedIn: 'root'})
 export class NotificationsService {
   private toastr = inject(ToastrService);

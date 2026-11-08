@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ElementRefactoringBlocker, FilterAttributesService, FiltersService} from '@ame/domain';
+import {ElementRefactoringBlocker, FilterAttributesService, FiltersService, isPluginCommandEnabled, PluginCommandEntry} from '@ame/domain';
 import {MaxGraphService, MaxGraphShapeSelectorService, ShapeConnectorService} from '@ame/graph';
 import {BarItemComponent, BindingsService, ModelFilter, NotificationsService} from '@ame/shared';
 import {CommonModule} from '@angular/common';
@@ -28,6 +28,7 @@ import {ConnectWithDialogComponent} from '../connect-with-dialog/connect-with-di
 import {ShapeSettingsService} from '../editor-dialog/services/shape-settings.service';
 import {EditorService} from '../editor.service';
 import {ModelHistoryService} from '../history/model-history.service';
+import {PluginRuntimeService} from '../plugins/plugin-runtime.service';
 import {PrefixManagementService} from '../prefixes/prefix-management.service';
 import {ElementRefactoringService, ElementRefactoringType} from '../refactoring/element-refactoring.service';
 import {EditorViewModeService} from '../text-view/editor-view-mode.service';
@@ -54,6 +55,7 @@ export class EditorToolbarComponent implements AfterViewInit, OnDestroy {
   private filterAttributesService = inject(FilterAttributesService);
   private modelHistory = inject(ModelHistoryService);
   private elementRefactoring = inject(ElementRefactoringService);
+  private pluginRuntime = inject(PluginRuntimeService);
 
   public notificationsService = inject(NotificationsService);
 
@@ -70,6 +72,8 @@ export class EditorToolbarComponent implements AfterViewInit, OnDestroy {
   });
   protected readonly isPropertyFilterActive = computed(() => this.activeFilter() === ModelFilter.PROPERTIES);
   protected readonly refactoringElement = this.elementRefactoring.selectedElement;
+  protected readonly pluginCommands = this.pluginRuntime.toolbarCommands;
+  protected readonly isPluginCommandEnabled = isPluginCommandEnabled;
 
   private checkChangesInterval: NodeJS.Timeout;
 
@@ -153,6 +157,10 @@ export class EditorToolbarComponent implements AfterViewInit, OnDestroy {
 
   canShowUsages(element: NamedElement): boolean {
     return this.elementRefactoring.canShowUsages(element);
+  }
+
+  runPluginCommand(command: PluginCommandEntry) {
+    this.pluginRuntime.run(command.pluginId, command.commandId);
   }
 
   refactor(type: ElementRefactoringType, element: NamedElement) {

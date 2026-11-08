@@ -12,13 +12,12 @@
  */
 
 import {LoadedFilesService, ModelApiPort, NamespaceFile, SammLanguageSettingsService} from '@ame/domain';
-import {LanguageTranslationService, NotificationsService} from '@ame/shared';
+import {FileSaverService, LanguageTranslationService, NotificationsService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatDialogRef} from '@angular/material/dialog';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {DefaultAspect, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
 import {TranslocoTestingModule} from '@jsverse/transloco';
-import {saveAs} from 'file-saver';
 import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {of, throwError} from 'rxjs';
@@ -26,7 +25,7 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {EditorService} from '../../../editor.service';
 import {GenerateDiagramComponent} from './generate-diagram.component';
 
-vi.mock('file-saver', () => ({saveAs: vi.fn()}));
+const fileSaver = {download: vi.fn()};
 
 describe('GenerateDiagramComponent', () => {
   let component: GenerateDiagramComponent;
@@ -50,6 +49,7 @@ describe('GenerateDiagramComponent', () => {
         TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
       ],
       providers: [
+        {provide: FileSaverService, useValue: fileSaver},
         {provide: MatDialogRef, useValue: dialogRef},
         MockProvider(SammLanguageSettingsService, {getSammLanguageCodes: vi.fn(() => ['en', 'de'])}),
         MockProvider(ModelApiPort, {generateDiagram: vi.fn(() => of(diagram))}),
@@ -67,7 +67,7 @@ describe('GenerateDiagramComponent', () => {
     fixture.detectChanges();
   });
 
-  afterEach(() => vi.mocked(saveAs).mockClear());
+  afterEach(() => fileSaver.download.mockClear());
 
   it('should preselect the first model language and SVG', () => {
     expect(component.languages().map(language => language.tag)).toEqual(['en', 'de']);
@@ -78,7 +78,7 @@ describe('GenerateDiagramComponent', () => {
     component.downloadDiagram();
 
     expect(modelApi.generateDiagram).toHaveBeenCalledWith('turtle model', 'en', 'SVG', 'workspace/org.example/1.0.0/Movement.ttl');
-    expect(saveAs).toHaveBeenCalledWith(diagram, 'Movement.svg');
+    expect(fileSaver.download).toHaveBeenCalledWith(diagram, 'Movement.svg');
     expect(dialogRef.close).toHaveBeenCalled();
     expect(component.isGenerating()).toBe(false);
   });
@@ -89,7 +89,7 @@ describe('GenerateDiagramComponent', () => {
     component.downloadDiagram();
 
     expect(modelApi.generateDiagram).toHaveBeenCalledWith('turtle model', 'de', 'PNG', expect.any(String));
-    expect(saveAs).toHaveBeenCalledWith(diagram, 'Movement.png');
+    expect(fileSaver.download).toHaveBeenCalledWith(diagram, 'Movement.png');
   });
 
   it('should keep the dialog open and report a failed generation', () => {
@@ -97,7 +97,7 @@ describe('GenerateDiagramComponent', () => {
 
     component.downloadDiagram();
 
-    expect(saveAs).not.toHaveBeenCalled();
+    expect(fileSaver.download).not.toHaveBeenCalled();
     expect(dialogRef.close).not.toHaveBeenCalled();
     expect(notifications.error).toHaveBeenCalledWith(expect.objectContaining({title: 'generateDiagramDialog.failed'}));
     expect(component.isGenerating()).toBe(false);

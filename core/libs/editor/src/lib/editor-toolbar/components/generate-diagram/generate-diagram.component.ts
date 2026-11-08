@@ -12,7 +12,7 @@
  */
 
 import {DiagramFormat, LoadedFilesService, ModelApiPort, SammLanguageSettingsService} from '@ame/domain';
-import {DialogCloseButtonComponent, LanguageTranslationService, NotificationsService} from '@ame/shared';
+import {DialogCloseButtonComponent, FileSaverService, LanguageTranslationService, NotificationsService} from '@ame/shared';
 import {Component, DestroyRef, inject, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {form, FormField} from '@angular/forms/signals';
@@ -23,7 +23,6 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSelectModule} from '@angular/material/select';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {saveAs} from 'file-saver';
 import * as locale from 'locale-codes';
 import {finalize, first} from 'rxjs/operators';
 import {EditorService} from '../../../editor.service';
@@ -53,6 +52,7 @@ export const DIAGRAM_FORMATS: readonly DiagramFormat[] = ['SVG', 'PNG'];
 })
 export class GenerateDiagramComponent {
   private destroyRef = inject(DestroyRef);
+  private fileSaver = inject(FileSaverService);
   private dialogRef = inject(MatDialogRef<GenerateDiagramComponent>);
   private languageService = inject(SammLanguageSettingsService);
   private modelApiService = inject(ModelApiPort);
@@ -89,7 +89,7 @@ export class GenerateDiagramComponent {
       )
       .subscribe({
         next: diagram => {
-          saveAs(diagram, `${currentFile?.aspect?.name ?? 'diagram'}.${format.toLowerCase()}`);
+          this.fileSaver.download(diagram, `${currentFile?.aspect?.name ?? 'diagram'}.${format.toLowerCase()}`);
           this.dialogRef.close();
         },
         error: () =>

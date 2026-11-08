@@ -210,7 +210,7 @@ describe('SettingDialogComponent', () => {
     expect(component).toBeTruthy();
     expect(component.groups.map(group => group.id)).toEqual(['systemConfiguration', 'modelConfiguration']);
     expect(component.selectedSectionId()).toBe('automatedWorkflow');
-    expect(fixture.nativeElement.querySelectorAll('[role="treeitem"]').length).toBe(7);
+    expect(fixture.nativeElement.querySelectorAll('[role="treeitem"]').length).toBe(8);
   });
 
   it('should change the section on selectSection and remember it', () => {
@@ -268,7 +268,7 @@ describe('SettingDialogComponent', () => {
     component.selectSection('languageConfiguration');
     fixture.detectChanges();
     const items = Array.from(fixture.nativeElement.querySelectorAll('[role="treeitem"]')) as HTMLElement[];
-    expect(items.map(item => item.getAttribute('tabindex'))).toEqual(['-1', '-1', '-1', '-1', '0', '-1', '-1']);
+    expect(items.map(item => item.getAttribute('tabindex'))).toEqual(['-1', '-1', '-1', '-1', '-1', '0', '-1', '-1']);
   });
 
   it('should filter the sections by labels inside the section and select the first match', () => {
@@ -305,7 +305,7 @@ describe('SettingDialogComponent', () => {
 
     component.clearSearch();
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelectorAll('[role="treeitem"]').length).toBe(7);
+    expect(fixture.nativeElement.querySelectorAll('[role="treeitem"]').length).toBe(8);
   });
 
   it('should show a section header with title, scope and description', () => {
@@ -548,6 +548,7 @@ describe('SettingDialogComponent', () => {
       expect(element('settings-immediate-hint')).toBeNull();
 
       expect(component.immediateSections.has('githubSources')).toBe(true);
+      expect(component.immediateSections.has('plugins')).toBe(true);
     });
 
     it('should be dirty with queued workspace changes and run them only on Apply', () => {

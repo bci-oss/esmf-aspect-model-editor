@@ -12,12 +12,11 @@
  */
 
 import {LoadedFilesService, ModelService, SammLanguageSettingsService, SqlDialect} from '@ame/domain';
-import {LanguageTranslationService, LoadingScreenOptions, LoadingScreenService, NotificationsService} from '@ame/shared';
+import {FileSaverService, LanguageTranslationService, LoadingScreenOptions, LoadingScreenService, NotificationsService} from '@ame/shared';
 import {DestroyRef, inject, Injectable} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {environment} from 'environments/environment';
-import {saveAs} from 'file-saver';
 import {catchError, map, Observable, throwError} from 'rxjs';
 import {filter, finalize, first, switchMap, tap} from 'rxjs/operators';
 import {EditorService} from '../../editor.service';
@@ -34,6 +33,7 @@ import {FileHandlingService} from './file-handling.service';
 @Injectable({providedIn: 'root'})
 export class GenerateHandlingService {
   private destroyRef = inject(DestroyRef);
+  private fileSaver = inject(FileSaverService);
   private matDialog = inject(MatDialog);
   private editorService = inject(EditorService);
   private modelService = inject(ModelService);
@@ -175,7 +175,7 @@ export class GenerateHandlingService {
     );
 
     return this.withLoadingScreen(this.translate.language.notificationDialog?.generateParquetPayload, request).pipe(
-      map(payload => saveAs(payload, this.fileNameWithSuffix('-sample.parquet'))),
+      map(payload => this.fileSaver.download(payload, this.fileNameWithSuffix('-sample.parquet'))),
     );
   }
 

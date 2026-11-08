@@ -18,6 +18,7 @@ export * from './bindings.service';
 export * from './browser.service';
 export * from './clipboard.service';
 export * from './data-type.service';
+export * from './file-saver.service';
 export * from './file-upload.service';
 export * from './loading-screen.service';
 export * from './notifications.service';

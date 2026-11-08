@@ -12,11 +12,10 @@
  */
 
 import {LoadedFilesService, ModelService, NamespaceFile, SammLanguageSettingsService} from '@ame/domain';
-import {LanguageTranslationService, LoadingScreenService, NotificationsService} from '@ame/shared';
+import {FileSaverService, LanguageTranslationService, LoadingScreenService, NotificationsService} from '@ame/shared';
 import {TestBed} from '@angular/core/testing';
 import {MatDialog} from '@angular/material/dialog';
 import {DefaultAspect, ModelElementCache, RdfModel} from '@esmf/aspect-model-loader';
-import {saveAs} from 'file-saver';
 import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {firstValueFrom, of, throwError} from 'rxjs';
@@ -33,7 +32,7 @@ import {GenerateSqlComponent} from '../components/generate-sql/generate-sql.comp
 import {FileHandlingService} from './file-handling.service';
 import {GenerateHandlingService} from './generate-handling.service';
 
-vi.mock('file-saver', () => ({saveAs: vi.fn()}));
+const fileSaver = {download: vi.fn()};
 
 describe('GenerateHandlingService', () => {
   let service: GenerateHandlingService;
@@ -50,11 +49,12 @@ describe('GenerateHandlingService', () => {
   });
 
   beforeEach(() => {
-    vi.mocked(saveAs).mockClear();
+    fileSaver.download.mockClear();
     sammLanguages = ['en'];
     uiLanguage = 'en';
     TestBed.configureTestingModule({
       providers: [
+        {provide: FileSaverService, useValue: fileSaver},
         GenerateHandlingService,
         MockProvider(MatDialog, {
           open: vi.fn(() => ({afterClosed: () => of(null)}) as any),
@@ -347,7 +347,7 @@ describe('GenerateHandlingService', () => {
       await firstValueFrom(service.generateParquetPayload());
 
       expect(editorService.generateParquetPayload).toHaveBeenCalledWith(expect.any(RdfModel));
-      expect(saveAs).toHaveBeenCalledWith(parquet, 'MyAspect-sample.parquet');
+      expect(fileSaver.download).toHaveBeenCalledWith(parquet, 'MyAspect-sample.parquet');
       expect(dialog.open).not.toHaveBeenCalled();
       expect(TestBed.inject(LoadingScreenService).close).toHaveBeenCalled();
     });
@@ -357,7 +357,7 @@ describe('GenerateHandlingService', () => {
 
       await expect(firstValueFrom(service.generateParquetPayload())).rejects.toBe('Fail Parquet');
 
-      expect(saveAs).not.toHaveBeenCalled();
+      expect(fileSaver.download).not.toHaveBeenCalled();
       expect(TestBed.inject(NotificationsService).error).toHaveBeenCalledWith(expect.objectContaining({title: 'Fail Parquet'}));
     });
   });

@@ -23,6 +23,7 @@ import {
 } from '@ame/domain';
 import {MaxGraphService} from '@ame/graph';
 import {
+  FileSaverService,
   IPC_RENDERER,
   LanguageTranslationService,
   LoadingScreenService,
@@ -68,6 +69,7 @@ describe('FileHandlingService', () => {
     copyToClipboardMock = vi.fn();
     TestBed.configureTestingModule({
       providers: [
+        {provide: FileSaverService, useValue: {download: vi.fn()}},
         FileHandlingService,
         {provide: IPC_RENDERER, useValue: {copyToClipboard: copyToClipboardMock}},
         MockProvider(EditorService, {

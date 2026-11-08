@@ -12,7 +12,7 @@
  */
 
 import {LoadedFilesService, ModelApiPort, NamespaceFile, SammLanguageSettingsService} from '@ame/domain';
-import {BrowserService, IPC_RENDERER} from '@ame/shared';
+import {BrowserService, FileSaverService, IPC_RENDERER} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatDialogRef} from '@angular/material/dialog';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
@@ -49,6 +49,7 @@ describe('GenerateDocumentationComponent', () => {
         TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
       ],
       providers: [
+        {provide: FileSaverService, useValue: {download: vi.fn()}},
         {provide: MatDialogRef, useValue: dialogRef},
         {provide: IPC_RENDERER, useValue: {writePrintFile: vi.fn(() => Promise.resolve('path')), openPrintWindow: vi.fn()}},
         MockProvider(SammLanguageSettingsService, {

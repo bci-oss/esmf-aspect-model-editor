@@ -38,6 +38,7 @@ import {AutomatedWorkflowComponent} from '../system-configuration/automated-work
 import {EditorConfigurationComponent} from '../system-configuration/editor-configuration/editor-configuration.component';
 import {GithubSourcesSettingsComponent} from '../system-configuration/github-sources/github-sources-settings.component';
 import {HeaderCopyrightComponent} from '../system-configuration/header-copyright/header-copyright.component';
+import {PluginsSettingsComponent} from '../system-configuration/plugins/plugins-settings.component';
 import {WorkspacesSettingsComponent} from '../system-configuration/workspaces/workspaces-settings.component';
 
 export type SettingsSectionId =
@@ -45,20 +46,23 @@ export type SettingsSectionId =
   | 'editorConfiguration'
   | 'workspaces'
   | 'githubSources'
+  | 'plugins'
   | 'languageConfiguration'
   | 'namespaceConfiguration'
   | 'copyrightHeaderConfiguration';
 
 /** Sections without fields of the settings form. */
-export const FORMLESS_SECTIONS: ReadonlySet<SettingsSectionId> = new Set(['workspaces', 'githubSources']);
+type FormlessSectionId = 'workspaces' | 'githubSources' | 'plugins';
+export const FORMLESS_SECTIONS: ReadonlySet<SettingsSectionId> = new Set<FormlessSectionId>(['workspaces', 'githubSources', 'plugins']);
 /** Sections whose actions (add, sync, …) run immediately and do not need "Apply". */
-export const IMMEDIATE_SECTIONS: ReadonlySet<SettingsSectionId> = new Set(['githubSources']);
+export const IMMEDIATE_SECTIONS: ReadonlySet<SettingsSectionId> = new Set(['githubSources', 'plugins']);
 /** Sections that apply to the whole application instead of the loaded model. */
 export const APPLICATION_SECTIONS: ReadonlySet<SettingsSectionId> = new Set([
   'automatedWorkflow',
   'editorConfiguration',
   'workspaces',
   'githubSources',
+  'plugins',
 ]);
 
 export interface SettingsSection {
@@ -127,6 +131,12 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
         description: 'modelSources.github.description',
         keywords: ['modelSources.github.url', 'modelSources.github.sync', 'modelSources.token.title'],
       },
+      {
+        id: 'plugins',
+        name: 'plugins.settings.title',
+        description: 'plugins.settings.description',
+        keywords: ['plugins.settings.install', 'plugins.settings.listTitle', 'plugins.settings.restart'],
+      },
     ],
   },
   {
@@ -191,6 +201,7 @@ export const SETTINGS_LAST_SECTION_KEY = 'ame.settings.lastSection';
     HeaderCopyrightComponent,
     WorkspacesSettingsComponent,
     GithubSourcesSettingsComponent,
+    PluginsSettingsComponent,
     MatDialogActions,
     MatButton,
     MatTooltip,
@@ -490,7 +501,7 @@ export class SettingDialogComponent implements DialogCloseRequestHandler {
 
   isSectionInvalid(id: SettingsSectionId): boolean {
     if (FORMLESS_SECTIONS.has(id)) return false;
-    return this.settingsForm[id as Exclude<SettingsSectionId, 'workspaces' | 'githubSources'>]().invalid();
+    return this.settingsForm[id as Exclude<SettingsSectionId, FormlessSectionId>]().invalid();
   }
 
   isGroupInvalid(group: SettingsGroup): boolean {

@@ -1,0 +1,41 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t">
+  <h2 mat-dialog-title data-testid="plugin-host-title">{{ data.title }}</h2>
+  <ame-dialog-close-button testId="plugin-host-close" />
+
+  <mat-dialog-content data-testid="plugin-host-dialog">
+    @switch (state()) {
+      @case ('loading') {
+        <div class="plugin-host__status" data-testid="plugin-host-loading">
+          <mat-spinner diameter="24" />
+        </div>
+      }
+      @case ('versionChanged') {
+        <p class="plugin-host__status" data-testid="plugin-host-version-changed">
+          {{ t('plugins.runtime.versionChanged', {name: data.plugin.name, version: data.plugin.version}) }}
+        </p>
+      }
+      @case ('loadError') {
+        <div data-testid="plugin-host-error">
+          <p>{{ t('plugins.runtime.loadError', {name: data.plugin.name}) }}</p>
+          @if (error()) {
+            <p class="plugin-host__detail">{{ error() }}</p>
+          }
+        </div>
+      }
+    }
+    <div #container data-testid="plugin-host-container"></div>
+  </mat-dialog-content>
+</ng-container>

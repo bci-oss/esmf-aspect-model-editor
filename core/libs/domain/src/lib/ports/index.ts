@@ -23,6 +23,7 @@ export * from './model-loader.port';
 export * from './model-opener.port';
 export * from './model-sources.port';
 export * from './namespaces-transfer.port';
+export * from './plugins.port';
 export * from './rdf.port';
 export * from './refactoring-dialog.port';
 export * from './refactoring.port';

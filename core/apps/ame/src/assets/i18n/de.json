@@ -48,6 +48,7 @@
     }
   },
   "notificationService": {
+    "fileSaveFailed": "{{fileName}} konnte nicht gespeichert werden",
     "cannotDeleteEdgeTitle": "Verbindung kann nicht entfernt werden",
     "cannotDeleteEdgeMessage": "Verbindungen von Elementen aus einem externen Namespace können nicht entfernt werden.",
     "cannotDeleteEdgeFilteredMessage": "Verbindungen können nur entfernt werden, solange das Modell nicht gefiltert ist.",
@@ -1292,5 +1293,51 @@
     "cancel": "Abbrechen",
     "import": "Importieren",
     "imported": "{{count}} Aspect Model(s) importiert"
+  },
+  "plugins": {
+    "menuTitle": "Plugins",
+    "settings": {
+      "title": "Plugins",
+      "description": "Erweitern Sie den Editor mit Plugins, z. B. Importern für andere Formate.",
+      "trustHint": "Plugins laufen mit den gleichen Rechten wie der Editor und können alle Ihre Dateien lesen und ändern. Installieren Sie nur Plugins aus vertrauenswürdigen Quellen.",
+      "installHint": "Wählen Sie das Plugin-Archiv (.zip) aus. Installierte Plugins werden beim nächsten Start des Backends gestartet.",
+      "install": "Plugin installieren…",
+      "installed": "Plugin \"{{name}}\" {{version}} installiert",
+      "installError": "Das Plugin konnte nicht installiert werden",
+      "notAnArchive": "\"{{name}}\" ist kein Plugin-Archiv (.zip)",
+      "loadError": "Die Plugins konnten nicht geladen werden.",
+      "listTitle": "Installierte Plugins",
+      "empty": "Noch keine Plugins installiert.",
+      "more": "Weitere Aktionen",
+      "enable": "Aktivieren",
+      "disable": "Deaktivieren",
+      "remove": "Entfernen",
+      "removed": "Plugin \"{{name}}\" entfernt",
+      "removeError": "Das Plugin konnte nicht entfernt werden",
+      "updateError": "Das Plugin konnte nicht geändert werden",
+      "restartHint": "Starten Sie das Backend neu, um die Änderungen an den Plugins zu übernehmen. Nicht gespeicherte Modelle bleiben geöffnet.",
+      "restartManualHint": "Starten Sie das Backend neu, um die Änderungen an den Plugins zu übernehmen.",
+      "restart": "Backend neu starten",
+      "restarted": "Backend neu gestartet, die Plugins sind aktuell",
+      "restartError": "Das Backend konnte nicht neu gestartet werden.",
+      "state": {
+        "active": "Aktiv",
+        "failed": "Fehlgeschlagen",
+        "inactive": "Nicht gestartet",
+        "disabled": "Deaktiviert",
+        "pending": "Neustart erforderlich"
+      }
+    },
+    "toolbar": {
+      "tooltip": "Befehle der installierten Plugins"
+    },
+    "runtime": {
+      "notRunning": "Das Plugin \"{{name}}\" läuft nicht. Prüfen Sie es in den Einstellungen unter Plugins.",
+      "loadError": "Das Plugin \"{{name}}\" konnte nicht geöffnet werden",
+      "versionChanged": "Starten Sie die Anwendung neu, um Version {{version}} des Plugins \"{{name}}\" zu verwenden.",
+      "openError": "Das Modell des Plugins konnte nicht geöffnet werden",
+      "noModel": "Öffnen Sie ein Aspect Model, um diesen Befehl zu verwenden.",
+      "saveError": "Die Datei des Plugins konnte nicht gespeichert werden"
+    }
   }
 }

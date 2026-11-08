@@ -74,6 +74,16 @@ pub fn retry_backend_start(
     restart_backend(&app, &backend_state)
 }
 
+/// Restarts the running backend, e.g. to load installed or updated plugins.
+/// Runs on a worker thread because stopping the backend may take a few seconds.
+#[tauri::command]
+pub async fn reload_backend(
+    app: AppHandle,
+    backend_state: State<'_, BackendState>,
+) -> Result<BackendStatus, String> {
+    crate::backend::reload_backend(&app, &backend_state)
+}
+
 #[tauri::command]
 pub fn quit_app(app: AppHandle, backend_state: State<'_, BackendState>) {
     clean_up_backend(&backend_state);

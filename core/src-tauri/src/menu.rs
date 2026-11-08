@@ -477,6 +477,10 @@ pub fn handle_menu_click<R: Runtime>(app: &AppHandle<R>, menu_id: &str) {
             }
         }
         other_id => {
+            if let Some(action) = crate::plugin_menu::parse_menu_item_id(other_id) {
+                emit_to_focused_or_app(app, crate::plugin_menu::PLUGIN_MENU_ACTION_EVENT, action);
+                return;
+            }
             emit_to_focused_or_app(app, other_id, serde_json::Value::Null);
         }
     }

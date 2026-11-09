@@ -11,8 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-export * from './aspect-model-text-view.component';
-export * from './aspect-model-text.service';
-export * from './editor-view-mode.service';
-export * from './editor-view-toggle.component';
-export * from './turtle-text.utils';
+export * from './aspect-model-text-view/aspect-model-text-view.component';
+export * from './codemirror/turtle-text.utils';
+export * from './editor-view-toggle/editor-view-toggle.component';
+export * from './services/aspect-model-text.service';
+export * from './services/editor-view-mode.service';

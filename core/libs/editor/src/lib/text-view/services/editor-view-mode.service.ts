@@ -13,7 +13,7 @@
 
 import {SearchStore, TabsStore, UiShellStore} from '@ame/domain';
 import {computed, inject, Injectable, signal} from '@angular/core';
-import {ShapeSettingsStateService} from '../editor-dialog/services/shape-settings-state.service';
+import {ShapeSettingsStateService} from '../../editor-dialog/services/shape-settings-state.service';
 
 export type EditorViewMode = 'graph' | 'text';
 

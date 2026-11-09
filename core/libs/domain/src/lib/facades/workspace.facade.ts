@@ -76,8 +76,10 @@ export interface ClearWorkspaceResult {
 export abstract class WorkspaceFacade {
   /** Root of the active workspace, or the absolute path of `file` in the workspace or GitHub source containing it. */
   abstract getStoragePath(file?: ModelFileLocation): Observable<StoragePathResponse>;
-  /** Fails with HTTP 404 if no workspace file declares the element. */
-  /** `fileName` names the file of the element's namespace version to look in first, if several files declare it. */
+  /**
+   * Fails with HTTP 404 if no workspace file declares the element.
+   * `fileName` names the file of the element's namespace version to look in first, if several files declare it.
+   */
   abstract getElementLocation(aspectModelUrn: string, fileName?: string): Observable<ElementLocation>;
   abstract fetchAspectMetaModel(aspectModelUrn: string): Observable<{content: string; sourceLocation: string | null}>;
   abstract deleteAspectModel(aspectModelUrn: string): Observable<string>;

@@ -36,6 +36,7 @@ import {catchError, map, Observable, of} from 'rxjs';
 import {FileStatus, SidebarStateService} from '../../sidebar-state.service';
 import {WorkspaceDeletionService} from '../workspace-deletion/workspace-deletion.service';
 import {WorkspaceMigrateComponent} from '../workspace-migrate/workspace-migrate.component';
+import {WorkspaceSourceHeaderComponent} from '../workspace-source-header/workspace-source-header.component';
 
 /** The files of one source (workspace or GitHub repository), grouped by namespace. */
 export interface SourceGroup {
@@ -60,6 +61,7 @@ export interface SourceGroup {
     MatMenu,
     MatMenuItem,
     WorkspaceMigrateComponent,
+    WorkspaceSourceHeaderComponent,
     TranslocoDirective,
   ],
 })
@@ -83,7 +85,7 @@ export class WorkspaceFileListComponent {
   public readonly menuSelection = signal<{namespace: string; file: FileStatus} | null>(null);
   public readonly namespaceMenuSelection = signal<string | null>(null);
   /** Any file of the namespace selected in the namespace menu; locates the namespace folder of the right source. */
-  private namespaceMenuFile: FileStatus | null = null;
+  private readonly namespaceMenuFile = signal<FileStatus | null>(null);
   public readonly foldedStatus = signal(false);
   public readonly searched = signal<Record<string, FileStatus[]>>({});
   public readonly folded = signal<Record<string, boolean>>({});
@@ -301,12 +303,12 @@ export class WorkspaceFileListComponent {
 
   public prepareNamespaceMenu(namespace: string, file?: FileStatus) {
     this.namespaceMenuSelection.set(namespace);
-    this.namespaceMenuFile = file ?? null;
+    this.namespaceMenuFile.set(file ?? null);
   }
 
   public openNamespaceInExternalEditor() {
     const namespace = this.namespaceMenuSelection();
-    const file = this.namespaceMenuFile;
+    const file = this.namespaceMenuFile();
     if (!namespace || !file) return;
 
     this.resolveFilePath(namespace, file)
@@ -314,8 +316,8 @@ export class WorkspaceFileListComponent {
       .subscribe(path => this.externalEditor.openFolder(parentDirectory(path)));
   }
 
-  public openSourceInExternalEditor(source: ModelSource | undefined) {
-    if (source?.path) this.externalEditor.openFolder(source.path);
+  public openSourceInExternalEditor(source: ModelSource) {
+    if (source.path) this.externalEditor.openFolder(source.path);
   }
 
   public deleteNamespace() {
@@ -437,13 +439,11 @@ export class WorkspaceFileListComponent {
   /** The local path of the file as reported by the backend, otherwise derived from the source root. */
   private resolveFilePath(namespace: string, file: FileStatus): Observable<string> {
     const fallback = this.buildOsFilePath(file.source?.path || '', namespace, file.name);
-    const separator = namespace.lastIndexOf(':');
-    if (separator < 0) return of(fallback);
+    if (!namespace.includes(':')) return of(fallback);
 
     return this.modelApiService
       .getStoragePath({
-        namespace: namespace.substring(0, separator),
-        version: namespace.substring(separator + 1),
+        ...splitNamespaceKey(namespace),
         fileName: file.name,
         workspace: file.source?.path,
       })

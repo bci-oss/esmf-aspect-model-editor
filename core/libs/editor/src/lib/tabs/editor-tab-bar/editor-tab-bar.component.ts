@@ -17,7 +17,7 @@ import {MatIconButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {EditorViewToggleComponent} from '../../text-view/editor-view-toggle.component';
+import {EditorViewToggleComponent} from '../../text-view/editor-view-toggle/editor-view-toggle.component';
 import {TabStateService} from '../tab-state.service';
 
 @Component({

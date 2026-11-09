@@ -28,13 +28,13 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {TranslocoTestingModule} from '@jsverse/transloco';
 import {BehaviorSubject, of, Subject, throwError} from 'rxjs';
 import {afterEach, beforeAll, beforeEach, describe, expect, it, vi} from 'vitest';
-import {FileHandlingService} from '../editor-toolbar/services/file-handling.service';
-import {ModelSavingTrackerService} from '../model-saving-tracker.service';
-import {PrefixManagementService} from '../prefixes/prefix-management.service';
-import {TabStateService} from '../tabs/tab-state.service';
+import {FileHandlingService} from '../../editor-toolbar/services/file-handling.service';
+import {ModelSavingTrackerService} from '../../model-saving-tracker.service';
+import {PrefixManagementService} from '../../prefixes/prefix-management.service';
+import {TabStateService} from '../../tabs/tab-state.service';
+import {AspectModelText, AspectModelTextService} from '../services/aspect-model-text.service';
+import {EditorViewModeService, TextViewRevealRequest} from '../services/editor-view-mode.service';
 import {AspectModelTextViewComponent} from './aspect-model-text-view.component';
-import {AspectModelText, AspectModelTextService} from './aspect-model-text.service';
-import {EditorViewModeService, TextViewRevealRequest} from './editor-view-mode.service';
 
 const NS = 'urn:samm:org.example:1.0.0#';
 const MODEL = [

@@ -13,129 +13,14 @@
 
 // Everything that depends on CodeMirror lives here so it can be loaded lazily when the text view is opened.
 
-import {defaultKeymap} from '@codemirror/commands';
-import {foldGutter, foldKeymap} from '@codemirror/language';
-import {Diagnostic, lintGutter, lintKeymap, setDiagnostics} from '@codemirror/lint';
-import {highlightSelectionMatches, openSearchPanel, search, searchKeymap} from '@codemirror/search';
-import {Compartment, EditorState, Extension, RangeSet, StateEffect, StateField} from '@codemirror/state';
-import {
-  Decoration,
-  DecorationSet,
-  drawSelection,
-  EditorView,
-  gutter,
-  GutterMarker,
-  highlightActiveLine,
-  highlightActiveLineGutter,
-  keymap,
-  lineNumbers,
-  ViewPlugin,
-} from '@codemirror/view';
-import {turtle, turtleEditorTheme} from './turtle-language';
-import {elementDefinitionOffsets, elementRangeAt, TextProblem, TextRange} from './turtle-text.utils';
-
-export interface TurtleEditor {
-  /** Replaces the whole document while keeping the scroll position. */
-  setContent(content: string): void;
-  goToLine(lineNumber: number): void;
-  /** Underlines the problems; they are shown in a tooltip on hover and marked in the gutter. */
-  setProblems(problems: TextProblem[]): void;
-  setTargetLine(targetLine: number | null): void;
-  openSearch(): void;
-  /** The document offset of the cursor. */
-  cursorOffset(): number;
-  destroy(): void;
-}
-
-export interface TurtleEditorOptions {
-  /**
-   * Called with the document offset clicked with Ctrl (Cmd on macOS) held or of the definition whose gutter icon was
-   * clicked. While the modifier is held, the element under the mouse is shown as a link.
-   */
-  onElementActivate?: (offset: number) => void;
-  /** The tooltip of the gutter icon next to each element definition. */
-  activateTitle?: string;
-}
-
-/** Creates a read-only Turtle editor inside the given element. */
-export function createTurtleEditor(parent: HTMLElement, content: string, options: TurtleEditorOptions = {}): TurtleEditor {
-  const targetLineDecoration = new Compartment();
-  const view = new EditorView({
-    parent,
-    state: EditorState.create({
-      doc: content,
-      extensions: [
-        lineNumbers(),
-        lintGutter(),
-        foldGutter(),
-        highlightActiveLineGutter(),
-        highlightActiveLine(),
-        drawSelection(),
-        highlightSelectionMatches(),
-        search({top: true}),
-        EditorState.readOnly.of(true),
-        EditorView.contentAttributes.of({'aria-label': 'Aspect Model (Turtle)', 'data-testid': 'text-view-content'}),
-        keymap.of([...searchKeymap, ...foldKeymap, ...lintKeymap, ...defaultKeymap]),
-        turtle(),
-        turtleEditorTheme,
-        targetLineDecoration.of([]),
-        options.onElementActivate ? elementActivation(options.onElementActivate, options.activateTitle ?? '') : [],
-      ],
-    }),
-  });
-
-  return {
-    setContent(text: string): void {
-      if (view.state.doc.toString() === text) {
-        return;
-      }
-      const scrollTop = view.scrollDOM.scrollTop;
-      view.dispatch({changes: {from: 0, to: view.state.doc.length, insert: text}});
-      view.scrollDOM.scrollTop = scrollTop;
-    },
-
-    goToLine(lineNumber: number): void {
-      const line = view.state.doc.line(Math.max(1, Math.min(lineNumber, view.state.doc.lines)));
-      view.dispatch({
-        selection: {anchor: line.from},
-        effects: EditorView.scrollIntoView(line.from, {y: 'center'}),
-      });
-    },
-
-    setProblems(problems: TextProblem[]): void {
-      const length = view.state.doc.length;
-      const diagnostics: Diagnostic[] = problems
-        .filter(({to}) => to <= length)
-        .map(({from, to, message, kind}) => ({from, to, message, severity: 'error', markClass: `cm-ame-problem-${kind}`}));
-      view.dispatch(setDiagnostics(view.state, diagnostics));
-    },
-
-    setTargetLine(targetLine: number | null): void {
-      const doc = view.state.doc;
-      const decorations =
-        targetLine && targetLine <= doc.lines ? [Decoration.line({class: 'cm-ame-target-line'}).range(doc.line(targetLine).from)] : [];
-      view.dispatch({effects: targetLineDecoration.reconfigure(EditorView.decorations.of(Decoration.set(decorations)))});
-    },
-
-    openSearch(): void {
-      view.focus();
-      openSearchPanel(view);
-    },
-
-    cursorOffset(): number {
-      return view.state.selection.main.head;
-    },
-
-    destroy(): void {
-      view.destroy();
-    },
-  };
-}
+import {Extension, RangeSet, StateEffect, StateField} from '@codemirror/state';
+import {Decoration, DecorationSet, EditorView, gutter, GutterMarker, ViewPlugin} from '@codemirror/view';
+import {elementDefinitionOffsets, elementRangeAt, TextRange} from './turtle-text.utils';
 
 const isActivationModifier = (event: MouseEvent | KeyboardEvent) => event.ctrlKey || event.metaKey;
 
 /** Opens elements on Ctrl/Cmd + click and via an icon in the gutter next to each element definition. */
-function elementActivation(activate: (offset: number) => void, title: string): Extension {
+export function elementActivation(activate: (offset: number) => void, title: string): Extension {
   return [
     elementLinks,
     definitionGutter(activate, title),

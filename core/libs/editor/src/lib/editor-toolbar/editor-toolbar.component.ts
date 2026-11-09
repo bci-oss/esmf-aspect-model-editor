@@ -39,7 +39,7 @@ import {ModelHistoryService} from '../history/model-history.service';
 import {PluginRuntimeService} from '../plugins/plugin-runtime.service';
 import {PrefixManagementService} from '../prefixes/prefix-management.service';
 import {ElementRefactoringService, ElementRefactoringType} from '../refactoring/element-refactoring.service';
-import {EditorViewModeService} from '../text-view/editor-view-mode.service';
+import {EditorViewModeService} from '../text-view/services/editor-view-mode.service';
 import {FileHandlingService} from './services';
 
 @Component({

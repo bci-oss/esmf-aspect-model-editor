@@ -15,7 +15,7 @@ import {signal} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {EditorViewMode, EditorViewModeService} from './editor-view-mode.service';
+import {EditorViewMode, EditorViewModeService} from '../services/editor-view-mode.service';
 import {EditorViewToggleComponent} from './editor-view-toggle.component';
 
 describe('EditorViewToggleComponent', () => {

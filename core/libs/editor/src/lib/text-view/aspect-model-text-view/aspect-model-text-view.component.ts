@@ -30,13 +30,11 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {catchError, debounceTime, map, of, Subject, switchMap, take, tap} from 'rxjs';
-import {FileHandlingService} from '../editor-toolbar/services/file-handling.service';
-import {ModelSavingTrackerService} from '../model-saving-tracker.service';
-import {PrefixManagementService} from '../prefixes/prefix-management.service';
-import {TabStateService} from '../tabs/tab-state.service';
-import {AspectModelText, AspectModelTextService} from './aspect-model-text.service';
-import {EditorViewModeService} from './editor-view-mode.service';
-import type {TurtleEditor} from './turtle-editor';
+import {FileHandlingService} from '../../editor-toolbar/services/file-handling.service';
+import {ModelSavingTrackerService} from '../../model-saving-tracker.service';
+import {PrefixManagementService} from '../../prefixes/prefix-management.service';
+import {TabStateService} from '../../tabs/tab-state.service';
+import type {TurtleEditor} from '../codemirror/turtle-editor';
 import {
   elementAt,
   enclosingSubjectAt,
@@ -45,7 +43,9 @@ import {
   findElementRange,
   lineAt,
   TextProblem,
-} from './turtle-text.utils';
+} from '../codemirror/turtle-text.utils';
+import {AspectModelText, AspectModelTextService} from '../services/aspect-model-text.service';
+import {EditorViewModeService} from '../services/editor-view-mode.service';
 
 export type TextViewState = 'loading' | 'ready' | 'empty' | 'error';
 
@@ -313,7 +313,7 @@ export class AspectModelTextViewComponent {
 
   private async createEditor(): Promise<void> {
     // CodeMirror is only loaded once the text view is opened for the first time.
-    const {createTurtleEditor} = await import('./turtle-editor');
+    const {createTurtleEditor} = await import('../codemirror/turtle-editor');
     if (this.destroyed) {
       return;
     }

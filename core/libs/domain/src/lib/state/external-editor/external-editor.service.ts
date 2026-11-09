@@ -31,6 +31,7 @@ import {ElementLocation, WorkspaceFacade} from '../../facades/workspace.facade';
 import {LoadedFilesService, NamespaceFile} from '../../model-session/loaded-files.service';
 import {ModelSourcesStore} from '../model-sources/model-sources.store';
 import {ConfigurationService} from '../settings/configuration.service';
+import {splitNamespaceKey} from '../workspace/workspace.models';
 
 /** Actions the graph context menu fires for the selected element; registered by the editor. */
 export const ExternalEditorAction = {
@@ -120,13 +121,11 @@ export class ExternalEditorService {
     const sourcePath = toLocalPath(sourceLocation);
     if (!file.fromWorkspace) return sourcePath;
 
-    const separator = file.namespace.lastIndexOf(':');
-    if (separator < 0) return sourcePath;
+    if (!file.namespace.includes(':')) return sourcePath;
     try {
       const {storagePath} = await firstValueFrom(
         this.workspace.getStoragePath({
-          namespace: file.namespace.slice(0, separator),
-          version: file.namespace.slice(separator + 1),
+          ...splitNamespaceKey(file.namespace),
           fileName: file.name,
           workspace: this.modelSources.findSource(sourceLocation)?.path,
         }),

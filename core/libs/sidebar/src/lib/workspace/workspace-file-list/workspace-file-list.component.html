@@ -33,38 +33,14 @@
   <div class="namespaces">
     @for (group of groups(); track group.key) {
       @if (showSourceHeaders()) {
-        <div class="source-row">
-          <button
-            class="source"
-            [class.source--read-only]="group.readOnly"
-            [attr.aria-expanded]="!isSourceCollapsed(group.key)"
-            [matTooltip]="group.source?.path ?? ''"
-            [attr.data-testid]="'workspace-source-' + (group.source?.type ?? 'unknown')"
-            (click)="toggleSource(group.key)"
-            type="button"
-          >
-            <mat-icon class="source__chevron">{{ isSourceCollapsed(group.key) ? 'chevron_right' : 'expand_more' }}</mat-icon>
-            <mat-icon>{{
-              group.source?.type === 'github' ? 'cloud' : group.source?.defaultWorkspace ? 'home' : 'folder_special'
-            }}</mat-icon>
-            <span class="source__name">{{ group.source?.name ?? '–' }}</span>
-            @if (group.readOnly) {
-              <span class="source__badge" data-testid="workspace-source-read-only">{{ t('modelSources.sidebar.readOnlyBadge') }}</span>
-            }
-          </button>
-          @if (group.source?.path) {
-            <button
-              class="source-open"
-              [matTooltip]="t('externalEditor.openSourceIn', {editor: externalEditor.editorName()})"
-              [attr.aria-label]="t('externalEditor.openSourceIn', {editor: externalEditor.editorName()})"
-              (click)="openSourceInExternalEditor(group.source)"
-              mat-mini-fab
-              data-testid="workspace-source-open-in-editor"
-            >
-              <mat-icon>open_in_new</mat-icon>
-            </button>
-          }
-        </div>
+        <ame-workspace-source-header
+          [source]="group.source"
+          [readOnly]="group.readOnly"
+          [collapsed]="isSourceCollapsed(group.key)"
+          [editorName]="externalEditor.editorName()"
+          (toggleCollapsed)="toggleSource(group.key)"
+          (openInEditor)="openSourceInExternalEditor($event)"
+        />
       }
 
       @if (!isSourceCollapsed(group.key)) {

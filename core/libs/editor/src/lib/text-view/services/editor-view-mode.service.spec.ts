@@ -15,7 +15,7 @@ import {SearchStore, TabsStore, UiShellStore} from '@ame/domain';
 import {signal} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {ShapeSettingsStateService} from '../editor-dialog/services/shape-settings-state.service';
+import {ShapeSettingsStateService} from '../../editor-dialog/services/shape-settings-state.service';
 import {EditorViewModeService} from './editor-view-mode.service';
 
 describe('EditorViewModeService', () => {

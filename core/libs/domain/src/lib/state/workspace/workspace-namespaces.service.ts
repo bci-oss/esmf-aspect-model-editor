@@ -85,7 +85,8 @@ export class WorkspaceNamespacesService {
     }
 
     const allNamespaces = this.namespaces();
-    this.hasOutdatedFiles.set(Object.values(allNamespaces).some(files => files.some(f => f.outdated)));
+    // Files of read-only sources (e.g. GitHub) are marked as outdated but cannot be migrated.
+    this.hasOutdatedFiles.set(Object.values(allNamespaces).some(files => files.some(f => f.outdated && !f.source?.readOnly)));
 
     this.workspaceStore.setFiles(
       Object.entries(allNamespaces).flatMap(([ns, files]) =>
@@ -96,6 +97,7 @@ export class WorkspaceNamespacesService {
           aspectModelUrn: f.aspectModelUrn,
           loaded: f.loaded,
           outdated: f.outdated,
+          readOnly: !!f.source?.readOnly,
           errored: f.errored,
           isLoadedInWorkspace: f.isLoadedInWorkspace,
           sammVersion: f.sammVersion,

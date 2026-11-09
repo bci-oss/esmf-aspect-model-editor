@@ -18,6 +18,8 @@ export interface WorkspaceFileItem {
   aspectModelUrn: string;
   loaded: boolean;
   outdated: boolean;
+  /** Whether the file belongs to a read-only source (e.g. GitHub) and therefore cannot be migrated or changed. */
+  readOnly?: boolean;
   errored: boolean;
   isLoadedInWorkspace: boolean;
   sammVersion?: string;

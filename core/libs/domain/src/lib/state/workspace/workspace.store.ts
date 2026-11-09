@@ -56,7 +56,7 @@ export const WorkspaceStore = signalStore(
       }
       return Array.from(keys);
     }),
-    hasOutdatedFiles: computed(() => store.entities().some(f => f.outdated)),
+    hasOutdatedFiles: computed(() => store.entities().some(f => f.outdated && !f.readOnly)),
     hasErroredFiles: computed(() => store.entities().some(f => f.errored)),
   })),
   withMethods(store => ({

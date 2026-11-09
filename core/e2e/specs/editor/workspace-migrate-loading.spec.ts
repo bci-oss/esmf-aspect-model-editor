@@ -79,4 +79,68 @@ test.describe('Workspace - Migration Button Loading State', () => {
       await expect(migrateButton.locator('mat-spinner, .spinner')).toBeVisible();
     }
   });
+
+  test('does not offer a migration for outdated models of a read-only GitHub source', async ({page}) => {
+    const helper = new AppHelper(page);
+    await setUpDefaultRoutes(page);
+
+    const githubSource = {
+      type: 'github',
+      id: 'github-examples',
+      name: 'eclipse-esmf/examples@main',
+      path: '',
+      readOnly: true,
+      defaultWorkspace: false,
+    };
+
+    await page.route(`**${NAMESPACES_URL}`, async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          'org.eclipse.examples.aspect': [
+            {
+              version: '1.0.0',
+              models: [
+                {
+                  name: 'OutdatedModel.ttl',
+                  model: 'OutdatedModel.ttl',
+                  aspectModelUrn: 'urn:samm:org.eclipse.examples.aspect:1.0.0#OutdatedModel',
+                  version: '1.0.0',
+                  existing: true,
+                  source: githubSource,
+                },
+              ],
+            },
+          ],
+        }),
+      });
+    });
+
+    await page.route(`**${API_BASE_URL}/models/batch*`, async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([
+          {
+            aspectModelUrn: 'urn:samm:org.eclipse.examples.aspect:1.0.0#OutdatedModel',
+            aspectModel: readFixture('default-models/aspect-default.txt'),
+            absoluteName: 'org.eclipse.examples.aspect:1.0.0:OutdatedModel.ttl',
+            fileName: 'OutdatedModel.ttl',
+            modelVersion: '1.0.0',
+          },
+        ]),
+      });
+    });
+
+    await helper.startModelling(false);
+
+    await page.locator(SELECTOR_workspaceBtn).click({force: true});
+    const file = page.locator('[data-testid="workspace-file-OutdatedModel.ttl"]');
+
+    // The file is still marked as outdated, but read-only sources cannot be migrated.
+    await expect(file).toHaveClass(/outdated/);
+    await expect(file.locator('[data-testid="workspace-file-read-only"]')).toBeVisible();
+    await expect(page.locator('[data-testid="workspaceMigrateButton"]')).toHaveCount(0);
+  });
 });

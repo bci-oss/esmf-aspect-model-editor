@@ -13,6 +13,7 @@
 
 import {TestBed} from '@angular/core/testing';
 import {beforeEach, describe, expect, it} from 'vitest';
+import {ModelSource} from '../../model-api/models/model-sources';
 import {LoadedFilesService} from '../../model-session';
 import {FileStatus, WorkspaceNamespacesService} from './workspace-namespaces.service';
 import {WorkspaceStore} from './workspace.store';
@@ -22,6 +23,15 @@ function status(name: string, urn = `urn:samm:org.example:1.0.0#${name.replace('
   fileStatus.aspectModelUrn = urn;
   return fileStatus;
 }
+
+const githubSource: ModelSource = {
+  type: 'github',
+  id: 'github',
+  name: 'owner/repo@main',
+  path: '',
+  readOnly: true,
+  defaultWorkspace: false,
+};
 
 describe('WorkspaceNamespacesService', () => {
   let service: WorkspaceNamespacesService;
@@ -52,5 +62,30 @@ describe('WorkspaceNamespacesService', () => {
 
     expect(service.namespaces()['org.example:1.0.0']).toEqual([updated]);
     expect(service.hasOutdatedFiles()).toBe(true);
+  });
+
+  it('should not offer a migration for outdated files of read-only sources', () => {
+    const githubFile = status('A.ttl');
+    githubFile.outdated = true;
+    githubFile.source = githubSource;
+
+    service.applyFileStatuses([githubFile]);
+
+    expect(service.namespaces()['org.example:1.0.0'][0].outdated).toBe(true);
+    expect(service.hasOutdatedFiles()).toBe(false);
+    expect(store.hasOutdatedFiles()).toBe(false);
+  });
+
+  it('should offer a migration when a writable workspace contains outdated files', () => {
+    const githubFile = status('A.ttl');
+    githubFile.outdated = true;
+    githubFile.source = githubSource;
+    const localFile = status('B.ttl');
+    localFile.outdated = true;
+
+    service.applyFileStatuses([githubFile, localFile]);
+
+    expect(service.hasOutdatedFiles()).toBe(true);
+    expect(store.hasOutdatedFiles()).toBe(true);
   });
 });

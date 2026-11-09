@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ChangedFile} from '@ame/domain';
+import {ChangedFile, LoadedFilesService, NamespaceFile} from '@ame/domain';
 import {provideZonelessChangeDetection, signal} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {of} from 'rxjs';
@@ -37,6 +37,12 @@ const tab = (fileName: string, overrides: Partial<EditorTab> = {}): EditorTab =>
   ...overrides,
 });
 
+const loaded = (name: string, overrides: Partial<NamespaceFile> = {}) =>
+  ({namespace: 'org.example:1.0.0', name, ...overrides}) as NamespaceFile;
+
+const snapshotOf = (...files: NamespaceFile[]): Record<string, NamespaceFile> =>
+  Object.fromEntries(files.map(f => [`${f.namespace}:${f.name}`, f]));
+
 const noChange = {created: [] as ChangedFile[], modified: [] as ChangedFile[], removed: [] as ChangedFile[]};
 
 describe('RefactoringTabSyncService', () => {
@@ -50,18 +56,21 @@ describe('RefactoringTabSyncService', () => {
     tabsStore: {renameTab: ReturnType<typeof vi.fn>};
   };
   let fileHandling: {loadNamespaceFile: ReturnType<typeof vi.fn>};
+  let loadedFiles: {files: Record<string, NamespaceFile>};
 
   beforeEach(() => {
     tabs = signal<EditorTab[]>([]);
     activeTabId = signal<string | null>(null);
     tabState = {tabs, activeTabId, closeTab: vi.fn(() => of(true)), tabsStore: {renameTab: vi.fn()}};
     fileHandling = {loadNamespaceFile: vi.fn()};
+    loadedFiles = {files: {}};
 
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
         {provide: TabStateService, useValue: tabState},
         {provide: FileHandlingService, useValue: fileHandling},
+        {provide: LoadedFilesService, useValue: loadedFiles},
       ],
     });
     service = TestBed.inject(RefactoringTabSyncService);
@@ -77,6 +86,18 @@ describe('RefactoringTabSyncService', () => {
     });
 
     expect(unsaved.map(t => t.file)).toEqual(['Movement.ttl']);
+  });
+
+  it('reports all tabs of changed or removed files', () => {
+    tabs.set([tab('Movement.ttl', {isDirty: true}), tab('Shared.ttl'), tab('Other.ttl'), tab('New.ttl')]);
+
+    const affected = service.affectedTabsAmong({
+      created: [file('New.ttl')],
+      modified: [file('Movement.ttl')],
+      removed: [file('Other.ttl')],
+    });
+
+    expect(affected.map(t => t.file)).toEqual(['Movement.ttl', 'Other.ttl']);
   });
 
   it('reloads the active tab of a modified file with the renamed element', () => {
@@ -201,5 +222,82 @@ describe('RefactoringTabSyncService', () => {
         aspectModelUrn: 'urn:samm:com.example:2.0.0#Movement',
       }),
     );
+  });
+
+  describe('with references', () => {
+    const withReferences = {withReferences: true};
+
+    it('ignores tabs referencing a changed file unless asked to', () => {
+      tabs.set([tab('Movement.ttl', {filesSnapshot: snapshotOf(loaded('Movement.ttl'), loaded('Shared.ttl'))})]);
+      const change = {...noChange, modified: [file('Shared.ttl')]};
+
+      expect(service.affectedTabsAmong(change)).toEqual([]);
+      service.synchronize(undefined, change);
+
+      expect(tabState.tabsStore.renameTab).not.toHaveBeenCalled();
+    });
+
+    it('reports tabs whose loaded files contain a changed or removed file', () => {
+      tabs.set([
+        tab('Movement.ttl', {filesSnapshot: snapshotOf(loaded('Movement.ttl'), loaded('Shared.ttl'))}),
+        tab('Other.ttl', {filesSnapshot: snapshotOf(loaded('Other.ttl'), loaded('Shared.ttl', {namespace: 'org.other:1.0.0'}))}),
+        tab('Third.ttl', {isDirty: true, filesSnapshot: snapshotOf(loaded('Third.ttl'), loaded('Gone.ttl'))}),
+      ]);
+      const change = {...noChange, modified: [file('Shared.ttl')], removed: [file('Gone.ttl')]};
+
+      expect(service.affectedTabsAmong(change, withReferences).map(t => t.file)).toEqual(['Movement.ttl', 'Third.ttl']);
+      expect(service.unsavedTabsAmong(change, undefined, withReferences).map(t => t.file)).toEqual(['Third.ttl']);
+    });
+
+    it('uses the currently loaded files of the active tab', () => {
+      tabs.set([tab('Movement.ttl', {filesSnapshot: snapshotOf(loaded('Movement.ttl'))})]);
+      activeTabId.set('org.example:1.0.0:Movement.ttl');
+      loadedFiles.files = snapshotOf(loaded('Movement.ttl'), loaded('Shared.ttl'));
+
+      service.synchronize(undefined, {...noChange, modified: [file('Shared.ttl')]}, undefined, withReferences);
+
+      expect(fileHandling.loadNamespaceFile).toHaveBeenCalledWith(
+        'org.example:1.0.0:Movement.ttl',
+        'urn:samm:org.example:1.0.0#Movement',
+        'org.example:1.0.0:Movement.ttl',
+      );
+    });
+
+    it('reloads an inactive referencing tab in place when shown', () => {
+      const referencing = tab('Movement.ttl', {filesSnapshot: snapshotOf(loaded('Movement.ttl'), loaded('Shared.ttl'))});
+      tabs.set([referencing]);
+
+      service.synchronize(undefined, {...noChange, removed: [file('Shared.ttl')]}, undefined, withReferences);
+
+      expect(tabState.closeTab).not.toHaveBeenCalled();
+      expect(tabState.tabsStore.renameTab).toHaveBeenCalledWith(
+        referencing.id,
+        expect.objectContaining({id: referencing.id, file: 'Movement.ttl', filesSnapshot: undefined}),
+      );
+    });
+
+    it('reloads tabs whose unresolved references a created file of the namespace may define', () => {
+      tabs.set([
+        tab('Movement.ttl', {
+          filesSnapshot: snapshotOf(
+            loaded('Movement.ttl'),
+            loaded('unresolved-references', {namespace: 'org.lib:1.0.0', unresolved: true}),
+          ),
+        }),
+        tab('Other.ttl', {filesSnapshot: snapshotOf(loaded('Other.ttl'))}),
+      ]);
+
+      const affected = service.affectedTabsAmong({...noChange, created: [file('Lib.ttl', 'org.lib')]}, withReferences);
+
+      expect(affected.map(t => t.file)).toEqual(['Movement.ttl']);
+    });
+
+    it('does not reload kept referencing tabs', () => {
+      tabs.set([tab('Movement.ttl', {isDirty: true, filesSnapshot: snapshotOf(loaded('Movement.ttl'), loaded('Shared.ttl'))})]);
+
+      service.synchronize(undefined, {...noChange, modified: [file('Shared.ttl')]}, t => !!t.isDirty, withReferences);
+
+      expect(tabState.tabsStore.renameTab).not.toHaveBeenCalled();
+    });
   });
 });

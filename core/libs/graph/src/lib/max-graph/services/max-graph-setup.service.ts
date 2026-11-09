@@ -11,8 +11,21 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ConfigurationService, ElementRefactoringAction, ElementRefactoringGuard, LoadedFilesService} from '@ame/domain';
-import {AssetsPath, BindingsService, BrowserService, LanguageTranslationService} from '@ame/shared';
+import {
+  ConfigurationService,
+  ElementRefactoringAction,
+  ElementRefactoringGuard,
+  ExternalEditorAction,
+  LoadedFilesService,
+} from '@ame/domain';
+import {
+  AssetsPath,
+  BindingsService,
+  BrowserService,
+  EXTERNAL_EDITOR_NAMES,
+  LanguageTranslationService,
+  resolveExternalEditor,
+} from '@ame/shared';
 import {inject, Injectable} from '@angular/core';
 import {DefaultAspect, DefaultEntityInstance, DefaultTrait, NamedElement} from '@esmf/aspect-model-loader';
 import {
@@ -426,6 +439,7 @@ export class MaxGraphSetupService {
       });
 
       if (selectedCells.length === 1) {
+        this.addOpenInExternalEditorItem(menu, modelElement);
         this.addRefactoringSubmenu(menu, modelElement);
       }
     }
@@ -449,6 +463,21 @@ export class MaxGraphSetupService {
         this.bindingsService.fireAction('copy-to-clipboard');
       });
     }
+  }
+
+  /** Opens the file declaring the element at the declaration; predefined and unresolved elements have no file. */
+  private addOpenInExternalEditorItem(menu: MaxPopupMenu, element: NamedElement): void {
+    if (!this.refactoringGuard.canShowUsages(element) || this.loadedFiles.isElementUnresolved(element)) return;
+
+    const label = this.translate.translateService.translate('externalEditor.openIn', {editor: this.externalEditorName()});
+    const item = menu.addItem(label, this.resolveAssetsIcon(AssetsPath.CodeIcon), () =>
+      this.bindingsService.fireAction(ExternalEditorAction.openElement),
+    );
+    item.setAttribute('data-testid', 'context-menu-open-in-external-editor');
+  }
+
+  private externalEditorName(): string {
+    return EXTERNAL_EDITOR_NAMES[resolveExternalEditor(this.configurationService.getSettings().externalEditor)];
   }
 
   /** Rename, move and usages of the element across all files, in the same way as in the element editor. */

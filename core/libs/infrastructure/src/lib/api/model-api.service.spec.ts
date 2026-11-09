@@ -123,6 +123,39 @@ describe('ModelApiService', () => {
     });
   });
 
+  describe('getElementLocation', () => {
+    beforeEach(() => configureTestBed());
+
+    it('should send the aspect model urn header and return the location', () => {
+      let result: {path: string; line: number; column: number};
+      service.getElementLocation('urn:samm:org.example:1.0.0#Speed').subscribe(value => (result = value));
+
+      const req = httpMock.expectOne(`${modelsUrl}/location`);
+      expect(req.request.method).toBe('GET');
+      expect(req.request.headers.get('aspect-model-urn')).toBe('urn:samm:org.example:1.0.0#Speed');
+      req.flush({path: 'C:\\ws\\Movement.ttl', line: 12, column: 1});
+
+      expect(result).toEqual({path: 'C:\\ws\\Movement.ttl', line: 12, column: 1});
+    });
+
+    it('should send the preferred file name as query parameter', () => {
+      service.getElementLocation('urn:samm:org.example:1.0.0#Speed', 'Movement B.ttl').subscribe();
+
+      const req = httpMock.expectOne(r => r.url === `${modelsUrl}/location`);
+      expect(req.request.params.get('fileName')).toBe('Movement B.ttl');
+      req.flush({path: '/ws/Movement B.ttl', line: 1, column: 1});
+    });
+
+    it('should propagate a missing location', () => {
+      let error: any;
+      service.getElementLocation('urn:samm:org.example:1.0.0#Speed').subscribe({error: err => (error = err)});
+
+      httpMock.expectOne(`${modelsUrl}/location`).flush('not found', {status: 404, statusText: 'Not Found'});
+
+      expect(error.status).toBe(404);
+    });
+  });
+
   describe('fetchAspectMetaModel', () => {
     beforeEach(() => configureTestBed());
 

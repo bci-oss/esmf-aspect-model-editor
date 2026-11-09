@@ -11,7 +11,9 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {BrowserService, IPC_RENDERER} from '@ame/shared';
+import {ExternalEditorService} from '@ame/domain';
+import {ExternalEditor} from '@ame/shared';
+import {signal, WritableSignal} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
@@ -20,15 +22,10 @@ import {WorkspaceErrorComponent} from './workspace-error.component';
 describe('WorkspaceErrorComponent', () => {
   let component: WorkspaceErrorComponent;
   let fixture: ComponentFixture<WorkspaceErrorComponent>;
-  const mockIpcRenderer = {
-    openInVsCodeOrDefault: vi.fn(),
-  };
-  const mockBrowserService = {
-    isStartedAsTauriApp: vi.fn().mockReturnValue(true),
-  };
+  let externalEditor: {editor: WritableSignal<ExternalEditor>; openFile: ReturnType<typeof vi.fn>};
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    externalEditor = {editor: signal<ExternalEditor>('vscode'), openFile: vi.fn()};
     TestBed.configureTestingModule({
       imports: [
         WorkspaceErrorComponent,
@@ -47,15 +44,18 @@ describe('WorkspaceErrorComponent', () => {
           translocoConfig: {availableLangs: ['en'], defaultLang: 'en'},
         }),
       ],
-      providers: [
-        {provide: IPC_RENDERER, useValue: mockIpcRenderer},
-        {provide: BrowserService, useValue: mockBrowserService},
-      ],
+      providers: [{provide: ExternalEditorService, useValue: externalEditor}],
     });
 
     fixture = TestBed.createComponent(WorkspaceErrorComponent);
     component = fixture.componentInstance;
   });
+
+  function renderFileLink(file: string): HTMLAnchorElement {
+    fixture.componentRef.setInput('error', {code: 400, message: `File: ${file} • Error: Something broke`, path: file});
+    fixture.detectChanges();
+    return fixture.nativeElement.querySelector('a.file-link') as HTMLAnchorElement;
+  }
 
   it('should create the component', () => {
     expect(component).toBeTruthy();
@@ -74,40 +74,28 @@ describe('WorkspaceErrorComponent', () => {
     expect(compiled.textContent).toContain('Invalid syntax in model file');
   });
 
-  it('should call openInVsCodeOrDefault when clicking a file link in Tauri app', () => {
-    fixture.componentRef.setInput('error', {
-      code: 400,
-      message: 'File: /workspace/models/Invalid.ttl • Error: Something broke',
-      path: '/workspace/models/Invalid.ttl',
-    });
-    fixture.detectChanges();
-
-    const link = fixture.nativeElement.querySelector('a.file-link') as HTMLAnchorElement;
-    expect(link).toBeTruthy();
+  it('should open the file of a file link in the external editor', () => {
+    const link = renderFileLink('/workspace/models/Invalid.ttl');
 
     link.click();
 
-    expect(mockIpcRenderer.openInVsCodeOrDefault).toHaveBeenCalledWith(
-      'vscode://file//workspace/models/Invalid.ttl',
-      '/workspace/models/Invalid.ttl',
-    );
+    expect(externalEditor.openFile).toHaveBeenCalledWith('/workspace/models/Invalid.ttl');
   });
 
-  it('should not call openInVsCodeOrDefault when not started as Tauri app', () => {
-    mockBrowserService.isStartedAsTauriApp.mockReturnValue(false);
+  it('should link file URIs to the configured external editor', () => {
+    externalEditor.editor.set('cursor');
 
-    fixture.componentRef.setInput('error', {
-      code: 400,
-      message: 'File: /workspace/models/Invalid.ttl • Error: Something broke',
-      path: '/workspace/models/Invalid.ttl',
-    });
-    fixture.detectChanges();
+    const link = renderFileLink('file:///C:/my%20models/Invalid.ttl');
 
-    const link = fixture.nativeElement.querySelector('a.file-link') as HTMLAnchorElement;
-    expect(link).toBeTruthy();
-
+    expect(link.textContent).toBe('file:///C:/my%20models/Invalid.ttl');
+    expect(link.getAttribute('href')).toBe('cursor://file/C:/my%20models/Invalid.ttl');
     link.click();
+    expect(externalEditor.openFile).toHaveBeenCalledWith('C:/my models/Invalid.ttl');
+  });
 
-    expect(mockIpcRenderer.openInVsCodeOrDefault).not.toHaveBeenCalled();
+  it('should link Unix paths given as file URIs', () => {
+    const link = renderFileLink('file:/Users/me/models/Invalid.ttl');
+
+    expect(link.getAttribute('href')).toBe('vscode://file/Users/me/models/Invalid.ttl');
   });
 });

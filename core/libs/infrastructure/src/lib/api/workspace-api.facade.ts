@@ -11,7 +11,15 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ClearWorkspaceResult, MigrationStatus, ModelFileLocation, ReferenceReport, StoragePathResponse, WorkspaceFacade} from '@ame/domain';
+import {
+  ClearWorkspaceResult,
+  ElementLocation,
+  MigrationStatus,
+  ModelFileLocation,
+  ReferenceReport,
+  StoragePathResponse,
+  WorkspaceFacade,
+} from '@ame/domain';
 import {inject, Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {NamespacesManagerService} from '../namespace-manager/shared/services/namespaces-manager.service';
@@ -27,6 +35,10 @@ export class WorkspaceApiFacade implements WorkspaceFacade {
 
   getStoragePath(file?: ModelFileLocation): Observable<StoragePathResponse> {
     return this.modelApi.getStoragePath(file);
+  }
+
+  getElementLocation(aspectModelUrn: string, fileName?: string): Observable<ElementLocation> {
+    return this.modelApi.getElementLocation(aspectModelUrn, fileName);
   }
 
   fetchAspectMetaModel(aspectModelUrn: string): Observable<{content: string; sourceLocation: string | null}> {

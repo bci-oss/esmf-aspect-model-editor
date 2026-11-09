@@ -110,8 +110,9 @@ td.mxPopupMenuItem > img {
   vertical-align: middle;
 }
 
-tr.mxPopupMenuItemHxover {
-  background-color: var(--ame-surface-hover, #eeeeee);
+/* maxGraph sets this class on the row under the mouse */
+tr.mxPopupMenuItemHover {
+  background-color: color-mix(in srgb, var(--ame-primary) 22%, transparent);
   color: var(--ame-font, black);
 }
 

@@ -16,6 +16,7 @@ import {
   AsyncApi,
   ClearWorkspaceResult,
   DiagramFormat,
+  ElementLocation,
   ElementUsageReport,
   FileEntry,
   FileInformation,
@@ -72,6 +73,19 @@ export class ModelApiService implements ModelApiPort {
       .get<{content: string; sourceLocation: string | null}>(`${this.serviceUrl}${this.api.models}`, {
         params: {ignoreMissing: true},
         headers: new HttpHeaderBuilder().withContentTypeRdfTurtle().withAspectModelUrn(aspectModelUrn).build(),
+      })
+      .pipe(
+        timeout(this.requestTimeout),
+        catchError(res => throwError(() => res)),
+      );
+  }
+
+  /** `fileName` decides if several files of the element's namespace version declare it. */
+  getElementLocation(aspectModelUrn: string, fileName?: string): Observable<ElementLocation> {
+    return this.http
+      .get<ElementLocation>(`${this.serviceUrl}${this.api.models}/location`, {
+        headers: new HttpHeaderBuilder().withAspectModelUrn(aspectModelUrn).build(),
+        params: fileName ? {fileName} : {},
       })
       .pipe(
         timeout(this.requestTimeout),

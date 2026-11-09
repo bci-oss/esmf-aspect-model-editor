@@ -14,7 +14,14 @@
 import {InjectionToken} from '@angular/core';
 import {TAURI_EVENTS} from './enums';
 import {OpenModelsSnapshot, OpenWindowModels} from './model/startup-options';
-import {BackendStatus, GithubTokenInfo, PluginMenuPayload, TauriApi, TauriContextMenuPayload} from './model/tauri-api.model';
+import {
+  BackendStatus,
+  ExternalEditorRequest,
+  GithubTokenInfo,
+  PluginMenuPayload,
+  TauriApi,
+  TauriContextMenuPayload,
+} from './model/tauri-api.model';
 
 declare global {
   interface Window {
@@ -197,9 +204,9 @@ function createTauriBridge(): TauriApi {
       await invoke('open_external_link', {link});
     },
 
-    async openInVsCodeOrDefault(vscodeUrl: string, filePath: string): Promise<void> {
+    async openInExternalEditor({url, path, line, column, cli}: ExternalEditorRequest): Promise<void> {
       const {invoke} = await import('@tauri-apps/api/core');
-      await invoke('open_in_vscode_or_default', {vscodeUrl, filePath});
+      await invoke('open_in_external_editor', {url, path, line: line ?? null, column: column ?? null, cli: cli ?? null});
     },
 
     async getOpenModels(): Promise<OpenModelsSnapshot> {

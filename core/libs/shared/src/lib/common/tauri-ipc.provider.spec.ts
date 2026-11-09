@@ -60,7 +60,7 @@ describe('IPC_RENDERER Provider', () => {
     TestBed.resetTestingModule();
     const renderer = TestBed.inject(IPC_RENDERER);
     expect(renderer).toBeDefined();
-    expect(typeof renderer?.openInVsCodeOrDefault).toBe('function');
+    expect(typeof renderer?.openInExternalEditor).toBe('function');
     expect(typeof renderer?.showContextMenu).toBe('function');
     expect(typeof renderer?.copyToClipboard).toBe('function');
 
@@ -81,6 +81,35 @@ describe('IPC_RENDERER Provider', () => {
 
     renderer?.send(TAURI_EVENTS.REQUEST.SET_SESSION_RESTORE, false);
     await vi.waitFor(() => expect(invoke).toHaveBeenCalledWith('set_session_restore_enabled', {enabled: false}));
+
+    delete (window as any).__TAURI_INTERNALS__;
+  });
+
+  it('should forward external editor requests to the Tauri command', async () => {
+    delete (window as any).tauriAPI;
+    delete (window as any).tauriApi;
+    (window as any).__TAURI_INTERNALS__ = {};
+    TestBed.resetTestingModule();
+    const renderer = TestBed.inject(IPC_RENDERER);
+    invoke.mockClear();
+
+    await renderer?.openInExternalEditor({url: 'vscode://file/ws/a.ttl:3:2', path: '/ws/a.ttl', line: 3, column: 2, cli: 'code'});
+    expect(invoke).toHaveBeenCalledWith('open_in_external_editor', {
+      url: 'vscode://file/ws/a.ttl:3:2',
+      path: '/ws/a.ttl',
+      line: 3,
+      column: 2,
+      cli: 'code',
+    });
+
+    await renderer?.openInExternalEditor({url: 'vscode://file/ws', path: '/ws'});
+    expect(invoke).toHaveBeenLastCalledWith('open_in_external_editor', {
+      url: 'vscode://file/ws',
+      path: '/ws',
+      line: null,
+      column: null,
+      cli: null,
+    });
 
     delete (window as any).__TAURI_INTERNALS__;
   });

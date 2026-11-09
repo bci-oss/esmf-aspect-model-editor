@@ -11,7 +11,14 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ConfigurationService, FilterAttributesService, FiltersService, PluginCommandEntry} from '@ame/domain';
+import {
+  ConfigurationService,
+  ExternalEditorAction,
+  ExternalEditorService,
+  FilterAttributesService,
+  FiltersService,
+  PluginCommandEntry,
+} from '@ame/domain';
 import {MaxGraphService, MaxGraphShapeSelectorService, ShapeConnectorService} from '@ame/graph';
 import {BindingsService, ModelFilter, NotificationsService} from '@ame/shared';
 import {signal} from '@angular/core';
@@ -110,9 +117,11 @@ describe('EditorToolbarComponent', () => {
         MockProvider(PrefixManagementService, {openManagement: vi.fn()}),
         MockProvider(ModelHistoryService, {canUndo, canRedo, undo: vi.fn(), redo: vi.fn()}),
         MockProvider(PluginRuntimeService, {toolbarCommands: pluginCommands, run: vi.fn(() => Promise.resolve())}),
+        MockProvider(ExternalEditorService, {openElement: vi.fn(() => Promise.resolve())}),
         MockProvider(ElementRefactoringService, {
           selectedElement: refactoringElement,
           registerContextMenuActions: vi.fn(),
+          urnOf: vi.fn((element: NamedElement | null) => element?.aspectModelUrn ?? null),
           blocker: vi.fn(() => null),
           canShowUsages: vi.fn(() => true),
           refactor: vi.fn(),
@@ -230,6 +239,31 @@ describe('EditorToolbarComponent', () => {
       expect(filterButton().classList).toContain('disabled');
       filterButton().click();
       expect(filtersService.renderByFilter).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('open in external editor', () => {
+    const fireOpenElement = () => {
+      const registerAction = vi.mocked(TestBed.inject(BindingsService).registerAction);
+      const registration = registerAction.mock.calls.find(([id]) => id === ExternalEditorAction.openElement);
+      expect(registration).toBeDefined();
+      registration?.[1]();
+    };
+
+    it('opens the element selected in the graph context menu', () => {
+      refactoringElement.set(
+        new DefaultProperty({aspectModelUrn: 'urn:samm:org.example:1.0.0#speed', name: 'speed', metaModelVersion: '2.2.0'}),
+      );
+
+      fireOpenElement();
+
+      expect(TestBed.inject(ExternalEditorService).openElement).toHaveBeenCalledWith('urn:samm:org.example:1.0.0#speed');
+    });
+
+    it('does nothing without a single selected element', () => {
+      fireOpenElement();
+
+      expect(TestBed.inject(ExternalEditorService).openElement).not.toHaveBeenCalled();
     });
   });
 

@@ -19,3 +19,4 @@ export * from './model-validator.service';
 export * from './plugins-api.service';
 export * from './refactoring-api.service';
 export * from './workspace-api.facade';
+export * from './workspace-events-api.service';

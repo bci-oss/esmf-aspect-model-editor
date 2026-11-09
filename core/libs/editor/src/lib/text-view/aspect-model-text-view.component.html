@@ -70,6 +70,15 @@
     >
       <mat-icon>alternate_email</mat-icon>
     </button>
+    <button
+      [matTooltip]="t('textView.openInExternalEditor', {editor: externalEditorName()})"
+      [disabled]="state() !== 'ready'"
+      (click)="openInExternalEditor()"
+      mat-icon-button
+      data-testid="text-view-open-in-external-editor"
+    >
+      <mat-icon>open_in_new</mat-icon>
+    </button>
     <button [matTooltip]="t('textView.refresh')" [disabled]="loading()" (click)="reload()" mat-icon-button data-testid="text-view-refresh">
       <mat-icon>refresh</mat-icon>
     </button>

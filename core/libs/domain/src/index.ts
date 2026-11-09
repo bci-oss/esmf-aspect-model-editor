@@ -17,6 +17,7 @@ export * from './lib/meta-model';
 export * from './lib/model-api';
 export * from './lib/model-session';
 export * from './lib/ports';
+export * from './lib/state/external-editor/external-editor.service';
 export * from './lib/state/features/with-request-status';
 export * from './lib/state/history/model-history.models';
 export * from './lib/state/history/model-history.store';

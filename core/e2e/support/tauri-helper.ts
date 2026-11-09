@@ -170,8 +170,8 @@ export class TauriHelper {
           async openExternalLink(link: string) {
             sentEvents.push({channel: 'openExternalLink', args: [link]});
           },
-          async openInVsCodeOrDefault(vscodeUrl: string, filePath: string) {
-            sentEvents.push({channel: 'openInVsCodeOrDefault', args: [vscodeUrl, filePath]});
+          async openInExternalEditor(request: {url: string; path: string; line?: number; column?: number; cli?: string}) {
+            sentEvents.push({channel: 'openInExternalEditor', args: [request]});
           },
           showContextMenu(payload: any) {
             (window as any).__tauriMock.activeContextHref = payload?.href || null;

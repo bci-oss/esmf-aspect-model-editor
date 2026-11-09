@@ -57,6 +57,10 @@ This section lists features that can be achieved within the Aspect Model Editor,
 | Workspace
 | Open models in other windows (browser)
 | Only the desktop application knows which models are open in other windows. In the browser, deleting files and namespaces and clearing the workspace only consider the tabs of the current window.
+
+| Workspace
+| Changes made outside the editor
+| Only writable workspace sources are watched, and changes made at the same moment the editor saves a file are not reported. See xref:getting-started/external-editor.adoc#external-editor-limitations[Work with VS Code].
 |===
 
 [[current-known-limitations-macos]]

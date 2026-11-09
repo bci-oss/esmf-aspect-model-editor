@@ -487,6 +487,10 @@
       "displayDisambiguationLabelTooltip": "显示需要消歧的关系标签，例如操作输入/输出、特征左/右以及设置了 notInPayload 的属性。",
       "elementOrder": "保存时的元素顺序",
       "elementOrderTooltip": "定义保存的 Turtle 文件中元素的顺序。保留文件原有顺序可使 Git 差异保持较小。元素内部的属性顺序始终遵循 SAMM 规范。",
+      "externalEditor": "在外部编辑器中打开",
+      "externalEditorTooltip": "用于打开Workspace、文件夹、文件和模型元素的 VS Code 兼容编辑器。VS Code 会在元素声明所在的行打开该元素。",
+      "reloadExternalChanges": "外部更改后自动重新加载模型",
+      "reloadExternalChangesTooltip": "当模型文件或其引用的文件在编辑器外部（例如 VS Code）被更改时，立即重新加载没有未保存更改的已打开模型。禁用时，编辑器会在您返回时询问。",
       "elementOrderOptions": {
         "keepOrderAfterParent": "保留顺序，新元素插入到其父元素之后",
         "keepOrderAppend": "保留顺序，新元素追加到末尾",
@@ -888,7 +892,9 @@
     "sortAlphabetically": "按字母顺序排列元素",
     "sortAlphabeticallyDisabled": "当元素顺序由格式化程序定义时不可用（设置 > 编辑器）",
     "sorted": "元素已按字母顺序排列。保存模型以将新顺序写入文件。",
-    "prefixes": "管理前缀"
+    "prefixes": "管理前缀",
+    "openInExternalEditor": "在 {{editor}} 中打开光标处的元素（Ctrl+单击或 Cmd+单击打开所单击的元素）",
+    "openElementInExternalEditor": "在 {{editor}} 中打开此元素"
   },
   "menu": {
     "file": {
@@ -909,6 +915,8 @@
       "saveToWorkspace": "保存至Workspace",
       "exportModel": "导出Model",
       "exportPackage": "导出Package",
+      "openInExternalEditor": "在 {{editor}} 中打开",
+      "openWorkspaceInExternalEditor": "在 {{editor}} 中打开Workspace",
       "settings": "设置...",
       "importAas": "导入资产管理壳"
     },
@@ -1341,6 +1349,26 @@
       "openError": "无法打开插件的模型",
       "noModel": "请先打开一个 Aspect Model 再使用此命令。",
       "saveError": "无法保存插件的文件"
+    }
+  },
+  "externalEditor": {
+    "openIn": "在 {{editor}} 中打开",
+    "openFolderIn": "在 {{editor}} 中打开文件夹",
+    "openSourceIn": "在 {{editor}} 中打开源文件夹",
+    "notSavedTitle": "模型不在Workspace中",
+    "notSavedMessage": "请先将模型保存到Workspace。",
+    "errorTitle": "无法打开 {{editor}}",
+    "errorMessage": "无法打开 {{editor}}。请确认已安装该编辑器。"
+  },
+  "externalChanges": {
+    "reloaded": "外部更改后已重新加载：{{files}}",
+    "reloadDialog": {
+      "title": "文件已在编辑器外部更改",
+      "message": "以下已打开的模型受到编辑器外部更改的影响（自身或其引用的文件）：{{files}}",
+      "unsaved": "重新加载时，这些模型中未保存的更改将被丢弃：{{files}}",
+      "question": "现在重新加载吗？",
+      "reload": "重新加载",
+      "keep": "保留当前状态"
     }
   }
 }

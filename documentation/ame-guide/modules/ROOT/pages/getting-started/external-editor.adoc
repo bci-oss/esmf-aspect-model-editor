@@ -1,0 +1,107 @@
+:page-partial:
+
+[[external-editor]]
+= Work with VS Code
+
+The Aspect Model Editor works together with https://code.visualstudio.com/[Visual Studio Code] and compatible editors.
+Together with the https://marketplace.visualstudio.com/items?itemName=eclipse-esmf.semantic-models[ESMF Semantic Models extension], you can edit the TTL source of your Aspect Models in VS Code while the Aspect Model Editor shows the graph.
+
+[[external-editor-choose]]
+== Choose the editor
+
+Open the xref:getting-started/settings.adoc[Settings] and select the editor in *Open in external editor*.
+
+[cols="30%,35%,35%"]
+|===
+| Editor | URL scheme | Command line launcher
+
+| VS Code (default) | `vscode://` | `code`
+| VS Code Insiders | `vscode-insiders://` | `code-insiders`
+| Cursor | `cursor://` | `cursor`
+| VSCodium | `vscodium://` | `codium`
+|===
+
+[[external-editor-open]]
+== Open the workspace, files and elements
+
+[cols="35%,65%"]
+|===
+| What | Where
+
+| The whole workspace
+| *File* > *Open Workspace in VS Code* (kbd:[Ctrl+Shift+G], on macOS kbd:[Cmd+Shift+G])
+
+| The file of the current Aspect Model
+| *File* > *Open in VS Code* (kbd:[Ctrl+G], on macOS kbd:[Cmd+G])
+
+| A file of the workspace
+| Workspace sidebar: file menu > *Open in VS Code*
+
+| A namespace or version folder
+| Workspace sidebar: namespace menu > *Open folder in VS Code*
+
+| A source folder
+| Workspace sidebar: source header > *Open source folder in VS Code*
+
+| A model element
+| Right-click the element in the graph > *Open in VS Code*.
+VS Code opens the file at the line where the element is declared.
+
+| A model element in the text view
+| Hold kbd:[Ctrl] (on macOS kbd:[Cmd]) and click the element name, or place the cursor on it and click *Open in VS Code* in the header of the text view.
+Without an element at the cursor, the element of the surrounding statement is opened, otherwise the file of the Aspect Model.
+|===
+
+The menu entries are named after the selected editor, for example *Open in Cursor*.
+
+If several files of the same namespace version declare an element with the same name, the file loaded in the editor is opened, i.e. the current Aspect Model or the referenced file the element comes from.
+The text view shows the model as it would be saved; VS Code shows the file on disk, so line numbers may differ until you save.
+
+NOTE: An element can only be located after its Aspect Model has been saved to the workspace.
+New, unsaved models show the message _Save the model to the workspace first._
+
+[[external-editor-how]]
+=== How the editor is started
+
+The desktop app tries the following, one after the other:
+
+. the URL scheme of the editor, for example `vscode://file/C:/ws/a.ttl:12:3`,
+. the command line launcher with `--goto <file>:<line>:<column>` (`code.cmd` on Windows),
+. the default application of the operating system for the file or folder.
+
+This works the same on Windows, macOS and Linux.
+Paths with spaces, drive letters and UNC paths are supported.
+
+In the browser, only the URL scheme is used.
+Whether the browser asks for permission or opens the editor depends on the browser.
+
+[[external-editor-sync]]
+== Changes made outside the editor
+
+The Aspect Model Editor detects when `.ttl` files in the workspace are created, changed or deleted by another program, for example VS Code, Git or a file manager.
+
+* The Workspace sidebar is updated automatically.
+* If open Aspect Models are affected, a dialog asks whether to reload them.
+The dialog appears once you return to the Aspect Model Editor, so models never change while you work in VS Code.
+Changes made meanwhile are collected and shown in one dialog.
+** Affected are Aspect Models whose file changed or was deleted, and Aspect Models that reference such a file, for example when you change the description of a referenced property in VS Code.
+If an Aspect Model has missing references, it is also affected when a file is created in the namespace of a missing element.
+** *Reload* loads the files from disk. The dialog lists the models whose unsaved changes are discarded.
+** *Keep current state* keeps the models in the editor. Saving them later overwrites the files on disk.
+
+To reload open models right away, enable *Settings > Editor > Reload models automatically after external changes*.
+Models without unsaved changes are then reloaded immediately and a notification lists them; the dialog only asks about models with unsaved changes.
+
+Changes made by the Aspect Model Editor itself, for example saving or refactoring, are not reported.
+
+TIP: Renaming an element in VS Code does not update the files that reference it; they show it as a xref:namespace/missing-references.adoc[missing reference] afterwards.
+Rename elements in the Aspect Model Editor instead: it updates the references in all files of the workspace.
+
+[[external-editor-limitations]]
+== Limitations
+
+* Changes are detected by checking the workspace about once per second, so a reload can take a moment.
+* Only writable workspace sources are watched. Read-only sources, such as GitHub sources, are not.
+* External changes made at the same moment the Aspect Model Editor saves a file are not reported.
+* After the connection to the backend has been lost, the whole workspace is reloaded instead of reporting single files.
+* *Open folder in VS Code* is not available for GitHub sources.

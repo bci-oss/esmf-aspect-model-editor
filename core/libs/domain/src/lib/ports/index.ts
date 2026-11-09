@@ -28,3 +28,4 @@ export * from './rdf.port';
 export * from './refactoring-dialog.port';
 export * from './refactoring.port';
 export * from './ui.port';
+export * from './workspace-events.port';

@@ -83,8 +83,19 @@ describe('EditorConfigurationComponent', () => {
     expect(fixture.nativeElement.querySelector('[data-testid="elementOrderSelect"]')).toBeTruthy();
   });
 
+  it('should offer the external editors with VS Code selected by default', () => {
+    expect(component.externalEditors).toEqual(['vscode', 'vscode-insiders', 'cursor', 'vscodium']);
+    expect(component.form.editorConfiguration.externalEditor().value()).toBe('vscode');
+    expect(fixture.nativeElement.querySelector('[data-testid="externalEditorSelect"]')).toBeTruthy();
+  });
+
   it('should offer the session restore toggle, enabled by default', () => {
     expect(component.form.editorConfiguration.restoreSession().value()).toBe(true);
     expect(fixture.nativeElement.querySelector('[data-testid="restoreSessionToggle"]')).toBeTruthy();
+  });
+
+  it('should offer the toggle to reload models after external changes, disabled by default', () => {
+    expect(component.form.editorConfiguration.reloadExternalChanges().value()).toBe(false);
+    expect(fixture.nativeElement.querySelector('[data-testid="reloadExternalChangesToggle"]')).toBeTruthy();
   });
 });

@@ -12,6 +12,7 @@
   - [Build Desktop App](#build-desktop-app)
   - [Release](#release)
   - [Running E2E (Playwright) Tests](#running-e2e-playwright-tests)
+- [External editors (VS Code)](#external-editors-vs-code)
 - [Plugins](#plugins)
 - [Documentation](#documentation)
 - [License](#license)
@@ -159,6 +160,27 @@ pnpm run e2e:ui
 # Run headed
 pnpm run e2e:headed
 ```
+
+## External editors (VS Code)
+
+The editor opens the workspace, a namespace folder, a file or the declaration of a model element in VS Code or a
+compatible editor (VS Code Insiders, Cursor, VSCodium; see *Settings > Open in external editor*). It also reloads the
+workspace when `.ttl` files are changed outside the editor and asks, once the editor window has the focus again, whether
+to reload the affected open models (*Settings > Reload models automatically after external changes* reloads them right
+away instead).
+
+| Part | Location |
+|------|----------|
+| URL and path helpers (`vscode://file/...`, Windows/UNC paths) | `libs/shared/src/lib/common/external-editor/` |
+| Commands: open file, folder, element, workspace | `libs/domain/src/lib/state/external-editor/` |
+| Desktop launcher: URL scheme → CLI `--goto` (`code.cmd` on Windows) → OS default | `src-tauri/src/external_editor.rs` |
+| Element position (`GET /models/location?fileName=`, the loaded file declaring the element wins) | `ModelApiService.getElementLocation` |
+| Text view: toolbar button, Ctrl/Cmd+click with link underline and gutter icon per definition (`elementRangeAt`, `elementDefinitionOffsets`, `enclosingSubjectAt`) | `libs/editor/src/lib/text-view/` |
+| Change events (`GET /workspaces/events`, Server-Sent Events via `fetch`, token header, retry with backoff) | `libs/infrastructure/src/lib/api/workspace-events-api.service.ts` |
+| Reload dialog for affected tabs (also tabs referencing a changed file), shown when the window has the focus; optional automatic reload of clean tabs | `libs/editor/src/lib/external-changes/` |
+
+The backend side is described in the backend README. User documentation:
+[Work with VS Code](documentation/ame-guide/modules/ROOT/pages/getting-started/external-editor.adoc).
 
 ## Plugins
 

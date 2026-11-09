@@ -14,6 +14,7 @@
 import {
   ConfirmDialogEnum,
   ConfirmDialogPort,
+  ExternalEditorService,
   ModelOpenerPort,
   ModelSessionFacade,
   ModelSource,
@@ -29,7 +30,7 @@ import {
   OtherWindowsModelsService,
   TauriSignalsService,
 } from '@ame/shared';
-import {provideZonelessChangeDetection} from '@angular/core';
+import {provideZonelessChangeDetection, signal, WritableSignal} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {TranslocoTestingModule} from '@jsverse/transloco';
@@ -59,6 +60,7 @@ describe('WorkspaceFileListComponent', () => {
     openInNewWindow: ReturnType<typeof vi.fn>;
   };
   let refactoringDialogMock: {open: ReturnType<typeof vi.fn>; showUsages: ReturnType<typeof vi.fn>};
+  let externalEditorMock: {editorName: WritableSignal<string>; openFile: ReturnType<typeof vi.fn>; openFolder: ReturnType<typeof vi.fn>};
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -85,6 +87,7 @@ describe('WorkspaceFileListComponent', () => {
       openInNewWindow: vi.fn(),
     };
     refactoringDialogMock = {open: vi.fn(() => of(null)), showUsages: vi.fn()};
+    externalEditorMock = {editorName: signal('VS Code'), openFile: vi.fn(), openFolder: vi.fn()};
 
     TestBed.configureTestingModule({
       imports: [
@@ -102,6 +105,7 @@ describe('WorkspaceFileListComponent', () => {
         {provide: ModelSessionFacade, useValue: loadedFilesMock},
         {provide: ModelOpenerPort, useValue: modelOpenerMock},
         {provide: RefactoringDialogPort, useValue: refactoringDialogMock},
+        {provide: ExternalEditorService, useValue: externalEditorMock},
         {
           provide: LanguageTranslationService,
           useValue: {
@@ -415,6 +419,57 @@ describe('WorkspaceFileListComponent', () => {
 
     it('is disabled without a selected namespace', () => {
       expect(component.isNamespaceDeleteDisabled()).toBe(true);
+    });
+
+    it('opens the namespace version folder of the clicked namespace in the external editor', () => {
+      const button: HTMLButtonElement = fixture.nativeElement.querySelector('[data-testid="openNamespaceMenu"]');
+      button.click();
+
+      component.openNamespaceInExternalEditor();
+
+      expect(modelApiMock.getStoragePath).toHaveBeenCalledWith(expect.objectContaining({namespace: 'org.eclipse.esmf', version: '1.0.0'}));
+      expect(externalEditorMock.openFolder).toHaveBeenCalledWith('/workspace/org.eclipse.esmf/1.0.0');
+    });
+
+    it('does not open the external editor without a file of the namespace', () => {
+      component.prepareNamespaceMenu('org.eclipse.esmf:1.0.0');
+      component.openNamespaceInExternalEditor();
+
+      expect(externalEditorMock.openFolder).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('open in external editor', () => {
+    it('opens the file at the path reported by the backend', () => {
+      const file = sidebarService.namespacesState.getFile('org.eclipse.esmf:1.0.0', 'File1.ttl')!;
+      component.prepare('org.eclipse.esmf:1.0.0', file);
+      component.openInExternalEditor();
+
+      expect(externalEditorMock.openFile).toHaveBeenCalledWith('/workspace/org.eclipse.esmf/1.0.0/File1.ttl');
+    });
+
+    it('opens the local copy of files of GitHub sources', () => {
+      const file = sidebarService.namespacesState.getFile('org.eclipse.esmf:1.0.0', 'File1.ttl') as FileStatus;
+      file.source = {type: 'github', id: 'gh', name: 'GitHub', path: '/home/ame/github/gh', readOnly: true, defaultWorkspace: false};
+      component.prepare('org.eclipse.esmf:1.0.0', file);
+      component.openInExternalEditor();
+
+      expect(externalEditorMock.openFile).toHaveBeenCalledWith('/home/ame/github/gh/org.eclipse.esmf/1.0.0/File1.ttl');
+    });
+
+    it('builds the path from the source root if the backend cannot locate the file', () => {
+      modelApiMock.getStoragePath.mockReturnValueOnce(throwError(() => new Error('not found')));
+      const file = sidebarService.namespacesState.getFile('org.eclipse.esmf:1.0.0', 'File1.ttl') as FileStatus;
+      file.source = {type: 'workspace', id: 'C:\\ws', name: 'ws', path: 'C:\\ws', readOnly: false, defaultWorkspace: false};
+      component.prepare('org.eclipse.esmf:1.0.0', file);
+      component.openInExternalEditor();
+
+      expect(externalEditorMock.openFile).toHaveBeenCalledWith('C:\\ws\\org.eclipse.esmf\\1.0.0\\File1.ttl');
+    });
+
+    it('does nothing without a selected file', () => {
+      component.openInExternalEditor();
+      expect(externalEditorMock.openFile).not.toHaveBeenCalled();
     });
   });
 
@@ -776,6 +831,18 @@ describe('WorkspaceFileListComponent', () => {
       component.copyFilePath();
 
       expect(copy).toHaveBeenCalledWith('https://github.com/owner/repo/blob/feature/x/models/com.remote/1.0.0/Remote.ttl');
+    });
+
+    it('should offer to open every source folder in the external editor next to its header', () => {
+      const el: HTMLElement = fixture.nativeElement;
+      const buttons = el.querySelectorAll<HTMLButtonElement>('[data-testid="workspace-source-open-in-editor"]');
+      expect(buttons).toHaveLength(3);
+      expect(el.querySelector('button.source [data-testid="workspace-source-open-in-editor"]')).toBeNull();
+
+      buttons[1].click();
+
+      expect(externalEditorMock.openFolder).toHaveBeenCalledWith('/other');
+      expect(component.isSourceCollapsed('/other')).toBe(false);
     });
 
     it('should hide source headers with a single source', () => {

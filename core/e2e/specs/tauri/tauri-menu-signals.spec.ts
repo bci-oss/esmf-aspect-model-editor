@@ -267,7 +267,7 @@ test.describe('Tauri Menu & IPC Integration', () => {
     await expect(page.locator(SELECTOR_editorSaveButton)).not.toBeVisible();
   });
 
-  test('should invoke openInVsCodeOrDefault when clicking file link in workspace error', async ({page}) => {
+  test('should open the file in the external editor when clicking the file link in a workspace error', async ({page}) => {
     // Open workspace sidebar
     const {SELECTOR_workspaceBtn} = await import('../../support/constants');
     await page.locator(SELECTOR_workspaceBtn).click();
@@ -294,8 +294,8 @@ test.describe('Tauri Menu & IPC Integration', () => {
     await expect
       .poll(
         async () => {
-          const events = await tauri.getSentEvents('openInVsCodeOrDefault');
-          return events.some(e => e.args?.[0] === 'vscode://file//models/Invalid.ttl' && e.args?.[1] === '/models/Invalid.ttl');
+          const events = await tauri.getSentEvents('openInExternalEditor');
+          return events.some(e => e.args?.[0]?.url === 'vscode://file/models/Invalid.ttl' && e.args?.[0]?.path === '/models/Invalid.ttl');
         },
         {timeout: 10000},
       )

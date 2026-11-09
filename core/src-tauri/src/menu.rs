@@ -25,7 +25,7 @@ use tauri_plugin_dialog::DialogExt;
 /// Every actionable menu item has one. `CmdOrCtrl` resolves to Cmd on macOS and Ctrl on Windows/Linux.
 /// Keep this the single source of truth so conflicts can be checked in one place (see tests).
 ///
-/// Scheme: letters follow the action (N = new, O = open, E = export, ...), `Shift` marks the
+/// Scheme: letters follow the action (N = new, O = open, E = export, G = go to the external editor, ...), `Shift` marks the
 /// "bigger" variant of an action, digits are used for examples (1-2), generators (3-8) and zoom (9-0).
 ///
 /// Not used on purpose:
@@ -49,6 +49,8 @@ pub(crate) const MENU_SHORTCUTS: &[(&str, &str)] = &[
     ("SAVE_TO_WORKSPACE", "CmdOrCtrl+S"),
     ("EXPORT_MODEL", "CmdOrCtrl+Shift+E"),
     ("EXPORT_PACKAGE", "CmdOrCtrl+Shift+X"),
+    ("OPEN_IN_EXTERNAL_EDITOR", "CmdOrCtrl+G"),
+    ("OPEN_WORKSPACE_IN_EXTERNAL_EDITOR", "CmdOrCtrl+Shift+G"),
     ("OPEN_SETTINGS", "CmdOrCtrl+,"),
     // View
     ("SHOW_HIDE_TOOLBAR", "CmdOrCtrl+Shift+B"),
@@ -141,6 +143,14 @@ fn build_file_submenu<R: Runtime>(app: &AppHandle<R>) -> Result<Submenu<R>, taur
     let save_workspace = item(app, "SAVE_TO_WORKSPACE", "Save to Workspace", false)?;
     let export_model = item(app, "EXPORT_MODEL", "Export Model", false)?;
     let export_package = item(app, "EXPORT_PACKAGE", "Export Package", true)?;
+    let editor_sep = PredefinedMenuItem::separator(app)?;
+    let open_in_editor = item(app, "OPEN_IN_EXTERNAL_EDITOR", "Open in VS Code", false)?;
+    let open_workspace_in_editor = item(
+        app,
+        "OPEN_WORKSPACE_IN_EXTERNAL_EDITOR",
+        "Open Workspace in VS Code",
+        true,
+    )?;
 
     // On macOS "Settings..." lives in the application menu (see build_macos_app_submenu).
     #[cfg(not(target_os = "macos"))]
@@ -163,6 +173,9 @@ fn build_file_submenu<R: Runtime>(app: &AppHandle<R>) -> Result<Submenu<R>, taur
                 &save_workspace,
                 &export_model,
                 &export_package,
+                &editor_sep,
+                &open_in_editor,
+                &open_workspace_in_editor,
                 &settings_sep,
                 &settings,
             ],
@@ -187,6 +200,9 @@ fn build_file_submenu<R: Runtime>(app: &AppHandle<R>) -> Result<Submenu<R>, taur
                 &save_workspace,
                 &export_model,
                 &export_package,
+                &editor_sep,
+                &open_in_editor,
+                &open_workspace_in_editor,
             ],
         )
     }
@@ -680,6 +696,15 @@ pub fn translate_menu<R: Runtime>(app: &AppHandle<R>, translation: &serde_json::
             file.get("exportPackage").and_then(|v| v.as_str()),
         ));
         mappings.push((
+            "OPEN_IN_EXTERNAL_EDITOR",
+            file.get("openInExternalEditor").and_then(|v| v.as_str()),
+        ));
+        mappings.push((
+            "OPEN_WORKSPACE_IN_EXTERNAL_EDITOR",
+            file.get("openWorkspaceInExternalEditor")
+                .and_then(|v| v.as_str()),
+        ));
+        mappings.push((
             "OPEN_SETTINGS",
             file.get("settings").and_then(|v| v.as_str()),
         ));
@@ -988,6 +1013,8 @@ mod tests {
             ("VALIDATE_MODEL", "CmdOrCtrl+Shift+V"),
             ("SEARCH_ELEMENTS", "CmdOrCtrl+F"),
             ("SEARCH_FILES", "CmdOrCtrl+Shift+F"),
+            ("OPEN_IN_EXTERNAL_EDITOR", "CmdOrCtrl+G"),
+            ("OPEN_WORKSPACE_IN_EXTERNAL_EDITOR", "CmdOrCtrl+Shift+G"),
         ];
         for (id, accelerator) in expected {
             assert_eq!(shortcut_for(id), Some(accelerator), "{id}");
@@ -1010,6 +1037,8 @@ mod tests {
             "SAVE_TO_WORKSPACE",
             "EXPORT_MODEL",
             "EXPORT_PACKAGE",
+            "OPEN_IN_EXTERNAL_EDITOR",
+            "OPEN_WORKSPACE_IN_EXTERNAL_EDITOR",
             "OPEN_SETTINGS",
             "SHOW_HIDE_TOOLBAR",
             "SHOW_HIDE_MINIMAP",

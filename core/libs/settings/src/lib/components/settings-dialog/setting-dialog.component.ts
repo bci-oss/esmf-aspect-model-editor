@@ -116,6 +116,8 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
           'settingsDialog.configuration.darkMode',
           'settingsDialog.configuration.elementOrder',
           'settingsDialog.configuration.restoreSession',
+          'settingsDialog.configuration.externalEditor',
+          'settingsDialog.configuration.reloadExternalChanges',
         ],
         resettable: true,
       },

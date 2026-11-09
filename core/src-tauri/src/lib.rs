@@ -13,6 +13,7 @@
 
 pub mod backend;
 pub mod commands;
+pub mod external_editor;
 pub mod files;
 pub mod github;
 pub mod menu;
@@ -80,7 +81,7 @@ pub fn run() {
             reload_backend,
             quit_app,
             open_external_link,
-            open_in_vscode_or_default,
+            external_editor::open_in_external_editor,
             copy_to_clipboard,
             write_print_file,
             open_print_window,

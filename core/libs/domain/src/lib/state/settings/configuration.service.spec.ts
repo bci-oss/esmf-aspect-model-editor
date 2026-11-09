@@ -40,6 +40,7 @@ describe('ConfigurationService', () => {
     expect(settings.autoValidationEnabled).toBe(true);
     expect(settings.validationTimerSeconds).toBe(400);
     expect(settings.aspectModelLanguages).toEqual(['en']);
+    expect(settings.externalEditor).toBe('vscode');
   });
 
   it('should get settings and fallback missing timer seconds', () => {

@@ -28,7 +28,7 @@ import {
 } from '@ame/domain';
 import {EntityInstancePort, provideAmeGraph} from '@ame/graph';
 import {TAURI_IPC_BRIDGES} from '@ame/shared';
-import {EnvironmentProviders, makeEnvironmentProviders} from '@angular/core';
+import {EnvironmentProviders, inject, makeEnvironmentProviders, provideEnvironmentInitializer} from '@angular/core';
 import {ConfirmDialogService} from './confirm-dialog/confirm-dialog.service';
 import {EntityInstanceService} from './editor-dialog/components/entity-instance/entity-instance-view/entity-instance.service';
 import {ShapeSettingsStateService} from './editor-dialog/services/shape-settings-state.service';
@@ -36,6 +36,7 @@ import {ShapeSettingsService} from './editor-dialog/services/shape-settings.serv
 import {FileHandlingService} from './editor-toolbar/services/file-handling.service';
 import {InformationHandlingService} from './editor-toolbar/services/information-handling.service';
 import {EditorService} from './editor.service';
+import {ExternalChangeSyncService} from './external-changes/external-change-sync.service';
 import {ModelCheckerService} from './model-checker.service';
 import {ModelLoaderService} from './model-loader.service';
 import {ModelOpenerService} from './model-opener/model-opener.service';
@@ -67,5 +68,6 @@ export function provideEditor(): EnvironmentProviders {
     {provide: TAURI_IPC_BRIDGES, useExisting: EditorTauriBridge, multi: true},
     {provide: TAURI_IPC_BRIDGES, useExisting: RefactoringWindowSyncService, multi: true},
     {provide: TAURI_IPC_BRIDGES, useExisting: PluginRuntimeService, multi: true},
+    provideEnvironmentInitializer(() => inject(ExternalChangeSyncService).start()),
   ]);
 }

@@ -33,22 +33,38 @@
   <div class="namespaces">
     @for (group of groups(); track group.key) {
       @if (showSourceHeaders()) {
-        <button
-          class="source"
-          [class.source--read-only]="group.readOnly"
-          [attr.aria-expanded]="!isSourceCollapsed(group.key)"
-          [matTooltip]="group.source?.path ?? ''"
-          [attr.data-testid]="'workspace-source-' + (group.source?.type ?? 'unknown')"
-          (click)="toggleSource(group.key)"
-          type="button"
-        >
-          <mat-icon class="source__chevron">{{ isSourceCollapsed(group.key) ? 'chevron_right' : 'expand_more' }}</mat-icon>
-          <mat-icon>{{ group.source?.type === 'github' ? 'cloud' : group.source?.defaultWorkspace ? 'home' : 'folder_special' }}</mat-icon>
-          <span class="source__name">{{ group.source?.name ?? '–' }}</span>
-          @if (group.readOnly) {
-            <span class="source__badge" data-testid="workspace-source-read-only">{{ t('modelSources.sidebar.readOnlyBadge') }}</span>
+        <div class="source-row">
+          <button
+            class="source"
+            [class.source--read-only]="group.readOnly"
+            [attr.aria-expanded]="!isSourceCollapsed(group.key)"
+            [matTooltip]="group.source?.path ?? ''"
+            [attr.data-testid]="'workspace-source-' + (group.source?.type ?? 'unknown')"
+            (click)="toggleSource(group.key)"
+            type="button"
+          >
+            <mat-icon class="source__chevron">{{ isSourceCollapsed(group.key) ? 'chevron_right' : 'expand_more' }}</mat-icon>
+            <mat-icon>{{
+              group.source?.type === 'github' ? 'cloud' : group.source?.defaultWorkspace ? 'home' : 'folder_special'
+            }}</mat-icon>
+            <span class="source__name">{{ group.source?.name ?? '–' }}</span>
+            @if (group.readOnly) {
+              <span class="source__badge" data-testid="workspace-source-read-only">{{ t('modelSources.sidebar.readOnlyBadge') }}</span>
+            }
+          </button>
+          @if (group.source?.path) {
+            <button
+              class="source-open"
+              [matTooltip]="t('externalEditor.openSourceIn', {editor: externalEditor.editorName()})"
+              [attr.aria-label]="t('externalEditor.openSourceIn', {editor: externalEditor.editorName()})"
+              (click)="openSourceInExternalEditor(group.source)"
+              mat-mini-fab
+              data-testid="workspace-source-open-in-editor"
+            >
+              <mat-icon>open_in_new</mat-icon>
+            </button>
           }
-        </button>
+        </div>
       }
 
       @if (!isSourceCollapsed(group.key)) {
@@ -76,7 +92,7 @@
                   [matMenuTriggerFor]="namespaceMenu"
                   [attr.aria-label]="t('sidebar.fileMenu.namespaceMenu', {namespace: namespace.key})"
                   [attr.title]="t('sidebar.fileMenu.namespaceMenu', {namespace: namespace.key})"
-                  (click)="prepareNamespaceMenu(namespace.key); $event.stopPropagation()"
+                  (click)="prepareNamespaceMenu(namespace.key, namespace.files[0]); $event.stopPropagation()"
                   mat-mini-fab
                   data-testid="openNamespaceMenu"
                 >
@@ -168,6 +184,10 @@
         {{ t(menuSelection()?.file?.source?.type === 'github' ? 'sidebar.fileMenu.copyGithubUrl' : 'sidebar.fileMenu.copyFilePath') }}
         <mat-icon>content_copy</mat-icon>
       </button>
+      <button (click)="openInExternalEditor()" mat-menu-item data-testid="fileMenuOpenInExternalEditorButton">
+        <mat-icon>code</mat-icon>
+        <span>{{ t('externalEditor.openIn', {editor: externalEditor.editorName()}) }}</span>
+      </button>
 
       @if (isRefactorable(menuSelection()?.file)) {
         <button (click)="renameFile()" mat-menu-item data-testid="fileMenuRenameFileButton">
@@ -201,6 +221,10 @@
           <span>{{ t('sidebar.fileMenu.newNamespaceVersion') }}</span>
         </button>
       }
+      <button (click)="openNamespaceInExternalEditor()" mat-menu-item data-testid="namespaceMenuOpenInExternalEditorButton">
+        <mat-icon>code</mat-icon>
+        <span>{{ t('externalEditor.openFolderIn', {editor: externalEditor.editorName()}) }}</span>
+      </button>
       <span
         class="menu-item-wrapper"
         [matTooltip]="namespaceDeleteTooltip()"

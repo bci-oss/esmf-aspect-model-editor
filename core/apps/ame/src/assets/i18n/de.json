@@ -484,6 +484,10 @@
       "displayDisambiguationLabelTooltip": "Zeigt Beschriftungen an Beziehungen an, die eine Unterscheidung benötigen, z. B. Input/Output einer Operation, left/right einer Either-Characteristic und Properties mit gesetztem notInPayload.",
       "elementOrder": "Reihenfolge der Elemente beim Speichern",
       "elementOrderTooltip": "Legt die Reihenfolge der Elemente in der gespeicherten Turtle-Datei fest. Wird die Reihenfolge der Datei beibehalten, bleiben Git-Diffs klein. Die Reihenfolge innerhalb eines Elements folgt immer der SAMM-Spezifikation.",
+      "externalEditor": "In externem Editor öffnen",
+      "externalEditorTooltip": "Der VS-Code-kompatible Editor, in dem der Workspace, Ordner, Dateien und Modellelemente geöffnet werden. VS Code öffnet Elemente an der Zeile, in der sie deklariert sind.",
+      "reloadExternalChanges": "Modelle nach externen Änderungen automatisch neu laden",
+      "reloadExternalChangesTooltip": "Lädt geöffnete Modelle ohne ungespeicherte Änderungen sofort neu, wenn ihre Dateien oder referenzierte Dateien außerhalb des Editors geändert werden, z. B. in VS Code. Wenn deaktiviert, fragt der Editor, sobald du zu ihm zurückkehrst.",
       "elementOrderOptions": {
         "keepOrderAfterParent": "Reihenfolge beibehalten, neue Elemente nach ihrem Parent einfügen",
         "keepOrderAppend": "Reihenfolge beibehalten, neue Elemente am Ende anfügen",
@@ -885,7 +889,9 @@
     "sortAlphabetically": "Elemente alphabetisch sortieren",
     "sortAlphabeticallyDisabled": "Nicht verfügbar, solange die Reihenfolge der Elemente vom Formatter bestimmt wird (Einstellungen > Editor)",
     "sorted": "Elemente alphabetisch sortiert. Speichere das Modell, um die neue Reihenfolge in die Datei zu schreiben.",
-    "prefixes": "Prefixe verwalten"
+    "prefixes": "Prefixe verwalten",
+    "openInExternalEditor": "Element am Cursor in {{editor}} öffnen (Strg+Klick bzw. Cmd+Klick öffnet das angeklickte Element)",
+    "openElementInExternalEditor": "Dieses Element in {{editor}} öffnen"
   },
   "menu": {
     "file": {
@@ -906,6 +912,8 @@
       "saveToWorkspace": "Im Workspace speichern",
       "exportModel": "Modell exportieren",
       "exportPackage": "Paket exportieren",
+      "openInExternalEditor": "In {{editor}} öffnen",
+      "openWorkspaceInExternalEditor": "Workspace in {{editor}} öffnen",
       "settings": "Einstellungen...",
       "importAas": "Asset Administration Shell importieren"
     },
@@ -1338,6 +1346,26 @@
       "openError": "Das Modell des Plugins konnte nicht geöffnet werden",
       "noModel": "Öffnen Sie ein Aspect Model, um diesen Befehl zu verwenden.",
       "saveError": "Die Datei des Plugins konnte nicht gespeichert werden"
+    }
+  },
+  "externalEditor": {
+    "openIn": "In {{editor}} öffnen",
+    "openFolderIn": "Ordner in {{editor}} öffnen",
+    "openSourceIn": "Quellordner in {{editor}} öffnen",
+    "notSavedTitle": "Modell nicht im Workspace",
+    "notSavedMessage": "Speichern Sie das Modell zuerst im Workspace.",
+    "errorTitle": "{{editor}} konnte nicht geöffnet werden",
+    "errorMessage": "{{editor}} konnte nicht geöffnet werden. Stellen Sie sicher, dass der Editor installiert ist."
+  },
+  "externalChanges": {
+    "reloaded": "Nach externen Änderungen neu geladen: {{files}}",
+    "reloadDialog": {
+      "title": "Dateien außerhalb des Editors geändert",
+      "message": "Diese geöffneten Modelle sind von Änderungen außerhalb des Editors betroffen, an ihnen selbst oder an referenzierten Dateien: {{files}}",
+      "unsaved": "Deine ungespeicherten Änderungen in diesen Modellen gehen beim Neuladen verloren: {{files}}",
+      "question": "Jetzt neu laden?",
+      "reload": "Neu laden",
+      "keep": "Aktuellen Stand behalten"
     }
   }
 }

@@ -11,9 +11,16 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {FiltersService, LoadedFilesService, NamespacesTransferPort} from '@ame/domain';
+import {ExternalEditorService, FiltersService, LoadedFilesService, NamespacesTransferPort} from '@ame/domain';
 import {MaxGraphService, ShapeConnectorService} from '@ame/graph';
-import {IPC_RENDERER, ITauriIpcBridge, LanguageTranslationService, ModelFilter, TAURI_EVENTS} from '@ame/shared';
+import {
+  IPC_RENDERER,
+  ITauriIpcBridge,
+  LanguageTranslationService,
+  ModelFilter,
+  TAURI_EVENTS,
+  withExternalEditorMenuLabels,
+} from '@ame/shared';
 import {DOCUMENT, DestroyRef, Injectable, inject} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatDialog} from '@angular/material/dialog';
@@ -40,6 +47,7 @@ const HAS_CELLS_MENU_IDS = [
   'COPY_TO_CLIPBOARD',
   'SAVE_TO_WORKSPACE',
   'EXPORT_MODEL',
+  'OPEN_IN_EXTERNAL_EDITOR',
   'VALIDATE_MODEL',
   'GENERATE_HTML_DOCUMENTATION',
   'GENERATE_OPEN_API_SPECIFICATION',
@@ -77,6 +85,7 @@ export class EditorTauriBridge implements ITauriIpcBridge {
   private shapeConnectorService = inject(ShapeConnectorService);
   private matDialog = inject(MatDialog);
   private translate = inject(LanguageTranslationService);
+  private externalEditor = inject(ExternalEditorService);
   private document = inject(DOCUMENT);
 
   private hasCells = false;
@@ -159,7 +168,10 @@ export class EditorTauriBridge implements ITauriIpcBridge {
     this.getTranslation$()
       .pipe(takeUntilDestroyed(this.destroyRef), take(1))
       .subscribe(translation => {
-        this.ipcRenderer?.send(TAURI_EVENTS.SIGNAL.UPDATE_MENU_ITEM, {ids, payload: {enabled, translation}});
+        this.ipcRenderer?.send(TAURI_EVENTS.SIGNAL.UPDATE_MENU_ITEM, {
+          ids,
+          payload: {enabled, translation: withExternalEditorMenuLabels(translation, this.externalEditor.editorName())},
+        });
       });
   }
 
@@ -206,6 +218,8 @@ export class EditorTauriBridge implements ITauriIpcBridge {
     ipc.on(TAURI_EVENTS.SIGNAL.SAVE_TO_WORKSPACE, () => this.fileHandlingService.onSaveAspectModelToWorkspace());
     ipc.on(TAURI_EVENTS.SIGNAL.EXPORT_MODEL, () => this.fileHandlingService.onExportAsAspectModelFile());
     ipc.on(TAURI_EVENTS.SIGNAL.EXPORT_NAMESPACES, () => this.namespacesManagerService.onExportNamespaces());
+    ipc.on(TAURI_EVENTS.SIGNAL.OPEN_IN_EXTERNAL_EDITOR, () => this.externalEditor.openCurrentModel());
+    ipc.on(TAURI_EVENTS.SIGNAL.OPEN_WORKSPACE_IN_EXTERNAL_EDITOR, () => this.externalEditor.openWorkspace());
     ipc.on(TAURI_EVENTS.SIGNAL.FILTER_MODEL_BY, (rule: ModelFilter) => this.filtersService.renderByFilter(rule));
     ipc.on(TAURI_EVENTS.SIGNAL.ZOOM_IN, () => this.zoomIn());
     ipc.on(TAURI_EVENTS.SIGNAL.ZOOM_OUT, () => this.editorService.zoomOut());

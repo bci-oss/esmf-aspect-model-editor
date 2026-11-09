@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ExternalEditorService} from '@ame/domain';
 import {
   IPC_RENDERER,
   LanguageTranslationService,
@@ -23,9 +24,11 @@ import {
   TauriSignalsService,
   TauriTunnelPort,
   WindowSession,
+  withExternalEditorMenuLabels,
 } from '@ame/shared';
-import {Injectable, inject} from '@angular/core';
-import {BehaviorSubject, Observable, of} from 'rxjs';
+import {DestroyRef, Injectable, inject} from '@angular/core';
+import {takeUntilDestroyed, toObservable} from '@angular/core/rxjs-interop';
+import {BehaviorSubject, Observable, of, skip} from 'rxjs';
 
 /**
  * Shell-level Tauri integration: window lifecycle, notifications and menu translations.
@@ -38,6 +41,9 @@ export class TauriTunnelService implements TauriTunnelPort {
   private notificationsService = inject(NotificationsService);
   private translate = inject(LanguageTranslationService);
   private bridges = inject(TAURI_IPC_BRIDGES, {optional: true}) ?? [];
+  private externalEditor = inject(ExternalEditorService);
+  private destroyRef = inject(DestroyRef);
+  private editorNameChanges$ = toObservable(this.externalEditor.editorName).pipe(skip(1));
 
   public startUpData$ = new BehaviorSubject<{isFirstWindow: boolean; model: string; session?: WindowSession; windowId?: string}>(null);
 
@@ -45,7 +51,7 @@ export class TauriTunnelService implements TauriTunnelPort {
     this.translate.getTranslation(language).subscribe(translation => {
       this.ipcRenderer?.send(TAURI_EVENTS.SIGNAL.TRANSLATE_MENU_ITEMS, {
         id: 'TRANSLATE_MENU_ITEMS',
-        payload: {translation: translation, customMenuItem: customMenuItem},
+        payload: {translation: withExternalEditorMenuLabels(translation, this.externalEditor.editorName()), customMenuItem: customMenuItem},
       });
     });
   }
@@ -54,6 +60,9 @@ export class TauriTunnelService implements TauriTunnelPort {
     if (!this.ipcRenderer) return;
     this.setListeners();
     this.registerIpcEvents();
+    this.editorNameChanges$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.sendTranslationsToTauri(this.translate.translateService.getActiveLang()));
     this.bridges.forEach(bridge => bridge.register());
   }
 

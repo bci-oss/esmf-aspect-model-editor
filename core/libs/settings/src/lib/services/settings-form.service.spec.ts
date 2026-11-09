@@ -88,6 +88,25 @@ describe('SettingsFormService', () => {
     expect(model.languageConfiguration.aspectModel.length).toBe(2);
   });
 
+  it('should load the configured external editor and fall back to the default for unknown values', () => {
+    configurationService.setSettings({...configurationService.getSettings(), externalEditor: 'cursor'});
+    service.initializeForm();
+    expect(service.settingsModel().editorConfiguration.externalEditor).toBe('cursor');
+
+    configurationService.setSettings({...configurationService.getSettings(), externalEditor: 'notepad' as any});
+    service.initializeForm();
+    expect(service.settingsModel().editorConfiguration.externalEditor).toBe('vscode');
+  });
+
+  it('should load whether models are reloaded automatically after external changes', () => {
+    service.initializeForm();
+    expect(service.settingsModel().editorConfiguration.reloadExternalChanges).toBe(false);
+
+    configurationService.setSettings({...configurationService.getSettings(), reloadExternalChanges: true});
+    service.initializeForm();
+    expect(service.settingsModel().editorConfiguration.reloadExternalChanges).toBe(true);
+  });
+
   it('should initialize correctly when currentLoadedFile is null', () => {
     loadedFilesService.currentLoadedFile = null;
     service.initializeForm();

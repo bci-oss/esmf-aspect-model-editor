@@ -11,9 +11,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {FiltersService, LoadedFilesService, NamespacesTransferPort} from '@ame/domain';
+import {ExternalEditorService, FiltersService, LoadedFilesService, NamespacesTransferPort} from '@ame/domain';
 import {MaxGraphService, ShapeConnectorService} from '@ame/graph';
 import {IPC_RENDERER, LanguageTranslationService, TAURI_EVENTS} from '@ame/shared';
+import {WritableSignal, signal} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {MatDialog} from '@angular/material/dialog';
 import {BehaviorSubject, of} from 'rxjs';
@@ -43,6 +44,8 @@ describe('EditorTauriBridge', () => {
   let shapeSettingsService: any;
   let generateHandlingService: any;
   let aasImportService: any;
+  let externalEditor: {editorName: WritableSignal<string>; openCurrentModel: any; openWorkspace: any};
+  let translation: any;
 
   beforeEach(() => {
     ipcMock = createIpcMock();
@@ -57,6 +60,8 @@ describe('EditorTauriBridge', () => {
       onGenerateJavaClasses: vi.fn(),
     };
     aasImportService = {onImportAas: vi.fn()};
+    externalEditor = {editorName: signal('Cursor'), openCurrentModel: vi.fn(), openWorkspace: vi.fn()};
+    translation = {menu: {file: {openInExternalEditor: 'Open in {{editor}}'}}};
     shapeSettingsService = {
       selectedCells$: new BehaviorSubject([]),
       hasSelection$: new BehaviorSubject(false),
@@ -81,9 +86,10 @@ describe('EditorTauriBridge', () => {
         {provide: NamespacesTransferPort, useValue: {onImportNamespaces: vi.fn(), onExportNamespaces: vi.fn()}},
         {provide: FiltersService, useValue: {renderByFilter: vi.fn()}},
         {provide: MatDialog, useValue: {open: vi.fn()}},
+        {provide: ExternalEditorService, useValue: externalEditor},
         {
           provide: LanguageTranslationService,
-          useValue: {language: {}, translateService: {getActiveLang: () => 'en'}, getTranslation: vi.fn(() => of({}))},
+          useValue: {language: translation, translateService: {getActiveLang: () => 'en'}, getTranslation: vi.fn(() => of({}))},
         },
       ],
     });
@@ -158,6 +164,27 @@ describe('EditorTauriBridge', () => {
       TAURI_EVENTS.SIGNAL.UPDATE_MENU_ITEM,
       expect.objectContaining({ids: ['OPEN_SELECTED_ELEMENT', 'CONNECT_ELEMENTS']}),
     );
+  });
+
+  it('opens the current model and the workspace in the external editor', () => {
+    ipcMock.handlers.get(TAURI_EVENTS.SIGNAL.OPEN_IN_EXTERNAL_EDITOR)!();
+    ipcMock.handlers.get(TAURI_EVENTS.SIGNAL.OPEN_WORKSPACE_IN_EXTERNAL_EDITOR)!();
+
+    expect(externalEditor.openCurrentModel).toHaveBeenCalledOnce();
+    expect(externalEditor.openWorkspace).toHaveBeenCalledOnce();
+  });
+
+  it('enables "Open in external editor" with a model and labels it with the configured editor', () => {
+    shapeSettingsService.hasCellsSubject$.next(true);
+
+    expect(ipcMock.send).toHaveBeenCalledWith(
+      TAURI_EVENTS.SIGNAL.UPDATE_MENU_ITEM,
+      expect.objectContaining({
+        ids: expect.arrayContaining(['OPEN_IN_EXTERNAL_EDITOR']),
+        payload: {enabled: true, translation: {menu: {file: {openInExternalEditor: 'Open in Cursor'}}}},
+      }),
+    );
+    expect(translation.menu.file.openInExternalEditor).toBe('Open in {{editor}}');
   });
 
   it('enables the remove menu item when only a connection is selected', () => {

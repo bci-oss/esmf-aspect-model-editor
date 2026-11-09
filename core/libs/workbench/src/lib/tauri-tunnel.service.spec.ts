@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ExternalEditorService} from '@ame/domain';
 import {
   IPC_RENDERER,
   LanguageTranslationService,
@@ -19,6 +20,7 @@ import {
   TAURI_IPC_BRIDGES,
   TauriSignalsService,
 } from '@ame/shared';
+import {WritableSignal, signal} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {of} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
@@ -31,6 +33,7 @@ describe('TauriTunnelService', () => {
   let notificationsServiceMock: any;
   let translateMock: any;
   let bridgeMock: {register: ReturnType<typeof vi.fn>};
+  let editorName: WritableSignal<string>;
 
   beforeEach(() => {
     ipcRendererMock = {send: vi.fn(), on: vi.fn(), removeListener: vi.fn()};
@@ -41,6 +44,7 @@ describe('TauriTunnelService', () => {
       translateService: {getActiveLang: vi.fn(() => 'en')},
     };
     bridgeMock = {register: vi.fn()};
+    editorName = signal('VS Code');
 
     TestBed.configureTestingModule({
       providers: [
@@ -50,6 +54,7 @@ describe('TauriTunnelService', () => {
         {provide: NotificationsService, useValue: notificationsServiceMock},
         {provide: LanguageTranslationService, useValue: translateMock},
         {provide: TAURI_IPC_BRIDGES, useValue: bridgeMock, multi: true},
+        {provide: ExternalEditorService, useValue: {editorName}},
       ],
     });
 
@@ -73,6 +78,28 @@ describe('TauriTunnelService', () => {
       id: 'TRANSLATE_MENU_ITEMS',
       payload: {translation: {HELLO: 'Hello'}, customMenuItem: undefined},
     });
+  });
+
+  it('sendTranslationsToTauri should label the external editor menu items with the configured editor', () => {
+    translateMock.getTranslation.mockReturnValue(of({menu: {file: {openInExternalEditor: 'Open in {{editor}}'}}}));
+
+    service.sendTranslationsToTauri('en');
+
+    expect(ipcRendererMock.send).toHaveBeenCalledWith(TAURI_EVENTS.SIGNAL.TRANSLATE_MENU_ITEMS, {
+      id: 'TRANSLATE_MENU_ITEMS',
+      payload: {translation: {menu: {file: {openInExternalEditor: 'Open in VS Code'}}}, customMenuItem: undefined},
+    });
+  });
+
+  it('should resend the menu translations when the external editor changes', () => {
+    service.subscribeMessages();
+    TestBed.tick();
+    expect(translateMock.getTranslation).not.toHaveBeenCalled();
+
+    editorName.set('Cursor');
+    TestBed.tick();
+
+    expect(translateMock.getTranslation).toHaveBeenCalledWith('en');
   });
 
   it('subscribeMessages should register listeners and send WINDOW_FOCUS', () => {

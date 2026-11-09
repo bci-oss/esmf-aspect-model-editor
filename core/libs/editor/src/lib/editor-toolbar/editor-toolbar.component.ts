@@ -11,7 +11,15 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ElementRefactoringBlocker, FilterAttributesService, FiltersService, isPluginCommandEnabled, PluginCommandEntry} from '@ame/domain';
+import {
+  ElementRefactoringBlocker,
+  ExternalEditorAction,
+  ExternalEditorService,
+  FilterAttributesService,
+  FiltersService,
+  isPluginCommandEnabled,
+  PluginCommandEntry,
+} from '@ame/domain';
 import {MaxGraphService, MaxGraphShapeSelectorService, ShapeConnectorService} from '@ame/graph';
 import {BarItemComponent, BindingsService, ModelFilter, NotificationsService} from '@ame/shared';
 import {CommonModule} from '@angular/common';
@@ -55,6 +63,7 @@ export class EditorToolbarComponent implements AfterViewInit, OnDestroy {
   private filterAttributesService = inject(FilterAttributesService);
   private modelHistory = inject(ModelHistoryService);
   private elementRefactoring = inject(ElementRefactoringService);
+  private externalEditor = inject(ExternalEditorService);
   private pluginRuntime = inject(PluginRuntimeService);
 
   public notificationsService = inject(NotificationsService);
@@ -83,7 +92,13 @@ export class EditorToolbarComponent implements AfterViewInit, OnDestroy {
     this.bindingsService.registerAction('copy-to-clipboard', () => this.fileHandlingService.onCopyToClipboard());
     this.bindingsService.registerAction('connect-with', () => this.openConnectWithDialog());
     this.bindingsService.registerAction('select-tree', () => this.maxgraphShapeSelectorService.selectTree());
+    this.bindingsService.registerAction(ExternalEditorAction.openElement, () => this.openSelectedElementInExternalEditor());
     this.elementRefactoring.registerContextMenuActions();
+  }
+
+  private openSelectedElementInExternalEditor(): void {
+    const urn = this.elementRefactoring.urnOf(this.elementRefactoring.selectedElement());
+    if (urn) this.externalEditor.openElement(urn);
   }
 
   ngOnDestroy() {

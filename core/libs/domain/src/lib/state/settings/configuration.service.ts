@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {DEFAULT_ELEMENT_ORDER_STRATEGY, Settings} from '@ame/shared';
+import {DEFAULT_ELEMENT_ORDER_STRATEGY, DEFAULT_EXTERNAL_EDITOR, Settings} from '@ame/shared';
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
 
@@ -34,6 +34,8 @@ const DEFAULT_SETTINGS: Settings = {
   toolbarVisibility: true,
   elementOrderStrategy: DEFAULT_ELEMENT_ORDER_STRATEGY,
   restoreSession: true,
+  externalEditor: DEFAULT_EXTERNAL_EDITOR,
+  reloadExternalChanges: false,
 };
 
 @Injectable({providedIn: 'root'})

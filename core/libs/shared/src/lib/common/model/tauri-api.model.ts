@@ -29,6 +29,17 @@ export interface BackendStatus {
   revision: number;
 }
 
+export interface ExternalEditorRequest {
+  /** Editor URL, e.g. `vscode://file/C:/ws/a.ttl:3:1`. */
+  url: string;
+  /** Absolute OS path of the file or folder. */
+  path: string;
+  line?: number;
+  column?: number;
+  /** Command line launcher of the editor, e.g. `code`. */
+  cli?: string;
+}
+
 export interface TauriApi {
   send(channel: string, ...args: unknown[]): void;
   on(channel: string, cb: (...args: any[]) => void): void;
@@ -41,7 +52,8 @@ export interface TauriApi {
   writePrintFile(content: string): Promise<string>;
   openExternalLink(link: string): Promise<void> | boolean;
   showContextMenu(payload: TauriContextMenuPayload): void;
-  openInVsCodeOrDefault(vscodeUrl: string, filePath: string): Promise<void>;
+  /** Opens a file (at a position) or folder in a VS Code compatible editor; falls back to the editor CLI and then to the OS. */
+  openInExternalEditor(request: ExternalEditorRequest): Promise<void>;
   copyToClipboard(text: string): void;
   /** The workspace models open in each window. Optional: older shells do not report them. */
   getOpenModels?(): Promise<OpenModelsSnapshot>;

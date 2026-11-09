@@ -11,7 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {BrowserService, IPC_RENDERER} from '@ame/shared';
+import {ExternalEditorService} from '@ame/domain';
+import {buildExternalEditorUrl, fileUriToPath} from '@ame/shared';
 import {Component, computed, inject, input} from '@angular/core';
 import {TranslocoDirective} from '@jsverse/transloco';
 
@@ -37,8 +38,7 @@ interface MessagePart {
   imports: [TranslocoDirective],
 })
 export class WorkspaceErrorComponent {
-  private readonly ipcRenderer = inject(IPC_RENDERER);
-  private readonly browserService = inject(BrowserService);
+  private readonly externalEditor = inject(ExternalEditorService);
 
   readonly error = input<WorkspaceValidationError>();
 
@@ -69,13 +69,12 @@ export class WorkspaceErrorComponent {
 
         // "File: " label followed by the file path
         parts.push({text: match[1]});
-        const filePath = match[2];
-        const cleanPath = filePath.replace(/^file:\/\//, '').replace(/^file:/, '');
+        const filePath = fileUriToPath(match[2]);
         parts.push({
-          text: filePath,
+          text: match[2],
           isLink: true,
-          applicationUrl: `vscode://file/${cleanPath}`,
-          filePath: cleanPath,
+          applicationUrl: buildExternalEditorUrl(this.externalEditor.editor(), filePath),
+          filePath,
         });
       } else if (match[3]) {
         // "• Error:" label
@@ -95,10 +94,6 @@ export class WorkspaceErrorComponent {
   openLink(event: MouseEvent, part: MessagePart): void {
     event.preventDefault();
 
-    if (!part.applicationUrl || !this.browserService.isStartedAsTauriApp()) return;
-
-    // Try opening the file in VSCode first; if VSCode isn't installed on the system,
-    // fall back to "Open with..." dialog on Windows, or default application on macOS/Linux.
-    this.ipcRenderer.openInVsCodeOrDefault(part.applicationUrl ?? '', part.filePath);
+    if (part.filePath) this.externalEditor.openFile(part.filePath);
   }
 }

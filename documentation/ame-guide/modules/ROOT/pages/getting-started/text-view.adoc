@@ -74,6 +74,11 @@ The header shows one counter for all problems, e.g. *Problems: 3*.
 | *Manage prefixes*
 | Opens the prefix management of the model, see xref:getting-started/ui-overview.adoc#prefixes[Prefixes].
 
+| *Open in VS Code*
+| Opens the element at the cursor in VS Code or the editor selected in the settings, see xref:getting-started/external-editor.adoc#external-editor-open[Work with VS Code].
+kbd:[Ctrl]+click (on macOS kbd:[Cmd]+click) opens the clicked element directly; while the key is held, the element under the mouse is underlined like a link.
+The icon next to each element definition in the gutter opens that element.
+
 | *Reload*
 | Creates the text again from the current state of the editor.
 

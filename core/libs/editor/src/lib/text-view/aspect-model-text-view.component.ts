@@ -13,6 +13,7 @@
 
 import {
   ConfigurationService,
+  ExternalEditorService,
   GraphNavigatorPort,
   LoadedFilesService,
   ModelDocumentService,
@@ -36,7 +37,15 @@ import {TabStateService} from '../tabs/tab-state.service';
 import {AspectModelText, AspectModelTextService} from './aspect-model-text.service';
 import {EditorViewModeService} from './editor-view-mode.service';
 import type {TurtleEditor} from './turtle-editor';
-import {findElementLine, findElementOccurrences, findElementRange, lineAt, TextProblem} from './turtle-text.utils';
+import {
+  elementAt,
+  enclosingSubjectAt,
+  findElementLine,
+  findElementOccurrences,
+  findElementRange,
+  lineAt,
+  TextProblem,
+} from './turtle-text.utils';
 
 export type TextViewState = 'loading' | 'ready' | 'empty' | 'error';
 
@@ -67,6 +76,7 @@ export class AspectModelTextViewComponent {
   private readonly modelSavingTracker = inject(ModelSavingTrackerService);
   private readonly tabStateService = inject(TabStateService);
   private readonly prefixManagementService = inject(PrefixManagementService);
+  private readonly externalEditor = inject(ExternalEditorService);
   private readonly settings = toSignal(inject(ConfigurationService).settings$);
 
   private readonly reload$ = new Subject<void>();
@@ -81,6 +91,7 @@ export class AspectModelTextViewComponent {
   public readonly formatted = signal(true);
   public readonly targetLine = signal<number | null>(null);
   public readonly canSortElements = computed(() => this.settings()?.elementOrderStrategy !== 'formatterDefault');
+  public readonly externalEditorName = this.externalEditor.editorName;
   public readonly lineCount = computed(() => (this.content() ? this.content().split('\n').length : 0));
 
   /** Referenced elements that are missing in the workspace; read from the loaded files whenever the text is created. */
@@ -229,6 +240,17 @@ export class AspectModelTextViewComponent {
     this.editor?.openSearch();
   }
 
+  /**
+   * Opens the element at the offset (the cursor by default) in the external editor: the element written there, otherwise
+   * the subject of the statement around it, otherwise the model file itself. Elements are located in the files of the
+   * workspace, since this text is created from the model and may differ from them.
+   */
+  openInExternalEditor(offset = this.editor?.cursorOffset() ?? 0): void {
+    const text = this.content();
+    const urn = elementAt(text, offset) ?? enclosingSubjectAt(text, offset);
+    void (urn ? this.externalEditor.openElement(urn) : this.externalEditor.openCurrentModel());
+  }
+
   /** Jumps to the next problem in the text; several problems on one line are visited once. */
   goToNextProblem(): void {
     const text = this.content();
@@ -295,7 +317,10 @@ export class AspectModelTextViewComponent {
     if (this.destroyed) {
       return;
     }
-    this.editor = createTurtleEditor(this.host().nativeElement, this.content());
+    this.editor = createTurtleEditor(this.host().nativeElement, this.content(), {
+      onElementActivate: offset => this.openInExternalEditor(offset),
+      activateTitle: this.translateText('textView.openElementInExternalEditor', {editor: this.externalEditorName()}),
+    });
     this.editor.setProblems(this.problems());
     this.editor.setTargetLine(this.targetLine());
     const targetLine = this.targetLine();

@@ -30,6 +30,8 @@ export class EditorConfigurationUpdateStrategy implements SettingsUpdateStrategy
     settings.darkMode = editorConfiguration.darkMode;
     settings.elementOrderStrategy = editorConfiguration.elementOrderStrategy ?? settings.elementOrderStrategy;
     settings.restoreSession = editorConfiguration.restoreSession ?? settings.restoreSession;
+    settings.externalEditor = editorConfiguration.externalEditor ?? settings.externalEditor;
+    settings.reloadExternalChanges = editorConfiguration.reloadExternalChanges ?? settings.reloadExternalChanges;
 
     this.uiShellStore.setDarkMode(!!settings.darkMode);
     this.maxGraphSettingsService?.formatShapes(true);

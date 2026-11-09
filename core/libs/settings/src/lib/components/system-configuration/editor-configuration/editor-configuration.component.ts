@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ElementOrderStrategy} from '@ame/shared';
+import {ElementOrderStrategy, EXTERNAL_EDITOR_NAMES, EXTERNAL_EDITORS} from '@ame/shared';
 import {Component, inject} from '@angular/core';
 import {FormField} from '@angular/forms/signals';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -36,4 +36,7 @@ export class EditorConfigurationComponent {
   readonly form = this.formService.settingsForm;
 
   readonly elementOrderStrategies: ElementOrderStrategy[] = ['formatterDefault', 'keepOrderAfterParent', 'keepOrderAppend'];
+
+  readonly externalEditors = EXTERNAL_EDITORS;
+  readonly externalEditorNames = EXTERNAL_EDITOR_NAMES;
 }

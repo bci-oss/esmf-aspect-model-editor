@@ -11,6 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {ExternalEditor} from '../../common/external-editor/external-editor';
+
 export class ToggleSettings {
   autoValidation = false;
   validationTimer = 0;
@@ -49,4 +51,8 @@ export interface Settings {
   elementOrderStrategy?: ElementOrderStrategy;
   /** Reopen the models and windows of the last session on start (desktop app only). */
   restoreSession?: boolean;
+  /** The VS Code compatible editor used by the "Open in ..." actions. */
+  externalEditor?: ExternalEditor;
+  /** Reload models without unsaved changes right away after their files changed outside of the editor, instead of asking. */
+  reloadExternalChanges?: boolean;
 }

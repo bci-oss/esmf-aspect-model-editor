@@ -64,6 +64,8 @@ describe('Settings Update Strategies', () => {
         darkMode: true,
         elementOrderStrategy: 'keepOrderAppend',
         restoreSession: false,
+        externalEditor: 'cursor',
+        reloadExternalChanges: true,
       },
       languageConfiguration: {
         userInterface: 'de',
@@ -148,6 +150,8 @@ describe('Settings Update Strategies', () => {
       expect(initialSettings.darkMode).toBe(true);
       expect(initialSettings.elementOrderStrategy).toBe('keepOrderAppend');
       expect(initialSettings.restoreSession).toBe(false);
+      expect(initialSettings.externalEditor).toBe('cursor');
+      expect(initialSettings.reloadExternalChanges).toBe(true);
       expect(themeService.setDarkMode).toHaveBeenCalledWith(true);
       expect(maxGraphSettingsService.formatShapes).toHaveBeenCalledWith(true);
     });

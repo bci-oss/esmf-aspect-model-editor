@@ -346,4 +346,46 @@ describe('LoadedFilesService & NamespaceFile', () => {
       expect(service.unresolvedElementUrns()).toEqual([]);
     });
   });
+  describe('fileOfElement', () => {
+    const createProperty = (urn: string) => new DefaultProperty({aspectModelUrn: urn, name: urn.split('#')[1], metaModelVersion: '2.0.0'});
+    const addExternal = (fileName: string, element: DefaultProperty) => {
+      const cache = new ModelElementCache();
+      cache.addElement(element.aspectModelUrn, element);
+      return service.addFile({
+        rdfModel: createDummyRdfModel(),
+        cachedFile: cache,
+        aspect: null,
+        absoluteName: `org.eclipse.esmf.samm:test:1.0.0:${fileName}`,
+        rendered: false,
+      });
+    };
+
+    beforeEach(() => {
+      service.addFile({rdfModel, cachedFile, aspect, absoluteName: 'org.eclipse.esmf.samm:test:1.0.0:Main.ttl', rendered: true});
+    });
+
+    it('should prefer the current file over other files defining the element', () => {
+      const property = createProperty('urn:samm:org.eclipse.esmf.samm:test:1.0.0#property1');
+      addExternal('Other.ttl', property);
+      cachedFile.addElement(property.aspectModelUrn, property);
+
+      expect(service.fileOfElement(property.aspectModelUrn)?.name).toBe('Main.ttl');
+    });
+
+    it('should find the external file defining the element', () => {
+      const property = createProperty('urn:samm:org.eclipse.esmf.samm:test:1.0.0#shared');
+      addExternal('Shared.ttl', property);
+
+      expect(service.fileOfElement(property.aspectModelUrn)?.name).toBe('Shared.ttl');
+    });
+
+    it('should ignore unresolved placeholders and unknown elements', () => {
+      const missing = createProperty('urn:samm:org.eclipse.esmf.samm:test:1.0.0#missing');
+      cachedFile.addElement(missing.aspectModelUrn, missing);
+      service.registerUnresolvedElements([missing], cachedFile);
+
+      expect(service.fileOfElement(missing.aspectModelUrn)).toBeNull();
+      expect(service.fileOfElement('urn:samm:org.eclipse.esmf.samm:test:1.0.0#unknown')).toBeNull();
+    });
+  });
 });

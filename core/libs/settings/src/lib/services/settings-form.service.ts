@@ -11,7 +11,13 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 import {ConfigurationService, ModelHeaderService, ModelSessionFacade, NamespaceFile, SammLanguageSettingsService} from '@ame/domain';
-import {DEFAULT_ELEMENT_ORDER_STRATEGY, GeneralConfig, LanguageTranslationService} from '@ame/shared';
+import {
+  DEFAULT_ELEMENT_ORDER_STRATEGY,
+  DEFAULT_EXTERNAL_EDITOR,
+  GeneralConfig,
+  LanguageTranslationService,
+  resolveExternalEditor,
+} from '@ame/shared';
 import {computed, inject, Injectable, signal} from '@angular/core';
 import {applyWhen, disabled, form, pattern, required, validate} from '@angular/forms/signals';
 import {RdfModel} from '@esmf/aspect-model-loader';
@@ -38,6 +44,8 @@ export const createDefaultSettingsModel = (): SettingsFormData => ({
     darkMode: false,
     elementOrderStrategy: DEFAULT_ELEMENT_ORDER_STRATEGY,
     restoreSession: true,
+    externalEditor: DEFAULT_EXTERNAL_EDITOR,
+    reloadExternalChanges: false,
   },
   languageConfiguration: {
     userInterface: 'en',
@@ -203,6 +211,8 @@ export class SettingsFormService {
         darkMode: settings.darkMode ?? false,
         elementOrderStrategy: settings.elementOrderStrategy ?? DEFAULT_ELEMENT_ORDER_STRATEGY,
         restoreSession: settings.restoreSession !== false,
+        externalEditor: resolveExternalEditor(settings.externalEditor),
+        reloadExternalChanges: settings.reloadExternalChanges === true,
       },
       languageConfiguration: {
         userInterface: this.translate.translateService.getActiveLang(),

@@ -12,7 +12,7 @@
  */
 
 import {expect, Page, Route, test} from '@playwright/test';
-import {FORMAT_API_URL, VALIDATE_API_URL} from '../../support/api-mocks';
+import {API_BASE_URL, FORMAT_API_URL, VALIDATE_API_URL} from '../../support/api-mocks';
 import {AppHelper} from '../../support/app-helper';
 import {SELECTOR_tbDeleteButton, SELECTOR_tbValidateButton} from '../../support/constants';
 
@@ -122,6 +122,100 @@ test.describe('Editor - Graph / Aspect Model text view', () => {
     await openTextView(page);
 
     await expect(page.locator('.cm-ame-target-line')).toContainText(':property1 a samm:Property');
+  });
+
+  test.describe('open in VS Code', () => {
+    const LOCATION_PATH = '/home/user/aspect-models/org.eclipse.examples.aspect/1.0.0/AspectDefault.ttl';
+
+    async function trackOpenedUrls(page: Page): Promise<() => Promise<string[]>> {
+      await page.evaluate(() => {
+        (window as any).__openedUrls = [];
+        window.open = (url?: string | URL) => {
+          (window as any).__openedUrls.push(String(url));
+          return null;
+        };
+      });
+      return () => page.evaluate(() => (window as any).__openedUrls as string[]);
+    }
+
+    async function routeLocation(page: Page): Promise<string[]> {
+      const requestedUrns: string[] = [];
+      await page.route(`${API_BASE_URL}/models/location*`, async (route: Route) => {
+        requestedUrns.push(route.request().headers()['aspect-model-urn']);
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({path: LOCATION_PATH, line: 9, column: 1}),
+        });
+      });
+      return requestedUrns;
+    }
+
+    test('opens the element clicked with Ctrl or Cmd at its declaration', async ({page}) => {
+      await routeFormat(page, FORMATTED_MODEL);
+      const requestedUrns = await routeLocation(page);
+      await openTextView(page);
+      const openedUrls = await trackOpenedUrls(page);
+
+      await page
+        .locator('.cm-line', {hasText: /^:property1 a samm:Property/})
+        .click({position: {x: 12, y: 5}, modifiers: ['ControlOrMeta']});
+
+      await expect.poll(openedUrls).toEqual([`vscode://file${LOCATION_PATH}:9:1`]);
+      expect(requestedUrns).toEqual([`${NS}property1`]);
+    });
+
+    test('shows the element under the mouse as link while Ctrl or Cmd is held', async ({page}) => {
+      await routeFormat(page, FORMATTED_MODEL);
+      await openTextView(page);
+      const line = page.locator('.cm-line', {hasText: /^:property1 a samm:Property/});
+
+      await line.hover({position: {x: 12, y: 5}});
+      await expect(page.locator('.cm-ame-element-link')).toHaveCount(0);
+
+      await page.keyboard.down('ControlOrMeta');
+      await expect(page.locator('.cm-ame-element-link')).toHaveText(':property1');
+      await page.keyboard.up('ControlOrMeta');
+      await expect(page.locator('.cm-ame-element-link')).toHaveCount(0);
+    });
+
+    test('opens the element via the icon next to its definition', async ({page}) => {
+      await routeFormat(page, FORMATTED_MODEL);
+      const requestedUrns = await routeLocation(page);
+      await openTextView(page);
+      const openedUrls = await trackOpenedUrls(page);
+
+      const lineBox = await page.locator('.cm-line', {hasText: /^:property1 a samm:Property/}).boundingBox();
+      const icons = page.locator('.cm-ame-activate-gutter [data-testid="text-view-open-element"]');
+      let clicked = false;
+      for (const icon of await icons.all()) {
+        const box = await icon.boundingBox();
+        if (lineBox && box && Math.abs(box.y + box.height / 2 - (lineBox.y + lineBox.height / 2)) < lineBox.height / 2) {
+          await expect(icon).toHaveAttribute('title', /VS Code/);
+          await icon.click();
+          clicked = true;
+          break;
+        }
+      }
+
+      expect(clicked).toBe(true);
+      await expect.poll(openedUrls).toEqual([`vscode://file${LOCATION_PATH}:9:1`]);
+      expect(requestedUrns).toEqual([`${NS}property1`]);
+    });
+
+    test('opens the element at the cursor via the toolbar', async ({page}) => {
+      await routeFormat(page, FORMATTED_MODEL);
+      const requestedUrns = await routeLocation(page);
+      await openTextView(page);
+      const openedUrls = await trackOpenedUrls(page);
+
+      await page.locator('.cm-line', {hasText: /^:Characteristic1 a/}).click({position: {x: 12, y: 5}});
+      const button = page.getByTestId('text-view-open-in-external-editor');
+      await button.click();
+
+      await expect.poll(openedUrls).toEqual([`vscode://file${LOCATION_PATH}:9:1`]);
+      expect(requestedUrns).toEqual([`${NS}Characteristic1`]);
+    });
   });
 
   test('underlines validation errors at the element and shows them on hover', async ({page}) => {

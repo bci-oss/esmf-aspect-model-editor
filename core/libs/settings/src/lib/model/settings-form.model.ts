@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ElementOrderStrategy} from '@ame/shared';
+import {ElementOrderStrategy, ExternalEditor} from '@ame/shared';
 import {Langcode} from './langcode';
 
 export interface AutomatedWorkflowFormData {
@@ -28,6 +28,8 @@ export interface EditorConfigurationFormData {
   darkMode: boolean;
   elementOrderStrategy: ElementOrderStrategy;
   restoreSession: boolean;
+  externalEditor: ExternalEditor;
+  reloadExternalChanges: boolean;
 }
 
 export interface AspectModelLanguageEntry {

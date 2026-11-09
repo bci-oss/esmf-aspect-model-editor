@@ -484,6 +484,10 @@
       "displayDisambiguationLabelTooltip": "Displays labels on relationships that require disambiguation, e.g. Operation input/output, Characteristic Either left/right and Properties with notInPayload set.",
       "elementOrder": "Element order when saving",
       "elementOrderTooltip": "Defines the order of the elements in the saved Turtle file. Keeping the order of the file keeps Git diffs small. The order inside an element always follows the SAMM specification.",
+      "externalEditor": "Open in external editor",
+      "externalEditorTooltip": "The VS Code compatible editor used to open the workspace, folders, files and model elements. VS Code opens elements at the line where they are declared.",
+      "reloadExternalChanges": "Reload models automatically after external changes",
+      "reloadExternalChangesTooltip": "Reloads open models without unsaved changes right away when their files or files they reference are changed outside of the editor, e.g. in VS Code. When disabled, the editor asks once you return to it.",
       "elementOrderOptions": {
         "keepOrderAfterParent": "Keep order, insert new elements after their parent",
         "keepOrderAppend": "Keep order, append new elements at the end",
@@ -885,7 +889,9 @@
     "sortAlphabetically": "Sort elements alphabetically",
     "sortAlphabeticallyDisabled": "Not available while the element order is defined by the formatter (Settings > Editor)",
     "sorted": "Elements sorted alphabetically. Save the model to write the new order to the file.",
-    "prefixes": "Manage prefixes"
+    "prefixes": "Manage prefixes",
+    "openInExternalEditor": "Open the element at the cursor in {{editor}} (Ctrl+click or Cmd+click opens the clicked element)",
+    "openElementInExternalEditor": "Open this element in {{editor}}"
   },
   "menu": {
     "file": {
@@ -906,6 +912,8 @@
       "saveToWorkspace": "Save to Workspace",
       "exportModel": "Export Model",
       "exportPackage": "Export Package",
+      "openInExternalEditor": "Open in {{editor}}",
+      "openWorkspaceInExternalEditor": "Open Workspace in {{editor}}",
       "settings": "Settings...",
       "importAas": "Import Asset Administration Shell"
     },
@@ -1338,6 +1346,26 @@
       "openError": "The model of the plugin could not be opened",
       "noModel": "Open an Aspect Model to use this command.",
       "saveError": "The file of the plugin could not be saved"
+    }
+  },
+  "externalEditor": {
+    "openIn": "Open in {{editor}}",
+    "openFolderIn": "Open folder in {{editor}}",
+    "openSourceIn": "Open source folder in {{editor}}",
+    "notSavedTitle": "Model not in workspace",
+    "notSavedMessage": "Save the model to the workspace first.",
+    "errorTitle": "Could not open {{editor}}",
+    "errorMessage": "{{editor}} could not be opened. Make sure it is installed."
+  },
+  "externalChanges": {
+    "reloaded": "Reloaded after external changes: {{files}}",
+    "reloadDialog": {
+      "title": "Files changed outside of the editor",
+      "message": "These open models are affected by changes outside of the editor, to themselves or to files they reference: {{files}}",
+      "unsaved": "Your unsaved changes in these models are discarded when reloading: {{files}}",
+      "question": "Reload them now?",
+      "reload": "Reload",
+      "keep": "Keep current state"
     }
   }
 }

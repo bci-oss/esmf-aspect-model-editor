@@ -163,6 +163,12 @@ export class LoadedFilesService {
     return Boolean(this.currentLoadedFile.cachedFile.get(element.aspectModelUrn));
   }
 
+  /** The loaded file defining the element; the current file wins if several files define it. */
+  fileOfElement(aspectModelUrn: string): NamespaceFile | null {
+    const files = [this.currentLoadedFile, ...this.externalFiles];
+    return files.find(file => file && !file.unresolved && file.cachedFile?.get(aspectModelUrn)) ?? null;
+  }
+
   /**
    * Whether the element is referenced but not defined in any loaded file, e.g. because its file is missing in the workspace.
    */

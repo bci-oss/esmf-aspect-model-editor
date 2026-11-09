@@ -96,32 +96,6 @@ pub fn open_external_link(link: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn open_in_vscode_or_default(
-    vscode_url: String,
-    file_path: Option<String>,
-) -> Result<(), String> {
-    if open::that(&vscode_url).is_err() {
-        if let Some(path) = file_path {
-            #[cfg(target_os = "windows")]
-            {
-                std::process::Command::new("OpenWith.exe")
-                    .arg(&path)
-                    .spawn()
-                    .map_err(|e| e.to_string())?;
-                return Ok(());
-            }
-
-            #[cfg(not(target_os = "windows"))]
-            {
-                open::that(&path).map_err(|e| e.to_string())?;
-                return Ok(());
-            }
-        }
-    }
-    Ok(())
-}
-
-#[tauri::command]
 pub fn copy_to_clipboard(app: AppHandle, text: String) -> Result<(), String> {
     app.clipboard().write_text(text).map_err(|e| e.to_string())
 }
@@ -539,12 +513,6 @@ mod tests {
         assert!(!is_print_window("main"));
         assert!(!is_print_window("window-1712345678901"));
         assert!(!is_print_window("blueprint-1"));
-    }
-
-    #[test]
-    fn test_open_in_vscode_or_default_handles_missing_file_path() {
-        let res = open_in_vscode_or_default("invalid_proto://bad-path".to_string(), None);
-        assert!(res.is_ok());
     }
 
     #[test]

@@ -12,6 +12,7 @@
  */
 
 import {
+  ExternalEditorService,
   ModelOpenerPort,
   ModelSource,
   ModelSourcesStore,
@@ -21,7 +22,7 @@ import {
   WorkspaceFacade,
   WorkspaceStore,
 } from '@ame/domain';
-import {ClipboardService, LanguageTranslationService, NotificationsService} from '@ame/shared';
+import {ClipboardService, LanguageTranslationService, NotificationsService, parentDirectory} from '@ame/shared';
 import {Component, computed, DestroyRef, effect, inject, signal} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {MatMiniFabButton} from '@angular/material/button';
@@ -31,6 +32,7 @@ import {MatInput} from '@angular/material/input';
 import {MatMenu, MatMenuItem, MatMenuTrigger} from '@angular/material/menu';
 import {MatTooltip} from '@angular/material/tooltip';
 import {TranslocoDirective} from '@jsverse/transloco';
+import {catchError, map, Observable, of} from 'rxjs';
 import {FileStatus, SidebarStateService} from '../../sidebar-state.service';
 import {WorkspaceDeletionService} from '../workspace-deletion/workspace-deletion.service';
 import {WorkspaceMigrateComponent} from '../workspace-migrate/workspace-migrate.component';
@@ -76,9 +78,12 @@ export class WorkspaceFileListComponent {
   public readonly workspaceStore = inject(WorkspaceStore);
   public readonly deletion = inject(WorkspaceDeletionService);
   private readonly modelSources = inject(ModelSourcesStore);
+  public readonly externalEditor = inject(ExternalEditorService);
 
   public readonly menuSelection = signal<{namespace: string; file: FileStatus} | null>(null);
   public readonly namespaceMenuSelection = signal<string | null>(null);
+  /** Any file of the namespace selected in the namespace menu; locates the namespace folder of the right source. */
+  private namespaceMenuFile: FileStatus | null = null;
   public readonly foldedStatus = signal(false);
   public readonly searched = signal<Record<string, FileStatus[]>>({});
   public readonly folded = signal<Record<string, boolean>>({});
@@ -294,8 +299,23 @@ export class WorkspaceFileListComponent {
     return namespace ? this.deletion.blockReasonText('namespace', this.deletion.namespaceBlockReason(namespace)) : '';
   }
 
-  public prepareNamespaceMenu(namespace: string) {
+  public prepareNamespaceMenu(namespace: string, file?: FileStatus) {
     this.namespaceMenuSelection.set(namespace);
+    this.namespaceMenuFile = file ?? null;
+  }
+
+  public openNamespaceInExternalEditor() {
+    const namespace = this.namespaceMenuSelection();
+    const file = this.namespaceMenuFile;
+    if (!namespace || !file) return;
+
+    this.resolveFilePath(namespace, file)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(path => this.externalEditor.openFolder(parentDirectory(path)));
+  }
+
+  public openSourceInExternalEditor(source: ModelSource | undefined) {
+    if (source?.path) this.externalEditor.openFolder(source.path);
   }
 
   public deleteNamespace() {
@@ -399,25 +419,38 @@ export class WorkspaceFileListComponent {
     if (!selection) return;
 
     const {namespace, file} = selection;
-    const separator = namespace.lastIndexOf(':');
-    const sourceRoot = file.source?.path || '';
-    if (separator < 0) {
-      this.copyLocation(file, this.buildOsFilePath(sourceRoot, namespace, file.name));
-      return;
-    }
+    this.resolveFilePath(namespace, file)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(path => this.copyLocation(file, path));
+  }
 
-    this.modelApiService
+  /** Files of GitHub sources are opened from their local copy. */
+  public openInExternalEditor() {
+    const selection = this.menuSelection();
+    if (!selection) return;
+
+    this.resolveFilePath(selection.namespace, selection.file)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(path => this.externalEditor.openFile(path));
+  }
+
+  /** The local path of the file as reported by the backend, otherwise derived from the source root. */
+  private resolveFilePath(namespace: string, file: FileStatus): Observable<string> {
+    const fallback = this.buildOsFilePath(file.source?.path || '', namespace, file.name);
+    const separator = namespace.lastIndexOf(':');
+    if (separator < 0) return of(fallback);
+
+    return this.modelApiService
       .getStoragePath({
         namespace: namespace.substring(0, separator),
         version: namespace.substring(separator + 1),
         fileName: file.name,
         workspace: file.source?.path,
       })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: response => this.copyLocation(file, response?.storagePath || this.buildOsFilePath(sourceRoot, namespace, file.name)),
-        error: () => this.copyLocation(file, this.buildOsFilePath(sourceRoot, namespace, file.name)),
-      });
+      .pipe(
+        map(response => response?.storagePath || fallback),
+        catchError(() => of(fallback)),
+      );
   }
 
   /** Files of GitHub sources are copied as link to the file in the repository, all others as local path. */

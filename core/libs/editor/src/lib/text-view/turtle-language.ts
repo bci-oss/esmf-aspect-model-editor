@@ -295,6 +295,18 @@ export const turtleEditorTheme = EditorView.theme({
   '.cm-panels.cm-panels-top': {borderBottom: '1px solid var(--ame-gray-10)'},
   '.cm-panel input, .cm-panel button': {color: 'inherit'},
   '.cm-ame-target-line': {backgroundColor: 'var(--ame-tv-target-line)'},
+  '.cm-ame-element-link': {textDecoration: 'underline', cursor: 'pointer'},
+  '.cm-ame-element-link *': {cursor: 'pointer'},
+  '.cm-ame-activate-gutter .cm-gutterElement': {display: 'flex', alignItems: 'center', padding: '0 2px'},
+  '.cm-gutters .cm-ame-activate-icon': {
+    fontFamily: "'Material Symbols Outlined'",
+    fontSize: '14px',
+    lineHeight: '1',
+    fontFeatureSettings: "'liga'",
+    cursor: 'pointer',
+    opacity: '0.45',
+  },
+  '.cm-gutters .cm-ame-activate-icon:hover': {opacity: '1', color: 'var(--ame-primary)'},
   '.cm-lintRange-error': {backgroundColor: 'var(--ame-tv-problem)'},
   '.cm-tooltip.cm-tooltip-lint': {
     backgroundColor: 'var(--ame-surface-card)',

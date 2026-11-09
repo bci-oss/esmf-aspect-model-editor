@@ -21,4 +21,5 @@ export * from './named-rdf-model';
 export * from './plugins';
 export * from './refactoring';
 export * from './violation-error';
+export * from './workspace-events';
 export * from './workspace-structure';

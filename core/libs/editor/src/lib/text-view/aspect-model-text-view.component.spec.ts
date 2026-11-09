@@ -13,6 +13,7 @@
 
 import {
   ConfigurationService,
+  ExternalEditorService,
   GraphNavigatorPort,
   LoadedFilesService,
   ModelDocumentService,
@@ -73,6 +74,11 @@ describe('AspectModelTextViewComponent', () => {
   const rdfModel = {};
   let unresolvedUrns: string[];
   const translateText = (key: string, params?: Record<string, string>) => `${key}${params ? ' ' + JSON.stringify(params) : ''}`;
+  let externalEditor: {
+    editorName: ReturnType<typeof signal<string>>;
+    openElement: ReturnType<typeof vi.fn>;
+    openCurrentModel: ReturnType<typeof vi.fn>;
+  };
   let prefixManagement: {openManagement: ReturnType<typeof vi.fn>; prefixesChanged$: Subject<void>};
 
   const query = (testId: string): HTMLElement => fixture.nativeElement.querySelector(`[data-testid="${testId}"]`);
@@ -108,6 +114,11 @@ describe('AspectModelTextViewComponent', () => {
     tabState = {setTabDirty: vi.fn(), activeTabId: signal('tab-1')};
     settings$ = new BehaviorSubject({elementOrderStrategy: 'keepOrderAfterParent'});
     unresolvedUrns = [];
+    externalEditor = {
+      editorName: signal('VS Code'),
+      openElement: vi.fn(async () => undefined),
+      openCurrentModel: vi.fn(async () => undefined),
+    };
 
     TestBed.configureTestingModule({
       imports: [AspectModelTextViewComponent, TranslocoTestingModule.forRoot({langs: {en: {}}})],
@@ -130,6 +141,7 @@ describe('AspectModelTextViewComponent', () => {
         {provide: TabStateService, useValue: tabState},
         {provide: PrefixManagementService, useValue: prefixManagement},
         {provide: ConfigurationService, useValue: {settings$}},
+        {provide: ExternalEditorService, useValue: externalEditor},
       ],
     });
   });
@@ -350,5 +362,50 @@ describe('AspectModelTextViewComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.cm-search')).toBeTruthy();
+  });
+
+  describe('open in external editor', () => {
+    it('opens the element at the cursor', async () => {
+      await render();
+      component.revealElement(`${NS}speed`);
+
+      query('text-view-open-in-external-editor').click();
+
+      expect(externalEditor.openElement).toHaveBeenCalledWith(`${NS}speed`);
+    });
+
+    it('opens the element at the given offset or the subject of its statement', async () => {
+      await render();
+
+      component.openInExternalEditor(MODEL.indexOf(':speed )') + 2);
+      component.openInExternalEditor(MODEL.indexOf('samm:properties'));
+
+      expect(externalEditor.openElement).toHaveBeenNthCalledWith(1, `${NS}speed`);
+      expect(externalEditor.openElement).toHaveBeenNthCalledWith(2, `${NS}Movement`);
+    });
+
+    it('shows an icon next to each element definition opening it', async () => {
+      await render();
+      const icons = [...fixture.nativeElement.querySelectorAll('[data-testid="text-view-open-element"]')] as HTMLElement[];
+
+      expect(icons.length).toBeGreaterThan(0);
+      expect(icons[0].title).toBe(translateText('textView.openElementInExternalEditor', {editor: 'VS Code'}));
+    });
+
+    it('opens the model file if no element is at the offset', async () => {
+      await render();
+
+      component.openInExternalEditor(0);
+
+      expect(externalEditor.openElement).not.toHaveBeenCalled();
+      expect(externalEditor.openCurrentModel).toHaveBeenCalled();
+    });
+
+    it('is disabled without text', async () => {
+      await render({content: '', formatted: false});
+      const button = query('text-view-open-in-external-editor') as HTMLButtonElement;
+
+      expect(button.disabled).toBe(true);
+    });
   });
 });

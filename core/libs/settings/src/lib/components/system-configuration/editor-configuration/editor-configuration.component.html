@@ -98,6 +98,43 @@
             </mat-icon>
           </div>
         </div>
+
+        <div class="setting-item">
+          <div class="setting-item__content setting-item__content--select">
+            <mat-form-field class="setting-item__select" subscriptSizing="dynamic">
+              <mat-label>{{ t('settingsDialog.configuration.externalEditor') }}</mat-label>
+              <mat-select [formField]="form.editorConfiguration.externalEditor" data-testid="externalEditorSelect">
+                @for (editor of externalEditors; track editor) {
+                  <mat-option [value]="editor">{{ externalEditorNames[editor] }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-icon
+              [matTooltipShowDelay]="0"
+              [matTooltipHideDelay]="100"
+              [matTooltip]="t('settingsDialog.configuration.externalEditorTooltip')"
+            >
+              info
+            </mat-icon>
+          </div>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-item__content">
+            <div class="setting-item__toggle">
+              <mat-slide-toggle [formField]="form.editorConfiguration.reloadExternalChanges" data-testid="reloadExternalChangesToggle">
+                {{ t('settingsDialog.configuration.reloadExternalChanges') }}
+              </mat-slide-toggle>
+              <mat-icon
+                [matTooltipShowDelay]="0"
+                [matTooltipHideDelay]="100"
+                [matTooltip]="t('settingsDialog.configuration.reloadExternalChangesTooltip')"
+              >
+                info
+              </mat-icon>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

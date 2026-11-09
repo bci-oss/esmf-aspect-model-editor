@@ -151,3 +151,90 @@ export function findElementLine(text: string, urn: string): number | null {
   const range = findElementRange(text, urn);
   return range ? lineAt(text, range.from) : null;
 }
+
+const SAMM_URN = 'urn:samm:';
+const META_MODEL_URN = 'urn:samm:org.eclipse.esmf.samm:';
+const DIRECTIVE = /^(?:@prefix|@base|PREFIX|BASE)\b/i;
+
+function isModelElement(urn: string): boolean {
+  return urn.startsWith(SAMM_URN) && !urn.startsWith(META_MODEL_URN) && urn.includes('#');
+}
+
+/** The full IRI of a Turtle name (`<iri>` or `prefix:local`), or null if it is no name or its prefix is unknown. */
+function resolveName(name: string, prefixes: Record<string, string>): string | null {
+  if (name.startsWith('<') && name.endsWith('>')) {
+    return name.slice(1, -1);
+  }
+  const colon = name.indexOf(':');
+  const namespace = colon === -1 ? undefined : prefixes[name.slice(0, colon)];
+  return namespace === undefined ? null : namespace + name.slice(colon + 1);
+}
+
+export interface ElementRange extends TextRange {
+  urn: string;
+}
+
+/**
+ * The model element written at the document offset, also if the offset is right behind its name. Names in comments and
+ * string literals as well as meta model elements (e.g. `samm:Property`) do not count.
+ */
+export function elementAt(text: string, offset: number): string | null {
+  return elementRangeAt(text, offset)?.urn ?? null;
+}
+
+/** Like {@link elementAt}, with the range of the name in the text. */
+export function elementRangeAt(text: string, offset: number): ElementRange | null {
+  return text ? elementRangeIn(maskTurtleText(text), parseTurtlePrefixes(text), offset) : null;
+}
+
+/** The offsets of the lines defining a model element, i.e. starting with a model element as subject. */
+export function elementDefinitionOffsets(text: string): number[] {
+  if (!text) {
+    return [];
+  }
+  const code = maskTurtleText(text);
+  const prefixes = parseTurtlePrefixes(text);
+  const offsets: number[] = [];
+  for (let lineStart = 0; lineStart < code.length; lineStart = code.indexOf('\n', lineStart) + 1 || code.length) {
+    if (!/\s/.test(code[lineStart]) && !DIRECTIVE.test(code.slice(lineStart, lineStart + 7)) && elementRangeIn(code, prefixes, lineStart)) {
+      offsets.push(lineStart);
+    }
+  }
+  return offsets;
+}
+
+function elementRangeIn(code: string, prefixes: Record<string, string>, offset: number): ElementRange | null {
+  const inToken = (index: number) => index >= 0 && index < code.length && !/\s/.test(code[index]) && !endsToken(code, index);
+  const position = inToken(offset) ? offset : offset - 1;
+  if (!inToken(position)) {
+    return null;
+  }
+
+  let from = position;
+  while (!startsToken(code, from)) {
+    from--;
+  }
+  let to = position + 1;
+  while (!endsToken(code, to)) {
+    to++;
+  }
+
+  const urn = resolveName(code.slice(from, to), prefixes);
+  return urn && isModelElement(urn) ? {from, to, urn} : null;
+}
+
+/** The model element whose statement contains the document offset, i.e. the last subject starting a line before it. */
+export function enclosingSubjectAt(text: string, offset: number): string | null {
+  if (!text) {
+    return null;
+  }
+  const code = maskTurtleText(text);
+  let lineStart = code.lastIndexOf('\n', Math.max(0, Math.min(offset, code.length) - 1)) + 1;
+  while (/\s/.test(code[lineStart] ?? ' ')) {
+    if (lineStart === 0) {
+      return null;
+    }
+    lineStart = lineStart === 1 ? 0 : code.lastIndexOf('\n', lineStart - 2) + 1;
+  }
+  return DIRECTIVE.test(code.slice(lineStart)) ? null : elementAt(text, lineStart);
+}

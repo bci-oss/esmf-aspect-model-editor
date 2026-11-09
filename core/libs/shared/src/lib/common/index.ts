@@ -19,6 +19,7 @@ export * from './dialog-close';
 export * from './dialog-defaults';
 export * from './directives';
 export * from './enums';
+export * from './external-editor';
 export * from './general-config';
 export * from './http-error.interceptor';
 export * from './http-header-builder';

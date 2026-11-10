@@ -1,0 +1,113 @@
+/*!
+ * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+ *
+ * See the AUTHORS file(s) distributed with this work for
+ * additional information regarding authorship.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
+.ai-proposal {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 8px;
+  border: 1px solid var(--ame-border-color, #cfd0d1);
+  border-left: 3px solid var(--ame-primary, #007bc0);
+  border-radius: 6px;
+  background: var(--ame-surface, #fff);
+
+  &--closed {
+    border-left-color: var(--ame-border-color, #cfd0d1);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__icon {
+    flex-shrink: 0;
+  }
+
+  &__title {
+    flex: 1;
+    margin: 0;
+    font-size: 14px;
+  }
+
+  &__badge {
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    white-space: nowrap;
+
+    &--valid {
+      background: rgba(0, 136, 74, 0.15);
+      color: var(--ame-green, #00884a);
+    }
+
+    &--invalid {
+      background: rgba(237, 0, 7, 0.12);
+      color: var(--ame-red, #ed0007);
+    }
+  }
+
+  &__summary {
+    margin: 0;
+  }
+
+  &__editor {
+    width: 100%;
+    font-family: monospace;
+    font-size: 12px;
+    box-sizing: border-box;
+    resize: vertical;
+  }
+
+  &__preview {
+    max-height: 280px;
+    margin: 0;
+    overflow: auto;
+    font-size: 12px;
+  }
+
+  &__rename {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  &__errors {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--ame-red, #ed0007);
+    font-size: 12px;
+  }
+
+  &__state {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    font-size: 13px;
+    opacity: 0.8;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+}

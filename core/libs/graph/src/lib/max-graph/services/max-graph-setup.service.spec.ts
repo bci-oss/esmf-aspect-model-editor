@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ConfigurationService, ElementRefactoringGuard, ExternalEditorAction, LoadedFilesService} from '@ame/domain';
+import {AiEditorAction, ConfigurationService, ElementRefactoringGuard, ExternalEditorAction, LoadedFilesService} from '@ame/domain';
 import {BindingsService, BrowserService, LanguageTranslationService} from '@ame/shared';
 import {provideZonelessChangeDetection} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
@@ -28,7 +28,8 @@ describe('MaxGraphSetupService context menu', () => {
 
   let service: MaxGraphSetupService;
   let selectedCells: Cell[];
-  let guard: {canShowUsages: ReturnType<typeof vi.fn>; blocker: ReturnType<typeof vi.fn>};
+  let guard: {canShowUsages: ReturnType<typeof vi.fn>; blocker: ReturnType<typeof vi.fn>; urnOf: ReturnType<typeof vi.fn>};
+  let settings: {externalEditor: string; ai?: {enabled: boolean}};
   let loadedFiles: {isElementExtern: ReturnType<typeof vi.fn>; isElementUnresolved: ReturnType<typeof vi.fn>};
   let bindings: {fireAction: ReturnType<typeof vi.fn>};
   let items: {label: string; element: HTMLElement; action: () => void}[];
@@ -36,7 +37,12 @@ describe('MaxGraphSetupService context menu', () => {
 
   beforeEach(() => {
     selectedCells = [];
-    guard = {canShowUsages: vi.fn(() => true), blocker: vi.fn(() => null)};
+    guard = {
+      canShowUsages: vi.fn(() => true),
+      blocker: vi.fn(() => null),
+      urnOf: vi.fn((element: NamedElement | null) => element?.aspectModelUrn ?? null),
+    };
+    settings = {externalEditor: 'cursor'};
     loadedFiles = {isElementExtern: vi.fn(() => false), isElementUnresolved: vi.fn(() => false)};
     bindings = {fireAction: vi.fn()};
     items = [];
@@ -52,7 +58,7 @@ describe('MaxGraphSetupService context menu', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        {provide: ConfigurationService, useValue: {getSettings: () => ({externalEditor: 'cursor'})}},
+        {provide: ConfigurationService, useValue: {getSettings: () => settings}},
         {provide: BindingsService, useValue: bindings},
         {provide: BrowserService, useValue: {getAssetBasePath: () => 'assets'}},
         {provide: MaxGraphShapeSelectorService, useValue: {getSelectedCells: () => selectedCells}},
@@ -119,5 +125,45 @@ describe('MaxGraphSetupService context menu', () => {
     openMenu(null);
 
     expect(openInEditorItem()).toBeUndefined();
+  });
+
+  describe('AI assistant', () => {
+    const aiItem = (action: string) => items.find(item => item.element.dataset['testid'] === `context-menu-ai-${action}`);
+
+    it('offers the actions of the assistant for a single named element while it is enabled', () => {
+      settings.ai = {enabled: true};
+      const cell = cellOf(speed);
+      selectedCells = [cell];
+
+      openMenu(cell);
+
+      expect(items.find(item => item.element.dataset['testid'] === 'context-menu-ai')?.label).toBe('ai.actions.menu');
+      for (const action of ['describe', 'translate', 'explain'] as const) {
+        const item = aiItem(action);
+        expect(item?.label).toBe(`ai.actions.${action}.label`);
+        item?.action();
+        expect(bindings.fireAction).toHaveBeenCalledWith(AiEditorAction[action]);
+      }
+    });
+
+    it('does not offer them while the assistant is disabled', () => {
+      const cell = cellOf(speed);
+      selectedCells = [cell];
+
+      openMenu(cell);
+
+      expect(aiItem('describe')).toBeUndefined();
+    });
+
+    it('does not offer them for elements without URN', () => {
+      settings.ai = {enabled: true};
+      guard.urnOf.mockReturnValue(null);
+      const cell = cellOf(speed);
+      selectedCells = [cell];
+
+      openMenu(cell);
+
+      expect(aiItem('describe')).toBeUndefined();
+    });
   });
 });

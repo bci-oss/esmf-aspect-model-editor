@@ -11,7 +11,7 @@
   ~ SPDX-License-Identifier: MPL-2.0
   -->
 
-@for (locale of getPreferredNamesLocales(); track locale) {
+@for (locale of getPreferredNamesLocales(); track locale; let first = $first) {
   @if (field(locale); as preferredNameField) {
     <mat-form-field
       [floatLabel]="preferredNameField().disabled() ? 'always' : 'auto'"
@@ -21,6 +21,9 @@
     >
       <mat-label>preferredName({{ locale }})</mat-label>
       <input class="ellipsis" [formField]="preferredNameField" matInput data-testid="preferredName" />
+      @if (first) {
+        <ame-ai-field-action [element]="metaModelElement" [disabled]="preferredNameField().disabled()" matSuffix />
+      }
     </mat-form-field>
   }
 }

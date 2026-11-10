@@ -23,4 +23,5 @@ export enum AssetsPath {
   RefactorIcon = 'config/editor/img/refactor.svg',
   SubmenuIcon = 'config/editor/img/submenu.svg',
   CodeIcon = 'config/editor/img/code.svg',
+  AiIcon = 'config/editor/img/ai.svg',
 }

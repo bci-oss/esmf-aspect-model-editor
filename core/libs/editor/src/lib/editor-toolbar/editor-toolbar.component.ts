@@ -32,6 +32,7 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {NamedElement} from '@esmf/aspect-model-loader';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {first} from 'rxjs/operators';
+import {AiEditorActionsService} from '../ai/ai-editor-actions.service';
 import {ConnectWithDialogComponent} from '../connect-with-dialog/connect-with-dialog.component';
 import {ShapeSettingsService} from '../editor-dialog/services/shape-settings.service';
 import {EditorService} from '../editor.service';
@@ -40,13 +41,14 @@ import {PluginRuntimeService} from '../plugins/plugin-runtime.service';
 import {PrefixManagementService} from '../prefixes/prefix-management.service';
 import {ElementRefactoringService, ElementRefactoringType} from '../refactoring/element-refactoring.service';
 import {EditorViewModeService} from '../text-view/services/editor-view-mode.service';
+import {AiToolbarButtonComponent} from './components/ai-toolbar-button/ai-toolbar-button.component';
 import {FileHandlingService} from './services';
 
 @Component({
   selector: 'ame-editor-toolbar',
   templateUrl: './editor-toolbar.component.html',
   styleUrls: ['./editor-toolbar.component.scss'],
-  imports: [BarItemComponent, CommonModule, MatTooltipModule, TranslocoDirective, MatIconModule, MatMenuModule],
+  imports: [BarItemComponent, CommonModule, MatTooltipModule, TranslocoDirective, MatIconModule, MatMenuModule, AiToolbarButtonComponent],
 })
 export class EditorToolbarComponent implements AfterViewInit, OnDestroy {
   private destroyRef = inject(DestroyRef);
@@ -65,6 +67,7 @@ export class EditorToolbarComponent implements AfterViewInit, OnDestroy {
   private elementRefactoring = inject(ElementRefactoringService);
   private externalEditor = inject(ExternalEditorService);
   private pluginRuntime = inject(PluginRuntimeService);
+  protected readonly aiActions = inject(AiEditorActionsService);
 
   public notificationsService = inject(NotificationsService);
 
@@ -83,6 +86,8 @@ export class EditorToolbarComponent implements AfterViewInit, OnDestroy {
   protected readonly refactoringElement = this.elementRefactoring.selectedElement;
   protected readonly pluginCommands = this.pluginRuntime.toolbarCommands;
   protected readonly isPluginCommandEnabled = isPluginCommandEnabled;
+  protected readonly isAiEnabled = this.aiActions.enabled;
+  protected readonly isAiPanelOpen = this.aiActions.panelOpen;
 
   private checkChangesInterval: NodeJS.Timeout;
 
@@ -94,6 +99,7 @@ export class EditorToolbarComponent implements AfterViewInit, OnDestroy {
     this.bindingsService.registerAction('select-tree', () => this.maxgraphShapeSelectorService.selectTree());
     this.bindingsService.registerAction(ExternalEditorAction.openElement, () => this.openSelectedElementInExternalEditor());
     this.elementRefactoring.registerContextMenuActions();
+    this.aiActions.registerContextMenuActions();
   }
 
   private openSelectedElementInExternalEditor(): void {

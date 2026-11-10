@@ -13,7 +13,6 @@
 
 import {ModelSource} from '@ame/domain';
 import {ChangeDetectionStrategy, Component, input, output} from '@angular/core';
-import {MatMiniFabButton} from '@angular/material/button';
 import {MatIcon} from '@angular/material/icon';
 import {MatTooltip} from '@angular/material/tooltip';
 import {TranslocoDirective} from '@jsverse/transloco';
@@ -24,7 +23,7 @@ import {TranslocoDirective} from '@jsverse/transloco';
   templateUrl: './workspace-source-header.component.html',
   styleUrls: ['./workspace-source-header.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatIcon, MatMiniFabButton, MatTooltip, TranslocoDirective],
+  imports: [MatIcon, MatTooltip, TranslocoDirective],
 })
 export class WorkspaceSourceHeaderComponent {
   readonly source = input<ModelSource>();

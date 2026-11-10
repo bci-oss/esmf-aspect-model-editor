@@ -12,6 +12,8 @@
  */
 import {ConfigurationService, ModelHeaderService, ModelSessionFacade, NamespaceFile, SammLanguageSettingsService} from '@ame/domain';
 import {
+  AiSettings,
+  DEFAULT_AI_SETTINGS,
   DEFAULT_ELEMENT_ORDER_STRATEGY,
   DEFAULT_EXTERNAL_EDITOR,
   GeneralConfig,
@@ -23,6 +25,7 @@ import {applyWhen, disabled, form, pattern, required, validate} from '@angular/f
 import {RdfModel} from '@esmf/aspect-model-loader';
 import * as locale from 'locale-codes';
 import {AspectModelLanguageEntry, NamespaceConfiguration, SettingsFormData} from '../model';
+import {AiConfigurationUpdateStrategy} from '../strategy/ai-configuration-update.strategy';
 import {AutomatedWorkflowUpdateStrategy} from '../strategy/automated-workflow-update.strategy';
 import {CopyrightHeaderUpdateStrategy} from '../strategy/copyright-header-update.strategy';
 import {EditorConfigurationUpdateStrategy} from '../strategy/editor-configuration-update.strategy';
@@ -60,6 +63,11 @@ export const createDefaultSettingsModel = (): SettingsFormData => ({
   copyrightHeaderConfiguration: {
     copyright: '',
   },
+  aiConfiguration: {
+    enabled: DEFAULT_AI_SETTINGS.enabled,
+    onlyLocal: DEFAULT_AI_SETTINGS.onlyLocal,
+    languages: DEFAULT_AI_SETTINGS.languages.join(', '),
+  },
 });
 
 @Injectable({providedIn: 'root'})
@@ -72,6 +80,7 @@ export class SettingsFormService {
   private readonly languageConfigStrategy = inject(LanguageConfigurationUpdateStrategy);
   private readonly namespaceConfigStrategy = inject(NamespaceConfigurationUpdateStrategy);
   private readonly copyrightHeaderUpdateStrategy = inject(CopyrightHeaderUpdateStrategy);
+  private readonly aiConfigurationStrategy = inject(AiConfigurationUpdateStrategy);
   private readonly loadedFilesService = inject(ModelSessionFacade);
   private readonly modelHeaderService = inject(ModelHeaderService);
 
@@ -87,6 +96,7 @@ export class SettingsFormService {
     this.languageConfigStrategy,
     this.namespaceConfigStrategy,
     this.copyrightHeaderUpdateStrategy,
+    this.aiConfigurationStrategy,
   ];
   private languagesToBeRemove: string[] = [];
 
@@ -149,6 +159,11 @@ export class SettingsFormService {
       when: () => true,
     });
 
+    // AI assistant: the details are only editable when it is enabled; the connection is set up live by the AI setup
+    const aiDisabled = {when: () => !this.settingsModel().aiConfiguration.enabled};
+    disabled(schemaPath.aiConfiguration.onlyLocal, aiDisabled);
+    disabled(schemaPath.aiConfiguration.languages, aiDisabled);
+
     // Copyright
     validate(schemaPath.copyrightHeaderConfiguration.copyright, ({value}) => {
       const text = value();
@@ -174,7 +189,7 @@ export class SettingsFormService {
   }
 
   /** Restores the default values of an application wide settings section. */
-  resetSection(section: 'automatedWorkflow' | 'editorConfiguration'): void {
+  resetSection(section: 'automatedWorkflow' | 'editorConfiguration' | 'aiConfiguration'): void {
     const defaults = createDefaultSettingsModel();
     this.settingsModel.update(model => ({...model, [section]: {...defaults[section]}}));
   }
@@ -229,7 +244,17 @@ export class SettingsFormService {
           ? this.modelHeaderService.getHeaderText(this.currentLoadedFile.rdfModel)
           : (settings.copyrightHeader || []).join('\n'),
       },
+      aiConfiguration: this.createAiConfiguration(settings.ai),
     });
+  }
+
+  private createAiConfiguration(stored: Partial<AiSettings> | undefined): SettingsFormData['aiConfiguration'] {
+    const ai = {...DEFAULT_AI_SETTINGS, ...(stored ?? {})};
+    return {
+      enabled: ai.enabled === true,
+      onlyLocal: ai.onlyLocal === true,
+      languages: (ai.languages?.length ? ai.languages : DEFAULT_AI_SETTINGS.languages).join(', '),
+    };
   }
 
   private populateLanguages(): void {

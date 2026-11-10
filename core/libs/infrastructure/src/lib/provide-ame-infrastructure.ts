@@ -12,6 +12,8 @@
  */
 
 import {
+  AiPort,
+  AiSecretStorePort,
   ModelApiPort,
   ModelInstantiatorPort,
   ModelSourcesPort,
@@ -25,6 +27,8 @@ import {
 } from '@ame/domain';
 import {EnvironmentProviders, inject, makeEnvironmentProviders, provideEnvironmentInitializer} from '@angular/core';
 import {
+  AiApiService,
+  AiSecretStoreService,
   ModelApiService,
   ModelSourcesApiService,
   PluginsApiService,
@@ -45,6 +49,8 @@ export function provideAmeInfrastructure(): EnvironmentProviders {
     {provide: RefactoringPort, useExisting: RefactoringApiService},
     {provide: PluginsPort, useExisting: PluginsApiService},
     {provide: WorkspaceEventsPort, useExisting: WorkspaceEventsApiService},
+    {provide: AiPort, useExisting: AiApiService},
+    {provide: AiSecretStorePort, useExisting: AiSecretStoreService},
     {provide: RdfPort, useExisting: RdfService},
     {provide: RdfNodePort, useExisting: RdfNodeService},
     {provide: ModelInstantiatorPort, useExisting: InstantiatorService},

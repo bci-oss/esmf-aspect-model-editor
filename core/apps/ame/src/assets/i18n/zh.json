@@ -468,7 +468,8 @@
       "editor": "编辑器",
       "copyright": "Header/Copyright",
       "languages": "语言",
-      "namespaces": "Namespaces"
+      "namespaces": "Namespaces",
+      "ai": "AI 助手"
     },
     "configuration": {
       "autoSave": "自动保存",
@@ -541,7 +542,8 @@
       "editor": "图形的外观以及模型写入 Turtle 文件的方式。",
       "languages": "用户界面语言以及模型中首选名称和描述的语言。",
       "namespaces": "已打开模型的命名空间和版本。",
-      "copyright": "写在 Turtle 文件顶部的注释头。每行必须以 # 开头。"
+      "copyright": "写在 Turtle 文件顶部的注释头。每行必须以 # 开头。",
+      "ai": "可选助手，用于解释、补全和审查 Aspect Model。默认关闭。"
     },
     "resetSection": "恢复默认值",
     "requiresModel": "加载 Aspect Model 后才能更改这些设置。",
@@ -554,6 +556,59 @@
       "content": "设置中包含尚未应用的更改。",
       "keepEditing": "继续编辑",
       "discard": "放弃"
+    },
+    "ai": {
+      "enabled": "启用 AI 助手",
+      "onlyLocal": "仅使用本地模型",
+      "onlyLocalTooltip": "模型数据绝不会离开本机；云提供商将被阻止。",
+      "languages": "目标语言",
+      "languagesHint": "用于生成描述和翻译的语言标签，例如 en, de。",
+      "consent": "同意向云提供商发送模型数据",
+      "consentGiven": "已同意：{{ providers }}",
+      "consentNone": "尚未同意。首次请求前会询问您。",
+      "consentReset": "重置同意",
+      "intro": {
+        "lead": "AI 助手直接在编辑器中帮助您建模。它可以：",
+        "capabilities": {
+          "ask": "回答有关已打开模型的问题",
+          "fix": "解释并修复验证错误",
+          "describe": "补充并翻译描述和首选名称",
+          "review": "审查模型：名称、单位、复用",
+          "examples": "创建示例值和测试负载",
+          "generate": "根据文本描述起草新模型"
+        },
+        "safety": "所有更改都会先以预览显示，并且可以撤销。助手禁用时不会发送任何内容。",
+        "docs": "了解有关 AI 助手的更多信息"
+      },
+      "steps": {
+        "enableFirst": "请先启用助手。",
+        "enable": {
+          "title": "启用",
+          "description": "在工具栏右端显示 ✨ 按钮 (Ctrl/Cmd+I) 以及编辑器中的 AI 操作。"
+        },
+        "provider": {
+          "title": "提供商和连接",
+          "description": "登录、API 密钥和连接测试均在助手面板中完成。密钥存储在系统钥匙串中，绝不会存储在设置中。",
+          "setup": "保存并设置助手",
+          "change": "保存并更改提供商"
+        },
+        "privacy": {
+          "title": "隐私",
+          "description": "决定是否可以将模型数据发送给云提供商。"
+        },
+        "languages": {
+          "title": "语言"
+        }
+      },
+      "status": {
+        "none": "尚未选择提供商。",
+        "ready": "就绪",
+        "incomplete": "设置未完成",
+        "model": "模型：{{ model }}",
+        "defaultModel": "提供商的默认模型",
+        "keyMissing": "未存储 API 密钥。",
+        "copilotSignedOut": "未登录 GitHub。"
+      }
     }
   },
   "editorCanvas": {
@@ -1369,6 +1424,256 @@
       "question": "现在重新加载吗？",
       "reload": "重新加载",
       "keep": "保留当前状态"
+    }
+  },
+  "ai": {
+    "common": {
+      "cancel": "取消",
+      "close": "关闭",
+      "save": "保存"
+    },
+    "panel": {
+      "title": "AI 助手",
+      "welcome": "询问已打开的模型、解释错误或获取建议。所有更改都会先显示，并且可以撤销。",
+      "tip": "输入 / 使用命令，输入 @ 提及元素。Enter 发送，Shift+Enter 换行。",
+      "providerTooltip": "提供商和模型",
+      "changeProvider": "更改提供商…",
+      "toggleTooltip": "AI 助手 (Ctrl/Cmd+I)"
+    },
+    "starters": {
+      "explain": {
+        "label": "解释模型",
+        "message": "解释已打开的模型。"
+      },
+      "review": {
+        "label": "审查模型",
+        "message": "审查已打开的模型。"
+      },
+      "examples": {
+        "label": "示例数据",
+        "message": "为已打开的模型创建示例负载。"
+      },
+      "generate": {
+        "label": "从文本创建模型",
+        "message": "创建一个新的 Aspect Model。"
+      }
+    },
+    "commands": {
+      "explain": "解释模型或元素",
+      "describe": "补充缺失的描述和首选名称",
+      "translate": "翻译描述和首选名称",
+      "generate": "根据描述创建新模型",
+      "review": "审查模型",
+      "examples": "建议示例值和负载",
+      "fix": "修复验证错误"
+    },
+    "providers": {
+      "copilot": "GitHub Copilot",
+      "openai": "OpenAI",
+      "anthropic": "Anthropic Claude",
+      "azure-openai": "Azure OpenAI",
+      "ollama": "Ollama",
+      "lmstudio": "LM Studio",
+      "openai-compatible": "OpenAI 兼容"
+    },
+    "setup": {
+      "title": "设置 AI 助手",
+      "intro": "选择提供商，登录或输入密钥，然后测试连接。",
+      "localFound": "在此计算机上运行：",
+      "provider": "提供商",
+      "recommended": "推荐",
+      "local": "本地",
+      "baseUrl": "基础 URL",
+      "model": "模型",
+      "test": "测试连接",
+      "testOk": "连接正常。",
+      "done": "完成",
+      "key": {
+        "label": "API 密钥",
+        "hint": "密钥存储在系统钥匙串中，绝不会存储在设置中。",
+        "storedPersistent": "密钥已存储在系统钥匙串中。",
+        "storedSession": "密钥仅在本次会话中保留。",
+        "delete": "删除密钥",
+        "change": "更改密钥"
+      },
+      "copilot": {
+        "hint": "使用您的 GitHub Copilot 订阅，无需 API 密钥。",
+        "login": "使用 GitHub 登录",
+        "logout": "退出登录",
+        "signedIn": "已登录为 {{ login }}",
+        "step1": "复制代码。",
+        "step2": "打开 GitHub 并在那里输入代码。",
+        "copy": "复制代码",
+        "open": "打开 GitHub",
+        "waiting": "正在等待授权…",
+        "pasteToken": "改为粘贴令牌",
+        "token": "GitHub 令牌",
+        "tokenHint": "具有 Copilot 访问权限的 GitHub 令牌。它不会存储在设置中。"
+      }
+    },
+    "consent": {
+      "title": "发送模型数据？",
+      "text": "您的消息将发送给 {{ provider }}，同时发送：",
+      "data": "已打开的模型、上下文中的元素和错误、附加的文件以及选定的工作区模型",
+      "noKeys": "API 密钥绝不会包含在模型数据或已保存的对话中",
+      "revoke": "您可以随时在设置中撤销同意",
+      "accept": "发送",
+      "decline": "暂不",
+      "useLocal": "使用本地模型"
+    },
+    "context": {
+      "title": "下一条消息的上下文",
+      "modelTooltip": "已打开的模型将随消息一起发送。",
+      "selectionTooltip": "所选元素将随消息一起发送。",
+      "readOnly": "只读：模型永远不会被更改。",
+      "remove": "从上下文中移除",
+      "file": {
+        "uploading": "正在上传…",
+        "pages": "{{ count }} 页或工作表",
+        "characters": "{{ count }} 个字符的文本",
+        "truncated": "文本过长，已被截断。",
+        "no_text": "未找到文本，例如扫描的 PDF。"
+      },
+      "picker": {
+        "title": "将模型添加为上下文",
+        "search": "搜索命名空间和模型",
+        "models": "模型",
+        "readOnly": "只读（GitHub）",
+        "noMatch": "没有匹配项。",
+        "empty": "工作区中没有模型。",
+        "add": {
+          "model": "添加此模型",
+          "namespace": "添加此文件夹中的所有模型",
+          "source": "添加此工作区或来源中的所有模型"
+        }
+      }
+    },
+    "input": {
+      "label": "发给助手的消息",
+      "placeholder": "询问模型，/ 使用命令，@ 提及元素，# 添加上下文",
+      "hint": "Enter 发送，Shift+Enter 换行",
+      "send": "发送",
+      "stop": "停止"
+    },
+    "message": {
+      "thinking": "思考中…",
+      "stopped": "已停止。",
+      "context": "已发送的上下文"
+    },
+    "tools": {
+      "started": "正在运行 {{ name }}…",
+      "done": "{{ name }} 已完成",
+      "failed": "{{ name }} 失败"
+    },
+    "conversations": {
+      "title": "对话",
+      "new": "新对话",
+      "empty": "暂无对话。",
+      "rename": "重命名",
+      "delete": "删除",
+      "clear": "全部删除",
+      "clearConfirm": "删除所有对话？"
+    },
+    "proposal": {
+      "preview": "显示更改",
+      "diff": "更改",
+      "noChanges": "没有更改。",
+      "unchangedLines": "{{ count }} 行未更改",
+      "valid": "有效",
+      "invalid": "{{ count }} 个验证错误",
+      "edit": "调整",
+      "editLabel": "建议的 Turtle",
+      "validate": "验证",
+      "apply": "应用",
+      "create": "创建模型",
+      "rename": "重命名",
+      "discard": "放弃",
+      "applied": "已应用。撤销可恢复之前的模型。",
+      "discarded": "已放弃。",
+      "readOnly": "模型为只读，无法更改。",
+      "copy": "复制",
+      "saveFile": "另存为文件",
+      "applyFailed": "无法应用此更改。"
+    },
+    "review": {
+      "none": "没有发现问题。",
+      "fix": "修复",
+      "reuse": "复用",
+      "severity": {
+        "info": "信息",
+        "warning": "警告",
+        "error": "错误"
+      },
+      "category": {
+        "naming": "命名",
+        "unit": "单位",
+        "description": "描述",
+        "characteristic": "Characteristic",
+        "reuse": "复用",
+        "other": "其他"
+      }
+    },
+    "errors": {
+      "invalid_key": "API 密钥无效。",
+      "quota_exceeded": "提供商的配额已用完。",
+      "offline": "无法访问 AI 服务。",
+      "timeout": "AI 服务未及时响应。",
+      "not_authenticated": "请登录 GitHub Copilot。",
+      "model_not_found": "提供商不提供该模型。",
+      "provider_error": "AI 服务报告了一个错误。",
+      "local_only": "仅允许使用本地模型。",
+      "read_only": "模型为只读，无法更改。",
+      "attachment_unsupported": "不支持此文件类型。请使用 PDF、DOCX、XLSX 或文本文件。",
+      "attachment_too_large": "文件大于 20 MB。",
+      "attachment_unreadable": "无法读取该文件。",
+      "attachment_empty": "文件不包含文本。"
+    },
+    "errorActions": {
+      "openSetup": "设置",
+      "retry": "重试",
+      "login": "登录",
+      "openSettings": "设置"
+    },
+    "actions": {
+      "menu": "AI",
+      "fieldTooltip": "询问 AI 助手",
+      "describe": {
+        "label": "AI：补充描述",
+        "message": "为 {{name}} 补充缺失的描述和首选名称。"
+      },
+      "translate": {
+        "label": "AI：翻译",
+        "message": "翻译 {{name}} 的描述和首选名称。"
+      },
+      "explain": {
+        "label": "AI：解释",
+        "message": "解释 {{name}}。"
+      },
+      "fix": {
+        "label": "AI：解释并修复",
+        "message": "解释此验证错误并提出修复建议：{{error}}"
+      },
+      "review": {
+        "label": "检查模型",
+        "message": "检查当前打开的模型。"
+      },
+      "examples": {
+        "label": "生成示例数据",
+        "message": "为当前打开的模型创建示例负载。"
+      },
+      "newModel": {
+        "label": "用 AI 新建模型…",
+        "message": "创建一个新的 Aspect Model："
+      },
+      "moreTooltip": "更多 AI 操作"
+    },
+    "attach": {
+      "button": "添加上下文",
+      "tooltip": "将计算机中的文件或工作区中的模型和文件夹添加为上下文",
+      "file": "计算机中的文件…",
+      "model": "工作区中的模型…",
+      "drop": "将文件拖放到此处以添加为上下文",
+      "uploading": "正在上传文件…"
     }
   }
 }

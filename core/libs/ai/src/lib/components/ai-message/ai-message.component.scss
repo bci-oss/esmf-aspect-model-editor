@@ -1,0 +1,107 @@
+/*!
+ * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+ *
+ * See the AUTHORS file(s) distributed with this work for
+ * additional information regarding authorship.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
+.ai-message {
+  max-width: 100%;
+  padding: 6px 10px;
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+
+  &--user {
+    align-self: flex-end;
+    max-width: 85%;
+    background: var(--ame-primary-light, rgba(0, 123, 192, 0.12));
+  }
+
+  &--assistant {
+    align-self: stretch;
+  }
+
+  &__command {
+    font-family: monospace;
+    font-size: 12px;
+    opacity: 0.8;
+  }
+
+  &__text {
+    margin: 0;
+    white-space: pre-wrap;
+  }
+
+  &__context {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__context-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    max-width: 100%;
+    padding: 0 6px;
+    border: 1px solid var(--ame-border-color, #cfd0d1);
+    border-radius: 10px;
+    font-size: 11px;
+    line-height: 18px;
+    opacity: 0.85;
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    mat-icon {
+      width: 12px;
+      height: 12px;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+  }
+
+  &__tool,
+  &__thinking {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    opacity: 0.8;
+
+    mat-icon {
+      width: 14px;
+      height: 14px;
+      font-size: 14px;
+    }
+  }
+
+  &__tool--failed {
+    color: var(--ame-red, #ed0007);
+  }
+
+  &__tool-summary {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__stopped {
+    margin: 4px 0 0;
+    font-size: 12px;
+    font-style: italic;
+    opacity: 0.7;
+  }
+}

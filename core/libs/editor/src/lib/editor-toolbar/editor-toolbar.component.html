@@ -235,4 +235,16 @@
       </ame-bar-item>
     </div>
   </div>
+
+  @if (isAiEnabled()) {
+    <ame-ai-toolbar-button
+      [panelOpen]="isAiPanelOpen()"
+      [modelEmpty]="isModelEmpty()"
+      (togglePanel)="aiActions.togglePanel()"
+      (review)="aiActions.review()"
+      (examples)="aiActions.examples()"
+      (explainModel)="aiActions.explainModel()"
+      (newModel)="aiActions.newModel()"
+    />
+  }
 </ng-container>

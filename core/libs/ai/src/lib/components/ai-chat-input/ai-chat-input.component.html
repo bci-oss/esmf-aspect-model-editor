@@ -1,0 +1,77 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t">
+  <div
+    class="ai-input"
+    [class.ai-input--drag-over]="dragOver()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+    data-testid="ai-input-area"
+  >
+    @if (suggestions().length) {
+      <ul class="ai-input__suggestions" id="ai-input-suggestions" role="listbox" data-testid="ai-input-suggestions">
+        @for (suggestion of suggestions(); track $index; let i = $index) {
+          <li
+            class="ai-input__suggestion"
+            [class.ai-input__suggestion--active]="i === highlighted()"
+            [attr.aria-selected]="i === highlighted()"
+            (mousedown)="$event.preventDefault(); choose(suggestion)"
+            role="option"
+          >
+            <span class="ai-input__suggestion-label">
+              @if (suggestion.candidate; as candidate) {
+                <mat-icon class="ai-input__suggestion-icon">{{ icon(candidate) }}</mat-icon>
+              }
+              {{ suggestion.label }}
+            </span>
+            <span class="ai-input__suggestion-detail">{{ token()?.kind === 'command' ? t(suggestion.detail) : suggestion.detail }}</span>
+          </li>
+        }
+      </ul>
+    }
+    <textarea
+      class="ai-input__textarea"
+      #textarea
+      [value]="text()"
+      [disabled]="disabled()"
+      [placeholder]="t('ai.input.placeholder')"
+      [attr.aria-label]="t('ai.input.label')"
+      [attr.aria-expanded]="suggestions().length > 0"
+      (input)="onInput($event)"
+      (keydown)="onKeydown($event)"
+      (keyup)="onCaretMove($event)"
+      (click)="onCaretMove($event)"
+      rows="3"
+      aria-controls="ai-input-suggestions"
+      aria-autocomplete="list"
+      data-testid="ai-input"
+    ></textarea>
+    @if (dragOver()) {
+      <div class="ai-input__drop" aria-hidden="true"><mat-icon>upload_file</mat-icon>{{ t('ai.attach.drop') }}</div>
+    }
+    <div class="ai-input__actions">
+      <span class="ai-input__hint">{{ uploading() ? t('ai.attach.uploading') : t('ai.input.hint') }}</span>
+      @if (streaming()) {
+        <button (click)="stopRequested.emit()" mat-stroked-button type="button" data-testid="ai-stop">
+          <mat-icon>stop</mat-icon>{{ t('ai.input.stop') }}
+        </button>
+      } @else {
+        <button [disabled]="!canSend()" (click)="send()" mat-flat-button color="primary" type="button" data-testid="ai-send">
+          <mat-icon>send</mat-icon>{{ t('ai.input.send') }}
+        </button>
+      }
+    </div>
+  </div>
+</ng-container>

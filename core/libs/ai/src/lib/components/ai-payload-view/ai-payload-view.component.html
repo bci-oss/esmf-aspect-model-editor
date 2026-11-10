@@ -1,0 +1,43 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t">
+  <div class="ai-payload" data-testid="ai-payload">
+    @if (variants().length > 1) {
+      <div class="ai-payload__variants" role="tablist">
+        @for (variant of variants(); track variant.name; let i = $index) {
+          <button
+            class="ai-payload__variant"
+            [class.ai-payload__variant--active]="selected() === variant"
+            [attr.aria-selected]="selected() === variant"
+            (click)="selectedIndex.set(i)"
+            type="button"
+            role="tab"
+            data-testid="ai-payload-variant"
+          >
+            {{ variant.name }}
+          </button>
+        }
+      </div>
+    }
+    <pre class="ai-payload__json" role="tabpanel"><code data-testid="ai-payload-json">{{ formatted() }}</code></pre>
+    <div class="ai-payload__actions">
+      <button (click)="copy()" mat-button type="button" data-testid="ai-payload-copy">
+        <mat-icon>content_copy</mat-icon>{{ t('ai.proposal.copy') }}
+      </button>
+      <button (click)="save()" mat-button type="button" data-testid="ai-payload-save">
+        <mat-icon>download</mat-icon>{{ t('ai.proposal.saveFile') }}
+      </button>
+    </div>
+  </div>
+</ng-container>

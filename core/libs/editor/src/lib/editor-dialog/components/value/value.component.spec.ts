@@ -22,6 +22,7 @@ import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {BehaviorSubject, of} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {AiEditorActionsService} from '../../../ai/ai-editor-actions.service';
 import {OpenReferencedElementService} from '../../../open-element-window/open-element-window.service';
 import {ElementRefactoringService} from '../../../refactoring/element-refactoring.service';
 import {EditorModelService} from '../../editor-model.service';
@@ -57,6 +58,7 @@ describe('ValueComponent', () => {
         TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
       ],
       providers: [
+        {provide: AiEditorActionsService, useValue: {enabled: () => false}},
         MockProvider(EditorModelService, {
           getMetaModelElement: vi.fn(() => elementSubject.asObservable()),
           isReadOnly: vi.fn(() => false),

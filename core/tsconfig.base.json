@@ -23,6 +23,7 @@
     "strictNullChecks": false,
     "esModuleInterop": true,
     "paths": {
+      "@ame/ai": ["libs/ai/src/index.ts"],
       "@ame/domain": ["libs/domain/src/index.ts"],
       "@ame/editor": ["libs/editor/src/index.ts"],
       "@ame/editor/tabs": ["libs/editor/src/lib/tabs/index.ts"],

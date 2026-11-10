@@ -1,0 +1,44 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+<ng-container *transloco="let t">
+  @if (info().stored && !changing()) {
+    <p class="ai-setup-ok" data-testid="ai-key-stored">
+      <mat-icon>key</mat-icon>
+      {{ info().persistent ? t('ai.setup.key.storedPersistent') : t('ai.setup.key.storedSession') }}
+      <button (click)="changing.set(true)" mat-button type="button" data-testid="ai-key-change">{{ t('ai.setup.key.change') }}</button>
+      <button (click)="keyDeleted.emit()" mat-button type="button" data-testid="ai-key-delete">{{ t('ai.setup.key.delete') }}</button>
+    </p>
+  } @else {
+    <div class="ai-setup-row">
+      <mat-form-field class="ai-setup-field" subscriptSizing="dynamic">
+        <mat-label>{{ t('ai.setup.key.label') }}</mat-label>
+        <input
+          [value]="key()"
+          (input)="onKeyInput($event)"
+          (keydown.enter)="submit()"
+          matInput
+          type="password"
+          autocomplete="off"
+          data-testid="ai-key-input"
+        />
+      </mat-form-field>
+      <button [disabled]="!key().trim() || saving()" (click)="submit()" mat-stroked-button type="button" data-testid="ai-key-save">
+        {{ t('ai.common.save') }}
+      </button>
+      @if (changing()) {
+        <button (click)="cancelChange()" mat-button type="button" data-testid="ai-key-change-cancel">{{ t('ai.common.cancel') }}</button>
+      }
+    </div>
+    <p class="ai-setup-hint">{{ t('ai.setup.key.hint') }}</p>
+  }
+</ng-container>

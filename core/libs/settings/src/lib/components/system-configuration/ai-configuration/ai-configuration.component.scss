@@ -1,0 +1,72 @@
+/*!
+ * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+ *
+ * See the AUTHORS file(s) distributed with this work for
+ * additional information regarding authorship.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
+.setting-item__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-grow: 1;
+}
+
+.setting-item__hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ame-gray-50, #757575);
+}
+
+.setting-item__input {
+  width: 100%;
+}
+
+.ai-configuration__intro {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 12px;
+}
+
+.ai-configuration__lead {
+  margin: 0;
+}
+
+.ai-configuration__capabilities {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+  row-gap: 2px;
+  font-size: 13px;
+}
+
+.ai-configuration__safety {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ame-gray-50, #757575);
+
+  mat-icon {
+    flex: 0 0 auto;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: var(--ame-primary);
+  }
+}
+
+.ai-configuration__docs {
+  align-self: flex-start;
+  font-size: 12px;
+}

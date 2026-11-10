@@ -1,0 +1,107 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t">
+  <section
+    class="ai-picker"
+    [attr.aria-label]="t('ai.context.picker.title')"
+    (keydown.escape)="$event.stopPropagation(); closed.emit()"
+    role="dialog"
+    data-testid="ai-context-picker"
+  >
+    <header class="ai-picker__header">
+      <h3 class="ai-picker__title">{{ t('ai.context.picker.title') }}</h3>
+      <button
+        [attr.aria-label]="t('ai.common.close')"
+        (click)="closed.emit()"
+        mat-icon-button
+        type="button"
+        data-testid="ai-context-picker-close"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </header>
+    <input
+      class="ai-picker__search"
+      #search
+      [value]="query()"
+      [placeholder]="t('ai.context.picker.search')"
+      [attr.aria-label]="t('ai.context.picker.search')"
+      (input)="query.set(search.value)"
+      type="search"
+      data-testid="ai-context-picker-search"
+    />
+    <div class="ai-picker__list" role="list">
+      @if (loading()) {
+        <mat-progress-spinner class="ai-picker__loading" mode="indeterminate" diameter="20" />
+      } @else {
+        @for (group of filtered(); track group.path ?? group.label) {
+          <div class="ai-picker__group" [attr.aria-label]="group.label || t('ai.context.picker.models')" role="group">
+            @if (group.sourceCandidate; as source) {
+              <button
+                class="ai-picker__group-header ai-picker__row"
+                [attr.data-kind]="source.kind"
+                [matTooltip]="t('ai.context.picker.add.source') + ': ' + source.label"
+                (click)="picked.emit(source)"
+                matTooltipPosition="left"
+                matTooltipShowDelay="500"
+                type="button"
+                role="listitem"
+                data-testid="ai-context-source"
+              >
+                <ng-container *ngTemplateOutlet="groupHeader; context: {$implicit: group}" />
+                <mat-icon class="ai-picker__add" aria-hidden="true">add</mat-icon>
+              </button>
+            } @else {
+              <div class="ai-picker__group-header">
+                <ng-container *ngTemplateOutlet="groupHeader; context: {$implicit: group}" />
+              </div>
+            }
+            @for (candidate of group.candidates; track $index) {
+              <button
+                class="ai-picker__row"
+                [class.ai-picker__row--folder]="candidate.kind === 'namespace'"
+                [attr.data-kind]="candidate.kind"
+                [attr.data-depth]="candidate.depth"
+                [matTooltip]="t('ai.context.picker.add.' + candidate.kind) + ': ' + candidate.label"
+                (click)="picked.emit(candidate)"
+                matTooltipPosition="left"
+                matTooltipShowDelay="500"
+                type="button"
+                role="listitem"
+                data-testid="ai-context-candidate"
+              >
+                <span class="ai-picker__indent" [style.width.px]="candidate.depth * indentWidth" aria-hidden="true"></span>
+                <mat-icon class="ai-picker__icon">{{ icon(candidate) }}</mat-icon>
+                <span class="ai-picker__label">{{ candidate.name }}</span>
+                <mat-icon class="ai-picker__add" aria-hidden="true">add</mat-icon>
+              </button>
+            }
+          </div>
+        } @empty {
+          <p class="ai-picker__empty" data-testid="ai-context-picker-empty">
+            {{ query() ? t('ai.context.picker.noMatch') : t('ai.context.picker.empty') }}
+          </p>
+        }
+      }
+    </div>
+  </section>
+
+  <ng-template #groupHeader let-group>
+    <mat-icon class="ai-picker__icon">{{ group.sourceType === 'github' ? 'cloud' : 'inventory_2' }}</mat-icon>
+    <span class="ai-picker__group-label">{{ group.label || t('ai.context.picker.models') }}</span>
+    @if (group.readOnly) {
+      <mat-icon class="ai-picker__lock" [matTooltip]="t('ai.context.picker.readOnly')" data-testid="ai-context-picker-lock">lock</mat-icon>
+    }
+  </ng-template>
+</ng-container>

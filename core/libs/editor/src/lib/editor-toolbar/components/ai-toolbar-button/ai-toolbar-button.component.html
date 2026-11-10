@@ -1,0 +1,62 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t">
+  <ame-bar-item
+    class="ai-toggle"
+    [class.toolbar-item--active]="panelOpen()"
+    [matTooltipShowDelay]="0"
+    [matTooltipHideDelay]="0"
+    [matTooltip]="t('ai.panel.toggleTooltip')"
+    [attr.aria-pressed]="panelOpen()"
+    [attr.aria-label]="t('ai.panel.toggleTooltip')"
+    (itemClick)="togglePanel.emit()"
+    role="button"
+    data-testid="tbAiToggleButton"
+  >
+    <mat-icon>auto_awesome</mat-icon>
+  </ame-bar-item>
+
+  <ame-bar-item
+    class="ai-more"
+    [matTooltipShowDelay]="0"
+    [matTooltipHideDelay]="0"
+    [matTooltip]="t('ai.actions.moreTooltip')"
+    [matMenuTriggerFor]="aiMenu"
+    [matMenuTriggerRestoreFocus]="false"
+    [attr.aria-label]="t('ai.actions.moreTooltip')"
+    role="button"
+    data-testid="tbAiButton"
+  >
+    <mat-icon>arrow_drop_down</mat-icon>
+  </ame-bar-item>
+
+  <mat-menu #aiMenu="matMenu" xPosition="before">
+    <button [disabled]="modelEmpty()" (click)="review.emit()" mat-menu-item data-testid="tbAiReview">
+      <mat-icon>fact_check</mat-icon>
+      <span>{{ t('ai.actions.review.label') }}</span>
+    </button>
+    <button [disabled]="modelEmpty()" (click)="examples.emit()" mat-menu-item data-testid="tbAiExamples">
+      <mat-icon>data_object</mat-icon>
+      <span>{{ t('ai.actions.examples.label') }}</span>
+    </button>
+    <button [disabled]="modelEmpty()" (click)="explainModel.emit()" mat-menu-item data-testid="tbAiExplain">
+      <mat-icon>lightbulb</mat-icon>
+      <span>{{ t('ai.starters.explain.label') }}</span>
+    </button>
+    <button (click)="newModel.emit()" mat-menu-item data-testid="tbAiNewModel">
+      <mat-icon>note_add</mat-icon>
+      <span>{{ t('ai.actions.newModel.label') }}</span>
+    </button>
+  </mat-menu>
+</ng-container>

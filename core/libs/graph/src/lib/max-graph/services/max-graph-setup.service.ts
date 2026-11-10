@@ -12,6 +12,7 @@
  */
 
 import {
+  AiEditorAction,
   ConfigurationService,
   ElementRefactoringAction,
   ElementRefactoringGuard,
@@ -441,6 +442,7 @@ export class MaxGraphSetupService {
       if (selectedCells.length === 1) {
         this.addOpenInExternalEditorItem(menu, modelElement);
         this.addRefactoringSubmenu(menu, modelElement);
+        this.addAiSubmenu(menu, modelElement);
       }
     }
 
@@ -478,6 +480,28 @@ export class MaxGraphSetupService {
 
   private externalEditorName(): string {
     return EXTERNAL_EDITOR_NAMES[resolveExternalEditor(this.configurationService.getSettings().externalEditor)];
+  }
+
+  /** Asks the AI assistant about the element; only offered when the assistant is enabled in the settings. */
+  private addAiSubmenu(menu: MaxPopupMenu, element: NamedElement): void {
+    if (!this.configurationService.getSettings()?.ai?.enabled || !this.refactoringGuard.urnOf(element)) return;
+
+    const text = (key: string) => this.translate.translateService.translate(`ai.actions.${key}`);
+    menu.submenuImage = this.resolveAssetsIcon(AssetsPath.SubmenuIcon);
+    menu.autoExpand = true;
+
+    const submenu = menu.addItem(text('menu'), this.resolveAssetsIcon(AssetsPath.AiIcon), null);
+    submenu.setAttribute('data-testid', 'context-menu-ai');
+
+    const items: [keyof typeof AiEditorAction, string][] = [
+      ['describe', 'describe.label'],
+      ['translate', 'translate.label'],
+      ['explain', 'explain.label'],
+    ];
+    for (const [action, label] of items) {
+      const item = menu.addItem(text(label), null, () => this.bindingsService.fireAction(AiEditorAction[action]), submenu);
+      item.setAttribute('data-testid', `context-menu-ai-${action}`);
+    }
   }
 
   /** Rename, move and usages of the element across all files, in the same way as in the element editor. */

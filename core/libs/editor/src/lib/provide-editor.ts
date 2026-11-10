@@ -12,6 +12,7 @@
  */
 
 import {
+  AiEditorPort,
   ConfirmDialogPort,
   DraggablePort,
   EditorValidationPort,
@@ -29,6 +30,7 @@ import {
 import {EntityInstancePort, provideAmeGraph} from '@ame/graph';
 import {TAURI_IPC_BRIDGES} from '@ame/shared';
 import {EnvironmentProviders, inject, makeEnvironmentProviders, provideEnvironmentInitializer} from '@angular/core';
+import {AiEditorService} from './ai/ai-editor.service';
 import {ConfirmDialogService} from './confirm-dialog/confirm-dialog.service';
 import {EntityInstanceService} from './editor-dialog/components/entity-instance/entity-instance-view/entity-instance.service';
 import {ShapeSettingsStateService} from './editor-dialog/services/shape-settings-state.service';
@@ -65,6 +67,7 @@ export function provideEditor(): EnvironmentProviders {
     {provide: EditorValidationPort, useExisting: EditorService},
     {provide: ModelSaverPort, useExisting: ModelSaverService},
     {provide: FileHandlingPort, useExisting: FileHandlingService},
+    {provide: AiEditorPort, useExisting: AiEditorService},
     {provide: TAURI_IPC_BRIDGES, useExisting: EditorTauriBridge, multi: true},
     {provide: TAURI_IPC_BRIDGES, useExisting: RefactoringWindowSyncService, multi: true},
     {provide: TAURI_IPC_BRIDGES, useExisting: PluginRuntimeService, multi: true},

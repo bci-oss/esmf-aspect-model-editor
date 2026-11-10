@@ -1,0 +1,103 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t">
+  <div class="ai-chips" [attr.aria-label]="t('ai.context.title')" role="list" data-testid="ai-context-chips">
+    <button
+      class="ai-chips__add"
+      [matMenuTriggerFor]="attachMenu"
+      [disabled]="disabled()"
+      [matTooltip]="t('ai.attach.tooltip')"
+      [attr.aria-label]="t('ai.attach.button')"
+      type="button"
+      data-testid="ai-attach"
+    >
+      <mat-icon class="ai-chip__icon">attach_file</mat-icon>
+      <span class="ai-chips__add-label">{{ t('ai.attach.button') }}</span>
+    </button>
+    <mat-menu #attachMenu="matMenu">
+      <button (click)="openFileDialog()" mat-menu-item type="button" data-testid="ai-attach-file">
+        <mat-icon>upload_file</mat-icon>{{ t('ai.attach.file') }}
+      </button>
+      <button (click)="pickerRequested.emit()" mat-menu-item type="button" data-testid="ai-attach-model">
+        <mat-icon>account_tree</mat-icon>{{ t('ai.attach.model') }}
+      </button>
+    </mat-menu>
+    <input
+      class="ai-chips__file"
+      #fileInput
+      [accept]="accept"
+      (change)="onFilesChosen($event)"
+      type="file"
+      multiple
+      tabindex="-1"
+      aria-hidden="true"
+      data-testid="ai-file-input"
+    />
+    @if (openModel(); as model) {
+      @if (includeModel()) {
+        <span class="ai-chip" [matTooltip]="t('ai.context.modelTooltip')" role="listitem" data-testid="ai-chip-model">
+          <mat-icon class="ai-chip__icon">description</mat-icon>
+          <span class="ai-chip__label">{{ model.label }}</span>
+          @if (model.readOnly) {
+            <mat-icon class="ai-chip__icon" [matTooltip]="t('ai.context.readOnly')">lock</mat-icon>
+          }
+          <button class="ai-chip__remove" [attr.aria-label]="t('ai.context.remove')" (click)="includeModelChange.emit(false)" type="button">
+            <mat-icon>close</mat-icon>
+          </button>
+        </span>
+      } @else {
+        <button class="ai-chip ai-chip--off" (click)="includeModelChange.emit(true)" type="button" data-testid="ai-chip-model-add">
+          <mat-icon class="ai-chip__icon">add</mat-icon>
+          <span class="ai-chip__label">{{ model.label }}</span>
+        </button>
+      }
+    }
+    @if (selectedElement(); as element) {
+      <span class="ai-chip" [matTooltip]="t('ai.context.selectionTooltip')" role="listitem" data-testid="ai-chip-selection">
+        <mat-icon class="ai-chip__icon">ads_click</mat-icon>
+        <span class="ai-chip__label">{{ element }}</span>
+        <button class="ai-chip__remove" [attr.aria-label]="t('ai.context.remove')" (click)="selectionExcluded.emit()" type="button">
+          <mat-icon>close</mat-icon>
+        </button>
+      </span>
+    }
+    @for (item of items(); track item.id) {
+      <span
+        class="ai-chip"
+        [class.ai-chip--error]="item.kind === 'error'"
+        [class.ai-chip--uploading]="item.uploading"
+        [class.ai-chip--warning]="item.attachment?.truncated || item.attachment?.warning"
+        [attr.data-kind]="item.kind"
+        [attr.aria-busy]="item.uploading ? true : null"
+        [matTooltip]="tooltip(item, t)"
+        matTooltipClass="ai-chip__tooltip"
+        role="listitem"
+        data-testid="ai-chip-item"
+      >
+        @if (item.uploading) {
+          <mat-progress-spinner class="ai-chip__spinner" mode="indeterminate" diameter="12" data-testid="ai-chip-uploading" />
+        } @else {
+          <mat-icon class="ai-chip__icon">{{ icon(item) }}</mat-icon>
+        }
+        <span class="ai-chip__label">{{ item.label }}</span>
+        @if (!item.uploading && (item.attachment?.truncated || item.attachment?.warning)) {
+          <mat-icon class="ai-chip__icon ai-chip__warning" data-testid="ai-chip-warning">warning_amber</mat-icon>
+        }
+        <button class="ai-chip__remove" [attr.aria-label]="t('ai.context.remove')" (click)="itemRemoved.emit(item.id)" type="button">
+          <mat-icon>close</mat-icon>
+        </button>
+      </span>
+    }
+  </div>
+</ng-container>

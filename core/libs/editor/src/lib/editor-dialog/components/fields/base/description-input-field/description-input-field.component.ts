@@ -18,6 +18,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInput, MatLabel} from '@angular/material/input';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {DefaultCharacteristic, DefaultProperty, HasExtends, NamedElement} from '@esmf/aspect-model-loader';
+import {AiFieldActionComponent} from '../../../../../ai/ai-field-action/ai-field-action.component';
 import {EditorModelService} from '../../../../editor-model.service';
 import {InputFieldComponent} from '../../input-field.component';
 
@@ -31,7 +32,7 @@ import {InputFieldComponent} from '../../input-field.component';
       }
     `,
   ],
-  imports: [MatFormFieldModule, MatTooltipModule, MatLabel, FormField, MatInput],
+  imports: [MatFormFieldModule, MatTooltipModule, MatLabel, FormField, MatInput, AiFieldActionComponent],
 })
 export class DescriptionInputFieldComponent extends InputFieldComponent<NamedElement> implements OnInit, OnDestroy {
   private readonly injector = inject(Injector);

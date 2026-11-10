@@ -26,6 +26,8 @@ export interface UiShellState {
   navigationVisible: boolean;
   theme: EditorTheme;
   activeDialog: string | null;
+  /** The AI assistant panel; independent of the sidebar tabs. */
+  aiPanelOpen: boolean;
 }
 
 const initialState: UiShellState = {
@@ -36,6 +38,7 @@ const initialState: UiShellState = {
   navigationVisible: true,
   theme: 'light',
   activeDialog: null,
+  aiPanelOpen: false,
 };
 
 export const UiShellStore = signalStore(
@@ -85,6 +88,15 @@ export const UiShellStore = signalStore(
     },
     closeDialog() {
       patchState(store, {activeDialog: null});
+    },
+    openAiPanel() {
+      patchState(store, {aiPanelOpen: true});
+    },
+    closeAiPanel() {
+      patchState(store, {aiPanelOpen: false});
+    },
+    toggleAiPanel() {
+      patchState(store, {aiPanelOpen: !store.aiPanelOpen()});
     },
   })),
 );

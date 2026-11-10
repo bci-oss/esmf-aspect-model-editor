@@ -19,6 +19,7 @@ import {Store} from 'n3';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {Settings, SettingsFormData} from '../model';
 import {
+  AiConfigurationUpdateStrategy,
   AutomatedWorkflowUpdateStrategy,
   CopyrightHeaderUpdateStrategy,
   EditorConfigurationUpdateStrategy,
@@ -80,7 +81,46 @@ describe('Settings Update Strategies', () => {
       copyrightHeaderConfiguration: {
         copyright: '# Line 1\n# Line 2',
       },
+      aiConfiguration: {
+        enabled: true,
+        onlyLocal: true,
+        languages: 'de, en; fr de',
+      },
     };
+  });
+
+  describe('AiConfigurationUpdateStrategy', () => {
+    it('writes the AI settings and keeps the connection and the consent', () => {
+      initialSettings.ai = {
+        enabled: false,
+        provider: 'openai',
+        onlyLocal: false,
+        languages: ['en'],
+        cloudConsent: ['openai'],
+        apiVersion: 'v1',
+      };
+      new AiConfigurationUpdateStrategy().updateSettings(mockFormData, initialSettings);
+      expect(initialSettings.ai).toEqual({
+        enabled: true,
+        provider: 'openai',
+        apiVersion: 'v1',
+        onlyLocal: true,
+        languages: ['de', 'en', 'fr'],
+        cloudConsent: ['openai'],
+      });
+    });
+
+    it('uses the defaults for missing values', () => {
+      mockFormData.aiConfiguration = {enabled: false, onlyLocal: false, languages: ' '};
+      new AiConfigurationUpdateStrategy().updateSettings(mockFormData, initialSettings);
+      expect(initialSettings.ai).toEqual({
+        enabled: false,
+        provider: null,
+        onlyLocal: false,
+        languages: ['en', 'de'],
+        cloudConsent: [],
+      });
+    });
   });
 
   describe('AutomatedWorkflowUpdateStrategy', () => {

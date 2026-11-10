@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+pub mod ai;
 pub mod backend;
 pub mod commands;
 pub mod external_editor;
@@ -20,6 +21,7 @@ pub mod menu;
 pub mod plugin_menu;
 pub mod session;
 
+use ai::*;
 use backend::{clean_up_backend, start_backend, BackendState};
 use commands::*;
 use github::*;
@@ -49,6 +51,7 @@ pub fn run() {
     .manage(ContextMenuState::new())
     .manage(SessionState::new())
     .manage(GithubTokenState::new())
+    .manage(AiSecretState::new())
     .setup(setup_app)
     .on_menu_event(|app, event| {
       // Native menu actions need the backend; ignore them until it is ready.
@@ -104,6 +107,10 @@ pub fn run() {
             github_token_delete,
             github_token_info,
             github_source_action,
+            ai_secret_set,
+            ai_secret_get,
+            ai_secret_delete,
+            ai_secret_info,
         ])
     .build(tauri::generate_context!())
     .expect("error while building Tauri application");

@@ -90,6 +90,11 @@
               <mat-icon>auto_fix_high</mat-icon>
             </button>
           }
+          @if (canExplainAndFix(element)) {
+            <button [matTooltip]="t('ai.actions.fix.label')" (click)="explainAndFix(element)" data-testid="ai-fix-button" mat-icon-button>
+              <mat-icon>auto_awesome</mat-icon>
+            </button>
+          }
           <button [matMenuTriggerFor]="menu" (click)="currentItem.set(element)" mat-icon-button>
             <mat-icon>more_vertical</mat-icon>
           </button>

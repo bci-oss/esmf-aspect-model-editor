@@ -12,6 +12,7 @@
  */
 
 import {
+  AiStore,
   ConfigurationService,
   DraggablePort,
   GraphNavigatorPort,
@@ -53,6 +54,7 @@ describe('SidebarComponent', () => {
         {provide: DraggablePort, useValue: {makeDraggable: vi.fn()}},
         {provide: ModelCheckerPort, useValue: {detectWorkspaceErrors: () => EMPTY}},
         {provide: TauriSignalsService, useValue: {call: vi.fn()}},
+        {provide: AiStore, useValue: {enabled: signal(false), aiPanelOpen: signal(false)}},
         {provide: ConfigurationService, useValue: {getSettings: vi.fn(() => ({})), setSettings: vi.fn()}},
       ],
     });

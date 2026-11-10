@@ -20,7 +20,7 @@
 <ame-sidebar class="sidebar"></ame-sidebar>
 
 @if (isShapeSettingsOpened(); as isOpened) {
-  <section class="info-section">
+  <section class="info-section" [style.right.px]="isAiPanelOpen() ? aiPanelWidth() : 0">
     <ame-resize-gutter
       [(width)]="sidebarWidth"
       [minWidth]="editViewMinWidth"
@@ -40,6 +40,19 @@
   <ame-elements-search></ame-elements-search>
 } @else if (isFilesSearchOpened()) {
   <ame-files-search></ame-files-search>
+}
+
+@if (isAiPanelOpen()) {
+  <section class="ai-section" data-testid="ai-section">
+    <ame-resize-gutter
+      [(width)]="aiPanelWidth"
+      [minWidth]="aiPanelMinWidth"
+      [storageKey]="aiPanelWidthStorageKey"
+      edge="start"
+      data-testid="ai-section-drag"
+    ></ame-resize-gutter>
+    <ame-ai-panel></ame-ai-panel>
+  </section>
 }
 
 <div class="canvas-area" [class.canvas-area--text]="isTextView()" [attr.data-view-mode]="viewMode.mode()" data-testid="canvas-area">

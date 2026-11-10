@@ -1,0 +1,179 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t">
+  @let p = proposal();
+  <article class="ai-proposal" [class.ai-proposal--closed]="!open()" [attr.data-kind]="p.kind" data-testid="ai-proposal">
+    <header class="ai-proposal__header">
+      <mat-icon class="ai-proposal__icon">{{ icon() }}</mat-icon>
+      <h4 class="ai-proposal__title">{{ p.title }}</h4>
+      @if (p.kind === 'modelChange' || p.kind === 'newModel') {
+        @if (result(); as r) {
+          <span
+            class="ai-proposal__badge"
+            [class.ai-proposal__badge--valid]="r.valid"
+            [class.ai-proposal__badge--invalid]="!r.valid"
+            data-testid="ai-proposal-validation"
+          >
+            {{ r.valid ? t('ai.proposal.valid') : t('ai.proposal.invalid', {count: r.validationErrors.length}) }}
+          </span>
+        }
+      }
+    </header>
+    @if (p.summary) {
+      <ame-ai-markdown class="ai-proposal__summary" [text]="p.summary" (elementSelected)="elementSelected.emit($event)" />
+    }
+
+    @switch (p.kind) {
+      @case ('modelChange') {
+        @if (editing()) {
+          <textarea
+            class="ai-proposal__editor"
+            [value]="turtle()"
+            [attr.aria-label]="t('ai.proposal.editLabel')"
+            (input)="onTurtleInput($event)"
+            rows="12"
+            spellcheck="false"
+            data-testid="ai-proposal-editor"
+          ></textarea>
+        } @else {
+          <ame-ai-diff-view [original]="p.originalTurtle ?? ''" [proposed]="turtle()" />
+        }
+      }
+      @case ('newModel') {
+        <button [attr.aria-expanded]="previewOpen()" (click)="previewOpen.set(!previewOpen())" mat-button type="button">
+          <mat-icon>{{ previewOpen() ? 'expand_less' : 'expand_more' }}</mat-icon
+          >{{ t('ai.proposal.preview') }}
+          @if (p.fileName) {
+            <code>{{ p.fileName }}</code>
+          }
+        </button>
+        @if (previewOpen()) {
+          <pre class="ai-proposal__preview" data-testid="ai-proposal-preview"><code>{{ turtle() }}</code></pre>
+        }
+      }
+      @case ('refactoring') {
+        @if (p.refactoring; as r) {
+          <p class="ai-proposal__rename">
+            <code>{{ r.urn }}</code> <mat-icon>arrow_forward</mat-icon> <code>{{ r.newName }}</code>
+          </p>
+        }
+      }
+      @case ('payload') {
+        <ame-ai-payload-view [variants]="p.payload ?? []" [fileBaseName]="fileBaseName()" />
+      }
+      @case ('review') {
+        <ame-ai-review-findings
+          [findings]="p.findings ?? []"
+          [fixDisabled]="readOnly()"
+          (elementSelected)="elementSelected.emit($event)"
+          (fixRequested)="fixRequested.emit($event)"
+        />
+      }
+    }
+
+    @if (result(); as r) {
+      @if (!r.valid && r.validationErrors.length && (p.kind === 'modelChange' || p.kind === 'newModel')) {
+        <ul class="ai-proposal__errors" data-testid="ai-proposal-errors">
+          @for (error of r.validationErrors; track $index) {
+            <li>{{ error.message }}</li>
+          }
+        </ul>
+      }
+    }
+
+    @switch (status()) {
+      @case ('applied') {
+        <p class="ai-proposal__state" data-testid="ai-proposal-state"><mat-icon>check_circle</mat-icon>{{ t('ai.proposal.applied') }}</p>
+      }
+      @case ('discarded') {
+        <p class="ai-proposal__state" data-testid="ai-proposal-state"><mat-icon>block</mat-icon>{{ t('ai.proposal.discarded') }}</p>
+      }
+      @default {
+        @if (p.kind !== 'payload' && p.kind !== 'review') {
+          <footer class="ai-proposal__actions">
+            @if (status() === 'applying' || validating()) {
+              <mat-progress-spinner mode="indeterminate" diameter="18" />
+            }
+            <button
+              [disabled]="status() === 'applying'"
+              (click)="discardRequested.emit()"
+              mat-button
+              type="button"
+              data-testid="ai-proposal-discard"
+            >
+              {{ t('ai.proposal.discard') }}
+            </button>
+            @switch (p.kind) {
+              @case ('modelChange') {
+                @if (editing()) {
+                  <button
+                    [disabled]="validating()"
+                    (click)="validate()"
+                    mat-stroked-button
+                    type="button"
+                    data-testid="ai-proposal-validate"
+                  >
+                    {{ t('ai.proposal.validate') }}
+                  </button>
+                } @else {
+                  <button [disabled]="readOnly()" (click)="edit()" mat-stroked-button type="button" data-testid="ai-proposal-edit">
+                    {{ t('ai.proposal.edit') }}
+                  </button>
+                }
+                <span [matTooltip]="readOnly() ? t('ai.proposal.readOnly') : ''">
+                  <button
+                    [disabled]="readOnly() || status() === 'applying' || edited()"
+                    (click)="apply()"
+                    mat-flat-button
+                    color="primary"
+                    type="button"
+                    data-testid="ai-proposal-apply"
+                  >
+                    {{ t('ai.proposal.apply') }}
+                  </button>
+                </span>
+              }
+              @case ('newModel') {
+                <button
+                  [disabled]="status() === 'applying'"
+                  (click)="create()"
+                  mat-flat-button
+                  color="primary"
+                  type="button"
+                  data-testid="ai-proposal-create"
+                >
+                  {{ t('ai.proposal.create') }}
+                </button>
+              }
+              @case ('refactoring') {
+                <span [matTooltip]="readOnly() ? t('ai.proposal.readOnly') : ''">
+                  <button
+                    [disabled]="readOnly()"
+                    (click)="renameRequested.emit()"
+                    mat-flat-button
+                    color="primary"
+                    type="button"
+                    data-testid="ai-proposal-rename"
+                  >
+                    {{ t('ai.proposal.rename') }}
+                  </button>
+                </span>
+              }
+            }
+          </footer>
+        }
+      }
+    }
+  </article>
+</ng-container>

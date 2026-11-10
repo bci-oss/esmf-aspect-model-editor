@@ -1,0 +1,94 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t">
+  <nav class="ai-conversations" [attr.aria-label]="t('ai.conversations.title')" data-testid="ai-conversations">
+    <button class="ai-conversations__new" (click)="created.emit()" mat-stroked-button type="button" data-testid="ai-conversation-new">
+      <mat-icon>add</mat-icon>{{ t('ai.conversations.new') }}
+    </button>
+    @if (conversations().length) {
+      <ul class="ai-conversations__list">
+        @for (conversation of conversations(); track conversation.id) {
+          <li
+            class="ai-conversations__item"
+            [class.ai-conversations__item--active]="conversation.id === activeId()"
+            data-testid="ai-conversation"
+          >
+            @if (renamingId() === conversation.id) {
+              <input
+                class="ai-conversations__rename"
+                #title
+                [value]="conversation.title"
+                [attr.aria-label]="t('ai.conversations.rename')"
+                (keydown)="onRenameKeydown($event, conversation.id)"
+                (blur)="finishRename(conversation.id, title.value)"
+                data-testid="ai-conversation-title-input"
+              />
+            } @else {
+              <button
+                class="ai-conversations__open"
+                [attr.aria-current]="conversation.id === activeId() ? 'true' : null"
+                (click)="opened.emit(conversation.id)"
+                type="button"
+              >
+                <span class="ai-conversations__title">{{ conversation.title }}</span>
+                <span class="ai-conversations__date">{{ conversation.updatedAt | date: 'short' }}</span>
+              </button>
+              <button
+                [matTooltip]="t('ai.conversations.rename')"
+                [attr.aria-label]="t('ai.conversations.rename')"
+                (click)="renamingId.set(conversation.id)"
+                mat-icon-button
+                type="button"
+                data-testid="ai-conversation-rename"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button
+                [matTooltip]="t('ai.conversations.delete')"
+                [attr.aria-label]="t('ai.conversations.delete')"
+                (click)="deleted.emit(conversation.id)"
+                mat-icon-button
+                type="button"
+                data-testid="ai-conversation-delete"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            }
+          </li>
+        }
+      </ul>
+      @if (confirmClear()) {
+        <div class="ai-conversations__confirm" role="alert">
+          <span>{{ t('ai.conversations.clearConfirm') }}</span>
+          <button (click)="confirmClear.set(false)" mat-button type="button">{{ t('ai.common.cancel') }}</button>
+          <button (click)="clear()" mat-flat-button color="warn" type="button" data-testid="ai-conversation-clear-confirm">
+            {{ t('ai.conversations.clear') }}
+          </button>
+        </div>
+      } @else {
+        <button
+          class="ai-conversations__clear"
+          (click)="confirmClear.set(true)"
+          mat-button
+          type="button"
+          data-testid="ai-conversation-clear"
+        >
+          {{ t('ai.conversations.clear') }}
+        </button>
+      }
+    } @else {
+      <p class="ai-conversations__empty">{{ t('ai.conversations.empty') }}</p>
+    }
+  </nav>
+</ng-container>

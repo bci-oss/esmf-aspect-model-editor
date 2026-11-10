@@ -1,0 +1,86 @@
+/*!
+ * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+ *
+ * See the AUTHORS file(s) distributed with this work for
+ * additional information regarding authorship.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ai-provider-picker {
+  &__label {
+    font-size: 12px;
+  }
+
+  &__local {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__providers {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 6px;
+
+    &--detailed {
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+  }
+
+  &__provider {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 6px 8px;
+    border: 1px solid var(--ame-border-color, #cfd0d1);
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &--selected {
+      border-color: var(--ame-primary, #007bc0);
+      box-shadow: inset 0 0 0 1px var(--ame-primary, #007bc0);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--ame-primary, #007bc0);
+    }
+  }
+
+  &__name {
+    font-weight: 500;
+  }
+
+  &__description {
+    font-size: 12px;
+    opacity: 0.8;
+  }
+
+  &__tag {
+    padding: 0 6px;
+    border-radius: 8px;
+    background: var(--ame-surface-hover, rgba(0, 0, 0, 0.06));
+    font-size: 11px;
+
+    &--recommended {
+      background: var(--ame-primary, #007bc0);
+      color: #fff;
+    }
+  }
+}

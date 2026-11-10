@@ -1,0 +1,40 @@
+<!--
+  ~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+  ~
+  ~ See the AUTHORS file(s) distributed with this work for
+  ~ additional information regarding authorship.
+  ~
+  ~ This Source Code Form is subject to the terms of the Mozilla Public
+  ~ License, v. 2.0. If a copy of the MPL was not distributed with this
+  ~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+  ~
+  ~ SPDX-License-Identifier: MPL-2.0
+  -->
+
+@if (visible()) {
+  <ng-container *transloco="let t">
+    <button
+      class="ai-field-action"
+      [disabled]="disabled()"
+      [matTooltip]="t('ai.actions.fieldTooltip')"
+      [matMenuTriggerFor]="aiFieldMenu"
+      [attr.aria-label]="t('ai.actions.fieldTooltip')"
+      type="button"
+      data-testid="ai-field-action"
+      mat-icon-button
+    >
+      <mat-icon>auto_awesome</mat-icon>
+    </button>
+
+    <mat-menu #aiFieldMenu="matMenu">
+      <button (click)="ask('describe')" mat-menu-item data-testid="ai-field-action-describe">
+        <mat-icon>notes</mat-icon>
+        <span>{{ t('ai.actions.describe.label') }}</span>
+      </button>
+      <button (click)="ask('translate')" mat-menu-item data-testid="ai-field-action-translate">
+        <mat-icon>translate</mat-icon>
+        <span>{{ t('ai.actions.translate.label') }}</span>
+      </button>
+    </mat-menu>
+  </ng-container>
+}

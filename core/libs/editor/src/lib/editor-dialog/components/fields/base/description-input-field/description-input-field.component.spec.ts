@@ -21,6 +21,7 @@ import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {of} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {AiEditorActionsService} from '../../../../../ai/ai-editor-actions.service';
 import {EditorModelService} from '../../../../editor-model.service';
 import {EditorSignalFormContext} from '../../../../forms/editor-signal-form-context';
 import {DescriptionInputFieldComponent} from './description-input-field.component';
@@ -46,6 +47,7 @@ describe('DescriptionInputFieldComponent', () => {
     TestBed.configureTestingModule({
       imports: [DescriptionInputFieldComponent, BrowserAnimationsModule],
       providers: [
+        {provide: AiEditorActionsService, useValue: {enabled: () => false}},
         MockProvider(EditorModelService, {
           getMetaModelElement: vi.fn(() => of(property)),
           isReadOnly: vi.fn(() => false),

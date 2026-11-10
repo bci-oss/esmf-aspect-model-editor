@@ -12,6 +12,7 @@
  */
 
 import {
+  AiStore,
   ConfigurationService,
   EditorValidationPort,
   GraphSettingsPort,
@@ -19,6 +20,7 @@ import {
   ModelSessionFacade,
   ModelSourcesStore,
   SammLanguageSettingsService,
+  UiShellStore,
 } from '@ame/domain';
 import {
   AlertService,
@@ -210,7 +212,7 @@ describe('SettingDialogComponent', () => {
     expect(component).toBeTruthy();
     expect(component.groups.map(group => group.id)).toEqual(['systemConfiguration', 'modelConfiguration']);
     expect(component.selectedSectionId()).toBe('automatedWorkflow');
-    expect(fixture.nativeElement.querySelectorAll('[role="treeitem"]').length).toBe(8);
+    expect(fixture.nativeElement.querySelectorAll('[role="treeitem"]').length).toBe(9);
   });
 
   it('should change the section on selectSection and remember it', () => {
@@ -268,7 +270,7 @@ describe('SettingDialogComponent', () => {
     component.selectSection('languageConfiguration');
     fixture.detectChanges();
     const items = Array.from(fixture.nativeElement.querySelectorAll('[role="treeitem"]')) as HTMLElement[];
-    expect(items.map(item => item.getAttribute('tabindex'))).toEqual(['-1', '-1', '-1', '-1', '-1', '0', '-1', '-1']);
+    expect(items.map(item => item.getAttribute('tabindex'))).toEqual(['-1', '-1', '-1', '-1', '-1', '-1', '0', '-1', '-1']);
   });
 
   it('should filter the sections by labels inside the section and select the first match', () => {
@@ -305,7 +307,7 @@ describe('SettingDialogComponent', () => {
 
     component.clearSearch();
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelectorAll('[role="treeitem"]').length).toBe(8);
+    expect(fixture.nativeElement.querySelectorAll('[role="treeitem"]').length).toBe(9);
   });
 
   it('should show a section header with title, scope and description', () => {
@@ -460,6 +462,20 @@ describe('SettingDialogComponent', () => {
     component.onOk();
     expect(updateSpy).toHaveBeenCalled();
     expect(dialogRef.close).toHaveBeenCalled();
+  });
+
+  it('should save, close and continue with the AI setup in the assistant panel', () => {
+    const aiStore = TestBed.inject(AiStore);
+    const uiShell = TestBed.inject(UiShellStore);
+    const openSetup = vi.spyOn(aiStore, 'openSetup').mockImplementation(() => undefined);
+    const updateSpy = vi.spyOn(formService, 'updateSettings');
+
+    component.openAiSetup();
+
+    expect(updateSpy).toHaveBeenCalled();
+    expect(dialogRef.close).toHaveBeenCalled();
+    expect(openSetup).toHaveBeenCalled();
+    expect(uiShell.aiPanelOpen()).toBe(true);
   });
 
   it('should prompt confirm box if languages are marked for removal', () => {

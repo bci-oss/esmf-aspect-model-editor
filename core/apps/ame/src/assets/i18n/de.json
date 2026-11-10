@@ -465,7 +465,8 @@
       "editor": "Editor",
       "copyright": "Header/Copyright",
       "languages": "Sprachen",
-      "namespaces": "Namespaces"
+      "namespaces": "Namespaces",
+      "ai": "KI-Assistent"
     },
     "configuration": {
       "autoSave": "Automatisch speichern",
@@ -538,7 +539,8 @@
       "editor": "Darstellung des Graphen und wie Modelle in Turtle-Dateien geschrieben werden.",
       "languages": "Sprache der Benutzeroberfläche und die Sprachen für Namen und Beschreibungen im Modell.",
       "namespaces": "Namespace und Version des geöffneten Modells.",
-      "copyright": "Kommentar-Kopf am Anfang der Turtle-Datei. Jede Zeile muss mit # beginnen."
+      "copyright": "Kommentar-Kopf am Anfang der Turtle-Datei. Jede Zeile muss mit # beginnen.",
+      "ai": "Optionaler Assistent, der Aspect Models erklärt, ergänzt und prüft. Standardmäßig deaktiviert."
     },
     "resetSection": "Auf Standard zurücksetzen",
     "requiresModel": "Laden Sie ein Aspect Model, um diese Einstellungen zu ändern.",
@@ -551,6 +553,59 @@
       "content": "Die Einstellungen enthalten Änderungen, die noch nicht übernommen wurden.",
       "keepEditing": "Weiter bearbeiten",
       "discard": "Verwerfen"
+    },
+    "ai": {
+      "enabled": "KI-Assistent aktivieren",
+      "onlyLocal": "Nur lokale Modelle verwenden",
+      "onlyLocalTooltip": "Modelldaten verlassen diesen Computer nie; Cloud-Anbieter sind gesperrt.",
+      "languages": "Zielsprachen",
+      "languagesHint": "Sprach-Tags für erzeugte Beschreibungen und Übersetzungen, z. B. en, de.",
+      "consent": "Einwilligung zum Senden von Modelldaten an Cloud-Anbieter",
+      "consentGiven": "Erteilt für: {{ providers }}",
+      "consentNone": "Noch nicht erteilt. Vor der ersten Anfrage wird nachgefragt.",
+      "consentReset": "Einwilligung zurücksetzen",
+      "intro": {
+        "lead": "Der KI-Assistent hilft beim Modellieren, direkt im Editor. Er kann:",
+        "capabilities": {
+          "ask": "Fragen zum geöffneten Modell beantworten",
+          "fix": "Validierungsfehler erklären und beheben",
+          "describe": "Beschreibungen und Namen ergänzen und übersetzen",
+          "review": "das Modell prüfen: Namen, Einheiten, Wiederverwendung",
+          "examples": "Beispielwerte und Test-Payloads erzeugen",
+          "generate": "ein neues Modell aus einer Beschreibung entwerfen"
+        },
+        "safety": "Jede Änderung wird zuerst als Vorschau angezeigt und lässt sich rückgängig machen. Solange der Assistent deaktiviert ist, wird nichts gesendet.",
+        "docs": "Mehr zum KI-Assistenten"
+      },
+      "steps": {
+        "enableFirst": "Zuerst den Assistenten aktivieren.",
+        "enable": {
+          "title": "Aktivieren",
+          "description": "Zeigt den ✨-Button rechts in der Toolbar (Strg/Cmd+I) und die KI-Aktionen im Editor."
+        },
+        "provider": {
+          "title": "Anbieter und Verbindung",
+          "description": "Anmeldung, API-Key und Verbindungstest erfolgen im Assistenten-Panel. Keys liegen im Schlüsselbund des Systems, nie in den Einstellungen.",
+          "setup": "Speichern und Assistent einrichten",
+          "change": "Speichern und Anbieter ändern"
+        },
+        "privacy": {
+          "title": "Datenschutz",
+          "description": "Festlegen, ob Modelldaten an Cloud-Anbieter gesendet werden dürfen."
+        },
+        "languages": {
+          "title": "Sprachen"
+        }
+      },
+      "status": {
+        "none": "Noch kein Anbieter gewählt.",
+        "ready": "bereit",
+        "incomplete": "Einrichtung unvollständig",
+        "model": "Modell: {{ model }}",
+        "defaultModel": "Standardmodell des Anbieters",
+        "keyMissing": "Kein API-Key hinterlegt.",
+        "copilotSignedOut": "Nicht bei GitHub angemeldet."
+      }
     }
   },
   "editorCanvas": {
@@ -1366,6 +1421,256 @@
       "question": "Jetzt neu laden?",
       "reload": "Neu laden",
       "keep": "Aktuellen Stand behalten"
+    }
+  },
+  "ai": {
+    "common": {
+      "cancel": "Abbrechen",
+      "close": "Schließen",
+      "save": "Speichern"
+    },
+    "panel": {
+      "title": "KI-Assistent",
+      "welcome": "Fragen Sie zum geöffneten Modell, lassen Sie Fehler erklären oder holen Sie Vorschläge ein. Jede Änderung wird zuerst angezeigt und lässt sich rückgängig machen.",
+      "tip": "/ für Befehle, @ für Elemente. Enter sendet, Umschalt+Enter fügt eine Zeile ein.",
+      "providerTooltip": "Anbieter und Modell",
+      "changeProvider": "Anbieter ändern…",
+      "toggleTooltip": "KI-Assistent (Ctrl/Cmd+I)"
+    },
+    "starters": {
+      "explain": {
+        "label": "Modell erklären",
+        "message": "Erkläre das geöffnete Modell."
+      },
+      "review": {
+        "label": "Modell prüfen",
+        "message": "Prüfe das geöffnete Modell."
+      },
+      "examples": {
+        "label": "Beispieldaten",
+        "message": "Erzeuge ein Beispiel-Payload für das geöffnete Modell."
+      },
+      "generate": {
+        "label": "Neues Modell aus Text",
+        "message": "Erzeuge ein neues Aspect Model."
+      }
+    },
+    "commands": {
+      "explain": "Modell oder Element erklären",
+      "describe": "Fehlende Beschreibungen und Namen ergänzen",
+      "translate": "Beschreibungen und Namen übersetzen",
+      "generate": "Neues Modell aus einer Beschreibung erzeugen",
+      "review": "Modell prüfen",
+      "examples": "Beispielwerte und Payloads vorschlagen",
+      "fix": "Validierungsfehler beheben"
+    },
+    "providers": {
+      "copilot": "GitHub Copilot",
+      "openai": "OpenAI",
+      "anthropic": "Anthropic Claude",
+      "azure-openai": "Azure OpenAI",
+      "ollama": "Ollama",
+      "lmstudio": "LM Studio",
+      "openai-compatible": "OpenAI-kompatibel"
+    },
+    "setup": {
+      "title": "KI-Assistent einrichten",
+      "intro": "Anbieter wählen, anmelden oder Key eingeben und die Verbindung testen.",
+      "localFound": "Läuft auf diesem Computer:",
+      "provider": "Anbieter",
+      "recommended": "Empfohlen",
+      "local": "Lokal",
+      "baseUrl": "Basis-URL",
+      "model": "Modell",
+      "test": "Verbindung testen",
+      "testOk": "Verbindung funktioniert.",
+      "done": "Fertig",
+      "key": {
+        "label": "API-Key",
+        "hint": "Der Key wird im Schlüsselbund des Systems gespeichert, nie in den Einstellungen.",
+        "storedPersistent": "Key ist im Schlüsselbund des Systems gespeichert.",
+        "storedSession": "Key gilt nur für diese Sitzung.",
+        "delete": "Key entfernen",
+        "change": "Schlüssel ändern"
+      },
+      "copilot": {
+        "hint": "Nutzt Ihr GitHub-Copilot-Abo. Es ist kein API-Key nötig.",
+        "login": "Mit GitHub anmelden",
+        "logout": "Abmelden",
+        "signedIn": "Angemeldet als {{ login }}",
+        "step1": "Code kopieren.",
+        "step2": "GitHub öffnen und den Code dort eingeben.",
+        "copy": "Code kopieren",
+        "open": "GitHub öffnen",
+        "waiting": "Warte auf die Freigabe…",
+        "pasteToken": "Stattdessen Token einfügen",
+        "token": "GitHub-Token",
+        "tokenHint": "Ein GitHub-Token mit Zugriff auf Copilot. Es wird nicht in den Einstellungen gespeichert."
+      }
+    },
+    "consent": {
+      "title": "Modelldaten senden?",
+      "text": "Ihre Nachricht wird an {{ provider }} gesendet, zusammen mit:",
+      "data": "dem geöffneten Modell, den Elementen und Fehlern im Kontext, angehängten Dateien und ausgewählten Workspace-Modellen",
+      "noKeys": "API-Keys sind nie Teil der Modelldaten oder der gespeicherten Unterhaltungen",
+      "revoke": "die Zustimmung lässt sich jederzeit in den Einstellungen widerrufen",
+      "accept": "Senden",
+      "decline": "Jetzt nicht",
+      "useLocal": "Lokales Modell verwenden"
+    },
+    "context": {
+      "title": "Kontext der nächsten Nachricht",
+      "modelTooltip": "Das geöffnete Modell wird mit der Nachricht gesendet.",
+      "selectionTooltip": "Das ausgewählte Element wird mit der Nachricht gesendet.",
+      "readOnly": "Schreibgeschützt: Das Modell wird nie geändert.",
+      "remove": "Aus dem Kontext entfernen",
+      "file": {
+        "uploading": "Wird hochgeladen…",
+        "pages": "{{ count }} Seiten oder Tabellenblätter",
+        "characters": "{{ count }} Zeichen Text",
+        "truncated": "Der Text ist zu lang und wurde gekürzt.",
+        "no_text": "Kein Text gefunden, z. B. ein gescanntes PDF."
+      },
+      "picker": {
+        "title": "Modelle als Kontext hinzufügen",
+        "search": "Namespaces und Modelle suchen",
+        "models": "Modelle",
+        "readOnly": "Schreibgeschützt (GitHub)",
+        "noMatch": "Keine Treffer.",
+        "empty": "Keine Modelle im Workspace.",
+        "add": {
+          "model": "Dieses Modell hinzufügen",
+          "namespace": "Alle Modelle dieses Ordners hinzufügen",
+          "source": "Alle Modelle dieses Workspace bzw. dieser Quelle hinzufügen"
+        }
+      }
+    },
+    "input": {
+      "label": "Nachricht an den Assistenten",
+      "placeholder": "Frage zum Modell, / für Befehle, @ für Elemente, # für Kontext",
+      "hint": "Enter sendet, Umschalt+Enter fügt eine Zeile ein",
+      "send": "Senden",
+      "stop": "Stopp"
+    },
+    "message": {
+      "thinking": "Denkt nach…",
+      "stopped": "Abgebrochen.",
+      "context": "Gesendeter Kontext"
+    },
+    "tools": {
+      "started": "{{ name }} läuft…",
+      "done": "{{ name }} fertig",
+      "failed": "{{ name }} fehlgeschlagen"
+    },
+    "conversations": {
+      "title": "Unterhaltungen",
+      "new": "Neue Unterhaltung",
+      "empty": "Noch keine Unterhaltungen.",
+      "rename": "Umbenennen",
+      "delete": "Löschen",
+      "clear": "Alle löschen",
+      "clearConfirm": "Alle Unterhaltungen löschen?"
+    },
+    "proposal": {
+      "preview": "Änderungen anzeigen",
+      "diff": "Änderungen",
+      "noChanges": "Keine Änderungen.",
+      "unchangedLines": "{{ count }} unveränderte Zeilen",
+      "valid": "Gültig",
+      "invalid": "{{ count }} Validierungsfehler",
+      "edit": "Anpassen",
+      "editLabel": "Turtle des Vorschlags",
+      "validate": "Validieren",
+      "apply": "Übernehmen",
+      "create": "Modell anlegen",
+      "rename": "Umbenennen",
+      "discard": "Verwerfen",
+      "applied": "Übernommen. Rückgängig stellt das vorherige Modell wieder her.",
+      "discarded": "Verworfen.",
+      "readOnly": "Das Modell ist schreibgeschützt und kann nicht geändert werden.",
+      "copy": "Kopieren",
+      "saveFile": "Als Datei speichern",
+      "applyFailed": "Die Änderung konnte nicht übernommen werden."
+    },
+    "review": {
+      "none": "Keine Hinweise.",
+      "fix": "Beheben",
+      "reuse": "Wiederverwenden",
+      "severity": {
+        "info": "Info",
+        "warning": "Warnung",
+        "error": "Fehler"
+      },
+      "category": {
+        "naming": "Benennung",
+        "unit": "Einheit",
+        "description": "Beschreibung",
+        "characteristic": "Characteristic",
+        "reuse": "Wiederverwendung",
+        "other": "Sonstiges"
+      }
+    },
+    "errors": {
+      "invalid_key": "Der API-Key ist ungültig.",
+      "quota_exceeded": "Das Kontingent des Anbieters ist erschöpft.",
+      "offline": "Der KI-Dienst ist nicht erreichbar.",
+      "timeout": "Der KI-Dienst hat nicht rechtzeitig geantwortet.",
+      "not_authenticated": "Bitte bei GitHub Copilot anmelden.",
+      "model_not_found": "Das Modell ist beim Anbieter nicht verfügbar.",
+      "provider_error": "Der KI-Dienst hat einen Fehler gemeldet.",
+      "local_only": "Es sind nur lokale Modelle erlaubt.",
+      "read_only": "Das Modell ist schreibgeschützt und kann nicht geändert werden.",
+      "attachment_unsupported": "Dieser Dateityp wird nicht unterstützt. Verwenden Sie PDF, DOCX, XLSX oder eine Textdatei.",
+      "attachment_too_large": "Die Datei ist größer als 20 MB.",
+      "attachment_unreadable": "Die Datei konnte nicht gelesen werden.",
+      "attachment_empty": "Die Datei enthält keinen Text."
+    },
+    "errorActions": {
+      "openSetup": "Einrichten",
+      "retry": "Erneut versuchen",
+      "login": "Anmelden",
+      "openSettings": "Einstellungen"
+    },
+    "actions": {
+      "menu": "KI",
+      "fieldTooltip": "KI-Assistent fragen",
+      "describe": {
+        "label": "KI: Beschreibung ergänzen",
+        "message": "Ergänze fehlende Beschreibungen und Anzeigenamen für {{name}}."
+      },
+      "translate": {
+        "label": "KI: Übersetzen",
+        "message": "Übersetze die Beschreibungen und Anzeigenamen von {{name}}."
+      },
+      "explain": {
+        "label": "KI: Erklären",
+        "message": "Erkläre {{name}}."
+      },
+      "fix": {
+        "label": "KI: Erklären und beheben",
+        "message": "Erkläre diesen Validierungsfehler und schlage eine Korrektur vor: {{error}}"
+      },
+      "review": {
+        "label": "Modell prüfen",
+        "message": "Prüfe das geöffnete Modell."
+      },
+      "examples": {
+        "label": "Beispieldaten erzeugen",
+        "message": "Erzeuge Beispieldaten (Payload) für das geöffnete Modell."
+      },
+      "newModel": {
+        "label": "Neues Modell mit KI…",
+        "message": "Erstelle ein neues Aspect Model: "
+      },
+      "moreTooltip": "Weitere KI-Aktionen"
+    },
+    "attach": {
+      "button": "Kontext hinzufügen",
+      "tooltip": "Dateien vom Computer oder Modelle und Ordner aus dem Workspace als Kontext hinzufügen",
+      "file": "Datei vom Computer…",
+      "model": "Modell aus Workspace…",
+      "drop": "Dateien hier ablegen, um sie als Kontext hinzuzufügen",
+      "uploading": "Dateien werden hochgeladen…"
     }
   }
 }

@@ -52,10 +52,19 @@ export interface CopyrightHeaderConfigurationFormData {
   copyright: string;
 }
 
+/** The provider, the model and the base URL are not part of the form; the AI setup changes them immediately. */
+export interface AiConfigurationFormData {
+  enabled: boolean;
+  onlyLocal: boolean;
+  /** Comma separated language tags, e.g. `en, de`. */
+  languages: string;
+}
+
 export interface SettingsFormData {
   automatedWorkflow: AutomatedWorkflowFormData;
   editorConfiguration: EditorConfigurationFormData;
   languageConfiguration: LanguageConfigurationFormData;
   namespaceConfiguration: NamespaceConfigurationFormData;
   copyrightHeaderConfiguration: CopyrightHeaderConfigurationFormData;
+  aiConfiguration: AiConfigurationFormData;
 }

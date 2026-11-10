@@ -84,6 +84,15 @@ describe('QuickFixService', () => {
     });
   });
 
+  describe('violationOf', () => {
+    it('finds the violation the notification reports', () => {
+      expect(service.violationOf(notificationOf(other))).toBe(other);
+      expect(service.violationOf(new NotificationModel(violation.message))).toBeNull();
+      expect(service.violationOf(new NotificationModel('Unknown', '', ELEMENT))).toBeNull();
+      expect(service.violationOf(null)).toBeNull();
+    });
+  });
+
   describe('apply', () => {
     it('changes the model as one step, marks the tab as changed and removes the fixed violation', () => {
       const notification = notificationOf(violation);

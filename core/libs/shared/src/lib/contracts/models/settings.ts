@@ -31,6 +31,45 @@ export type ElementOrderStrategy = 'keepOrderAfterParent' | 'keepOrderAppend' | 
 
 export const DEFAULT_ELEMENT_ORDER_STRATEGY: ElementOrderStrategy = 'formatterDefault';
 
+/** The providers of the AI assistant, see the AI contract of the backend. */
+export type AiProviderKind = 'copilot' | 'openai' | 'anthropic' | 'azure-openai' | 'ollama' | 'lmstudio' | 'openai-compatible';
+
+/** The providers in the order they are offered; GitHub Copilot is recommended. */
+export const AI_PROVIDER_KINDS: readonly AiProviderKind[] = [
+  'copilot',
+  'openai',
+  'anthropic',
+  'azure-openai',
+  'ollama',
+  'lmstudio',
+  'openai-compatible',
+];
+
+/** Settings of the AI assistant. API keys are never part of the settings, they are kept in the keychain. */
+export interface AiSettings {
+  /** The assistant and all its actions are hidden when disabled (default). */
+  enabled: boolean;
+  provider: AiProviderKind | null;
+  model?: string;
+  baseUrl?: string;
+  /** Azure OpenAI only. */
+  apiVersion?: string;
+  /** Only local models (Ollama, LM Studio, …) may be used; no model data leaves the computer. */
+  onlyLocal: boolean;
+  /** Target languages for descriptions and translations. */
+  languages: string[];
+  /** Cloud providers the user agreed to send model data to. */
+  cloudConsent: AiProviderKind[];
+}
+
+export const DEFAULT_AI_SETTINGS: AiSettings = {
+  enabled: false,
+  provider: null,
+  onlyLocal: false,
+  languages: ['en', 'de'],
+  cloudConsent: [],
+};
+
 export interface Settings {
   namespace: string;
   version: string;
@@ -55,4 +94,6 @@ export interface Settings {
   externalEditor?: ExternalEditor;
   /** Reload models without unsaved changes right away after their files changed outside of the editor, instead of asking. */
   reloadExternalChanges?: boolean;
+  /** The AI assistant; missing means disabled. */
+  ai?: AiSettings;
 }

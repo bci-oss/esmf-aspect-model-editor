@@ -1,0 +1,73 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t">
+  @let m = message();
+  <div
+    class="ai-message"
+    [class.ai-message--user]="m.role === 'user'"
+    [class.ai-message--assistant]="m.role === 'assistant'"
+    [attr.data-testid]="'ai-message-' + m.role"
+  >
+    @if (m.role === 'user') {
+      @if (m.command) {
+        <span class="ai-message__command">/{{ m.command }}</span>
+      }
+      <p class="ai-message__text">{{ m.content }}</p>
+      @if (m.context?.length) {
+        <ul class="ai-message__context" [attr.aria-label]="t('ai.message.context')" data-testid="ai-message-context">
+          @for (ref of m.context; track $index) {
+            <li class="ai-message__context-item" [attr.data-kind]="ref.kind" [title]="ref.label">
+              <mat-icon>{{ contextIcon(ref) }}</mat-icon>
+              <span>{{ ref.label }}</span>
+            </li>
+          }
+        </ul>
+      }
+    } @else {
+      @if (tool(); as current) {
+        <div
+          class="ai-message__tool"
+          [class.ai-message__tool--failed]="current.status === 'failed'"
+          aria-live="polite"
+          data-testid="ai-tool"
+        >
+          @if (current.status === 'started') {
+            <mat-progress-spinner mode="indeterminate" diameter="12" />
+          } @else {
+            <mat-icon>{{ current.status === 'failed' ? 'error_outline' : 'check' }}</mat-icon>
+          }
+          <span>{{ t('ai.tools.' + current.status, {name: current.name}) }}</span>
+          @if (current.summary) {
+            <span class="ai-message__tool-summary">– {{ current.summary }}</span>
+          }
+        </div>
+      }
+      @if (waiting()) {
+        <div class="ai-message__thinking" aria-live="polite" data-testid="ai-thinking">
+          <mat-progress-spinner mode="indeterminate" diameter="14" />{{ t('ai.message.thinking') }}
+        </div>
+      }
+      @if (m.content) {
+        <ame-ai-markdown [text]="m.content" (elementSelected)="elementSelected.emit($event)" />
+      }
+      @if (m.stopped) {
+        <p class="ai-message__stopped" data-testid="ai-stopped">{{ t('ai.message.stopped') }}</p>
+      }
+      @if (m.error; as error) {
+        <ame-ai-error-banner [error]="error" [dismissible]="false" (action)="errorAction.emit($event)" />
+      }
+    }
+    <ng-content />
+  </div>
+</ng-container>

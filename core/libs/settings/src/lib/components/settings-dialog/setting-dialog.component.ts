@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {describeSourceError, GraphSettingsPort, ModelSessionFacade, SammLanguageSettingsService} from '@ame/domain';
+import {AiStore, describeSourceError, GraphSettingsPort, ModelSessionFacade, SammLanguageSettingsService, UiShellStore} from '@ame/domain';
 import {
   AlertService,
   DialogCloseButtonComponent,
@@ -34,6 +34,7 @@ import {SettingsFormService} from '../../services';
 import {WorkspacesDraftService} from '../../services/workspaces-draft.service';
 import {LanguageSettingsComponent} from '../model-configuration/language-settings/language-settings.component';
 import {NamespaceSettingsComponent} from '../model-configuration/namespace-settings/namespace-settings.component';
+import {AiConfigurationComponent} from '../system-configuration/ai-configuration/ai-configuration.component';
 import {AutomatedWorkflowComponent} from '../system-configuration/automated-workflow/automated-workflow.component';
 import {EditorConfigurationComponent} from '../system-configuration/editor-configuration/editor-configuration.component';
 import {GithubSourcesSettingsComponent} from '../system-configuration/github-sources/github-sources-settings.component';
@@ -47,6 +48,7 @@ export type SettingsSectionId =
   | 'workspaces'
   | 'githubSources'
   | 'plugins'
+  | 'aiConfiguration'
   | 'languageConfiguration'
   | 'namespaceConfiguration'
   | 'copyrightHeaderConfiguration';
@@ -63,6 +65,7 @@ export const APPLICATION_SECTIONS: ReadonlySet<SettingsSectionId> = new Set([
   'workspaces',
   'githubSources',
   'plugins',
+  'aiConfiguration',
 ]);
 
 export interface SettingsSection {
@@ -139,6 +142,21 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
         description: 'plugins.settings.description',
         keywords: ['plugins.settings.install', 'plugins.settings.listTitle', 'plugins.settings.restart'],
       },
+      {
+        id: 'aiConfiguration',
+        name: 'settingsDialog.subNode.ai',
+        description: 'settingsDialog.description.ai',
+        keywords: [
+          'settingsDialog.ai.enabled',
+          'settingsDialog.ai.steps.provider.title',
+          'settingsDialog.ai.steps.privacy.title',
+          'ai.setup.model',
+          'settingsDialog.ai.onlyLocal',
+          'settingsDialog.ai.languages',
+          'settingsDialog.ai.consent',
+        ],
+        resettable: true,
+      },
     ],
   },
   {
@@ -198,6 +216,7 @@ export const SETTINGS_LAST_SECTION_KEY = 'ame.settings.lastSection';
     MatSuffix,
     AutomatedWorkflowComponent,
     EditorConfigurationComponent,
+    AiConfigurationComponent,
     LanguageSettingsComponent,
     NamespaceSettingsComponent,
     HeaderCopyrightComponent,
@@ -223,6 +242,8 @@ export class SettingDialogComponent implements DialogCloseRequestHandler {
   private readonly transloco = inject(TranslocoService);
   private readonly workspacesDraft = inject(WorkspacesDraftService);
   private readonly notifications = inject(NotificationsService);
+  private readonly aiStore = inject(AiStore);
+  private readonly uiShellStore = inject(UiShellStore);
 
   private readonly treeItems = viewChildren<ElementRef<HTMLElement>>('treeItem');
 
@@ -336,7 +357,7 @@ export class SettingDialogComponent implements DialogCloseRequestHandler {
 
   resetSelectedSection(): void {
     const id = this.selectedSectionId();
-    if (id === 'automatedWorkflow' || id === 'editorConfiguration') {
+    if (id === 'automatedWorkflow' || id === 'editorConfiguration' || id === 'aiConfiguration') {
       this.formService.resetSection(id);
     }
   }
@@ -367,6 +388,15 @@ export class SettingDialogComponent implements DialogCloseRequestHandler {
 
   onOk(): void {
     this.applySettings(() => this.onClose());
+  }
+
+  /** Saves the settings, so that an enabled assistant is active, and continues with the setup in the assistant panel. */
+  openAiSetup(): void {
+    this.applySettings(() => {
+      this.onClose();
+      this.aiStore.openSetup();
+      this.uiShellStore.openAiPanel();
+    });
   }
 
   /** The Cancel button is an explicit decision to discard the changes. */

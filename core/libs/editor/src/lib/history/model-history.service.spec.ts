@@ -482,6 +482,54 @@ describe('ModelHistoryService', () => {
     });
   });
 
+  describe('replaceModel', () => {
+    it('loads the Turtle and records it as one step which can be undone and redone', () => {
+      const result = vi.fn();
+      service.replaceModel('v1').subscribe(result);
+
+      expect(result).toHaveBeenCalledWith(true);
+      expect(loader.restoreModel).toHaveBeenCalledWith('v1', undefined);
+      expect(renderer.renderAgain).toHaveBeenCalled();
+      expect(store.undoCount()).toBe(1);
+
+      service.undo();
+      expect(restoredContent()).toBe('v0');
+      service.redo();
+      expect(restoredContent()).toBe('v1');
+    });
+
+    it('records pending changes of the graph first and keeps the view', () => {
+      change('v1');
+      position = 30;
+      service.replaceModel('v2').subscribe();
+
+      expect(store.histories()['tab-1'].undo.map(step => step.rdf)).toEqual(['v0', 'v1']);
+      expect(viewState.apply).toHaveBeenCalledWith(view(30));
+    });
+
+    it('does nothing without an active tab or loaded model', () => {
+      const result = vi.fn();
+      tabsStore.setActiveTabId(null);
+      service.replaceModel('v1').subscribe(result);
+      activate('tab-1');
+      (TestBed.inject(LoadedFilesService) as {currentLoadedFile: unknown}).currentLoadedFile = null;
+      service.replaceModel('v1').subscribe(result);
+
+      expect(result.mock.calls).toEqual([[false], [false]]);
+      expect(loader.restoreModel).not.toHaveBeenCalled();
+    });
+
+    it('restores the previous version and passes the error on when the Turtle cannot be loaded', () => {
+      loader.restoreModel.mockReturnValueOnce(throwError(() => new Error('broken')));
+      const error = vi.fn();
+      service.replaceModel('invalid').subscribe({error});
+
+      expect(error).toHaveBeenCalledWith(new Error('broken'));
+      expect(restoredContent()).toBe('v0');
+      expect(service.isRestoring()).toBe(false);
+    });
+  });
+
   describe('keyboard', () => {
     const key = (init: KeyboardEventInit, target?: HTMLElement) => {
       const event = new KeyboardEvent('keydown', {cancelable: true, ...init});

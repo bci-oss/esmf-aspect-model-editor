@@ -1,0 +1,118 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t">
+  <div class="settings-container ai-configuration">
+    <section class="ai-configuration__intro" data-testid="aiIntro">
+      <p class="ai-configuration__lead">{{ t('settingsDialog.ai.intro.lead') }}</p>
+      <ul class="ai-configuration__capabilities">
+        @for (capability of capabilities; track capability) {
+          <li [attr.data-testid]="'aiCapability-' + capability">{{ t('settingsDialog.ai.intro.capabilities.' + capability) }}</li>
+        }
+      </ul>
+      <p class="ai-configuration__safety">
+        <mat-icon>verified_user</mat-icon>
+        <span>{{ t('settingsDialog.ai.intro.safety') }}</span>
+      </p>
+      <a class="ai-configuration__docs" [href]="docsUrl" ameExternalLink target="_blank" rel="noopener" data-testid="aiDocsLink">
+        {{ t('settingsDialog.ai.intro.docs') }}
+      </a>
+    </section>
+
+    <ame-ai-settings-step
+      [step]="1"
+      [title]="t('settingsDialog.ai.steps.enable.title')"
+      [description]="t('settingsDialog.ai.steps.enable.description')"
+      data-testid="aiStepEnable"
+    >
+      <mat-slide-toggle [formField]="form.aiConfiguration.enabled" data-testid="aiEnabledToggle">
+        {{ t('settingsDialog.ai.enabled') }}
+      </mat-slide-toggle>
+    </ame-ai-settings-step>
+
+    <ame-ai-settings-step
+      [step]="2"
+      [title]="t('settingsDialog.ai.steps.provider.title')"
+      [description]="t('settingsDialog.ai.steps.provider.description')"
+      [disabled]="!enabled()"
+      [disabledHint]="t('settingsDialog.ai.steps.enableFirst')"
+      data-testid="aiStepProvider"
+    >
+      <ame-ai-connection-summary
+        [provider]="provider()"
+        [model]="model()"
+        [state]="connectionState()"
+        [keyState]="keyState()"
+        [copilotLogin]="copilotLogin()"
+      />
+      <div>
+        <button (click)="openSetup.emit()" mat-flat-button type="button" data-testid="aiOpenSetup">
+          <mat-icon>auto_awesome</mat-icon>
+          {{ provider() ? t('settingsDialog.ai.steps.provider.change') : t('settingsDialog.ai.steps.provider.setup') }}
+        </button>
+      </div>
+    </ame-ai-settings-step>
+
+    <ame-ai-settings-step
+      [step]="3"
+      [title]="t('settingsDialog.ai.steps.privacy.title')"
+      [description]="t('settingsDialog.ai.steps.privacy.description')"
+      [disabled]="!enabled()"
+      [disabledHint]="t('settingsDialog.ai.steps.enableFirst')"
+      data-testid="aiStepPrivacy"
+    >
+      <div class="setting-item__text">
+        <mat-slide-toggle [formField]="form.aiConfiguration.onlyLocal" data-testid="aiOnlyLocalToggle">
+          {{ t('settingsDialog.ai.onlyLocal') }}
+        </mat-slide-toggle>
+        <p class="setting-item__hint">{{ t('settingsDialog.ai.onlyLocalTooltip') }}</p>
+      </div>
+
+      <div class="setting-item__content">
+        <div class="setting-item__text">
+          <span>{{ t('settingsDialog.ai.consent') }}</span>
+          <p class="setting-item__hint" data-testid="aiConsentState">
+            @if (consentedProviders().length) {
+              {{ t('settingsDialog.ai.consentGiven', {providers: consentedProviders().join(', ')}) }}
+            } @else {
+              {{ t('settingsDialog.ai.consentNone') }}
+            }
+          </p>
+        </div>
+        <button
+          [disabled]="!consentedProviders().length"
+          (click)="resetConsent()"
+          mat-stroked-button
+          type="button"
+          data-testid="aiConsentReset"
+        >
+          {{ t('settingsDialog.ai.consentReset') }}
+        </button>
+      </div>
+    </ame-ai-settings-step>
+
+    <ame-ai-settings-step
+      [step]="4"
+      [title]="t('settingsDialog.ai.steps.languages.title')"
+      [description]="t('settingsDialog.ai.languagesHint')"
+      [disabled]="!enabled()"
+      [disabledHint]="t('settingsDialog.ai.steps.enableFirst')"
+      data-testid="aiStepLanguages"
+    >
+      <mat-form-field class="setting-item__input" subscriptSizing="dynamic">
+        <mat-label>{{ t('settingsDialog.ai.languages') }}</mat-label>
+        <input [formField]="form.aiConfiguration.languages" matInput placeholder="en, de" data-testid="aiLanguagesInput" />
+      </mat-form-field>
+    </ame-ai-settings-step>
+  </div>
+</ng-container>

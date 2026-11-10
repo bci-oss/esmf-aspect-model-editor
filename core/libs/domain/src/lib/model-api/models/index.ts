@@ -12,6 +12,7 @@
  */
 
 export * from './aas-import';
+export * from './ai';
 export * from './api-specs';
 export * from './element-usage';
 export * from './file-information';

@@ -1,0 +1,122 @@
+/*!
+ * Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+ *
+ * See the AUTHORS file(s) distributed with this work for
+ * additional information regarding authorship.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * SPDX-License-Identifier: MPL-2.0
+ */
+
+.ai-input {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &__textarea {
+    width: 100%;
+    min-height: 56px;
+    max-height: 200px;
+    padding: 6px 8px;
+    border: 1px solid var(--ame-border-color, #cfd0d1);
+    border-radius: 6px;
+    background: var(--ame-surface, #fff);
+    color: inherit;
+    font: inherit;
+    resize: vertical;
+    box-sizing: border-box;
+
+    &:focus-visible {
+      outline: 2px solid var(--ame-primary, #007bc0);
+      outline-offset: -1px;
+    }
+  }
+
+  &--drag-over &__textarea {
+    border-style: dashed;
+    border-color: var(--ame-primary, #007bc0);
+  }
+
+  &__drop {
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 56px;
+    border-radius: 6px;
+    background: var(--ame-surface-hover, rgba(0, 123, 192, 0.08));
+    font-size: 12px;
+    pointer-events: none;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  &__hint {
+    flex: 1;
+    font-size: 11px;
+    opacity: 0.7;
+  }
+
+  &__suggestions {
+    position: absolute;
+    right: 0;
+    bottom: 100%;
+    left: 0;
+    z-index: 2;
+    max-height: 220px;
+    margin: 0 0 4px;
+    padding: 4px 0;
+    overflow-y: auto;
+    border: 1px solid var(--ame-border-color, #cfd0d1);
+    border-radius: 6px;
+    background: var(--ame-surface, #fff);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    list-style: none;
+  }
+
+  &__suggestion {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 8px;
+    cursor: pointer;
+
+    &--active,
+    &:hover {
+      background: var(--ame-surface-hover, rgba(0, 0, 0, 0.06));
+    }
+  }
+
+  &__suggestion-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: monospace;
+  }
+
+  &__suggestion-icon {
+    width: 14px;
+    height: 14px;
+    font-size: 14px;
+  }
+
+  &__suggestion-detail {
+    overflow: hidden;
+    font-size: 12px;
+    opacity: 0.7;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

@@ -1,0 +1,125 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t">
+  <aside class="ai-panel" [attr.aria-label]="t('ai.panel.title')" data-testid="ai-panel">
+    <ame-ai-panel-header
+      [title]="store.activeConversation()?.title ?? null"
+      [providerLabel]="providerLabel()"
+      [model]="store.settings().model"
+      [models]="store.models()"
+      [conversationsOpen]="conversationsOpen()"
+      (conversationsToggled)="toggleConversations()"
+      (providerMenuOpened)="onMenuOpened()"
+      (modelSelected)="store.selectModel($event)"
+      (setupRequested)="store.openSetup()"
+      (conversationCreated)="newConversation()"
+      (closeRequested)="close()"
+    />
+
+    @if (panelError(); as error) {
+      <ame-ai-error-banner class="ai-panel__error" [error]="error" (action)="onErrorAction($event)" (dismissed)="dismissError()" />
+    }
+
+    <div class="ai-panel__body" #scroller>
+      @if (store.showSetup()) {
+        <ame-ai-setup />
+      } @else if (conversationsOpen()) {
+        <ame-ai-conversation-list
+          [conversations]="store.conversations()"
+          [activeId]="store.activeConversationId()"
+          (opened)="openConversation($event)"
+          (created)="newConversation()"
+          (renamed)="store.renameConversation($event.id, $event.title)"
+          (deleted)="store.deleteConversation($event)"
+          (cleared)="store.clearConversations()"
+        />
+      } @else {
+        @if (store.loadingConversation()) {
+          <mat-progress-spinner class="ai-panel__loading" mode="indeterminate" diameter="24" />
+        } @else if (!store.messages().length) {
+          <ame-ai-welcome [modelOpen]="!!store.openModel()" (started)="start($event)" />
+        }
+        <div class="ai-panel__messages" aria-live="polite">
+          @for (message of store.messages(); track message.id) {
+            <ame-ai-message [message]="message" (elementSelected)="navigate($event)" (errorAction)="onErrorAction($event)">
+              @for (proposal of message.proposals; track proposal.id) {
+                <ame-ai-proposal-card
+                  [proposal]="proposal"
+                  [status]="store.proposalStatus()[proposal.id] ?? 'open'"
+                  [validation]="store.proposalValidation()[proposal.id] ?? null"
+                  [validating]="validating().has(proposal.id)"
+                  [readOnly]="store.readOnly()"
+                  (applyRequested)="apply(proposal, $event)"
+                  (createRequested)="create(proposal, $event)"
+                  (renameRequested)="rename(proposal)"
+                  (validateRequested)="validate(proposal, $event)"
+                  (discardRequested)="discard(proposal)"
+                  (elementSelected)="navigate($event)"
+                  (fixRequested)="fix($event)"
+                />
+              }
+            </ame-ai-message>
+          }
+        </div>
+        @if (store.consentPending()) {
+          <ame-ai-consent
+            [providerLabel]="providerLabel()"
+            (accepted)="store.acceptConsent()"
+            (declined)="store.declineConsent()"
+            (useLocal)="store.declineConsent(); store.openSetup()"
+          />
+        }
+      }
+    </div>
+
+    @if (!store.showSetup()) {
+      <footer class="ai-panel__footer">
+        @if (pickerOpen()) {
+          <ame-ai-context-picker
+            [groups]="store.contextCandidates()"
+            [loading]="store.candidatesLoading()"
+            (picked)="pick($event)"
+            (closed)="closePicker()"
+          />
+        }
+        <ame-ai-context-chips
+          [openModel]="store.openModel()"
+          [includeModel]="store.includeModel()"
+          [selectedElement]="selectedElementName()"
+          [items]="store.contextItems()"
+          [disabled]="!!store.consentPending()"
+          (includeModelChange)="store.setIncludeModel($event)"
+          (selectionExcluded)="store.excludeSelection()"
+          (itemRemoved)="store.removeContextItem($event)"
+          (filesAttached)="store.attachFiles($event)"
+          (pickerRequested)="openPicker()"
+        />
+        <ame-ai-chat-input
+          [(text)]="inputText"
+          [elements]="elements()"
+          [streaming]="store.streaming()"
+          [disabled]="!!store.consentPending()"
+          [language]="language()"
+          [contextCandidates]="candidates()"
+          [uploading]="store.uploading()"
+          (submitted)="send($event)"
+          (filesAttached)="store.attachFiles($event)"
+          (contextPicked)="store.addCandidateToContext($event)"
+          (contextSearchStarted)="store.loadContextCandidates()"
+          (stopRequested)="store.stop()"
+        />
+      </footer>
+    }
+  </aside>
+</ng-container>

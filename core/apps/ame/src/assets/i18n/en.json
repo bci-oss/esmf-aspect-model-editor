@@ -465,7 +465,8 @@
       "editor": "Editor",
       "copyright": "Header/Copyright",
       "languages": "Languages",
-      "namespaces": "Namespaces"
+      "namespaces": "Namespaces",
+      "ai": "AI assistant"
     },
     "configuration": {
       "autoSave": "Auto-save",
@@ -538,7 +539,8 @@
       "editor": "Appearance of the graph and how models are written to Turtle files.",
       "languages": "Language of the user interface and the languages of preferred names and descriptions in the model.",
       "namespaces": "Namespace and version of the opened model.",
-      "copyright": "Comment header written at the top of the Turtle file. Every line must start with #."
+      "copyright": "Comment header written at the top of the Turtle file. Every line must start with #.",
+      "ai": "Optional assistant that explains, completes and reviews Aspect Models. Disabled by default."
     },
     "resetSection": "Reset to defaults",
     "requiresModel": "Load an Aspect Model to change these settings.",
@@ -551,6 +553,59 @@
       "content": "The settings contain changes that have not been applied yet.",
       "keepEditing": "Keep editing",
       "discard": "Discard"
+    },
+    "ai": {
+      "enabled": "Enable AI assistant",
+      "onlyLocal": "Only use local models",
+      "onlyLocalTooltip": "Model data never leaves this computer; cloud providers are blocked.",
+      "languages": "Target languages",
+      "languagesHint": "Language tags for generated descriptions and translations, e.g. en, de.",
+      "consent": "Consent to send model data to cloud providers",
+      "consentGiven": "Given for: {{ providers }}",
+      "consentNone": "Not given yet. You will be asked before the first request.",
+      "consentReset": "Reset consent",
+      "intro": {
+        "lead": "The AI assistant helps you model, right in the editor. It can:",
+        "capabilities": {
+          "ask": "answer questions about the open model",
+          "fix": "explain and fix validation errors",
+          "describe": "add and translate descriptions and preferred names",
+          "review": "review the model: names, units, reuse",
+          "examples": "create example values and test payloads",
+          "generate": "draft a new model from a text description"
+        },
+        "safety": "Every change is shown as a preview first and can be undone. Nothing is sent while the assistant is disabled.",
+        "docs": "Learn more about the AI assistant"
+      },
+      "steps": {
+        "enableFirst": "Enable the assistant first.",
+        "enable": {
+          "title": "Enable",
+          "description": "Shows the ✨ button at the right end of the toolbar (Ctrl/Cmd+I) and the AI actions in the editor."
+        },
+        "provider": {
+          "title": "Provider and connection",
+          "description": "Sign-in, API key and connection test happen in the assistant panel. Keys are stored in the keychain of the system, never in the settings.",
+          "setup": "Save and set up the assistant",
+          "change": "Save and change the provider"
+        },
+        "privacy": {
+          "title": "Privacy",
+          "description": "Decide whether model data may be sent to cloud providers."
+        },
+        "languages": {
+          "title": "Languages"
+        }
+      },
+      "status": {
+        "none": "No provider chosen yet.",
+        "ready": "ready",
+        "incomplete": "setup incomplete",
+        "model": "Model: {{ model }}",
+        "defaultModel": "Default model of the provider",
+        "keyMissing": "No API key stored.",
+        "copilotSignedOut": "Not signed in to GitHub."
+      }
     }
   },
   "editorCanvas": {
@@ -1366,6 +1421,256 @@
       "question": "Reload them now?",
       "reload": "Reload",
       "keep": "Keep current state"
+    }
+  },
+  "ai": {
+    "common": {
+      "cancel": "Cancel",
+      "close": "Close",
+      "save": "Save"
+    },
+    "panel": {
+      "title": "AI assistant",
+      "welcome": "Ask about the open model, let errors be explained or get proposals. Every change is shown first and can be undone.",
+      "tip": "Type / for commands and @ to mention elements. Enter sends, Shift+Enter adds a line.",
+      "providerTooltip": "Provider and model",
+      "changeProvider": "Change provider…",
+      "toggleTooltip": "AI assistant (Ctrl/Cmd+I)"
+    },
+    "starters": {
+      "explain": {
+        "label": "Explain the model",
+        "message": "Explain the open model."
+      },
+      "review": {
+        "label": "Review the model",
+        "message": "Review the open model."
+      },
+      "examples": {
+        "label": "Example data",
+        "message": "Create an example payload for the open model."
+      },
+      "generate": {
+        "label": "New model from text",
+        "message": "Create a new Aspect Model."
+      }
+    },
+    "commands": {
+      "explain": "Explain the model or an element",
+      "describe": "Add missing descriptions and preferred names",
+      "translate": "Translate descriptions and preferred names",
+      "generate": "Create a new model from a description",
+      "review": "Review the model",
+      "examples": "Propose example values and payloads",
+      "fix": "Fix validation errors"
+    },
+    "providers": {
+      "copilot": "GitHub Copilot",
+      "openai": "OpenAI",
+      "anthropic": "Anthropic Claude",
+      "azure-openai": "Azure OpenAI",
+      "ollama": "Ollama",
+      "lmstudio": "LM Studio",
+      "openai-compatible": "OpenAI-compatible"
+    },
+    "setup": {
+      "title": "Set up the AI assistant",
+      "intro": "Choose a provider, sign in or enter a key, and test the connection.",
+      "localFound": "Running on this computer:",
+      "provider": "Provider",
+      "recommended": "Recommended",
+      "local": "Local",
+      "baseUrl": "Base URL",
+      "model": "Model",
+      "test": "Test connection",
+      "testOk": "Connection works.",
+      "done": "Done",
+      "key": {
+        "label": "API key",
+        "hint": "The key is stored in the keychain of the system and never in the settings.",
+        "storedPersistent": "Key is stored in the system keychain.",
+        "storedSession": "Key is kept for this session only.",
+        "delete": "Remove key",
+        "change": "Change key"
+      },
+      "copilot": {
+        "hint": "Uses your GitHub Copilot subscription. No API key is needed.",
+        "login": "Sign in with GitHub",
+        "logout": "Sign out",
+        "signedIn": "Signed in as {{ login }}",
+        "step1": "Copy the code.",
+        "step2": "Open GitHub and enter the code there.",
+        "copy": "Copy code",
+        "open": "Open GitHub",
+        "waiting": "Waiting for the authorization…",
+        "pasteToken": "Paste a token instead",
+        "token": "GitHub token",
+        "tokenHint": "A GitHub token with access to Copilot. It is not stored in the settings."
+      }
+    },
+    "consent": {
+      "title": "Send model data?",
+      "text": "Your message is sent to {{ provider }}, together with:",
+      "data": "the open model, the elements and errors in the context, attached files and selected workspace models",
+      "noKeys": "API keys are never part of the model data or the saved conversations",
+      "revoke": "you can revoke the consent in the settings at any time",
+      "accept": "Send",
+      "decline": "Not now",
+      "useLocal": "Use a local model"
+    },
+    "context": {
+      "title": "Context of the next message",
+      "modelTooltip": "The open model is sent with the message.",
+      "selectionTooltip": "The selected element is sent with the message.",
+      "readOnly": "Read-only: the model is never changed.",
+      "remove": "Remove from the context",
+      "file": {
+        "uploading": "Uploading…",
+        "pages": "{{ count }} pages or sheets",
+        "characters": "{{ count }} characters of text",
+        "truncated": "The text is too long and was cut.",
+        "no_text": "No text found, e.g. a scanned PDF."
+      },
+      "picker": {
+        "title": "Add models as context",
+        "search": "Search namespaces and models",
+        "models": "Models",
+        "readOnly": "Read-only (GitHub)",
+        "noMatch": "No matches.",
+        "empty": "No models in the workspace.",
+        "add": {
+          "model": "Add this model",
+          "namespace": "Add all models of this folder",
+          "source": "Add all models of this workspace or source"
+        }
+      }
+    },
+    "input": {
+      "label": "Message to the assistant",
+      "placeholder": "Ask about the model, / for commands, @ for elements, # for context",
+      "hint": "Enter sends, Shift+Enter adds a line",
+      "send": "Send",
+      "stop": "Stop"
+    },
+    "message": {
+      "thinking": "Thinking…",
+      "stopped": "Stopped.",
+      "context": "Sent context"
+    },
+    "tools": {
+      "started": "Running {{ name }}…",
+      "done": "{{ name }} done",
+      "failed": "{{ name }} failed"
+    },
+    "conversations": {
+      "title": "Conversations",
+      "new": "New conversation",
+      "empty": "No conversations yet.",
+      "rename": "Rename",
+      "delete": "Delete",
+      "clear": "Delete all",
+      "clearConfirm": "Delete all conversations?"
+    },
+    "proposal": {
+      "preview": "Show changes",
+      "diff": "Changes",
+      "noChanges": "No changes.",
+      "unchangedLines": "{{ count }} unchanged lines",
+      "valid": "Valid",
+      "invalid": "{{ count }} validation errors",
+      "edit": "Adjust",
+      "editLabel": "Turtle of the proposal",
+      "validate": "Validate",
+      "apply": "Apply",
+      "create": "Create model",
+      "rename": "Rename",
+      "discard": "Discard",
+      "applied": "Applied. Undo restores the previous model.",
+      "discarded": "Discarded.",
+      "readOnly": "The model is read-only and cannot be changed.",
+      "copy": "Copy",
+      "saveFile": "Save as file",
+      "applyFailed": "The change could not be applied."
+    },
+    "review": {
+      "none": "No findings.",
+      "fix": "Fix",
+      "reuse": "Reuse",
+      "severity": {
+        "info": "Info",
+        "warning": "Warning",
+        "error": "Error"
+      },
+      "category": {
+        "naming": "Naming",
+        "unit": "Unit",
+        "description": "Description",
+        "characteristic": "Characteristic",
+        "reuse": "Reuse",
+        "other": "Other"
+      }
+    },
+    "errors": {
+      "invalid_key": "The API key is invalid.",
+      "quota_exceeded": "The quota of the provider is used up.",
+      "offline": "The AI service is not reachable.",
+      "timeout": "The AI service did not answer in time.",
+      "not_authenticated": "Please sign in to GitHub Copilot.",
+      "model_not_found": "The model is not available at the provider.",
+      "provider_error": "The AI service reported an error.",
+      "local_only": "Only local models are allowed.",
+      "read_only": "The model is read-only and cannot be changed.",
+      "attachment_unsupported": "This file type is not supported. Use PDF, DOCX, XLSX or a text file.",
+      "attachment_too_large": "The file is larger than 20 MB.",
+      "attachment_unreadable": "The file could not be read.",
+      "attachment_empty": "The file contains no text."
+    },
+    "errorActions": {
+      "openSetup": "Set up",
+      "retry": "Retry",
+      "login": "Sign in",
+      "openSettings": "Settings"
+    },
+    "actions": {
+      "menu": "AI",
+      "fieldTooltip": "Ask the AI assistant",
+      "describe": {
+        "label": "AI: Add description",
+        "message": "Add missing descriptions and preferred names for {{name}}."
+      },
+      "translate": {
+        "label": "AI: Translate",
+        "message": "Translate the descriptions and preferred names of {{name}}."
+      },
+      "explain": {
+        "label": "AI: Explain",
+        "message": "Explain {{name}}."
+      },
+      "fix": {
+        "label": "AI: Explain and fix",
+        "message": "Explain this validation error and propose a fix: {{error}}"
+      },
+      "review": {
+        "label": "Review model",
+        "message": "Review the open model."
+      },
+      "examples": {
+        "label": "Generate example data",
+        "message": "Create an example payload for the open model."
+      },
+      "newModel": {
+        "label": "New model with AI…",
+        "message": "Create a new Aspect Model: "
+      },
+      "moreTooltip": "More AI actions"
+    },
+    "attach": {
+      "button": "Add context",
+      "tooltip": "Add files from your computer or models and folders of the workspace as context",
+      "file": "File from computer…",
+      "model": "Model from workspace…",
+      "drop": "Drop files to add them as context",
+      "uploading": "Uploading files…"
     }
   }
 }

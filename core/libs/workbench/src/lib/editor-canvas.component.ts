@@ -11,7 +11,8 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ConfigurationService, GraphNavigatorPort, ModelSessionFacade, SearchStore} from '@ame/domain';
+import {AiPanelComponent} from '@ame/ai';
+import {AiStore, ConfigurationService, GraphNavigatorPort, ModelSessionFacade, SearchStore, UiShellStore} from '@ame/domain';
 import {
   AspectModelTextViewComponent,
   EditorFormModel,
@@ -27,7 +28,19 @@ import {ElementsSearchComponent, FilesSearchComponent} from '@ame/search';
 import {ResizeGutterComponent} from '@ame/shared';
 import {SidebarComponent} from '@ame/sidebar';
 import {CommonModule} from '@angular/common';
-import {AfterViewInit, Component, DestroyRef, effect, ElementRef, inject, OnInit, signal, untracked, viewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  ElementRef,
+  inject,
+  OnInit,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
 import {MatIconModule} from '@angular/material/icon';
 import {ActivatedRoute, Router} from '@angular/router';
@@ -39,12 +52,15 @@ import {debounceTime, filter, map, switchMap, tap} from 'rxjs/operators';
 
 export const EDIT_VIEW_MIN_WIDTH = 480;
 export const EDIT_VIEW_WIDTH_STORAGE_KEY = 'ame.editView.width';
+export const AI_PANEL_MIN_WIDTH = 360;
+export const AI_PANEL_WIDTH_STORAGE_KEY = 'ame.aiPanel.width';
 
 @Component({
   selector: 'ame-editor-canvas',
   templateUrl: './editor-canvas.component.html',
   styleUrls: ['./editor-canvas.component.scss'],
   imports: [
+    AiPanelComponent,
     CommonModule,
     ResizeGutterComponent,
     MatIconModule,
@@ -71,11 +87,19 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
   private editorService = inject(EditorService);
   private configurationService = inject(ConfigurationService);
   private searchStore = inject(SearchStore);
+  private aiStore = inject(AiStore);
+  private uiShellStore = inject(UiShellStore);
   protected readonly viewMode = inject(EditorViewModeService);
 
   public readonly sidebarWidth = signal<number | null>(EDIT_VIEW_MIN_WIDTH);
   protected readonly editViewMinWidth = EDIT_VIEW_MIN_WIDTH;
   protected readonly editViewWidthStorageKey = EDIT_VIEW_WIDTH_STORAGE_KEY;
+
+  /** The assistant is only shown when it is enabled in the settings. */
+  public readonly isAiPanelOpen = computed(() => this.aiStore.enabled() && this.uiShellStore.aiPanelOpen());
+  public readonly aiPanelWidth = signal<number | null>(AI_PANEL_MIN_WIDTH + 60);
+  protected readonly aiPanelMinWidth = AI_PANEL_MIN_WIDTH;
+  protected readonly aiPanelWidthStorageKey = AI_PANEL_WIDTH_STORAGE_KEY;
 
   public readonly isMapVisible = toSignal(this.configurationService.settings$.pipe(map(settings => settings.showEditorMap)), {
     initialValue: this.configurationService.getSettings()?.showEditorMap ?? true,

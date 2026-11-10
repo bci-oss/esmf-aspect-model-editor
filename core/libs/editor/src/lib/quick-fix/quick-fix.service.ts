@@ -42,6 +42,12 @@ export class QuickFixService {
       .flatMap(violation => violation.quickFixes ?? []);
   }
 
+  /** The violation of the last validation a notification reports, if any. */
+  violationOf(notification: NotificationModel | null): ViolationError | null {
+    if (!notification?.link) return null;
+    return this.validationStore.violations().find(violation => isReportedBy(violation, notification)) ?? null;
+  }
+
   /** Emits whether the fix was applied; errors are shown to the user. */
   apply(fix: QuickFix, notification?: NotificationModel): Observable<boolean> {
     return this.modelHistory

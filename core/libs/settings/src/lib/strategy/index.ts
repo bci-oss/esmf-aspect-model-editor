@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+export * from './ai-configuration-update.strategy';
 export * from './automated-workflow-update.strategy';
 export * from './copyright-header-update.strategy';
 export * from './editor-configuration-update.strategy';

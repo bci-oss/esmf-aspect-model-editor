@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {provideAi} from '@ame/ai';
 import {provideEditor} from '@ame/editor';
 import {provideSearch} from '@ame/search';
 import {provideSettings} from '@ame/settings';
@@ -30,5 +31,6 @@ export function provideWorkbench(): EnvironmentProviders {
     provideSidebar(),
     provideSearch(),
     provideSettings(),
+    provideAi(),
   ]);
 }

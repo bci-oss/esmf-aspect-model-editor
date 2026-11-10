@@ -35,7 +35,7 @@
         [matTooltip]="t('externalEditor.openSourceIn', {editor: editorName()})"
         [attr.aria-label]="t('externalEditor.openSourceIn', {editor: editorName()})"
         (click)="openInEditor.emit(folder)"
-        mat-mini-fab
+        type="button"
         data-testid="workspace-source-open-in-editor"
       >
         <mat-icon>open_in_new</mat-icon>

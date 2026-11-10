@@ -1,0 +1,162 @@
+:page-partial:
+
+[[ai-assistant]]
+= AI assistant
+
+The AI assistant answers questions about the open Aspect Model, explains and fixes validation errors, writes descriptions and translations, reviews the model, creates example data and drafts new Aspect Models from a text description.
+Every change is shown as a proposal first; nothing is changed before you apply it, and applied changes can be undone.
+
+The assistant is *disabled by default*.
+While it is disabled, no AI actions are shown and nothing is sent anywhere.
+
+[[ai-enable]]
+== Enable the assistant
+
+. Open the xref:getting-started/settings.adoc#ai-settings[Settings] and select *System Configuration* > *AI assistant*.
+. Switch on *Enable AI assistant* and click *Save and set up the assistant*, or click *OK* and set it up later.
+. Open the assistant with the ✨ *AI assistant* button at the right end of the editor toolbar or with kbd:[Ctrl+I] (on macOS kbd:[Cmd+I]). The arrow next to it opens the AI actions.
+. On the first start the assistant shows its setup: choose a provider, enter what it needs, click *Test connection* and then *Done*.
+
+You can change the provider and the model later in the header of the assistant panel (*Change provider…*).
+
+[[ai-providers]]
+== Set up a provider
+
+[cols="22%,78%"]
+|===
+| Provider | Setup
+
+| GitHub Copilot (recommended)
+| Click *Sign in with GitHub*.
+The assistant shows a device code; open the shown GitHub page, enter the code and authorize the sign-in.
+If you are already signed in with the GitHub Copilot CLI or the GitHub CLI, that sign-in is used.
+If the device login is not available, click *Paste a token instead* and paste a GitHub token with Copilot access instead.
+Requires a GitHub Copilot subscription.
+
+| OpenAI
+| Enter your OpenAI API key and optionally choose a model.
+
+| Anthropic Claude
+| Enter your Anthropic API key and optionally choose a model.
+
+| Azure OpenAI
+| Enter the API key and the *Base URL* of your Azure OpenAI resource, and the name of your deployment as model.
+
+| Ollama
+| Start Ollama on this computer.
+The assistant finds it at `http://localhost:11434` and offers its models.
+No key is needed, and no model data leaves the computer.
+
+| LM Studio
+| Start the local server of LM Studio.
+The assistant finds it at `http://localhost:1234` and offers its models.
+No key is needed, and no model data leaves the computer.
+
+| OpenAI-compatible
+| Any service with an OpenAI-compatible API, for example a company AI gateway or vLLM.
+Enter its *Base URL*, the model and, if the service needs one, the API key.
+|===
+
+*Test connection* checks the provider, the key and the model and loads the available models.
+If the model field is left empty, the default model of the provider is used.
+
+[[ai-privacy]]
+== Privacy and security
+
+* *Off by default:* the assistant does nothing until you enable it.
+* *Consent:* before the first request to a cloud provider, the assistant asks whether the open model, the mentioned elements, the validation errors, attached files and selected workspace models may be sent to this provider.
+The consent is given per provider and can be reset in the settings (*Reset consent*).
+* *Only local models:* with *Only use local models* in the settings, cloud providers are blocked and the model data never leaves this computer (Ollama, LM Studio).
+* *API keys:* keys and tokens are entered in the assistant panel only.
+The desktop app stores them in the keychain of the operating system (macOS Keychain, Windows Credential Manager, Secret Service on Linux).
+In the browser they are kept only for the current session.
+Keys are never stored in the settings or the conversations.
+* *Model content is data:* the content of your Aspect Model, such as descriptions, is treated as data and never as instructions to the assistant.
+* *Read-only models:* models of read-only sources, for example GitHub sources, are never changed; the assistant can still explain and review them.
+* Conversations are stored locally by the backend of the Aspect Model Editor and can be deleted in the conversation list of the panel.
+
+[[ai-features]]
+== Features
+
+[cols="25%,75%"]
+|===
+| Feature | How
+
+| Ask questions
+| Type a question in the panel.
+The open model is sent as context; the chips above the input show and control what is sent.
+Type `@` to mention elements of the model.
+
+| Explain and fix errors
+| Click *AI: Explain and fix* next to a validation error in the notifications.
+The assistant explains the error and proposes a corrected model.
+
+| Descriptions and translations
+| Click the ✨ button next to *Description* or *Preferred name* in the element editor, or right-click an element in the graph and choose *AI* > *AI: Add description* or *AI: Translate*.
+The target languages are set in the settings (*Target languages*).
+
+| Explain elements
+| Right-click an element in the graph and choose *AI* > *AI: Explain*.
+
+| Review the model
+| The arrow next to ✨ in the toolbar > *Review model*.
+The findings are listed by severity; click an element to show it in the graph, or *Fix* to get a proposal.
+
+| Example data
+| The arrow next to ✨ in the toolbar > *Generate example data*.
+The assistant creates example JSON payloads (for example a valid one and one with boundary values) that you can copy or save as a file.
+
+| New model from text
+| The arrow next to ✨ in the toolbar > *New model with AI…*, then describe the model.
+*Create model* saves the proposal to the workspace and opens it.
+|===
+
+Proposals of model changes show a diff of the Turtle file.
+You can *Apply* them, *Adjust* them before applying (they are validated again) or *Discard* them.
+An applied change is one step in the history: use *Undo* (kbd:[Ctrl+Z], on macOS kbd:[Cmd+Z]) to revert it.
+Renamings are applied with the refactoring of the editor, so that references in other files are updated as well.
+
+[[ai-context]]
+== Add files and models as context
+
+Like GitHub Copilot, the assistant can use more than the open model, for example a specification as PDF or other Aspect Models of the workspace.
+Everything you add is shown as a chip above the input and is sent with every message until you remove it.
+
+* *Add context:* click *📎 Add context* in front of the context chips above the input.
+** *File from computer…* adds files from your computer.
+** *Model from workspace…* opens the models of your workspace and GitHub sources as folder tree: namespace, version and model files.
+Search by name or namespace and add a single model file, all models of a version folder, all models of a namespace folder or, with the *+* next to the name of a workspace or GitHub source, all its models.
+GitHub sources are marked with a lock because they are read-only.
+* *`#`:* type `#` followed by a part of a name in the input to get suggestions of models and namespace folders.
+* *Drag and drop:* drop files onto the input.
+
+Supported files are PDF, DOCX, XLSX, TXT, Markdown, JSON, CSV, TSV, Turtle (TTL), YAML and XML with up to 20 MB per file.
+The backend extracts the text of a file; very long texts are cut and a scanned PDF without text is marked with a warning.
+Attached files are kept only in memory and are removed when you remove the chip or close the editor.
+With *Only use local models* everything stays on this computer.
+
+[[ai-commands]]
+== Commands and shortcuts
+
+[cols="30%,70%"]
+|===
+| Input | Effect
+
+| kbd:[Ctrl+I] (on macOS kbd:[Cmd+I]) | Opens or closes the assistant panel
+| kbd:[Enter] | Sends the message
+| kbd:[Shift+Enter] | Adds a new line
+| `@` | Mentions an element of the open model
+| `#` | Adds a model or a namespace folder of the workspace as context
+| `/explain` | Explains the model or the mentioned elements
+| `/describe` | Adds missing descriptions and preferred names
+| `/translate` | Translates descriptions and preferred names into the target languages
+| `/fix` | Explains validation errors and proposes a fix
+| `/review` | Reviews the model
+| `/examples` | Creates example data
+| `/generate` | Creates a new Aspect Model from the description
+|===
+
+[[ai-errors]]
+== Errors
+
+If a request fails, the panel shows the reason, for example an invalid API key, a used-up quota, an unreachable service or a model that is not available, together with a way to solve it, such as *Retry*, *Set up* or *Sign in*.

@@ -1,0 +1,50 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t">
+  <div class="ai-device-code" data-testid="ai-device-code">
+    <ol class="ai-device-code__steps">
+      <li>{{ t('ai.setup.copilot.step1') }}</li>
+      <li>{{ t('ai.setup.copilot.step2') }}</li>
+    </ol>
+    <div class="ai-device-code__code-row">
+      <code class="ai-device-code__code" data-testid="ai-device-code-value" aria-live="polite">{{ flow().userCode }}</code>
+      <button
+        [attr.aria-label]="t('ai.setup.copilot.copy')"
+        (click)="copy()"
+        mat-icon-button
+        type="button"
+        data-testid="ai-device-code-copy"
+      >
+        <mat-icon>{{ copied() ? 'check' : 'content_copy' }}</mat-icon>
+      </button>
+    </div>
+    <a
+      [href]="flow().verificationUri"
+      (click)="copy()"
+      mat-flat-button
+      color="primary"
+      ameExternalLink
+      target="_blank"
+      rel="noopener noreferrer"
+      data-testid="ai-device-code-open"
+    >
+      <mat-icon>open_in_new</mat-icon>{{ t('ai.setup.copilot.open') }}
+    </a>
+    <div class="ai-device-code__waiting">
+      <mat-progress-spinner mode="indeterminate" diameter="16" />
+      <span>{{ t('ai.setup.copilot.waiting') }}</span>
+      <button (click)="cancelled.emit()" mat-button type="button" data-testid="ai-device-code-cancel">{{ t('ai.common.cancel') }}</button>
+    </div>
+  </div>
+</ng-container>

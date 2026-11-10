@@ -12,7 +12,7 @@
   -->
 
 <ng-container>
-  @for (locale of getDescriptionsLocales(); track locale) {
+  @for (locale of getDescriptionsLocales(); track locale; let first = $first) {
     @if (field(locale); as descriptionField) {
       <mat-form-field
         [floatLabel]="descriptionField().disabled() ? 'always' : 'auto'"
@@ -22,6 +22,9 @@
       >
         <mat-label>description({{ locale }})</mat-label>
         <textarea [formField]="descriptionField" matInput data-testid="description"></textarea>
+        @if (first) {
+          <ame-ai-field-action [element]="metaModelElement" [disabled]="descriptionField().disabled()" matSuffix />
+        }
       </mat-form-field>
     }
   }

@@ -107,6 +107,37 @@ describe('SettingsFormService', () => {
     expect(service.settingsModel().editorConfiguration.reloadExternalChanges).toBe(true);
   });
 
+  describe('AI configuration', () => {
+    it('should be disabled by default and keep the details disabled', () => {
+      service.initializeForm();
+      expect(service.settingsModel().aiConfiguration).toEqual(createDefaultSettingsModel().aiConfiguration);
+      expect(service.settingsModel().aiConfiguration.languages).toBe('en, de');
+      expect(service.settingsForm.aiConfiguration.onlyLocal().disabled()).toBe(true);
+      expect(service.settingsForm.aiConfiguration.languages().disabled()).toBe(true);
+    });
+
+    it('should load and save the AI settings without touching the connection and the consent', () => {
+      configurationService.setSettings({
+        ...configurationService.getSettings(),
+        ai: {enabled: true, provider: 'copilot', model: 'gpt-4.1', onlyLocal: false, languages: ['de'], cloudConsent: ['copilot']},
+      });
+      service.initializeForm();
+      expect(service.settingsModel().aiConfiguration).toEqual({enabled: true, onlyLocal: false, languages: 'de'});
+      expect(service.settingsForm.aiConfiguration.languages().disabled()).toBe(false);
+
+      // the AI setup changes the connection immediately, while the dialog is open
+      configurationService.setSettings({
+        ...configurationService.getSettings(),
+        ai: {...configurationService.getSettings().ai, provider: 'ollama', model: 'llama3'},
+      });
+      service.settingsModel.update(m => ({...m, aiConfiguration: {...m.aiConfiguration, languages: 'de, fr'}}));
+      service.updateSettings();
+      expect(configurationService.getSettings().ai).toEqual(
+        expect.objectContaining({provider: 'ollama', model: 'llama3', languages: ['de', 'fr'], cloudConsent: ['copilot']}),
+      );
+    });
+  });
+
   it('should initialize correctly when currentLoadedFile is null', () => {
     loadedFilesService.currentLoadedFile = null;
     service.initializeForm();

@@ -11,6 +11,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+export * from './ai-editor.port';
+export * from './ai-secret-store.port';
+export * from './ai-setup.port';
+export * from './ai.port';
 export * from './dialog.port';
 export * from './editor-actions.port';
 export * from './file-handling.port';

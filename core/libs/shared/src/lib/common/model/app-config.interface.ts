@@ -28,5 +28,6 @@ export interface AppConfig {
     githubSources: string;
     refactoring: string;
     plugins: string;
+    ai: string;
   };
 }

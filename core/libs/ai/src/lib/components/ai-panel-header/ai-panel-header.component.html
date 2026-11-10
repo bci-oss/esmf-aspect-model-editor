@@ -1,0 +1,84 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+<ng-container *transloco="let t">
+  <header class="ai-panel-header">
+    <button
+      [matTooltip]="t('ai.conversations.title')"
+      [attr.aria-label]="t('ai.conversations.title')"
+      [attr.aria-expanded]="conversationsOpen()"
+      (click)="conversationsToggled.emit()"
+      mat-icon-button
+      type="button"
+      data-testid="ai-conversations-toggle"
+    >
+      <mat-icon>history</mat-icon>
+    </button>
+    <h2 class="ai-panel-header__title">
+      <mat-icon class="ai-panel-header__title-icon">auto_awesome</mat-icon>
+      <span class="ai-panel-header__title-text">{{ title() ?? t('ai.panel.title') }}</span>
+    </h2>
+    @if (providerLabel()) {
+      <button
+        class="ai-panel-header__provider"
+        [matMenuTriggerFor]="providerMenu"
+        [matTooltip]="t('ai.panel.providerTooltip')"
+        (menuOpened)="providerMenuOpened.emit()"
+        mat-button
+        type="button"
+        data-testid="ai-provider-menu"
+      >
+        <span class="ai-panel-header__provider-text"
+          >{{ providerLabel() }}
+          @if (model()) {
+            · {{ model() }}
+          }
+        </span>
+        <mat-icon iconPositionEnd>arrow_drop_down</mat-icon>
+      </button>
+      <mat-menu #providerMenu="matMenu">
+        @for (option of models(); track option.id) {
+          <button (click)="modelSelected.emit(option.id)" mat-menu-item type="button">
+            <mat-icon>{{ option.id === model() ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
+            <span>{{ option.name || option.id }}</span>
+          </button>
+        }
+        @if (models().length) {
+          <mat-divider />
+        }
+        <button (click)="setupRequested.emit()" mat-menu-item type="button" data-testid="ai-open-setup">
+          <mat-icon>tune</mat-icon><span>{{ t('ai.panel.changeProvider') }}</span>
+        </button>
+      </mat-menu>
+    }
+    <button
+      [matTooltip]="t('ai.conversations.new')"
+      [attr.aria-label]="t('ai.conversations.new')"
+      (click)="conversationCreated.emit()"
+      mat-icon-button
+      type="button"
+      data-testid="ai-new-conversation"
+    >
+      <mat-icon>add_comment</mat-icon>
+    </button>
+    <button
+      [matTooltip]="t('ai.common.close')"
+      [attr.aria-label]="t('ai.common.close')"
+      (click)="closeRequested.emit()"
+      mat-icon-button
+      type="button"
+      data-testid="ai-close"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
+</ng-container>

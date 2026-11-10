@@ -173,6 +173,30 @@ export class ModelHistoryService {
     );
   }
 
+  /**
+   * Replaces the current model by the Turtle (e.g. a change proposed by the AI assistant), renders it and records it
+   * as one step, so it can be undone. When the Turtle cannot be loaded, the previous version is restored and the error
+   * is passed on.
+   */
+  replaceModel(rdf: string): Observable<boolean> {
+    const tabId = this.tabsStore.activeTabId();
+    if (!tabId || this.store.restoring()) return of(false);
+
+    this.flush();
+    const before = this.capture();
+    if (!before) return of(false);
+
+    this.store.record(tabId, before);
+    return this.restore({rdf, view: before.view}).pipe(
+      tap(() => {
+        const after = this.capture();
+        if (after) this.store.record(tabId, after);
+      }),
+      map(() => true),
+      catchError(error => this.restore(before).pipe(switchMap(() => throwError(() => error)))),
+    );
+  }
+
   /** Undo with Cmd/Ctrl+Z, redo with Cmd/Ctrl+Shift+Z (and Ctrl+Y on Windows/Linux). Text fields keep their own undo. */
   handleKeydown(event: KeyboardEvent): void {
     const action = historyActionOf(event, isMacPlatform());
@@ -204,7 +228,8 @@ export class ModelHistoryService {
     });
   }
 
-  private restore(snapshot: ModelSnapshot): Observable<void> {
+  /** Without metadata (a model which was not loaded before) the serialization starts from scratch. */
+  private restore(snapshot: Pick<ModelSnapshot, 'rdf' | 'view'> & Partial<Pick<ModelSnapshot, 'metadata'>>): Observable<void> {
     this.store.setRestoring(true);
     this.cancelPendingCommit();
     // the edit dialog shows an element of the replaced model

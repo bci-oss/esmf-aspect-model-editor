@@ -1,0 +1,72 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+<ng-container *transloco="let t">
+  @if (status()?.authenticated) {
+    <p class="ai-setup-ok" data-testid="ai-copilot-authenticated">
+      <mat-icon>check_circle</mat-icon>{{ t('ai.setup.copilot.signedIn', {login: status()?.login ?? ''}) }}
+      <button (click)="logoutRequested.emit()" mat-button type="button" data-testid="ai-copilot-logout">
+        {{ t('ai.setup.copilot.logout') }}
+      </button>
+    </p>
+  } @else if (flow(); as flow) {
+    <ame-ai-device-code [flow]="flow" (cancelled)="loginCancelled.emit()" />
+  } @else {
+    <p class="ai-setup-hint">{{ t('ai.setup.copilot.hint') }}</p>
+    <div>
+      <button
+        [disabled]="state() === 'starting'"
+        (click)="loginRequested.emit()"
+        mat-flat-button
+        color="primary"
+        type="button"
+        data-testid="ai-copilot-login"
+      >
+        <mat-icon>login</mat-icon>{{ t('ai.setup.copilot.login') }}
+      </button>
+    </div>
+    @if (errorView(); as view) {
+      <p class="ai-setup-error" role="alert" data-testid="ai-login-error">{{ t(view.messageKey) }}</p>
+    }
+    @if (showTokenPaste()) {
+      <div class="ai-setup-row">
+        <mat-form-field class="ai-setup-field" subscriptSizing="dynamic">
+          <mat-label>{{ t('ai.setup.copilot.token') }}</mat-label>
+          <input
+            [value]="tokenInput()"
+            (input)="onTokenInput($event)"
+            matInput
+            type="password"
+            autocomplete="off"
+            data-testid="ai-copilot-token"
+          />
+        </mat-form-field>
+        <button
+          [disabled]="!tokenInput().trim()"
+          (click)="saveToken()"
+          mat-stroked-button
+          type="button"
+          data-testid="ai-copilot-token-save"
+        >
+          {{ t('ai.common.save') }}
+        </button>
+      </div>
+      <p class="ai-setup-hint">{{ t('ai.setup.copilot.tokenHint') }}</p>
+    } @else {
+      <div>
+        <button (click)="tokenPasteOpen.set(true)" mat-button type="button" data-testid="ai-copilot-token-open">
+          {{ t('ai.setup.copilot.pasteToken') }}
+        </button>
+      </div>
+    }
+  }
+</ng-container>

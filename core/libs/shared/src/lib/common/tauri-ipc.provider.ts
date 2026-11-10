@@ -15,6 +15,7 @@ import {InjectionToken} from '@angular/core';
 import {TAURI_EVENTS} from './enums';
 import {OpenModelsSnapshot, OpenWindowModels} from './model/startup-options';
 import {
+  AiSecretInfo,
   BackendStatus,
   ExternalEditorRequest,
   GithubTokenInfo,
@@ -242,6 +243,26 @@ function createTauriBridge(): TauriApi {
     async githubSourceAction<T = unknown>(id: string, host: string, action: 'check' | 'sync'): Promise<T> {
       const {invoke} = await import('@tauri-apps/api/core');
       return await invoke<T>('github_source_action', {id, host, action});
+    },
+
+    async aiSecretSet(provider: string, secret: string): Promise<AiSecretInfo> {
+      const {invoke} = await import('@tauri-apps/api/core');
+      return await invoke<AiSecretInfo>('ai_secret_set', {provider, secret});
+    },
+
+    async aiSecretGet(provider: string): Promise<string | null> {
+      const {invoke} = await import('@tauri-apps/api/core');
+      return await invoke<string | null>('ai_secret_get', {provider});
+    },
+
+    async aiSecretDelete(provider: string): Promise<void> {
+      const {invoke} = await import('@tauri-apps/api/core');
+      await invoke('ai_secret_delete', {provider});
+    },
+
+    async aiSecretInfo(provider: string): Promise<AiSecretInfo> {
+      const {invoke} = await import('@tauri-apps/api/core');
+      return await invoke<AiSecretInfo>('ai_secret_info', {provider});
     },
 
     async saveFile(fileName: string, content: Blob): Promise<string | null> {

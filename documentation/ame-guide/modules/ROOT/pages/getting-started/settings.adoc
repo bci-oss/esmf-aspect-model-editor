@@ -53,6 +53,21 @@ Install, enable, disable and remove plugins and restart the backend to apply the
 The menu entries of plugins are available in the desktop app.
 See xref:plugins/plugins.adoc[Plugins].
 
+[[ai-settings]]
+=== AI assistant
+
+The page starts with a short overview of what the assistant can do and guides through four steps:
+
+. *Enable*: shows the ✨ button at the right end of the editor toolbar (kbd:[Ctrl+I], on macOS kbd:[Cmd+I]) and the AI actions in the editor. Disabled by default; nothing is sent while the assistant is disabled.
+. *Provider and connection*: shows the chosen provider, the model and whether the assistant is ready, for example whether the API key is stored or as which GitHub user you are signed in to Copilot.
+*Save and set up the assistant* (or *Save and change the provider*) saves the settings and opens the setup in the assistant panel, where you sign in, enter an API key and test the connection.
+API keys are stored in the keychain of the system, never in the settings.
+. *Privacy*: *Only use local models* blocks cloud providers so that model data never leaves this computer.
+*Reset consent* asks again before model data is sent to a cloud provider.
+. *Languages*: target languages for generated descriptions and translations.
+
+See xref:getting-started/ai-assistant.adoc[AI assistant].
+
 [[model-configuration]]
 == Model Configuration
 

@@ -17,7 +17,7 @@
   height: 100vh;
   max-height: 100vh;
   display: grid;
-  grid-template-columns: 55px minmax(0, 1fr);
+  grid-template-columns: 55px minmax(0, 1fr) auto;
   grid-template-rows: 50px 36px minmax(0, 1fr);
   overflow: hidden;
   box-sizing: border-box;
@@ -34,14 +34,14 @@
 
 .toolbar {
   grid-row: 1 / span 1;
-  grid-column: 1 / span 2;
+  grid-column: 1 / -1;
   min-width: 0;
   max-width: 100%;
 }
 
 .tab-bar {
   grid-row: 2 / span 1;
-  grid-column: 1 / span 2;
+  grid-column: 1 / -1;
   min-width: 0;
   max-width: 100%;
   width: 100%;
@@ -171,7 +171,7 @@
   transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   box-shadow: -4px 8px 8px 0 var(--ame-shadow--black-25);
   z-index: 10;
-  background: var(--ame-surface, white);
+  background-color: var(--ame-surface-card, #fff);
   color: var(--ame-font, inherit);
 }
 
@@ -233,4 +233,17 @@
       }
     }
   }
+}
+
+.ai-section {
+  grid-row: 3 / span 1;
+  grid-column: 3 / span 1;
+  position: relative;
+  min-width: 0;
+  max-width: calc(100vw - 120px);
+  height: 100%;
+  overflow: hidden;
+  box-shadow: -4px 8px 8px 0 var(--ame-shadow--black-25);
+  z-index: 9;
+  background-color: var(--ame-surface-card, #fff);
 }

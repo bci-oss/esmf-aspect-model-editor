@@ -12,6 +12,7 @@
  */
 
 export * from './aasx-generation-modal/aasx-generation-modal.component';
+export * from './ai-toolbar-button/ai-toolbar-button.component';
 export * from './generate-async-api/generate-async-api.component';
 export * from './generate-diagram/generate-diagram.component';
 export * from './generate-documentation/generate-documentation.component';

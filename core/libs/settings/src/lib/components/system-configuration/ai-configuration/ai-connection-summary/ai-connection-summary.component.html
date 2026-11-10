@@ -1,0 +1,57 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+
+<ng-container *transloco="let t">
+  <div class="ai-connection-summary" [class]="'ai-connection-summary--' + state()" data-testid="aiConnectionSummary">
+    @switch (state()) {
+      @case ('ready') {
+        <mat-icon class="ai-connection-summary__icon">check_circle</mat-icon>
+      }
+      @case ('incomplete') {
+        <mat-icon class="ai-connection-summary__icon">warning</mat-icon>
+      }
+      @default {
+        <mat-icon class="ai-connection-summary__icon">radio_button_unchecked</mat-icon>
+      }
+    }
+
+    <div class="ai-connection-summary__text">
+      @if (provider(); as provider) {
+        <span class="ai-connection-summary__provider" data-testid="aiConnectionProvider">
+          {{ t('ai.providers.' + provider) }} · {{ t('settingsDialog.ai.status.' + state()) }}
+        </span>
+        <span class="ai-connection-summary__detail" data-testid="aiConnectionModel">
+          {{ model() ? t('settingsDialog.ai.status.model', {model: model()}) : t('settingsDialog.ai.status.defaultModel') }}
+        </span>
+        @if (provider === 'copilot') {
+          <span class="ai-connection-summary__detail" data-testid="aiConnectionAccount">
+            {{ copilotLogin() ? t('ai.setup.copilot.signedIn', {login: copilotLogin()}) : t('settingsDialog.ai.status.copilotSignedOut') }}
+          </span>
+        }
+        @switch (keyState()) {
+          @case ('persistent') {
+            <span class="ai-connection-summary__detail" data-testid="aiConnectionKey">{{ t('ai.setup.key.storedPersistent') }}</span>
+          }
+          @case ('session') {
+            <span class="ai-connection-summary__detail" data-testid="aiConnectionKey">{{ t('ai.setup.key.storedSession') }}</span>
+          }
+          @case ('missing') {
+            <span class="ai-connection-summary__detail" data-testid="aiConnectionKey">{{ t('settingsDialog.ai.status.keyMissing') }}</span>
+          }
+        }
+      } @else {
+        <span class="ai-connection-summary__provider" data-testid="aiConnectionProvider">{{ t('settingsDialog.ai.status.none') }}</span>
+      }
+    </div>
+  </div>
+</ng-container>

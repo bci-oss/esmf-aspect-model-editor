@@ -136,7 +136,7 @@ export class ModelLoaderService implements ModelLoaderPort {
    * Replaces the current model by an earlier version of it (undo/redo). The referenced files stay as they are loaded,
    * so neither the backend nor a migration is involved. The model is not rendered.
    */
-  restoreModel(rdfAspectModel: string, serializationState: SerializationMetadataState): Observable<NamespaceFile> {
+  restoreModel(rdfAspectModel: string, serializationState?: SerializationMetadataState): Observable<NamespaceFile> {
     const previous = this.loadedFilesService.currentLoadedFile;
     if (!previous?.rdfModel) {
       return throwError(() => ({code: LoadingCodeErrors.LOADING_ASPECT_MODEL, error: 'No model loaded'}));

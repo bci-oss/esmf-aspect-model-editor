@@ -159,6 +159,9 @@
           @case ('editorConfiguration') {
             <ame-editor-configuration></ame-editor-configuration>
           }
+          @case ('aiConfiguration') {
+            <ame-ai-configuration (openSetup)="openAiSetup()" />
+          }
           @case ('languageConfiguration') {
             <ame-language-settings></ame-language-settings>
           }

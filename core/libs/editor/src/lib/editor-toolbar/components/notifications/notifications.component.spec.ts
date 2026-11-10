@@ -11,8 +11,9 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {QuickFix} from '@ame/domain';
+import {QuickFix, ViolationError} from '@ame/domain';
 import {ClipboardService, IPC_RENDERER, NotificationModel, NotificationsService, NotificationType} from '@ame/shared';
+import {signal} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatDialogRef} from '@angular/material/dialog';
 import {ActivatedRoute, Router} from '@angular/router';
@@ -20,6 +21,7 @@ import {TranslocoTestingModule} from '@jsverse/transloco';
 import {MockProvider} from 'ng-mocks';
 import {of, Subject} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {AiEditorActionsService} from '../../../ai/ai-editor-actions.service';
 import {QuickFixService} from '../../../quick-fix/quick-fix.service';
 import {NotificationsComponent} from './notifications.component';
 
@@ -32,6 +34,9 @@ describe('NotificationsComponent', () => {
   let copyToClipboardMock: ReturnType<typeof vi.fn>;
   let quickFixService: QuickFixService;
   let fixes: QuickFix[];
+  let violation: ViolationError | null;
+  const aiEnabled = signal(false);
+  let aiActions: {enabled: typeof aiEnabled; fix: ReturnType<typeof vi.fn>};
 
   const fix: QuickFix = {
     description: 'Add the language tag',
@@ -47,6 +52,9 @@ describe('NotificationsComponent', () => {
   beforeEach(async () => {
     copyToClipboardMock = vi.fn();
     fixes = [];
+    violation = null;
+    aiEnabled.set(false);
+    aiActions = {enabled: aiEnabled, fix: vi.fn()};
     dialogRef = {
       close: vi.fn(),
     } as unknown as MatDialogRef<NotificationsComponent>;
@@ -70,7 +78,9 @@ describe('NotificationsComponent', () => {
         MockProvider(QuickFixService, {
           fixesOf: vi.fn(notification => (notification ? fixes : [])),
           apply: vi.fn(() => of(true)),
+          violationOf: vi.fn(() => violation),
         }),
+        {provide: AiEditorActionsService, useValue: aiActions},
       ],
     }).compileComponents();
 
@@ -160,6 +170,44 @@ describe('NotificationsComponent', () => {
       result.next(true);
       result.complete();
       expect(component.applyingQuickFix()).toBe(false);
+    });
+  });
+
+  describe('explain and fix with the AI assistant', () => {
+    const aiFixButton = () => fixture.nativeElement.querySelector('[data-testid="ai-fix-button"]') as HTMLButtonElement | null;
+
+    it('is offered for errors and warnings while the assistant is enabled', () => {
+      expect(aiFixButton()).toBeNull();
+
+      aiEnabled.set(true);
+      fixture.detectChanges();
+      expect(aiFixButton()).not.toBeNull();
+      expect(component.canExplainAndFix(new NotificationModel('Info', '', undefined, NotificationType.Info))).toBe(false);
+      expect(component.canExplainAndFix(new NotificationModel('', '', undefined, NotificationType.Error))).toBe(false);
+    });
+
+    it('asks to fix the violation of the notification and closes the dialog', () => {
+      violation = {message: 'Missing characteristic', focusNode: 'urn:samm:org.example:1.0.0#speed', errorCode: 'ERR_X', fix: []};
+      aiEnabled.set(true);
+      fixture.detectChanges();
+      aiFixButton()?.click();
+
+      expect(aiActions.fix).toHaveBeenCalledWith({
+        message: 'Missing characteristic',
+        focusNode: 'urn:samm:org.example:1.0.0#speed',
+        errorCode: 'ERR_X',
+      });
+      expect(dialogRef.close).toHaveBeenCalled();
+    });
+
+    it('uses the notification when it reports no violation', () => {
+      component.explainAndFix(new NotificationModel('Broken', '', 'urn:samm:org.example:1.0.0#speed', NotificationType.Error));
+      component.explainAndFix(new NotificationModel('Other', '', undefined, NotificationType.Error));
+
+      expect(aiActions.fix.mock.calls).toEqual([
+        [{message: 'Broken', focusNode: 'urn:samm:org.example:1.0.0#speed'}],
+        [{message: 'Other'}],
+      ]);
     });
   });
 });

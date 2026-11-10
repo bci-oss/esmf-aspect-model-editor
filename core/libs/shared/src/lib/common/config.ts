@@ -34,6 +34,7 @@ export const config: AppConfig = {
     githubSources: '/ame/api/sources/github',
     refactoring: '/ame/api/refactoring',
     plugins: '/ame/api/plugins',
+    ai: '/ame/api/ai',
   },
 };
 

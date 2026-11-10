@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {QuickFix} from '@ame/domain';
+import {AiValidationError, QuickFix} from '@ame/domain';
 import {ClipboardService, DialogCloseButtonComponent, NotificationModel, NotificationsService, NotificationType} from '@ame/shared';
 import {CommonModule} from '@angular/common';
 import {Component, computed, inject, OnInit, signal} from '@angular/core';
@@ -24,6 +24,7 @@ import {MatTooltipModule} from '@angular/material/tooltip';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {finalize} from 'rxjs';
+import {AiEditorActionsService} from '../../../ai/ai-editor-actions.service';
 import {QuickFixService} from '../../../quick-fix/quick-fix.service';
 
 @Component({
@@ -47,6 +48,7 @@ export class NotificationsComponent implements OnInit {
   private activatedRoute = inject(ActivatedRoute);
   private clipboard = inject(ClipboardService);
   private quickFixService = inject(QuickFixService);
+  private aiActions = inject(AiEditorActionsService);
 
   public notificationsService = inject(NotificationsService);
   public router = inject(Router);
@@ -109,6 +111,24 @@ export class NotificationsComponent implements OnInit {
       .apply(fix, this.currentItem() ?? undefined)
       .pipe(finalize(() => this.applyingQuickFix.set(false)))
       .subscribe();
+  }
+
+  /** Errors and warnings can be explained by the AI assistant when it is enabled. */
+  canExplainAndFix(notification: NotificationModel): boolean {
+    return (
+      this.aiActions.enabled() &&
+      !!notification?.title &&
+      (notification.type === NotificationType.Error || notification.type === NotificationType.Warning)
+    );
+  }
+
+  explainAndFix(notification: NotificationModel): void {
+    const violation = this.quickFixService.violationOf(notification);
+    const error: AiValidationError = violation
+      ? {message: violation.message, focusNode: violation.focusNode, ...(violation.errorCode ? {errorCode: violation.errorCode} : {})}
+      : {message: notification.title ?? '', ...(notification.link ? {focusNode: notification.link} : {})};
+    this.aiActions.fix(error);
+    this.dialogRef.close();
   }
 
   clearNotification(notification: NotificationModel) {

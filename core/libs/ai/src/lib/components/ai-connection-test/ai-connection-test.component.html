@@ -1,0 +1,39 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+<ng-container *transloco="let t">
+  <div class="ai-connection-test__actions">
+    <button [disabled]="testing()" (click)="testRequested.emit()" mat-stroked-button type="button" data-testid="ai-test-connection">
+      @if (testing()) {
+        <mat-progress-spinner mode="indeterminate" diameter="16" />
+      }
+      {{ t('ai.setup.test') }}
+    </button>
+    @if (finishable()) {
+      <button (click)="finished.emit()" mat-flat-button color="primary" type="button" data-testid="ai-setup-done">
+        {{ t('ai.setup.done') }}
+      </button>
+    }
+  </div>
+  @if (result(); as result) {
+    @if (result.ok) {
+      <p class="ai-setup-ok" role="status" data-testid="ai-test-ok"><mat-icon>check_circle</mat-icon>{{ t('ai.setup.testOk') }}</p>
+    } @else if (errorView(); as view) {
+      <p class="ai-setup-error" role="alert" data-testid="ai-test-error">
+        <mat-icon>error_outline</mat-icon>{{ t(view.messageKey) }}
+        @if (view.detail) {
+          <span class="ai-setup-detail">{{ view.detail }}</span>
+        }
+      </p>
+    }
+  }
+</ng-container>

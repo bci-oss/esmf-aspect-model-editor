@@ -109,4 +109,8 @@ describe('SidebarMenuComponent', () => {
     sidebarService.sammElements.toggle();
     expect(sidebarService.sammElements.isOpened()).toBe(true);
   });
+
+  it('should not offer the AI assistant, it lives in the editor toolbar', () => {
+    expect(fixture.nativeElement.querySelector('[data-testid="aiBtn"]')).toBeNull();
+  });
 });

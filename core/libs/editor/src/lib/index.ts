@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+export * from './ai';
 export * from './confirm-dialog/confirm-dialog.component';
 export * from './confirm-dialog/confirm-dialog.service';
 export * from './editor-dialog';

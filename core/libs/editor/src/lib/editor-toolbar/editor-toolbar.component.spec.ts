@@ -29,6 +29,7 @@ import {TranslocoTestingModule} from '@jsverse/transloco';
 import {MockProvider} from 'ng-mocks';
 import {BehaviorSubject, of} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {AiEditorActionsService} from '../ai/ai-editor-actions.service';
 import {ShapeSettingsService} from '../editor-dialog';
 import {EditorService} from '../editor.service';
 import {ModelHistoryService} from '../history/model-history.service';
@@ -53,6 +54,9 @@ describe('EditorToolbarComponent', () => {
   let elementRefactoring: ElementRefactoringService;
   let pluginCommands: ReturnType<typeof signal<PluginCommandEntry[]>>;
   let pluginRuntime: PluginRuntimeService;
+  let aiEnabled: ReturnType<typeof signal<boolean>>;
+  let aiPanelOpen: ReturnType<typeof signal<boolean>>;
+  let aiActions: AiEditorActionsService;
 
   const filterButton = (): HTMLElement => fixture.nativeElement.querySelector('[data-testid="tbPropertyFilterButton"]');
 
@@ -63,6 +67,8 @@ describe('EditorToolbarComponent', () => {
     canRedo = signal(false);
     refactoringElement = signal(null);
     pluginCommands = signal<PluginCommandEntry[]>([]);
+    aiEnabled = signal(false);
+    aiPanelOpen = signal(false);
     await TestBed.configureTestingModule({
       imports: [
         EditorToolbarComponent,
@@ -118,6 +124,16 @@ describe('EditorToolbarComponent', () => {
         MockProvider(ModelHistoryService, {canUndo, canRedo, undo: vi.fn(), redo: vi.fn()}),
         MockProvider(PluginRuntimeService, {toolbarCommands: pluginCommands, run: vi.fn(() => Promise.resolve())}),
         MockProvider(ExternalEditorService, {openElement: vi.fn(() => Promise.resolve())}),
+        MockProvider(AiEditorActionsService, {
+          enabled: aiEnabled,
+          registerContextMenuActions: vi.fn(),
+          review: vi.fn(),
+          examples: vi.fn(),
+          explainModel: vi.fn(),
+          newModel: vi.fn(),
+          togglePanel: vi.fn(),
+          panelOpen: aiPanelOpen,
+        }),
         MockProvider(ElementRefactoringService, {
           selectedElement: refactoringElement,
           registerContextMenuActions: vi.fn(),
@@ -137,6 +153,7 @@ describe('EditorToolbarComponent', () => {
     filtersService = TestBed.inject(FiltersService);
     elementRefactoring = TestBed.inject(ElementRefactoringService);
     pluginRuntime = TestBed.inject(PluginRuntimeService);
+    aiActions = TestBed.inject(AiEditorActionsService);
     fixture = TestBed.createComponent(EditorToolbarComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -328,6 +345,72 @@ describe('EditorToolbarComponent', () => {
 
       expect(historyButton.classList).not.toContain('disabled');
       expect(elementRefactoring.showHistory).toHaveBeenCalled();
+    });
+  });
+
+  describe('AI assistant', () => {
+    const aiToggle = (): HTMLElement => fixture.nativeElement.querySelector('[data-testid="tbAiToggleButton"]');
+    const aiButton = (): HTMLElement => fixture.nativeElement.querySelector('[data-testid="tbAiButton"]');
+    const menuItem = (testId: string): HTMLButtonElement => document.querySelector(`[data-testid="${testId}"]`);
+
+    const enable = () => {
+      aiEnabled.set(true);
+      fixture.detectChanges();
+    };
+
+    const openMenu = async () => {
+      enable();
+      aiButton().click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+    };
+
+    it('registers the context menu actions', () => {
+      expect(aiActions.registerContextMenuActions).toHaveBeenCalled();
+    });
+
+    it('is hidden while the assistant is disabled', () => {
+      expect(aiToggle()).toBeNull();
+      expect(aiButton()).toBeNull();
+    });
+
+    it('sits at the right end of the toolbar, after the other items', () => {
+      enable();
+      const host: HTMLElement = fixture.nativeElement;
+      expect(host.lastElementChild?.tagName.toLowerCase()).toBe('ame-ai-toolbar-button');
+      expect(host.querySelector('.menu-items ame-ai-toolbar-button')).toBeNull();
+    });
+
+    it('toggles the panel and shows whether it is open', () => {
+      enable();
+      aiToggle().click();
+      expect(aiActions.togglePanel).toHaveBeenCalled();
+
+      aiPanelOpen.set(true);
+      fixture.detectChanges();
+      expect(aiToggle().getAttribute('aria-pressed')).toBe('true');
+    });
+
+    it('runs the actions of the menu', async () => {
+      for (const testId of ['tbAiReview', 'tbAiExamples', 'tbAiExplain', 'tbAiNewModel']) {
+        await openMenu();
+        menuItem(testId).click();
+      }
+
+      expect(aiActions.review).toHaveBeenCalled();
+      expect(aiActions.examples).toHaveBeenCalled();
+      expect(aiActions.explainModel).toHaveBeenCalled();
+      expect(aiActions.newModel).toHaveBeenCalled();
+    });
+
+    it('disables the actions about the model while it is empty', async () => {
+      isModelEmpty.set(true);
+      await openMenu();
+
+      expect(menuItem('tbAiReview').disabled).toBe(true);
+      expect(menuItem('tbAiExamples').disabled).toBe(true);
+      expect(menuItem('tbAiExplain').disabled).toBe(true);
+      expect(menuItem('tbAiNewModel').disabled).toBe(false);
     });
   });
 

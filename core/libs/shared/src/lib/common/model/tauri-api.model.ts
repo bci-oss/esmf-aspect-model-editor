@@ -65,6 +65,12 @@ export interface TauriApi {
   githubTokenInfo?(host: string): Promise<GithubTokenInfo>;
   /** Checks or synchronizes a GitHub source; the shell adds the stored token, so it never reaches the web view. */
   githubSourceAction?<T = unknown>(id: string, host: string, action: 'check' | 'sync'): Promise<T>;
+  /** Stores the API key of an AI provider in the OS keychain (session memory if no keychain is available). */
+  aiSecretSet?(provider: string, secret: string): Promise<AiSecretInfo>;
+  /** The stored API key of an AI provider, or null. */
+  aiSecretGet?(provider: string): Promise<string | null>;
+  aiSecretDelete?(provider: string): Promise<void>;
+  aiSecretInfo?(provider: string): Promise<AiSecretInfo>;
   /** Asks the user where to save the file and writes it; resolves to its path, or null if cancelled. */
   saveFile?(fileName: string, content: Blob): Promise<string | null>;
   /** Restarts the backend started by the shell, e.g. to load installed plugins. Rejects if it was started externally. */
@@ -101,5 +107,11 @@ export interface PluginMenuAction {
 export interface GithubTokenInfo {
   stored: boolean;
   /** False if the token is only kept in memory for this session because no keychain is available. */
+  persistent: boolean;
+}
+
+export interface AiSecretInfo {
+  stored: boolean;
+  /** False if the key is only kept in memory for this session because no keychain is available. */
   persistent: boolean;
 }

@@ -13,6 +13,7 @@
 ** xref:getting-started/navigate-models.adoc[]
 ** xref:getting-started/text-view.adoc[Aspect Model text view]
 ** xref:getting-started/validation-and-notifications.adoc[]
+** xref:getting-started/ai-assistant.adoc[AI assistant]
 * xref:modeling/modeling.adoc[]
 ** xref:modeling/start-new-models.adoc[]
 ** xref:modeling/working-with-multiple-windows.adoc[Multiple Windows]

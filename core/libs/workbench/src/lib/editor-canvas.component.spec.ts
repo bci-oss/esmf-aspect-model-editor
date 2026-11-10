@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ConfigurationService, GraphNavigatorPort, ModelSessionFacade, SearchStore} from '@ame/domain';
+import {AiStore, ConfigurationService, GraphNavigatorPort, ModelSessionFacade, SearchStore, UiShellStore} from '@ame/domain';
 import {EditorFormModel, EditorService, ShapeSettingsService, ShapeSettingsStateService} from '@ame/editor';
 import {signal} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
@@ -20,16 +20,24 @@ import {Cell} from '@maxgraph/core';
 import {MockProvider} from 'ng-mocks';
 import {of} from 'rxjs';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {EDIT_VIEW_MIN_WIDTH, EDIT_VIEW_WIDTH_STORAGE_KEY, EditorCanvasComponent} from './editor-canvas.component';
+import {
+  AI_PANEL_MIN_WIDTH,
+  AI_PANEL_WIDTH_STORAGE_KEY,
+  EDIT_VIEW_MIN_WIDTH,
+  EDIT_VIEW_WIDTH_STORAGE_KEY,
+  EditorCanvasComponent,
+} from './editor-canvas.component';
 
 describe('EditorCanvasComponent Signal Forms save contract', () => {
   let component: EditorCanvasComponent;
   let state: ShapeSettingsStateService;
   let shapeSettings: ShapeSettingsService;
   let elementModel: EditorService;
+  const aiEnabled = signal(false);
 
   beforeEach(() => {
     const mockElementModel = {updateElement: vi.fn()};
+    aiEnabled.set(false);
     TestBed.configureTestingModule({
       imports: [EditorCanvasComponent],
       providers: [
@@ -53,6 +61,7 @@ describe('EditorCanvasComponent Signal Forms save contract', () => {
             getSettings: vi.fn(() => ({showEditorMap: true, toolbarVisibility: true})),
           },
         },
+        {provide: AiStore, useValue: {enabled: aiEnabled}},
         {provide: SearchStore, useValue: {elementsSearchOpened: signal(false), filesSearchOpened: signal(false)}},
         MockProvider(GraphNavigatorPort, {isModelEmpty: signal(false), navigateToElement: vi.fn(), setScrollPosition: vi.fn()}),
         MockProvider(EditorService, mockElementModel),
@@ -94,5 +103,19 @@ describe('EditorCanvasComponent Signal Forms save contract', () => {
     expect(component.sidebarWidth()).toBe(EDIT_VIEW_MIN_WIDTH);
     expect(EDIT_VIEW_MIN_WIDTH).toBe(480);
     expect(EDIT_VIEW_WIDTH_STORAGE_KEY).toBe('ame.editView.width');
+  });
+
+  it('shows the AI panel only while the assistant is enabled and the panel is open', () => {
+    const uiShell = TestBed.inject(UiShellStore);
+    uiShell.openAiPanel();
+    expect(component.isAiPanelOpen()).toBe(false);
+
+    aiEnabled.set(true);
+    expect(component.isAiPanelOpen()).toBe(true);
+
+    uiShell.closeAiPanel();
+    expect(component.isAiPanelOpen()).toBe(false);
+    expect(component.aiPanelWidth()).toBeGreaterThanOrEqual(AI_PANEL_MIN_WIDTH);
+    expect(AI_PANEL_WIDTH_STORAGE_KEY).toBe('ame.aiPanel.width');
   });
 });

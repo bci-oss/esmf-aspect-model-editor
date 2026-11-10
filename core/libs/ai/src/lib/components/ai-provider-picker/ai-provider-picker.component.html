@@ -1,0 +1,56 @@
+<!--
+~ Copyright (c) 2026 Robert Bosch Manufacturing Solutions GmbH
+~
+~ See the AUTHORS file(s) distributed with this work for
+~ additional information regarding authorship.
+~
+~ This Source Code Form is subject to the terms of the Mozilla Public
+~ License, v. 2.0. If a copy of the MPL was not distributed with this
+~ file, You can obtain one at https://mozilla.org/MPL/2.0/.
+~
+~ SPDX-License-Identifier: MPL-2.0
+-->
+<ng-container *transloco="let t">
+  @if (localServers().length) {
+    <div class="ai-provider-picker__local" data-testid="ai-local-servers">
+      <span class="ai-provider-picker__label">{{ t('ai.setup.localFound') }}</span>
+      @for (server of localServers(); track server.baseUrl) {
+        <button (click)="localServerSelected.emit(server)" mat-stroked-button type="button" data-testid="ai-local-server">
+          <mat-icon>computer</mat-icon>{{ t('ai.providers.' + server.kind) }} ({{ server.models.length }})
+        </button>
+      }
+    </div>
+  }
+
+  <div
+    class="ai-provider-picker__providers"
+    [class.ai-provider-picker__providers--detailed]="detailed()"
+    [attr.aria-label]="t('ai.setup.provider')"
+    role="radiogroup"
+  >
+    @for (choice of choices(); track choice.kind) {
+      <button
+        class="ai-provider-picker__provider"
+        [class.ai-provider-picker__provider--selected]="choice.kind === selected()"
+        [attr.aria-checked]="choice.kind === selected()"
+        [attr.data-testid]="'ai-provider-' + choice.kind"
+        (click)="providerSelected.emit(choice.kind)"
+        type="button"
+        role="radio"
+      >
+        <span class="ai-provider-picker__name">{{ t('ai.providers.' + choice.kind) }}</span>
+        @if (choice.recommended) {
+          <span class="ai-provider-picker__tag ai-provider-picker__tag--recommended">{{ t('ai.setup.recommended') }}</span>
+        }
+        @if (choice.local) {
+          <span class="ai-provider-picker__tag">{{ t('ai.setup.local') }}</span>
+        }
+        @if (detailed()) {
+          <span class="ai-provider-picker__description" [attr.data-testid]="'ai-provider-description-' + choice.kind">{{
+            t('ai.setup.providerHints.' + choice.kind)
+          }}</span>
+        }
+      </button>
+    }
+  </div>
+</ng-container>

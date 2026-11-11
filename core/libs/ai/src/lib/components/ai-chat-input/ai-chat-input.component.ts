@@ -153,6 +153,7 @@ export class AiChatInputComponent {
     this.highlighted.set(0);
     const textarea = this.textarea()?.nativeElement;
     if (textarea) {
+      // The binding updates the value only on the next change detection, but the caret has to be placed in the new text now.
       textarea.value = result.text;
       textarea.focus();
       textarea.setSelectionRange(result.caret, result.caret);

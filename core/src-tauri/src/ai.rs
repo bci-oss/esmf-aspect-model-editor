@@ -19,7 +19,7 @@
 //! which never stores it. Keys are never logged.
 
 use std::collections::HashMap;
-use std::sync::Mutex;
+use std::sync::{Mutex, MutexGuard, PoisonError};
 
 use serde::Serialize;
 use tauri::State;
@@ -103,59 +103,71 @@ impl AiSecretState {
     pub fn set(&self, provider: &str, secret: &str) -> Result<AiSecretInfo, String> {
         let key = account(provider)?;
         let secret = validate_secret(secret)?;
-        match self.backend.set(&key, &secret) {
-            Ok(()) => {
-                self.session_secrets.lock().unwrap().remove(&key);
-                Ok(AiSecretInfo {
-                    stored: true,
-                    persistent: true,
-                })
-            }
-            Err(error) => {
-                log::warn!(
-                    "No credential store available, keeping the AI key for {provider} until the app is closed: {error}"
-                );
-                self.session_secrets.lock().unwrap().insert(key, secret);
-                Ok(AiSecretInfo {
-                    stored: true,
-                    persistent: false,
-                })
-            }
-        }
+        let persistent = self.store(provider, key, secret);
+        Ok(AiSecretInfo {
+            stored: true,
+            persistent,
+        })
     }
 
     pub fn get(&self, provider: &str) -> Result<Option<String>, String> {
         let key = account(provider)?;
-        if let Some(secret) = self.session_secrets.lock().unwrap().get(&key) {
-            return Ok(Some(secret.clone()));
-        }
-        match self.backend.get(&key) {
-            Ok(secret) => Ok(secret),
-            Err(error) => {
-                log::warn!("Could not read the AI key for {provider}: {error}");
-                Ok(None)
-            }
-        }
+        Ok(self.lookup(provider, &key))
     }
 
     pub fn delete(&self, provider: &str) -> Result<(), String> {
         let key = account(provider)?;
-        self.session_secrets.lock().unwrap().remove(&key);
+        self.session().remove(&key);
         self.backend.delete(&key)
     }
 
     pub fn info(&self, provider: &str) -> Result<AiSecretInfo, String> {
         let key = account(provider)?;
-        if self.session_secrets.lock().unwrap().contains_key(&key) {
+        if self.session().contains_key(&key) {
             return Ok(AiSecretInfo {
                 stored: true,
                 persistent: false,
             });
         }
         Ok(AiSecretInfo {
-            stored: self.get(provider)?.is_some(),
+            stored: self.lookup(provider, &key).is_some(),
             persistent: true,
         })
+    }
+
+    /// Stores the key in the credential store, or in the session if there is none; `true` if it is persistent.
+    fn store(&self, provider: &str, key: String, secret: String) -> bool {
+        match self.backend.set(&key, &secret) {
+            Ok(()) => {
+                self.session().remove(&key);
+                true
+            }
+            Err(error) => {
+                log::warn!(
+                    "No credential store available, keeping the AI key for {provider} until the app is closed: {error}"
+                );
+                self.session().insert(key, secret);
+                false
+            }
+        }
+    }
+
+    /// The key of the session, else the one of the credential store; read errors count as no key.
+    fn lookup(&self, provider: &str, key: &str) -> Option<String> {
+        if let Some(secret) = self.session().get(key) {
+            return Some(secret.clone());
+        }
+        self.backend.get(key).unwrap_or_else(|error| {
+            log::warn!("Could not read the AI key for {provider}: {error}");
+            None
+        })
+    }
+
+    /// The keys of the session; a panic of another thread while holding the lock does not make them unusable.
+    fn session(&self) -> MutexGuard<'_, HashMap<String, String>> {
+        self.session_secrets
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
     }
 }
 
@@ -331,6 +343,20 @@ mod tests {
         );
         state.delete("anthropic").unwrap();
         assert_eq!(None, state.get("anthropic").unwrap());
+    }
+
+    #[test]
+    fn ai_session_secrets_stay_usable_after_a_panic() {
+        let (state, _backend) = state(true);
+        state.set("anthropic", "key").unwrap();
+        let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let _guard = state.session_secrets.lock().unwrap();
+            panic!("poison the lock");
+        }));
+        assert!(state.session_secrets.is_poisoned());
+        assert_eq!(Some("key".to_string()), state.get("anthropic").unwrap());
+        state.delete("anthropic").unwrap();
+        assert!(!state.info("anthropic").unwrap().stored);
     }
 
     #[test]

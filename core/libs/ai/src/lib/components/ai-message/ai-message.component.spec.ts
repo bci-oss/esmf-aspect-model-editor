@@ -13,8 +13,8 @@
 
 import {AiChatMessage} from '@ame/domain';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {aiTranslocoTesting} from '../../testing/ai-testing';
 import {AiMessageComponent} from './ai-message.component';
 
 describe('AiMessageComponent', () => {
@@ -29,10 +29,7 @@ describe('AiMessageComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AiMessageComponent,
-        TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
-      ],
+      imports: [AiMessageComponent, aiTranslocoTesting()],
     }).compileComponents();
     fixture = TestBed.createComponent(AiMessageComponent);
   });

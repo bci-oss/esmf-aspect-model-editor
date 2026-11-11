@@ -12,7 +12,7 @@
  */
 
 import {AiPanelComponent} from '@ame/ai';
-import {AiStore, ConfigurationService, GraphNavigatorPort, ModelSessionFacade, SearchStore, UiShellStore} from '@ame/domain';
+import {AiSetupStore, ConfigurationService, GraphNavigatorPort, ModelSessionFacade, SearchStore, UiShellStore} from '@ame/domain';
 import {
   AspectModelTextViewComponent,
   EditorFormModel,
@@ -87,7 +87,7 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
   private editorService = inject(EditorService);
   private configurationService = inject(ConfigurationService);
   private searchStore = inject(SearchStore);
-  private aiStore = inject(AiStore);
+  private aiSetup = inject(AiSetupStore);
   private uiShellStore = inject(UiShellStore);
   protected readonly viewMode = inject(EditorViewModeService);
 
@@ -96,7 +96,7 @@ export class EditorCanvasComponent implements AfterViewInit, OnInit {
   protected readonly editViewWidthStorageKey = EDIT_VIEW_WIDTH_STORAGE_KEY;
 
   /** The assistant is only shown when it is enabled in the settings. */
-  public readonly isAiPanelOpen = computed(() => this.aiStore.enabled() && this.uiShellStore.aiPanelOpen());
+  public readonly isAiPanelOpen = computed(() => this.aiSetup.enabled() && this.uiShellStore.aiPanelOpen());
   public readonly aiPanelWidth = signal<number | null>(AI_PANEL_MIN_WIDTH + 60);
   protected readonly aiPanelMinWidth = AI_PANEL_MIN_WIDTH;
   protected readonly aiPanelWidthStorageKey = AI_PANEL_WIDTH_STORAGE_KEY;

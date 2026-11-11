@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
+import {NgTemplateOutlet} from '@angular/common';
 import {ChangeDetectionStrategy, Component, computed, input} from '@angular/core';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {diffHunks, diffLines, diffStats} from '../../utils';
@@ -21,7 +22,7 @@ import {diffHunks, diffLines, diffStats} from '../../utils';
   templateUrl: './ai-diff-view.component.html',
   styleUrls: ['./ai-diff-view.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective],
+  imports: [NgTemplateOutlet, TranslocoDirective],
 })
 export class AiDiffViewComponent {
   readonly original = input('');

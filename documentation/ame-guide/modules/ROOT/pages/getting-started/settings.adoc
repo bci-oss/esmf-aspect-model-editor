@@ -16,7 +16,7 @@ image::settings-automated-workflow.png[Automated Workflow menu in Settings dialo
 
 * *Auto-Formatting*: automatically format the current model if you change something.
 
-* *Auto-save*: automatically saves the current model in a predefined period.
+* *Auto-save*: automatically saves the current model in a predefined period, but only if it changed since it was loaded or saved the last time.
 The latest auto-saved version is restored after the restart of the application.
 
 * *Auto-validation*: automatically validates the current model in a predefined period.

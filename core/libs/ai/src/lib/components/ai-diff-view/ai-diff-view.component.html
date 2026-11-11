@@ -18,12 +18,27 @@
       <span class="ai-diff__removed">−{{ stats().removed }}</span>
     </div>
     @if (hunks().length) {
+      <!-- The lines are rendered from a template outside the <pre>, so its formatting adds no whitespace to the diff. -->
       <pre
         class="ai-diff__lines"
         [attr.aria-label]="t('ai.proposal.diff')"
-      ><code>@for (line of hunks(); track $index) {@if (line.skipped) {<span class="ai-diff__line ai-diff__line--skipped">{{ t('ai.proposal.unchangedLines', {count: line.skipped}) }}</span>} @else {<span class="ai-diff__line" [class.ai-diff__line--added]="line.type === 'added'" [class.ai-diff__line--removed]="line.type === 'removed'"><span class="ai-diff__sign" aria-hidden="true">{{ line.type === 'added' ? '+' : line.type === 'removed' ? '−' : ' ' }}</span>{{ line.text }}</span>}}</code></pre>
+      ><code>@for (line of hunks(); track $index) {<ng-container *ngTemplateOutlet="diffLine; context: {$implicit: line}" />}</code></pre>
     } @else {
       <p class="ai-diff__none">{{ t('ai.proposal.noChanges') }}</p>
     }
   </div>
+
+  <ng-template #diffLine let-line>
+    @if (line.skipped) {
+      <span class="ai-diff__line ai-diff__line--skipped">{{ t('ai.proposal.unchangedLines', {count: line.skipped}) }}</span>
+    } @else {
+      <span
+        class="ai-diff__line"
+        [class.ai-diff__line--added]="line.type === 'added'"
+        [class.ai-diff__line--removed]="line.type === 'removed'"
+        ><span class="ai-diff__sign" aria-hidden="true">{{ line.type === 'added' ? '+' : line.type === 'removed' ? '−' : ' ' }}</span
+        >{{ line.text }}</span
+      >
+    }
+  </ng-template>
 </ng-container>

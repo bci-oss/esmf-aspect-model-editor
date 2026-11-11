@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {AiStore, ConfigurationService, GraphNavigatorPort, ModelSessionFacade, SearchStore, UiShellStore} from '@ame/domain';
+import {AiSetupStore, ConfigurationService, GraphNavigatorPort, ModelSessionFacade, SearchStore, UiShellStore} from '@ame/domain';
 import {EditorFormModel, EditorService, ShapeSettingsService, ShapeSettingsStateService} from '@ame/editor';
 import {signal} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
@@ -61,7 +61,7 @@ describe('EditorCanvasComponent Signal Forms save contract', () => {
             getSettings: vi.fn(() => ({showEditorMap: true, toolbarVisibility: true})),
           },
         },
-        {provide: AiStore, useValue: {enabled: aiEnabled}},
+        {provide: AiSetupStore, useValue: {enabled: aiEnabled}},
         {provide: SearchStore, useValue: {elementsSearchOpened: signal(false), filesSearchOpened: signal(false)}},
         MockProvider(GraphNavigatorPort, {isModelEmpty: signal(false), navigateToElement: vi.fn(), setScrollPosition: vi.fn()}),
         MockProvider(EditorService, mockElementModel),

@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {AI_SETUP_COMPONENT, AiStore, UiShellStore} from '@ame/domain';
+import {AI_SETUP_COMPONENT, AiSetupStore, UiShellStore} from '@ame/domain';
 import {ApplicationInitStatus, signal} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
@@ -44,7 +44,7 @@ describe('provideAi', () => {
     enabled.set(true);
     uiShell.toggleAiPanel.mockClear();
     TestBed.configureTestingModule({
-      providers: [provideAi(), {provide: AiStore, useValue: {enabled}}, {provide: UiShellStore, useValue: uiShell}],
+      providers: [provideAi(), {provide: AiSetupStore, useValue: {enabled}}, {provide: UiShellStore, useValue: uiShell}],
     });
     await TestBed.inject(ApplicationInitStatus).donePromise;
   });

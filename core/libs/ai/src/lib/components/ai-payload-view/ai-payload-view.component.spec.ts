@@ -11,16 +11,14 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ClipboardService, FileSaverService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {TranslocoTestingModule} from '@jsverse/transloco';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it} from 'vitest';
+import {aiFileStubs, aiTranslocoTesting} from '../../testing/ai-testing';
 import {AiPayloadViewComponent} from './ai-payload-view.component';
 
 describe('AiPayloadViewComponent', () => {
   let fixture: ComponentFixture<AiPayloadViewComponent>;
-  const clipboard = {copy: vi.fn()};
-  const fileSaver = {download: vi.fn()};
+  const {clipboard, fileSaver, providers} = aiFileStubs();
 
   const query = <T extends HTMLElement>(id: string): T => fixture.nativeElement.querySelector(`[data-testid="${id}"]`);
 
@@ -28,14 +26,8 @@ describe('AiPayloadViewComponent', () => {
     clipboard.copy.mockClear();
     fileSaver.download.mockClear();
     await TestBed.configureTestingModule({
-      imports: [
-        AiPayloadViewComponent,
-        TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
-      ],
-      providers: [
-        {provide: ClipboardService, useValue: clipboard},
-        {provide: FileSaverService, useValue: fileSaver},
-      ],
+      imports: [AiPayloadViewComponent, aiTranslocoTesting()],
+      providers,
     }).compileComponents();
     fixture = TestBed.createComponent(AiPayloadViewComponent);
     fixture.componentRef.setInput('fileBaseName', 'Movement');

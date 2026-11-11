@@ -12,8 +12,8 @@
  */
 
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {aiTranslocoTesting} from '../../testing/ai-testing';
 import {AiConsentComponent} from './ai-consent.component';
 
 describe('AiConsentComponent', () => {
@@ -23,10 +23,7 @@ describe('AiConsentComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AiConsentComponent,
-        TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
-      ],
+      imports: [AiConsentComponent, aiTranslocoTesting()],
     }).compileComponents();
     fixture = TestBed.createComponent(AiConsentComponent);
     fixture.componentRef.setInput('providerLabel', 'OpenAI');

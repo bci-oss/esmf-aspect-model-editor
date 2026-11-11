@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {AiLocalServer, AiProviderKind, AiSetupInputs, AiStore} from '@ame/domain';
+import {AiLocalServer, AiProviderKind, AiSetupInputs, AiSetupStore} from '@ame/domain';
 import {ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal} from '@angular/core';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {AiConnectionTestComponent} from '../../components/ai-connection-test/ai-connection-test.component';
@@ -36,13 +36,12 @@ import {AiProviderPickerComponent} from '../../components/ai-provider-picker/ai-
   ],
 })
 export class AiSetupComponent implements OnInit {
-  readonly store = inject(AiStore);
+  readonly store = inject(AiSetupStore);
 
   /** In the settings the setup is embedded without its title and "Done" button. */
   readonly variant = input<NonNullable<AiSetupInputs['variant']>>('panel');
 
   readonly keyInput = signal('');
-  readonly savingKey = signal(false);
 
   readonly kind = this.store.providerKind;
   readonly inSettings = computed(() => this.variant() === 'settings');
@@ -64,21 +63,9 @@ export class AiSetupComponent implements OnInit {
     this.store.selectProvider(server.kind, {baseUrl: server.baseUrl, model: server.models[0]});
   }
 
-  saveKey(key: string): void {
+  async saveKey(key: string): Promise<void> {
     this.store.keepSetupOpen();
-    this.savingKey.set(true);
-    this.store.saveKey(key).subscribe({
-      next: () => {
-        this.keyInput.set('');
-        this.savingKey.set(false);
-        this.store.testConnection();
-      },
-      error: () => this.savingKey.set(false),
-    });
-  }
-
-  deleteKey(): void {
-    this.store.deleteKey().subscribe();
+    if (await this.store.saveKey(key)) this.keyInput.set('');
   }
 
   login(): void {
@@ -92,7 +79,7 @@ export class AiSetupComponent implements OnInit {
   }
 
   updateBaseUrl(baseUrl: string | undefined): void {
-    this.store.updateSettings({baseUrl});
+    this.store.setBaseUrl(baseUrl);
   }
 
   finish(): void {

@@ -13,8 +13,8 @@
 
 import {AiContextCandidateGroup} from '@ame/domain';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {aiTranslocoTesting} from '../../testing/ai-testing';
 import {AiContextPickerComponent} from './ai-context-picker.component';
 
 describe('AiContextPickerComponent', () => {
@@ -89,10 +89,7 @@ describe('AiContextPickerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AiContextPickerComponent,
-        TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
-      ],
+      imports: [AiContextPickerComponent, aiTranslocoTesting()],
     }).compileComponents();
     fixture = TestBed.createComponent(AiContextPickerComponent);
     fixture.componentRef.setInput('groups', groups);

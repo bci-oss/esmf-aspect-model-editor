@@ -12,8 +12,8 @@
  */
 
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, it} from 'vitest';
+import {aiTranslocoTesting} from '../../testing/ai-testing';
 import {AiStarter, AiWelcomeComponent} from './ai-welcome.component';
 
 describe('AiWelcomeComponent', () => {
@@ -23,10 +23,7 @@ describe('AiWelcomeComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AiWelcomeComponent,
-        TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
-      ],
+      imports: [AiWelcomeComponent, aiTranslocoTesting()],
     }).compileComponents();
     fixture = TestBed.createComponent(AiWelcomeComponent);
     fixture.detectChanges();

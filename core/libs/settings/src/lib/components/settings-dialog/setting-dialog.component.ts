@@ -10,7 +10,14 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
-import {AiStore, describeSourceError, GraphSettingsPort, ModelSessionFacade, SammLanguageSettingsService, UiShellStore} from '@ame/domain';
+import {
+  AiSetupStore,
+  describeSourceError,
+  GraphSettingsPort,
+  ModelSessionFacade,
+  SammLanguageSettingsService,
+  UiShellStore,
+} from '@ame/domain';
 import {
   AlertService,
   DialogCloseButtonComponent,
@@ -19,7 +26,7 @@ import {
   NotificationsService,
   TitleService,
 } from '@ame/shared';
-import {Component, computed, ElementRef, inject, signal, viewChildren} from '@angular/core';
+import {Component, computed, effect, ElementRef, inject, signal, untracked, viewChildren} from '@angular/core';
 import {MatButton, MatIconButton} from '@angular/material/button';
 import {MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle} from '@angular/material/dialog';
 import {MatFormField, MatPrefix, MatSuffix} from '@angular/material/form-field';
@@ -242,7 +249,7 @@ export class SettingDialogComponent implements DialogCloseRequestHandler {
   private readonly transloco = inject(TranslocoService);
   private readonly workspacesDraft = inject(WorkspacesDraftService);
   private readonly notifications = inject(NotificationsService);
-  private readonly aiStore = inject(AiStore);
+  private readonly aiSetup = inject(AiSetupStore);
   private readonly uiShellStore = inject(UiShellStore);
 
   private readonly treeItems = viewChildren<ElementRef<HTMLElement>>('treeItem');
@@ -253,6 +260,11 @@ export class SettingDialogComponent implements DialogCloseRequestHandler {
   readonly searchTerm = signal('');
   readonly applicationSections = APPLICATION_SECTIONS;
   readonly immediateSections = IMMEDIATE_SECTIONS;
+
+  /** The AI section shows the status of the connection (key, Copilot account), loaded while the assistant is enabled. */
+  private readonly aiSetupEffect = effect(() => {
+    if (this.selectedSectionId() === 'aiConfiguration') untracked(() => this.aiSetup.loadSetupIfEnabled());
+  });
 
   /** Groups and sections matching the search term (title, description or labels inside the section). */
   readonly visibleGroups = computed(() => {
@@ -394,7 +406,7 @@ export class SettingDialogComponent implements DialogCloseRequestHandler {
   openAiSetup(): void {
     this.applySettings(() => {
       this.onClose();
-      this.aiStore.openSetup();
+      this.aiSetup.openSetup();
       this.uiShellStore.openAiPanel();
     });
   }

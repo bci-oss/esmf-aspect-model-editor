@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {AiStore} from '@ame/domain';
+import {AiSetupStore} from '@ame/domain';
 import {ExternalLinkDirective} from '@ame/shared';
 import {ChangeDetectionStrategy, Component, computed, inject, output} from '@angular/core';
 import {FormField} from '@angular/forms/signals';
@@ -54,7 +54,7 @@ export const AI_CAPABILITIES = ['ask', 'fix', 'describe', 'review', 'examples', 
 })
 export class AiConfigurationComponent {
   private readonly formService = inject(SettingsFormService);
-  private readonly aiStore = inject(AiStore);
+  private readonly aiSetup = inject(AiSetupStore);
 
   /** Saves the settings and opens the setup in the assistant panel; handled by the settings dialog. */
   readonly openSetup = output<void>();
@@ -66,32 +66,27 @@ export class AiConfigurationComponent {
   /** Enabled in the form, i.e. possibly not saved yet. */
   readonly enabled = computed(() => this.formService.settingsModel().aiConfiguration.enabled);
 
-  readonly provider = computed(() => this.aiStore.settings().provider ?? null);
-  readonly model = computed(() => this.aiStore.settings().model || null);
+  readonly provider = computed(() => this.aiSetup.settings().provider ?? null);
+  readonly model = computed(() => this.aiSetup.settings().model || null);
   readonly connectionState = computed<AiConnectionState>(() => {
     if (!this.provider()) return 'none';
-    return this.aiStore.configured() ? 'ready' : 'incomplete';
+    return this.aiSetup.configured() ? 'ready' : 'incomplete';
   });
   readonly keyState = computed<AiKeyState>(() => {
-    if (!this.provider() || !this.aiStore.requiresKey()) return 'notNeeded';
-    const {stored, persistent} = this.aiStore.keyInfo();
+    if (!this.provider() || !this.aiSetup.requiresKey()) return 'notNeeded';
+    const {stored, persistent} = this.aiSetup.keyInfo();
     if (!stored) return 'missing';
     return persistent ? 'persistent' : 'session';
   });
   readonly copilotLogin = computed(() => {
-    const status = this.aiStore.copilotStatus();
+    const status = this.aiSetup.copilotStatus();
     return this.provider() === 'copilot' && status?.authenticated ? (status.login ?? null) : null;
   });
 
   /** Cloud providers the user agreed to send model data to; the consent is reset immediately. */
-  readonly consentedProviders = computed(() => this.aiStore.settings().cloudConsent);
-
-  constructor() {
-    // The status of the connection (key, Copilot account) is only loaded while the assistant is active.
-    if (this.aiStore.enabled()) this.aiStore.loadSetup();
-  }
+  readonly consentedProviders = computed(() => this.aiSetup.settings().cloudConsent);
 
   resetConsent(): void {
-    this.aiStore.resetConsent();
+    this.aiSetup.resetConsent();
   }
 }

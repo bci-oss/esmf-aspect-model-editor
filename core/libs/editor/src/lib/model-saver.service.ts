@@ -111,15 +111,13 @@ export class ModelSaverService implements ModelSaverPort {
     );
   }
 
+  /** Saves the model after the configured delay, but only if it changed since it was loaded or saved the last time. */
   autoSaveModel(): Observable<RdfModel> {
     return of({}).pipe(
       takeUntilDestroyed(this.destroyRef),
       delayWhen(() => timer(this.settings.saveTimerSeconds * 1000)),
-      switchMap(() =>
-        this.currentFile.cachedFile.getKeys().length && !this.currentFile.name.includes('empty.ttl') && this.canAutoSave()
-          ? this.saveModel().pipe(takeUntilDestroyed(this.destroyRef), first())
-          : of(null),
-      ),
+      switchMap(() => (this.canAutoSave() ? this.modelSavingTracker.isSaved$.pipe(first()) : of(true))),
+      switchMap(saved => (saved ? of(null) : this.saveModel().pipe(takeUntilDestroyed(this.destroyRef), first()))),
       tap(() => {
         this.enableAutoSave();
       }),
@@ -154,10 +152,11 @@ export class ModelSaverService implements ModelSaverPort {
   }
 
   /**
-   * Autosave neither touches read-only files nor stores a new model before the user chose its workspace;
+   * Autosave neither touches empty or read-only files nor stores a new model before the user chose its workspace;
    * the first save of a new model is always explicit.
    */
   private canAutoSave(): boolean {
+    if (!this.currentFile?.cachedFile?.getKeys().length || this.currentFile.name?.includes('empty.ttl')) return false;
     if (this.isCurrentModelReadOnly()) return false;
     return !(this.isNewModel() && this.modelSources.hasMultipleWorkspaces());
   }

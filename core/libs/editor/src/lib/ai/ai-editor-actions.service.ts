@@ -11,7 +11,16 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {AiCommand, AiEditorAction, AiEditorPort, aiElementName, AiStore, AiValidationError, UiShellStore} from '@ame/domain';
+import {
+  AiChatStore,
+  AiCommand,
+  AiEditorAction,
+  AiEditorPort,
+  aiElementName,
+  AiSetupStore,
+  AiValidationError,
+  UiShellStore,
+} from '@ame/domain';
 import {BindingsService, LanguageTranslationService} from '@ame/shared';
 import {inject, Injectable} from '@angular/core';
 
@@ -24,13 +33,14 @@ export type AiElementCommand = Extract<AiCommand, 'describe' | 'translate' | 'ex
  */
 @Injectable({providedIn: 'root'})
 export class AiEditorActionsService {
-  private readonly aiStore = inject(AiStore);
+  private readonly aiChat = inject(AiChatStore);
+  private readonly aiSetup = inject(AiSetupStore);
   private readonly aiEditor = inject(AiEditorPort, {optional: true});
   private readonly uiShell = inject(UiShellStore);
   private readonly bindings = inject(BindingsService);
   private readonly translate = inject(LanguageTranslationService);
 
-  readonly enabled = this.aiStore.enabled;
+  readonly enabled = this.aiSetup.enabled;
   readonly panelOpen = this.uiShell.aiPanelOpen;
 
   registerContextMenuActions(): void {
@@ -43,14 +53,14 @@ export class AiEditorActionsService {
   askAboutElement(command: AiElementCommand, urn: string): void {
     if (!this.enabled() || !urn) return;
     const message = this.translation(`ai.actions.${command}.message`, {name: aiElementName(urn)});
-    this.aiStore.ask({message, command, elementUrns: [urn]});
+    this.aiChat.ask({message, command, elementUrns: [urn]});
   }
 
   /** Explains a validation error and proposes a fix. */
   fix(error: AiValidationError): void {
     if (!this.enabled() || !error?.message) return;
     const message = this.translation('ai.actions.fix.message', {error: error.message});
-    this.aiStore.ask({message, command: 'fix', validationErrors: [error]});
+    this.aiChat.ask({message, command: 'fix', validationErrors: [error]});
   }
 
   review(): void {
@@ -68,7 +78,7 @@ export class AiEditorActionsService {
   /** Opens the panel with the generate command in the input; the user describes the model. */
   newModel(): void {
     if (!this.enabled()) return;
-    this.aiStore.prepare({command: 'generate', message: this.translation('ai.actions.newModel.message')});
+    this.aiChat.prepare({command: 'generate', message: this.translation('ai.actions.newModel.message')});
   }
 
   togglePanel(): void {
@@ -83,7 +93,7 @@ export class AiEditorActionsService {
   private askAboutModel(command: Extract<AiCommand, 'review' | 'examples' | 'explain'>): void {
     if (!this.enabled()) return;
     const key = command === 'explain' ? 'ai.starters.explain.message' : `ai.actions.${command}.message`;
-    this.aiStore.ask({message: this.translation(key), command});
+    this.aiChat.ask({message: this.translation(key), command});
   }
 
   private translation(key: string, params?: Record<string, string>): string {

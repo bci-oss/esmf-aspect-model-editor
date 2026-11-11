@@ -12,7 +12,7 @@
  */
 
 import {
-  AiStore,
+  AiSetupStore,
   ConfigurationService,
   EditorValidationPort,
   GraphSettingsPort,
@@ -38,14 +38,13 @@ describe('AiConfigurationComponent', () => {
   const requiresKey = signal(false);
   const keyInfo = signal({stored: false, persistent: false});
   const copilotStatus = signal<{available: boolean; authenticated: boolean; login?: string} | null>(null);
-  const aiStore = {
+  const aiSetup = {
     settings,
     enabled,
     configured,
     requiresKey,
     keyInfo,
     copilotStatus,
-    loadSetup: vi.fn(),
     resetConsent: vi.fn(() => settings.update(value => ({...value, cloudConsent: []}))),
   };
 
@@ -70,8 +69,7 @@ describe('AiConfigurationComponent', () => {
     requiresKey.set(false);
     keyInfo.set({stored: false, persistent: false});
     copilotStatus.set(null);
-    aiStore.loadSetup.mockClear();
-    aiStore.resetConsent.mockClear();
+    aiSetup.resetConsent.mockClear();
 
     await TestBed.configureTestingModule({
       imports: [
@@ -83,7 +81,7 @@ describe('AiConfigurationComponent', () => {
         SettingsFormService,
         ConfigurationService,
         SammLanguageSettingsService,
-        {provide: AiStore, useValue: aiStore},
+        {provide: AiSetupStore, useValue: aiSetup},
         {provide: ModelSessionFacade, useValue: {currentLoadedFile: null}},
         {provide: LanguageTranslationService, useValue: {translateService: {getActiveLang: () => 'en', setActiveLang: vi.fn()}}},
         {provide: TitleService, useValue: {updateTitle: vi.fn()}},
@@ -152,16 +150,6 @@ describe('AiConfigurationComponent', () => {
     expect(element('aiOpenSetup')?.textContent).toContain('settingsDialog.ai.steps.provider.setup');
   });
 
-  it('loads the connection status only while the assistant is active', () => {
-    expect(aiStore.loadSetup).toHaveBeenCalledTimes(1);
-
-    enabled.set(false);
-    aiStore.loadSetup.mockClear();
-    fixture.destroy();
-    create();
-    expect(aiStore.loadSetup).not.toHaveBeenCalled();
-  });
-
   it('derives the connection state from the store', () => {
     expect(component().connectionState()).toBe('ready');
     configured.set(false);
@@ -200,7 +188,7 @@ describe('AiConfigurationComponent', () => {
     expect(reset.disabled).toBe(false);
     reset.click();
     fixture.detectChanges();
-    expect(aiStore.resetConsent).toHaveBeenCalled();
+    expect(aiSetup.resetConsent).toHaveBeenCalled();
     expect(reset.disabled).toBe(true);
     expect(element('aiConsentState')?.textContent).toContain('settingsDialog.ai.consentNone');
   });

@@ -13,8 +13,8 @@
 
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {aiTranslocoTesting} from '../../testing/ai-testing';
 import {AiPanelHeaderComponent} from './ai-panel-header.component';
 
 describe('AiPanelHeaderComponent', () => {
@@ -30,11 +30,7 @@ describe('AiPanelHeaderComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AiPanelHeaderComponent,
-        NoopAnimationsModule,
-        TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
-      ],
+      imports: [AiPanelHeaderComponent, NoopAnimationsModule, aiTranslocoTesting()],
     }).compileComponents();
     fixture = TestBed.createComponent(AiPanelHeaderComponent);
     component = fixture.componentInstance;

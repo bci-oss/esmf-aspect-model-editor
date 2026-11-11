@@ -31,7 +31,7 @@ import {DefaultAspect, ModelElementCache, RdfModel} from '@esmf/aspect-model-loa
 import {Store} from 'n3';
 import {MockProvider} from 'ng-mocks';
 import {Subject, of, throwError} from 'rxjs';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {ModelHistoryService} from './history/model-history.service';
 import {ModelSaverService} from './model-saver.service';
 import {ModelSavingTrackerService} from './model-saving-tracker.service';
@@ -173,6 +173,47 @@ describe('ModelSaverService', () => {
 
     expect(modelDocumentService.toDocument).toHaveBeenCalledWith('formatted content', loadedFilesService.currentLoadedFile?.rdfModel);
     expect(vi.mocked(modelApiService.saveAspectModel).mock.calls[0][0]).toBe('# file header\n\nformatted content');
+  });
+
+  describe('autosave', () => {
+    let file: NamespaceFile;
+
+    const autoSaveAfterDelay = async (saved: boolean) => {
+      Object.defineProperty(modelSavingTracker, 'isSaved$', {get: () => of(saved), configurable: true});
+      const subscription = service.autoSaveModel().subscribe();
+      await vi.advanceTimersByTimeAsync(60_000);
+      subscription.unsubscribe();
+    };
+
+    beforeEach(() => {
+      vi.useFakeTimers();
+      file = TestBed.inject(LoadedFilesService).currentLoadedFile as NamespaceFile;
+      vi.spyOn(file.cachedFile, 'getKeys').mockReturnValue(['urn:test:1.0.0#Aspect']);
+      file.name = 'Aspect.ttl';
+    });
+
+    afterEach(() => vi.useRealTimers());
+
+    it('saves a changed model after the delay', async () => {
+      await autoSaveAfterDelay(false);
+
+      expect(modelApiService.saveAspectModel).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not save a model again which did not change since it was saved', async () => {
+      await autoSaveAfterDelay(true);
+
+      expect(modelApiService.saveAspectModel).not.toHaveBeenCalled();
+      expect(notificationsService.info).not.toHaveBeenCalled();
+    });
+
+    it('does not check or save an empty model', async () => {
+      vi.mocked(file.cachedFile.getKeys).mockReturnValue([]);
+
+      await autoSaveAfterDelay(false);
+
+      expect(modelApiService.saveAspectModel).not.toHaveBeenCalled();
+    });
   });
 
   describe('model sources', () => {

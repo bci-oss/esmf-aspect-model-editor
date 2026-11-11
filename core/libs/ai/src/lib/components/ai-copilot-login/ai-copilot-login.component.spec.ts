@@ -11,11 +11,10 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ClipboardService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {aiFileStubs, aiTranslocoTesting} from '../../testing/ai-testing';
 import {AiCopilotLoginComponent} from './ai-copilot-login.component';
 
 describe('AiCopilotLoginComponent', () => {
@@ -30,12 +29,8 @@ describe('AiCopilotLoginComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AiCopilotLoginComponent,
-        NoopAnimationsModule,
-        TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
-      ],
-      providers: [{provide: ClipboardService, useValue: {copy: vi.fn()}}],
+      imports: [AiCopilotLoginComponent, NoopAnimationsModule, aiTranslocoTesting()],
+      providers: aiFileStubs().providers,
     }).compileComponents();
     fixture = TestBed.createComponent(AiCopilotLoginComponent);
     component = fixture.componentInstance;

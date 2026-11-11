@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {AI_SETUP_COMPONENT, AiStore, UiShellStore} from '@ame/domain';
+import {AI_SETUP_COMPONENT, AiSetupStore, UiShellStore} from '@ame/domain';
 import {DOCUMENT} from '@angular/common';
 import {DestroyRef, EnvironmentProviders, inject, makeEnvironmentProviders, provideAppInitializer} from '@angular/core';
 import {isAiPanelShortcut, isMac} from './ai-shortcut';
@@ -30,7 +30,7 @@ export function provideAi(): EnvironmentProviders {
 
 function installAiShortcut(): void {
   const document = inject(DOCUMENT);
-  const store = inject(AiStore);
+  const store = inject(AiSetupStore);
   const uiShell = inject(UiShellStore);
   const mac = isMac();
 

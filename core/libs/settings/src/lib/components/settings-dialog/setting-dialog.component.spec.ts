@@ -12,7 +12,7 @@
  */
 
 import {
-  AiStore,
+  AiSetupStore,
   ConfigurationService,
   EditorValidationPort,
   GraphSettingsPort,
@@ -465,9 +465,9 @@ describe('SettingDialogComponent', () => {
   });
 
   it('should save, close and continue with the AI setup in the assistant panel', () => {
-    const aiStore = TestBed.inject(AiStore);
+    const aiSetup = TestBed.inject(AiSetupStore);
     const uiShell = TestBed.inject(UiShellStore);
-    const openSetup = vi.spyOn(aiStore, 'openSetup').mockImplementation(() => undefined);
+    const openSetup = vi.spyOn(aiSetup, 'openSetup').mockImplementation(() => undefined);
     const updateSpy = vi.spyOn(formService, 'updateSettings');
 
     component.openAiSetup();
@@ -476,6 +476,13 @@ describe('SettingDialogComponent', () => {
     expect(dialogRef.close).toHaveBeenCalled();
     expect(openSetup).toHaveBeenCalled();
     expect(uiShell.aiPanelOpen()).toBe(true);
+  });
+
+  it('should load the AI connection status when the AI section is shown', () => {
+    const loadSetup = vi.spyOn(TestBed.inject(AiSetupStore), 'loadSetupIfEnabled').mockImplementation(() => undefined);
+    component.selectSection('aiConfiguration');
+    TestBed.tick();
+    expect(loadSetup).toHaveBeenCalledTimes(1);
   });
 
   it('should prompt confirm box if languages are marked for removal', () => {

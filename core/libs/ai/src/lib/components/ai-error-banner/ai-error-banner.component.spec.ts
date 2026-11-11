@@ -12,8 +12,8 @@
  */
 
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {aiTranslocoTesting} from '../../testing/ai-testing';
 import {AiErrorBannerComponent} from './ai-error-banner.component';
 
 describe('AiErrorBannerComponent', () => {
@@ -23,10 +23,7 @@ describe('AiErrorBannerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AiErrorBannerComponent,
-        TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
-      ],
+      imports: [AiErrorBannerComponent, aiTranslocoTesting()],
     }).compileComponents();
     fixture = TestBed.createComponent(AiErrorBannerComponent);
   });

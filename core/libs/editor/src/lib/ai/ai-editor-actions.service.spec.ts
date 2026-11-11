@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {AiEditorAction, AiEditorPort, AiStore, UiShellStore} from '@ame/domain';
+import {AiChatStore, AiEditorAction, AiEditorPort, AiSetupStore, UiShellStore} from '@ame/domain';
 import {BindingsService, LanguageTranslationService} from '@ame/shared';
 import {signal} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
@@ -24,7 +24,7 @@ describe('AiEditorActionsService', () => {
   let service: AiEditorActionsService;
   const enabled = signal(true);
   const selectedElementUrn = signal<string | null>(null);
-  let aiStore: {enabled: typeof enabled; ask: ReturnType<typeof vi.fn>; prepare: ReturnType<typeof vi.fn>};
+  let aiChat: {ask: ReturnType<typeof vi.fn>; prepare: ReturnType<typeof vi.fn>};
   let uiShell: {aiPanelOpen: ReturnType<typeof signal<boolean>>; toggleAiPanel: ReturnType<typeof vi.fn>};
   let actions: Map<string, () => void>;
 
@@ -32,12 +32,13 @@ describe('AiEditorActionsService', () => {
     enabled.set(true);
     selectedElementUrn.set(null);
     actions = new Map();
-    aiStore = {enabled, ask: vi.fn(), prepare: vi.fn()};
+    aiChat = {ask: vi.fn(), prepare: vi.fn()};
     uiShell = {aiPanelOpen: signal(false), toggleAiPanel: vi.fn()};
 
     TestBed.configureTestingModule({
       providers: [
-        {provide: AiStore, useValue: aiStore},
+        {provide: AiChatStore, useValue: aiChat},
+        {provide: AiSetupStore, useValue: {enabled}},
         {provide: AiEditorPort, useValue: {selectedElementUrn}},
         {provide: UiShellStore, useValue: uiShell},
         {provide: BindingsService, useValue: {registerAction: (name: string, action: () => void) => actions.set(name, action)}},
@@ -56,7 +57,7 @@ describe('AiEditorActionsService', () => {
 
   it('asks about an element with its name', () => {
     service.askAboutElement('describe', URN);
-    expect(aiStore.ask).toHaveBeenCalledWith({
+    expect(aiChat.ask).toHaveBeenCalledWith({
       message: 'ai.actions.describe.message:{"name":"speed"}',
       command: 'describe',
       elementUrns: [URN],
@@ -66,7 +67,7 @@ describe('AiEditorActionsService', () => {
   it('asks to explain and fix a validation error', () => {
     const error = {message: 'Missing characteristic', focusNode: URN};
     service.fix(error);
-    expect(aiStore.ask).toHaveBeenCalledWith({
+    expect(aiChat.ask).toHaveBeenCalledWith({
       message: 'ai.actions.fix.message:{"error":"Missing characteristic"}',
       command: 'fix',
       validationErrors: [error],
@@ -77,7 +78,7 @@ describe('AiEditorActionsService', () => {
     service.review();
     service.examples();
     service.explainModel();
-    expect(aiStore.ask.mock.calls.map(([request]) => request)).toEqual([
+    expect(aiChat.ask.mock.calls.map(([request]) => request)).toEqual([
       {message: 'ai.actions.review.message', command: 'review'},
       {message: 'ai.actions.examples.message', command: 'examples'},
       {message: 'ai.starters.explain.message', command: 'explain'},
@@ -86,7 +87,7 @@ describe('AiEditorActionsService', () => {
 
   it('prepares the generation of a new model', () => {
     service.newModel();
-    expect(aiStore.prepare).toHaveBeenCalledWith({command: 'generate', message: 'ai.actions.newModel.message'});
+    expect(aiChat.prepare).toHaveBeenCalledWith({command: 'generate', message: 'ai.actions.newModel.message'});
   });
 
   it('toggles the panel and exposes its state', () => {
@@ -102,12 +103,12 @@ describe('AiEditorActionsService', () => {
     expect([...actions.keys()]).toEqual([AiEditorAction.describe, AiEditorAction.translate, AiEditorAction.explain]);
 
     actions.get(AiEditorAction.translate)?.();
-    expect(aiStore.ask).not.toHaveBeenCalled();
+    expect(aiChat.ask).not.toHaveBeenCalled();
 
     selectedElementUrn.set(URN);
     actions.get(AiEditorAction.translate)?.();
     actions.get(AiEditorAction.explain)?.();
-    expect(aiStore.ask.mock.calls.map(([request]) => request.command)).toEqual(['translate', 'explain']);
+    expect(aiChat.ask.mock.calls.map(([request]) => request.command)).toEqual(['translate', 'explain']);
   });
 
   it('does nothing while the assistant is disabled', () => {
@@ -117,14 +118,14 @@ describe('AiEditorActionsService', () => {
     service.review();
     service.newModel();
     service.togglePanel();
-    expect(aiStore.ask).not.toHaveBeenCalled();
-    expect(aiStore.prepare).not.toHaveBeenCalled();
+    expect(aiChat.ask).not.toHaveBeenCalled();
+    expect(aiChat.prepare).not.toHaveBeenCalled();
     expect(uiShell.toggleAiPanel).not.toHaveBeenCalled();
   });
 
   it('ignores missing input', () => {
     service.askAboutElement('describe', '');
     service.fix({message: ''});
-    expect(aiStore.ask).not.toHaveBeenCalled();
+    expect(aiChat.ask).not.toHaveBeenCalled();
   });
 });

@@ -11,76 +11,18 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {
-  AiCopilotLoginState,
-  AiError,
-  AiLocalServer,
-  AiModelInfo,
-  AiProviderChoice,
-  AiProviderInfo,
-  AiStore,
-  AiTestResult,
-  CopilotLoginFlow,
-  CopilotStatus,
-} from '@ame/domain';
-import {AI_PROVIDER_KINDS, AiProviderKind, AiSettings, ClipboardService, DEFAULT_AI_SETTINGS} from '@ame/shared';
-import {computed, signal} from '@angular/core';
+import {AiSetupStore} from '@ame/domain';
+import {AiProviderKind} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {TranslocoTestingModule} from '@jsverse/transloco';
-import {of, throwError} from 'rxjs';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it} from 'vitest';
+import {createAiSetupStoreMock} from '../../testing/ai-store-mocks';
+import {aiFileStubs, aiTranslocoTesting} from '../../testing/ai-testing';
 import {AiSetupComponent} from './ai-setup.component';
-
-function createStore() {
-  const settings = signal<AiSettings>({...DEFAULT_AI_SETTINGS, enabled: true});
-  const providerKind = computed(() => settings().provider);
-  return {
-    providers: signal<AiProviderInfo[]>([]),
-    providerChoices: signal<AiProviderChoice[]>(
-      AI_PROVIDER_KINDS.map(kind => ({
-        kind,
-        recommended: kind === 'copilot',
-        local: kind === 'ollama' || kind === 'lmstudio',
-        available: true,
-      })),
-    ),
-    localServers: signal<AiLocalServer[]>([]),
-    models: signal<AiModelInfo[]>([]),
-    copilotStatus: signal<CopilotStatus | null>({available: true, authenticated: false}),
-    keyInfo: signal({stored: false, persistent: false}),
-    testing: signal(false),
-    testResult: signal<AiTestResult | null>(null),
-    loginFlow: signal<CopilotLoginFlow | null>(null),
-    loginState: signal<AiCopilotLoginState>('idle'),
-    loginError: signal<AiError | null>(null),
-    settings,
-    providerKind,
-    requiresKey: computed(() => ['openai', 'anthropic', 'azure-openai'].includes(providerKind() ?? '')),
-    requiresBaseUrl: computed(() => providerKind() === 'openai-compatible'),
-    isLocal: computed(() => providerKind() === 'ollama' || providerKind() === 'lmstudio'),
-    configured: signal(false),
-    loadSetup: vi.fn(),
-    keepSetupOpen: vi.fn(),
-    selectProvider: vi.fn((kind: AiProviderKind, extra: Partial<AiSettings> = {}) =>
-      settings.update(s => ({...s, ...extra, provider: kind})),
-    ),
-    saveKey: vi.fn(() => of(undefined)),
-    deleteKey: vi.fn(() => of(undefined)),
-    setCopilotToken: vi.fn(),
-    startCopilotLogin: vi.fn(),
-    cancelCopilotLogin: vi.fn(),
-    logoutCopilot: vi.fn(),
-    testConnection: vi.fn(),
-    updateSettings: vi.fn(),
-    selectModel: vi.fn(),
-    closeSetup: vi.fn(),
-  };
-}
 
 describe('AiSetupComponent', () => {
   let fixture: ComponentFixture<AiSetupComponent>;
-  let store: ReturnType<typeof createStore>;
+  let store: ReturnType<typeof createAiSetupStoreMock>;
 
   const query = <T extends HTMLElement>(id: string): T => fixture.nativeElement.querySelector(`[data-testid="${id}"]`);
 
@@ -97,17 +39,10 @@ describe('AiSetupComponent', () => {
   }
 
   beforeEach(async () => {
-    store = createStore();
+    store = createAiSetupStoreMock();
     await TestBed.configureTestingModule({
-      imports: [
-        AiSetupComponent,
-        NoopAnimationsModule,
-        TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
-      ],
-      providers: [
-        {provide: AiStore, useValue: store},
-        {provide: ClipboardService, useValue: {copy: vi.fn()}},
-      ],
+      imports: [AiSetupComponent, NoopAnimationsModule, aiTranslocoTesting()],
+      providers: [{provide: AiSetupStore, useValue: store}, ...aiFileStubs().providers],
     }).compileComponents();
     fixture = TestBed.createComponent(AiSetupComponent);
     fixture.detectChanges();
@@ -197,27 +132,34 @@ describe('AiSetupComponent', () => {
     expect(query('ai-copilot-token')).not.toBeNull();
   });
 
-  it('saves the key and tests the connection', () => {
+  it('saves the key and clears the input', async () => {
     choose('openai');
     typeInto('ai-key-input', ' sk-test ');
     query('ai-key-save').click();
-    fixture.detectChanges();
+    await fixture.whenStable();
 
     expect(store.saveKey).toHaveBeenCalledWith('sk-test');
-    expect(store.testConnection).toHaveBeenCalled();
+    expect(store.keepSetupOpen).toHaveBeenCalled();
     expect(fixture.componentInstance.keyInput()).toBe('');
-    expect(fixture.componentInstance.savingKey()).toBe(false);
   });
 
-  it('keeps the key input when saving fails', () => {
-    store.saveKey.mockReturnValueOnce(throwError(() => new Error('keychain locked')));
+  it('keeps the key input when saving fails', async () => {
+    store.saveKey.mockResolvedValueOnce(false);
     choose('anthropic');
     typeInto('ai-key-input', 'sk-test');
     query('ai-key-save').click();
+    await fixture.whenStable();
 
-    expect(store.testConnection).not.toHaveBeenCalled();
     expect(fixture.componentInstance.keyInput()).toBe('sk-test');
-    expect(fixture.componentInstance.savingKey()).toBe(false);
+  });
+
+  it('shows that the key is saved', () => {
+    choose('openai');
+    typeInto('ai-key-input', 'sk-test');
+    expect(query<HTMLButtonElement>('ai-key-save').disabled).toBe(false);
+    store.savingKey.set(true);
+    fixture.detectChanges();
+    expect(query<HTMLButtonElement>('ai-key-save').disabled).toBe(true);
   });
 
   it('deletes a stored key', () => {
@@ -234,7 +176,7 @@ describe('AiSetupComponent', () => {
     typeInto('ai-base-url', ' http://localhost:8000/v1 ', 'change');
     typeInto('ai-model-input', ' my-model ', 'change');
 
-    expect(store.updateSettings).toHaveBeenCalledWith({baseUrl: 'http://localhost:8000/v1'});
+    expect(store.setBaseUrl).toHaveBeenCalledWith('http://localhost:8000/v1');
     expect(store.selectModel).toHaveBeenCalledWith('my-model');
   });
 

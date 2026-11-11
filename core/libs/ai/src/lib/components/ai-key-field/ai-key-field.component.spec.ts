@@ -13,8 +13,8 @@
 
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {aiTranslocoTesting} from '../../testing/ai-testing';
 import {AiKeyFieldComponent} from './ai-key-field.component';
 
 describe('AiKeyFieldComponent', () => {
@@ -36,11 +36,7 @@ describe('AiKeyFieldComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AiKeyFieldComponent,
-        NoopAnimationsModule,
-        TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
-      ],
+      imports: [AiKeyFieldComponent, NoopAnimationsModule, aiTranslocoTesting()],
     }).compileComponents();
     fixture = TestBed.createComponent(AiKeyFieldComponent);
     component = fixture.componentInstance;

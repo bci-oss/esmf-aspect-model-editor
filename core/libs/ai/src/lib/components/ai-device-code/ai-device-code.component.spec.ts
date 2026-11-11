@@ -11,26 +11,22 @@
  * SPDX-License-Identifier: MPL-2.0
  */
 
-import {ClipboardService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {aiFileStubs, aiTranslocoTesting} from '../../testing/ai-testing';
 import {AiDeviceCodeComponent} from './ai-device-code.component';
 
 describe('AiDeviceCodeComponent', () => {
   let fixture: ComponentFixture<AiDeviceCodeComponent>;
-  const clipboard = {copy: vi.fn()};
+  const {clipboard, providers} = aiFileStubs();
 
   const query = <T extends HTMLElement>(id: string): T => fixture.nativeElement.querySelector(`[data-testid="${id}"]`);
 
   beforeEach(async () => {
     clipboard.copy.mockClear();
     await TestBed.configureTestingModule({
-      imports: [
-        AiDeviceCodeComponent,
-        TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
-      ],
-      providers: [{provide: ClipboardService, useValue: clipboard}],
+      imports: [AiDeviceCodeComponent, aiTranslocoTesting()],
+      providers,
     }).compileComponents();
     fixture = TestBed.createComponent(AiDeviceCodeComponent);
     fixture.componentRef.setInput('flow', {

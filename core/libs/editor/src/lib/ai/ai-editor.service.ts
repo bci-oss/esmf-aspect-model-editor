@@ -40,7 +40,7 @@ import {TabStateService} from '../tabs/tab-state.service';
 const SAMM_URN = /^urn:samm:([^:#]+):([^:#]+)#/;
 
 /**
- * What the AI assistant reads from and does in the editor. It must not depend on the AiStore (which uses this port);
+ * What the AI assistant reads from and does in the editor. It must not depend on the AI stores (which use this port);
  * the actions of the editor that ask the assistant live in the AiEditorActionsService.
  */
 @Injectable({providedIn: 'root'})

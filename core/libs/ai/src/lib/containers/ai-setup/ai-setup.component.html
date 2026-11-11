@@ -45,9 +45,9 @@
           <ame-ai-key-field
             [(key)]="keyInput"
             [info]="store.keyInfo()"
-            [saving]="savingKey()"
+            [saving]="store.savingKey()"
             (keySubmitted)="saveKey($event)"
-            (keyDeleted)="deleteKey()"
+            (keyDeleted)="store.deleteKey()"
           />
         }
 

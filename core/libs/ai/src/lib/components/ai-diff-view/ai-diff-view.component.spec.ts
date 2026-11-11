@@ -12,8 +12,8 @@
  */
 
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, it} from 'vitest';
+import {aiTranslocoTesting} from '../../testing/ai-testing';
 import {AiDiffViewComponent} from './ai-diff-view.component';
 
 describe('AiDiffViewComponent', () => {
@@ -21,10 +21,7 @@ describe('AiDiffViewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AiDiffViewComponent,
-        TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
-      ],
+      imports: [AiDiffViewComponent, aiTranslocoTesting()],
     }).compileComponents();
     fixture = TestBed.createComponent(AiDiffViewComponent);
   });
@@ -41,6 +38,7 @@ describe('AiDiffViewComponent', () => {
     const removed = Array.from(element.querySelectorAll('.ai-diff__line--removed')).map(line => line.textContent);
     expect(added).toEqual(['+B', '+d']);
     expect(removed).toEqual(['−b']);
+    expect(element.querySelector('code')?.textContent).toBe(' a−b+B c+d');
   });
 
   it('collapses long unchanged parts', () => {

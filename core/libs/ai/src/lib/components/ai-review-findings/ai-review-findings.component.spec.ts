@@ -13,8 +13,8 @@
 
 import {AiReviewFinding} from '@ame/domain';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {aiTranslocoTesting} from '../../testing/ai-testing';
 import {AiReviewFindingsComponent} from './ai-review-findings.component';
 
 describe('AiReviewFindingsComponent', () => {
@@ -37,10 +37,7 @@ describe('AiReviewFindingsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AiReviewFindingsComponent,
-        TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
-      ],
+      imports: [AiReviewFindingsComponent, aiTranslocoTesting()],
     }).compileComponents();
     fixture = TestBed.createComponent(AiReviewFindingsComponent);
   });

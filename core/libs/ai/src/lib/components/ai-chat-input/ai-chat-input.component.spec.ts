@@ -14,8 +14,8 @@
 import {AiContextCandidate, AiModelElement} from '@ame/domain';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {aiTranslocoTesting} from '../../testing/ai-testing';
 import {AiChatInputComponent} from './ai-chat-input.component';
 
 describe('AiChatInputComponent', () => {
@@ -45,11 +45,7 @@ describe('AiChatInputComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AiChatInputComponent,
-        NoopAnimationsModule,
-        TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
-      ],
+      imports: [AiChatInputComponent, NoopAnimationsModule, aiTranslocoTesting()],
     }).compileComponents();
     fixture = TestBed.createComponent(AiChatInputComponent);
     fixture.componentRef.setInput('elements', elements);

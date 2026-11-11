@@ -12,10 +12,9 @@
  */
 
 import {AiProposal} from '@ame/domain';
-import {ClipboardService, FileSaverService} from '@ame/shared';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {TranslocoTestingModule} from '@jsverse/transloco';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {aiFileStubs, aiTranslocoTesting} from '../../testing/ai-testing';
 import {AiProposalCardComponent} from './ai-proposal-card.component';
 
 describe('AiProposalCardComponent', () => {
@@ -43,14 +42,8 @@ describe('AiProposalCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        AiProposalCardComponent,
-        TranslocoTestingModule.forRoot({langs: {en: {}}, translocoConfig: {availableLangs: ['en'], defaultLang: 'en'}}),
-      ],
-      providers: [
-        {provide: ClipboardService, useValue: {copy: vi.fn()}},
-        {provide: FileSaverService, useValue: {download: vi.fn()}},
-      ],
+      imports: [AiProposalCardComponent, aiTranslocoTesting()],
+      providers: [...aiFileStubs().providers],
     }).compileComponents();
     fixture = TestBed.createComponent(AiProposalCardComponent);
   });
